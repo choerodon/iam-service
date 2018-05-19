@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.MenuMapper">
+    <resultMap id="menusWithPermissions" type="io.choerodon.iam.infra.dataobject.MenuDO">
+        <id column="id" property="id"></id>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="level" property="level" jdbcType="VARCHAR"/>
+        <result column="parent_id" property="parentId" jdbcType="DECIMAL"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="sort" property="sort" jdbcType="BIGINT"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
+        <result column="route" property="route" jdbcType="VARCHAR"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT"/>
+        <collection property="permissions" ofType="io.choerodon.iam.infra.dataobject.PermissionDO">
+            <id column="permission_id" property="id"></id>
+            <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="path" property="path" jdbcType="VARCHAR"/>
+            <result column="method" property="method" jdbcType="VARCHAR"/>
+            <result column="permission_level" property="level" jdbcType="VARCHAR"/>
+            <result column="action" property="action" jdbcType="VARCHAR"/>
+            <result column="resource" property="resource" jdbcType="VARCHAR"/>
+            <result column="public_access" property="publicAccess" jdbcType="BOOLEAN"/>
+            <result column="login_access" property="loginAccess" jdbcType="BOOLEAN"/>
+            <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="queryIncludeTl" resultType="io.choerodon.iam.infra.dataobject.MenuDO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        *,
+        tl1.name as zh_name,
+        tl2.name as en_name
+        FROM iam_menu m
+        LEFT JOIN iam_menu_tl tl1 ON m.id = tl1.id AND tl1.lang = 'zh_CN'
+        LEFT JOIN iam_menu_tl tl2 ON m.id = tl2.id AND tl2.lang = 'en_US'
+    </select>
+
+    <select id="queryMenusWithPermissions" resultMap="menusWithPermissions">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        im.*,
+        ip.id permission_id,
+        ip.code permission_code,
+        ip.path,
+        ip.method,
+        ip.level permission_level,
+        ip.action,
+        ip.resource,
+        ip.public_access,
+        ip.login_access,
+        ip.service_name
+        FROM iam_menu im
+        LEFT JOIN iam_menu_permission imp on im.id = imp.menu_id
+        LEFT JOIN iam_permission ip on imp.permission_id = ip.id
+        WHERE 1=1
+        <if test="level != null">
+            AND im.level = #{level}
+        </if>
+        <if test="type != null">
+            AND im.type = #{type}
+        </if>
+    </select>
+
+    <select id="queryMenusWithPermissionByTestPermission" resultMap="menusWithPermissions">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT DISTINCT
+            im.*
+        FROM iam_menu im
+        LEFT JOIN iam_menu_permission imp on im.id = imp.menu_id
+        WHERE imp.permission_id in (
+                SELECT p.id
+                FROM iam_role_permission rp
+                LEFT JOIN iam_permission p on p.id=rp.permission_id
+                LEFT JOIN iam_role r on  r.id = rp.role_id
+                WHERE r.is_enabled = 1 AND p.login_access=1 or p.public_access=1
+                    or rp.role_id in (
+                    SELECT DISTINCT mr.role_id from iam_member_role mr
+                    where mr.member_type=#{memberType}
+                        and mr.member_id=#{memberId}
+                        <if test="sourceType != null">
+                            and mr.source_type = #{sourceType}
+                        </if>
+                        <if test="sourceId != null">
+                            and mr.source_id=#{sourceId}
+                        </if>
+                )
+            )
+            <if test="level != null">
+                AND im.level = #{level}
+            </if>
+          UNION
+            SELECT DISTINCT
+              *
+            FROM iam_menu
+            WHERE id in (
+                SELECT DISTINCT
+                  im.parent_id
+                FROM iam_menu im
+                LEFT JOIN iam_menu_permission imp on im.id = imp.menu_id
+                WHERE imp.permission_id in (
+                    SELECT p.id
+                    FROM iam_role_permission rp
+                    LEFT JOIN iam_permission p on p.id=rp.permission_id
+                    LEFT JOIN iam_role r on  r.id = rp.role_id
+                    WHERE r.is_enabled = 1 AND p.login_access=1 or p.public_access=1
+                      or rp.role_id in (
+                        SELECT DISTINCT mr.role_id from iam_member_role mr
+                        where mr.member_type=#{memberType}
+                        and mr.member_id=#{memberId}
+                        <if test="sourceType != null">
+                            and mr.source_type = #{sourceType}
+                        </if>
+                        <if test="sourceId != null">
+                            and mr.source_id=#{sourceId}
+                        </if>
+                    )
+                    )
+                    <if test="level != null">
+                        AND im.level = #{level}
+                    </if>
+            )
+    </select>
+
+    <delete id="deleteMenusById" >
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        delete FROM iam_menu
+        where 1!=1
+        <if test="menuIds != null and !menuIds.isEmpty()">
+            or id in
+            <foreach item="item" index="index" collection="menuIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

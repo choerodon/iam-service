@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.RoleMapper">
+    <resultMap id="roleWithPermissionsAndLabels" type="io.choerodon.iam.infra.dataobject.RoleDO">
+        <id column="id" property="id"></id>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="level" property="level" jdbcType="VARCHAR"/>
+        <result column="is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+        <result column="is_modified" property="isModified" jdbcType="BOOLEAN"/>
+        <result column="is_enable_forbidden" property="isEnableForbidden" jdbcType="BOOLEAN"/>
+        <result column="is_built_in" property="isBuiltIn" jdbcType="BOOLEAN"/>
+        <result column="is_assignable" property="isAssignable" jdbcType="BOOLEAN"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <collection property="permissions" ofType="io.choerodon.iam.infra.dataobject.PermissionDO">
+            <id column="permission_id" property="id"></id>
+            <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="path" property="path" jdbcType="VARCHAR"/>
+            <result column="method" property="method" jdbcType="VARCHAR"/>
+            <result column="permission_level" property="level" jdbcType="VARCHAR"/>
+            <result column="action" property="action" jdbcType="VARCHAR"/>
+            <result column="resource" property="resource" jdbcType="VARCHAR"/>
+            <result column="public_access" property="publicAccess" jdbcType="BOOLEAN"/>
+            <result column="login_access" property="loginAccess" jdbcType="BOOLEAN"/>
+            <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
+            <result column="permission_description" property="description" jdbcType="VARCHAR"/>
+        </collection>
+        <collection property="labels" ofType="io.choerodon.iam.infra.dataobject.LabelDO">
+            <id column="label_id" property="id"></id>
+            <result column="label_name" property="name" jdbcType="VARCHAR"/>
+            <result column="label_type" property="type" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <sql id="selectRole">
+        SELECT
+            r.id,
+            iam_role_tl.name AS name,
+            r.code,
+            r.level,
+            r.description,
+            r.is_enabled,
+            r.is_modified,
+            r.is_enable_forbidden,
+            r.is_built_in,
+            r.is_assignable
+        FROM
+            iam_role r
+        LEFT JOIN iam_role_tl
+        ON r.id = iam_role_tl.id
+        AND iam_role_tl.lang = #{lang}
+    </sql>
+
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <include refid="selectRole"/>
+        WHERE 1=1
+        <if test="roleDO.name != null">
+            AND r.name LIKE concat('%',#{roleDO.name},'%')
+        </if>
+        <if test="roleDO.code != null">
+            AND r.code LIKE concat('%',#{roleDO.code},'%')
+        </if>
+        <if test="roleDO.level != null">
+            AND r.level LIKE concat('%',#{roleDO.level},'%')
+        </if>
+        <if test="roleDO.enabled != null">
+            AND r.is_enabled = #{roleDO.enabled}
+        </if>
+        <if test="roleDO.builtIn != null">
+            AND r.is_built_in = #{roleDO.builtIn}
+        </if>
+        <if test="params != null and params.length > 0">
+            AND
+            <foreach item="item" index="index" collection="params"
+                     open="(" separator="or" close=")">
+                r.name LIKE concat('%',#{item},'%') OR
+                r.code LIKE concat('%',#{item},'%') OR
+                r.level LIKE concat('%',#{item},'%')
+            </foreach>
+        </if>
+    </select>
+
+
+    <select id="selectRoleWithPermissionsAndLabels" resultMap="roleWithPermissionsAndLabels">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        ir.id,
+        irt.name AS name,
+        ir.code,
+        ir.description,
+        ir.level,
+        ir.is_enabled,
+        ir.is_modified,
+        ir.is_enable_forbidden,
+        ir.is_built_in,
+        ir.is_assignable,
+        ir.object_version_number,
+        ip.id permission_id,
+        ip.code permission_code,
+        ip.path,
+        ip.method,
+        ip.level AS permission_level,
+        ip.action,
+        ip.resource,
+        ip.public_access,
+        ip.login_access,
+        ip.service_name,
+        ip.description AS permission_description,
+        il.id AS label_id,
+        il.name AS label_name,
+        il.type AS label_type
+        FROM
+        iam_role ir
+        LEFT JOIN iam_role_permission irp ON ir.id = irp.role_id
+        LEFT JOIN iam_permission ip ON irp.permission_id = ip.id
+        LEFT JOIN iam_role_tl irt ON ir.id = irt.id
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        LEFT JOIN iam_label il ON irl.label_id = il.id
+        AND il.type = 'role'
+        AND irt.lang = #{lang}
+        WHERE ir.id = #{id}
+    </select>
+    <select id="rolesLevelCount" resultType="int">
+      <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT COUNT(DISTINCT `level`)
+        from iam_role
+        where id in
+        <foreach collection="roleIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectRolesByLabelNameAndType" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
+        LEFT JOIN iam_label il ON irl.label_id = il.id
+        WHERE il.name = #{name}
+        AND il.type = #{type}
+    </select>
+</mapper>

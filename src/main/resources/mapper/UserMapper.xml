@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.UserMapper">
+    <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
+        <id property="id" column="id"/>
+        <result property="loginName" column="login_name"/>
+        <result property="email" column="email"/>
+        <result property="realName" column="real_name"/>
+        <result property="isEnabled" column="is_enabled"/>
+        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
+            <id property="id" column="role_id"/>
+            <result property="name" column="name"/>
+            <result property="code" column="code"/>
+            <result property="enabled" column="role_is_enabled"/>
+            <result property="isBuiltIn" column="role_is_built_in"/>
+        </collection>
+    </resultMap>
+
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+        SELECT * FROM iam_user WHERE 1=1
+        <if test="userDO.loginName!= null">
+            AND login_name LIKE concat('%',#{userDO.loginName},'%')
+        </if>
+        <if test="userDO.organizationId != null">
+            AND organization_id = #{userDO.organizationId}
+        </if>
+        <if test="userDO.ldap != null">
+            AND is_ldap = #{userDO.ldap}
+        </if>
+        <if test="userDO.realName != null">
+            AND real_name = #{userDO.realName}
+        </if>
+        <if test="userDO.enabled != null">
+            AND is_enabled = #{userDO.enabled}
+        </if>
+        <if test="userDO.locked != null">
+            AND is_locked = #{userDO.locked}
+        </if>
+        <if test="userDO.email != null">
+            AND email LIKE concat('%',#{userDO.email},'%')
+        </if>
+        <if test="userDO.language != null">
+            AND `language` LIKE concat('%',#{userDO.language},'%')
+        </if>
+        <if test="params != null and params.length > 0">
+            AND
+            <foreach item="item" index="index" collection="params"
+                     open="(" separator="or" close=")">
+                login_name LIKE concat('%',#{item},'%') OR
+                email LIKE concat('%',#{item},'%') OR
+                real_name LIKE concat('%',#{item},'%')
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectUserWithRolesBySourceIdAndType" resultMap="userDO">
+        SELECT
+        iu.id,
+        iu.login_name,
+        iu.email,
+        iu.real_name,
+        iu.is_enabled,
+        role.id AS role_id,
+        role.name,
+        role.code,
+        role.is_enabled as role_is_enabled,
+        role.is_built_in as role_is_built_in,
+        imr.id
+        FROM (
+            SELECT iam_user.*  FROM iam_user
+            LEFT JOIN iam_member_role imr on imr.member_id = iam_user.id
+            LEFT JOIN iam_role ir on ir.id = imr.role_id
+            WHERE imr.member_type = 'user'
+            AND imr.source_id = #{sourceId}
+            AND imr.source_type = #{sourceType}
+        <if test="roleAssignmentSearchDTO != null">
+            <if test="roleAssignmentSearchDTO.loginName != null">
+                AND iam_user.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.realName != null">
+                AND iam_user.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.roleName != null">
+                AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
+            </if>
+            <if test="params != null and params.length > 0">
+                AND
+                <foreach item="item" index="index" collection="params"
+                         open="(" separator="or" close=")">
+                    iam_user.login_name LIKE concat('%',#{item},'%') OR
+                    iam_user.real_name LIKE concat('%',#{item},'%') OR
+                    ir.name LIKE concat('%',#{item},'%') OR
+                    imr.member_type LIKE concat('%',#{item},'%')
+                </foreach>
+            </if>
+        </if>
+        GROUP BY iam_user.id
+        ORDER BY max(imr.id) DESC
+        limit #{start}, #{size}
+        ) iu
+        LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
+        LEFT JOIN iam_role role ON imr.role_id = role.id
+        WHERE imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+        ORDER BY imr.id DESC
+    </select>
+
+    <select id="selectCountUsers" resultType="int">
+        SELECT count(1)
+        FROM (
+        SELECT DISTINCT iu.id FROM iam_user iu
+        LEFT JOIN iam_member_role imr on imr.member_id = iu.id
+        LEFT JOIN iam_role ir on ir.id = imr.role_id
+        WHERE imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+        <if test="roleAssignmentSearchDTO != null">
+            <if test="roleAssignmentSearchDTO.loginName != null">
+                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.realName != null">
+                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.roleName != null">
+                AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
+            </if>
+            <if test="params != null and params.length > 0">
+                AND
+                <foreach item="item" index="index" collection="params"
+                         open="(" separator="or" close=")">
+                    iu.login_name LIKE concat('%',#{item},'%') OR
+                    iu.real_name LIKE concat('%',#{item},'%') OR
+                    ir.name LIKE concat('%',#{item},'%') OR
+                    imr.member_type LIKE concat('%',#{item},'%')
+                </foreach>
+            </if>
+        </if>
+        ) t
+    </select>
+
+    <select id="selectUserCountFromMemberRoleByOptions" resultType="int">
+        SELECT COUNT(1) FROM (
+        SELECT DISTINCT iu.id FROM iam_member_role imr
+        LEFT JOIN iam_user iu ON imr.member_id = iu.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = #{memberType}
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="roleAssignmentSearchDTO != null">
+            <if test="roleAssignmentSearchDTO.loginName != null">
+                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.realName != null">
+                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+            </if>
+        </if>
+        ) t
+    </select>
+
+    <select id="selectUsersFromMemberRoleByOptions" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+        SELECT iu.*,imr.source_id
+        FROM iam_user iu
+        RIGHT JOIN iam_member_role imr
+        ON imr.member_id = iu.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = #{memberType}
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="roleAssignmentSearchDTO != null">
+            <if test="roleAssignmentSearchDTO.loginName != null">
+                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+            </if>
+            <if test="roleAssignmentSearchDTO.realName != null">
+                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+            </if>
+        </if>
+    </select>
+
+    <select id="selectTheUsersOfProjectByParamAndProjectId" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+        SELECT iam_user.*
+        FROM iam_user
+        RIGHT JOIN
+        (SELECT
+        DISTINCT member_id
+        FROM
+        iam_member_role
+        WHERE
+        source_id = #{projectId}
+        AND source_type = 'project'
+        AND member_type = 'user') t
+        ON iam_user.id = t.member_id
+        WHERE 1=1
+        <if test="param != null">
+            AND (
+            iam_user.login_name LIKE concat('%',#{param},'%') OR
+            iam_user.real_name LIKE concat('%',#{param},'%')
+            )
+        </if>
+    </select>
+</mapper>

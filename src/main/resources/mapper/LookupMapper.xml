@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.LookupMapper">
+    <resultMap id="lookupWithValues" type="io.choerodon.iam.infra.dataobject.LookupDO">
+        <id column="id" property="id"></id>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <collection property="lookupValues" ofType="io.choerodon.iam.infra.dataobject.LookupValueDO">
+            <id column="value_id" property="id"></id>
+            <result column="lookup_id" property="lookupId" jdbcType="DECIMAL"/>
+            <result column="value_code" property="code" jdbcType="VARCHAR"/>
+            <result column="value_description" property="description" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.LookupDO">
+        SELECT * FROM fd_lookup
+        WHERE 1=1
+        <if test="lookupDO != null">
+            <if test="lookupDO.organizationId != null">
+                AND organization_id = #{lookupDO.organizationId}
+            </if>
+            <if test="lookupDO.code != null">
+                AND code LIKE concat('%',#{lookupDO.code},'%')
+            </if>
+            <if test="lookupDO.description != null">
+                AND description LIKE concat('%',#{lookupDO.description},'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND (
+            code LIKE concat('%',#{param},'%') OR
+            description LIKE concat('%',#{param},'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectByCodeWithLookupValues" resultMap="lookupWithValues">
+        SELECT
+          fl.id,
+          fl.code,
+          fl.description,
+          fl.object_version_number,
+          flv.id AS value_id,
+          flv.lookup_id,
+          flv.code AS value_code,
+          flv.description AS value_description
+        FROM fd_lookup fl
+        LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
+        WHERE fl.code = #{code}
+    </select>
+</mapper>

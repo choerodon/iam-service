@@ -1,0 +1,67 @@
+# Default values for iam-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.choerodon.com.cn/choerodon/iam-service
+  pullPolicy: Always
+
+preJob:
+  preConfig:
+    configFile: application.yml
+    mysql:
+      host: localhost
+      port: 3306
+      database: manager_service
+      username: username
+      password: password
+  preInitDB:
+    mysql:
+      host: localhost
+      port: 3306
+      database: iam_service
+      username: username
+      password: password
+
+metrics:
+  path: /prometheus
+  label: java-spring
+
+logs:
+  parser: java-spring
+
+deployment:
+  managementPort: 8031
+
+env:
+  open:
+    SPRING_CLOUD_CONFIG_ENABLED: true
+    SPRING_CLOUD_CONFIG_URI: http://localhost:8010
+    SPRING_DATASOURCE_URL: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    SPRING_DATASOURCE_USERNAME: username
+    SPRING_DATASOURCE_PASSWORD: password
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.io-choerodon:8000/eureka/
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181
+    SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+    CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+
+service:
+  enable: false
+  type: ClusterIP
+  port: 8030
+  name: iam-service
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    memory: 3Gi
+  requests:
+    # cpu: 100m
+    memory: 2Gi

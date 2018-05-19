@@ -1,0 +1,83 @@
+spring:
+  sleuth:
+    integration:
+      enabled: false
+    scheduled:
+      enabled: false
+    sampler:
+      percentage: 1.0
+    stream:
+      enabled: true
+  datasource:
+    url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: choerodon
+    password: 123456
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: iam-service
+      auto-offset-reset: earliest
+  cloud:
+    bus:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: 127.0.0.1:9092
+          zkNodes: 127.0.0.1:2181
+event:
+  store:
+    service:
+      name: event-store-service
+choerodon:
+  ldap:
+    userNameType: 0
+  devops:
+    message: true
+  event:
+    consumer:
+      enabled: true # 是否开启，不设置默认开启
+      queue-type: kafka # 消息队列类型,目前仅支持kafka
+      enable-duplicate-remove: true # 是否开启去重功能
+      failed-strategy: nothing # 消息失败策略
+      retry:
+        enabled: true # 是否开启重试功能
+      kafka:
+        bootstrap-servers: localhost:9092
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 10
+    leaseExpirationDurationInSeconds: 30
+    metadata-map:
+      VERSION: v1
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8000/eureka/}
+    registryFetchIntervalSeconds: 10
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 15000
+  devops-deploy-service:
+    execution:
+      isolation:
+        thread:
+          timeoutInMilliseconds: 5000
+  stream:
+    queue:
+      enabled: false
+ribbon:
+  ReadTimeout: 5000
+  ConnectTimeout: 5000
+file-service:
+  ribbon:
+    ReadTimeout: 15000
+    ConnectTimeout: 15000
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml
+  configuration:
+    mapUnderscoreToCamelCase: true

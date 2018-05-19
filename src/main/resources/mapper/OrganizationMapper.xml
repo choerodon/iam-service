@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.OrganizationMapper">
+    <resultMap id="organizationWithProjects" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        <id column="id" property="id"></id>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+        <collection property="projects" ofType="io.choerodon.iam.infra.dataobject.ProjectDO">
+            <id column="project_id" property="id"></id>
+            <result column="project_name" property="name" jdbcType="VARCHAR"/>
+            <result column="project_code" property="code" jdbcType="VARCHAR"/>
+            <result column="organization_id" property="organizationId" jdbcType="DECIMAL"/>
+            <result column="project_is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+        </collection>
+    </resultMap>
+
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        SELECT * FROM fd_organization
+        WHERE 1=1
+        <if test="organization.name != null">
+            AND name LIKE concat('%',#{organization.name},'%')
+        </if>
+        <if test="organization.code != null">
+            AND code LIKE concat('%',#{organization.code},'%')
+        </if>
+        <if test="organization.enabled != null">
+            AND is_enabled = #{organization.enabled}
+        </if>
+        <if test="params != null and params.length > 0">
+            AND
+            <foreach item="item" index="index" collection="params"
+                     open="(" separator="or" close=")">
+                name LIKE concat('%',#{item},'%') OR
+                code LIKE concat('%',#{item},'%')
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        SELECT DISTINCT
+          fd_organization.*
+        FROM
+          fd_organization
+        JOIN
+          iam_member_role
+        ON
+          fd_organization.id = iam_member_role.source_id
+        AND
+          iam_member_role.source_type = "organization"
+        WHERE
+          iam_member_role.member_id = #{memberId}
+        <if test="!includedDisabled">
+            AND fd_organization.is_enabled = true
+        </if>
+    </select>
+
+    <select id="selectOrgByUserAndPros" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        SELECT DISTINCT fd_organization.* from fd_organization
+        where id in (
+          SELECT DISTINCT fp.organization_id from fd_project fp
+          LEFT JOIN iam_member_role imr on imr.source_id=fp.id and imr.source_type="project"
+          WHERE imr.member_id=#{memberId})
+        <if test="!includedDisabled">
+            AND fd_organization.is_enabled = true
+        </if>
+    </select>
+
+    <select id="selectAllOrganizationsWithEnabledProjects" resultMap="organizationWithProjects">
+        SELECT
+        fd_organization.id,
+        fd_organization.code,
+        fd_organization.name,
+        fd_organization.is_enabled,
+        fd_project.id AS project_id,
+        fd_project.name AS project_name,
+        fd_project.code AS project_code,
+        fd_project.organization_id,
+        fd_project.is_enabled AS project_is_enabled
+        FROM
+        fd_organization
+        LEFT JOIN
+        fd_project
+        ON
+        fd_organization.id = fd_project.organization_id
+        WHERE
+        fd_project.is_enabled = TRUE
+    </select>
+</mapper>

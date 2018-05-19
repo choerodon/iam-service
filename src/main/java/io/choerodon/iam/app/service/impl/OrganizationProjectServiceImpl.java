@@ -1,0 +1,245 @@
+package io.choerodon.iam.app.service.impl;
+
+import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_CREATE_PROJECT;
+import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UPDATE_PROJECT;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import io.choerodon.event.producer.execute.EventProducerTemplate;
+import io.choerodon.iam.infra.enums.RoleLabel;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.infra.dataobject.LabelDO;
+import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
+import io.choerodon.iam.app.service.OrganizationProjectService;
+import io.choerodon.iam.domain.iam.entity.ProjectE;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.service.IProjectService;
+import io.choerodon.iam.infra.dataobject.OrganizationDO;
+import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+/**
+ * @author flyleft
+ * @date 2018/3/26
+ */
+@Service
+@RefreshScope
+public class OrganizationProjectServiceImpl implements OrganizationProjectService {
+    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
+
+    @Value("${spring.application.name:default}")
+    private String serviceName;
+
+    private ProjectRepository projectRepository;
+
+    private UserRepository userRepository;
+
+    private EventProducerTemplate eventProducerTemplate;
+
+    private OrganizationRepository organizationRepository;
+
+    private IProjectService iProjectService;
+
+    private RoleRepository roleRepository;
+
+    private MemberRoleRepository memberRoleRepository;
+
+    private LabelRepository labelRepository;
+
+
+    public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
+                                          UserRepository userRepository,
+                                          OrganizationRepository organizationRepository,
+                                          IProjectService iProjectService,
+                                          RoleRepository roleRepository,
+                                          MemberRoleRepository memberRoleRepository,
+                                          LabelRepository labelRepository,
+                                          EventProducerTemplate eventProducerTemplate) {
+        this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
+        this.organizationRepository = organizationRepository;
+        this.iProjectService = iProjectService;
+        this.roleRepository = roleRepository;
+        this.memberRoleRepository = memberRoleRepository;
+        this.labelRepository = labelRepository;
+        this.eventProducerTemplate = eventProducerTemplate;
+    }
+
+    @Transactional(rollbackFor = CommonException.class)
+    @Override
+    public ProjectDTO createProject(ProjectDTO projectDTO) {
+        if (projectDTO.getEnabled() == null) {
+            projectDTO.setEnabled(true);
+        }
+        final ProjectE projectE = ConvertHelper.convert(projectDTO, ProjectE.class);
+        ProjectDTO dto;
+        if (devopsMessage) {
+            dto = new ProjectDTO();
+            CustomUserDetails details = DetailsHelper.getUserDetails();
+            UserE user = userRepository.selectByLoginName(details.getUsername());
+            ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+            projectEventMsg.setUserName(details.getUsername());
+            projectEventMsg.setUserId(user.getId());
+            Exception exception = eventProducerTemplate.execute("project", EVENT_TYPE_CREATE_PROJECT,
+                    serviceName, projectEventMsg, (String uuid) -> {
+                        ProjectE newProjectE = projectRepository.create(projectE);
+                        projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
+                        projectEventMsg.setProjectId(newProjectE.getId());
+                        projectEventMsg.setProjectCode(newProjectE.getCode());
+                        projectEventMsg.setProjectName(newProjectE.getName());
+                        OrganizationDO organizationDO =
+                                organizationRepository.selectByPrimaryKey(newProjectE.getOrganizationId());
+                        projectEventMsg.setOrganizationCode(organizationDO.getCode());
+                        projectEventMsg.setOrganizationName(organizationDO.getName());
+                        BeanUtils.copyProperties(newProjectE, dto);
+                    });
+            if (exception != null ) {
+                throw new CommonException(exception.getMessage());
+            }
+        } else {
+            ProjectE newProjectE = projectRepository.create(projectE);
+            initMemberRole(newProjectE);
+            dto = ConvertHelper.convert(newProjectE, ProjectDTO.class);
+        }
+        return dto;
+    }
+
+    private Set<String> initMemberRole(ProjectE project) {
+        List<RoleDO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role");
+        if (roles.isEmpty()) {
+            throw new CommonException("error.role.not.found.by.label", RoleLabel.PROJECT_OWNER.value(), "role");
+        }
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        if (customUserDetails == null) {
+            throw new CommonException("error.user.not.login");
+        }
+        Long projectId = project.getId();
+        Long userId = customUserDetails.getUserId();
+        Set<String> labelNames = new HashSet<>();
+        roles.forEach(role -> {
+            //创建项目只分配项目层的角色
+            if (ResourceLevel.PROJECT.value().equals(role.getLevel())) {
+                //查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
+                List<LabelDO> labels = labelRepository.selectByRoleId(role.getId());
+                labelNames.addAll(labels.stream().map(LabelDO::getName).collect(Collectors.toList()));
+                MemberRoleE memberRole =
+                        new MemberRoleE(null, role.getId(), userId, "user", projectId, ResourceLevel.PROJECT.value());
+                memberRoleRepository.insertSelective(memberRole);
+            }
+        });
+        return labelNames;
+    }
+
+    @Override
+    public List<ProjectDTO> queryAll(ProjectDTO projectDTO) {
+        ProjectDO projectDO = ConvertHelper.convert(projectDTO, ProjectDO.class);
+        return ConvertHelper.convertList(projectRepository.query(projectDO), ProjectDTO.class);
+    }
+
+    @Override
+    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String[] params) {
+        ProjectDO projectDO = ConvertHelper.convert(projectDTO, ProjectDO.class);
+        return ConvertPageHelper.convertPage(projectRepository.pagingQuery(
+                projectDO, pageRequest, params), ProjectDTO.class);
+    }
+
+    @Transactional(rollbackFor = CommonException.class)
+    @Override
+    public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(projectDTO.getOrganizationId());
+        if (organizationDO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        if (projectDTO.getObjectVersionNumber() == null) {
+            throw new CommonException("error.project.objectVersionNumber.empty");
+        }
+        ProjectDO projectDO = ConvertHelper.convert(projectDTO, ProjectDO.class);
+        ProjectDTO dto;
+        if (devopsMessage) {
+            dto = new ProjectDTO();
+            CustomUserDetails details = DetailsHelper.getUserDetails();
+            UserE user = userRepository.selectByLoginName(details.getUsername());
+            ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+            projectEventMsg.setUserName(details.getUsername());
+            projectEventMsg.setUserId(user.getId());
+            projectEventMsg.setOrganizationCode(organizationDO.getCode());
+            projectEventMsg.setOrganizationName(organizationDO.getName());
+            Exception exception = eventProducerTemplate.execute("project", EVENT_TYPE_UPDATE_PROJECT,
+                    serviceName, projectEventMsg, (String uuid) -> {
+                        ProjectE newProjectE = projectRepository.updateSelective(projectDO);
+                        projectEventMsg.setProjectId(newProjectE.getId());
+                        projectEventMsg.setProjectCode(newProjectE.getCode());
+                        projectEventMsg.setProjectName(newProjectE.getName());
+                        BeanUtils.copyProperties(newProjectE, dto);
+                    });
+            if (exception != null) {
+                throw new CommonException(exception.getMessage());
+            }
+        } else {
+            dto = ConvertHelper.convert(projectRepository.updateSelective(projectDO), ProjectDTO.class);
+        }
+        return dto;
+    }
+
+    @Override
+    public ProjectDTO enableProject(Long organizationId, Long projectId) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        return ConvertHelper.convert(iProjectService.updateProjectEnabled(projectId), ProjectDTO.class);
+    }
+
+    @Override
+    public ProjectDTO disableProject(Long organizationId, Long projectId) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        return ConvertHelper.convert(iProjectService.updateProjectDisabled(projectId), ProjectDTO.class);
+    }
+
+    @Override
+    public void check(ProjectDTO projectDTO) {
+        Boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
+        String code = projectDTO.getCode();
+        if (StringUtils.isEmpty(code)) {
+            throw new CommonException("error.project.code.empty");
+        }
+        ProjectDO projectDO = new ProjectDO();
+        projectDO.setCode(code);
+        projectDO.setOrganizationId(projectDTO.getOrganizationId());
+        if (createCheck) {
+            if (projectRepository.selectByOptions(projectDO).size() > 0) {
+                throw new CommonException("error.project.code.exist");
+            }
+        } else {
+            ProjectDO projectDO1 = projectRepository.selectOne(projectDO);
+            if (projectDO1 != null && !projectDO1.getId().equals(projectDTO.getId())) {
+                throw new CommonException("error.project.code.exist");
+            }
+        }
+    }
+}

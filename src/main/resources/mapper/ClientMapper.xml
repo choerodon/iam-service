@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.ClientMapper">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.ClientDO">
+        SELECT * FROM oauth_client
+        WHERE 1=1
+        <if test="clientDO.organizationId != null">
+            AND organization_id = #{clientDO.organizationId}
+        </if>
+        <if test="clientDO.name != null">
+            AND name LIKE concat('%',#{clientDO.name},'%')
+        </if>
+        <if test="params != null and params.length > 0">
+            AND
+            <foreach item="item" index="index" collection="params"
+                     open="(" separator="or" close=")">
+                name LIKE concat('%',#{item},'%')
+            </foreach>
+        </if>
+    </select>
+</mapper>
