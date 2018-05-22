@@ -8,9 +8,7 @@ This project includes management functions of user, role, permission, organizati
     - the platform administrator (having all privileges of platform global layout).
     - the organization administrator (having all privileges of  a single organization's organizational layout). 
     - and the project administrator (having all privileges of a single project's project layout).
-   
-
-    When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
+  When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
 
 - User
 
@@ -81,6 +79,7 @@ sh init-local-database.sh
 ```
 
 3. Start up kafka
+
 4. Go to the project directory and run `mvn spring-boot:run` or run `IAMServiceApplication` in idea.
 
 ## Dependencies
@@ -97,5 +96,3 @@ If you find any shortcomings or bugs, please describe them in the [issue](https:
 ## How to Contribute
 
 Pull requests are welcome! [Follow](https://github.com/choerodon/choerodon/blob/master/CONTRIBUTING.md) to know for more information on how to contribute.
-
-
