@@ -1,4 +1,5 @@
-# iam-service
+# Iam Service
+
 This project includes management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and supports for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
 
 - Role
