@@ -12,7 +12,7 @@ spring:
     url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
     password: 123456
-  kafka:
+  kafka: #使用原生spring kafka需要配置
     bootstrap-servers: localhost:9092
     consumer:
       group-id: iam-service
@@ -62,11 +62,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 15000
-  devops-deploy-service:
-    execution:
-      isolation:
-        thread:
-          timeoutInMilliseconds: 5000
   stream:
     queue:
       enabled: false
@@ -79,5 +74,5 @@ file-service:
     ConnectTimeout: 15000
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
-  configuration:
+  configuration: # 数据库下划线转驼峰配置
     mapUnderscoreToCamelCase: true

@@ -131,8 +131,8 @@ public class UserController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验不传id,更新校验传id")
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验json里面不传id,更新校验传id")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody UserDTO user) {
         userService.check(user);
