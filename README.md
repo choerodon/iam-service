@@ -1,20 +1,21 @@
 # Iam Service
-
-This project includes management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and supports for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
+This project is with management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and support for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
 
 - Role
 
-  The service is initialized with three built-in roles:
+  The service is initialized with three built-in roles: 
     - the platform administrator (having all privileges of platform global layout).
-    - the organization administrator (having all privileges of  a single organization's organizational layout).
+    - the organization administrator (having all privileges of  a single organization's organizational layout). 
     - and the project administrator (having all privileges of a single project's project layout).
+   
 
-  When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
+    When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
 
 - User
 
   After the service is initialized, a user admin is built in. Which has all the platform-wide privileges, including all permissions for all organizations and all projects.
-  Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
+
+    Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
 
 - Privilege
 
@@ -34,7 +35,6 @@ This project includes management functions of user, role, permission, organizati
   
 - Password policy
 
-  The interface for querying and updating the password policy is an organization-layout interface.
 
 ## Feature
 
@@ -49,7 +49,6 @@ This project includes management functions of user, role, permission, organizati
 
 1. Start up [register-server](https://github.com/choerodon/eureka-server)
 2. In the local mysql, create the `iam_service` database. 
-
 ```sql
 CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
 CREATE DATABASE iam_service DEFAULT CHARACTER SET utf8;
@@ -79,15 +78,10 @@ sh init-local-database.sh
 ```
 
 3. Start up kafka
-
 4. Go to the project directory and run `mvn spring-boot:run` or run `IAMServiceApplication` in idea.
 
 ## Dependencies
 
-- go-register-server: Register server
-- config-server：Configure servere
-- kafka
-- mysql: iam_service database
 
 ## Reporting Issues
 
