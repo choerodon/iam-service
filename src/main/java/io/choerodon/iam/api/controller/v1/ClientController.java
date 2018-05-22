@@ -1,17 +1,15 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.Optional;
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.validator.ClientValidator;
@@ -39,13 +37,14 @@ public class ClientController extends BaseController {
     }
 
     /**
-     * 创建Client
+     * 根据Client对象创建一个新的客户端
      *
-     * @param clientDTO Client信息
-     * @return 创建的Client响应
+     * @param organizationId 组织id
+     * @param clientDTO      客户端对象
+     * @return 创建成功的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "创建Client", notes = "根据Client对象创建Client")
+    @ApiOperation(value = "根据Client对象创建一个新的客户端")
     @PostMapping
     public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid ClientDTO clientDTO) {
         clientValidator.create(clientDTO);
@@ -53,70 +52,75 @@ public class ClientController extends BaseController {
     }
 
     /**
-     * 更新Client，根据ID
+     * 根据clientId更新Client
      *
-     * @param clientDTO 要更新的Client信息，需要ID
-     * @return 更新后的Client信息响应
+     * @param organizationId 组织id
+     * @param clientId       客户端id
+     * @param clientDTO      客户端对象
+     * @return 更新成功的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "更新Client", notes = "根据Client对象更新Client,Client对象必须包含clientId")
-    @PostMapping(value = "/{id}")
-    public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id,
+    @ApiOperation(value = "根据clientId更新Client")
+    @PostMapping(value = "/{client_id}")
+    public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId,
                                             @RequestBody ClientDTO clientDTO) {
-        clientDTO = clientValidator.update(organizationId, id, clientDTO);
-        return new ResponseEntity<>(clientService.update(organizationId, id, clientDTO), HttpStatus.OK);
+        clientDTO = clientValidator.update(organizationId, clientId, clientDTO);
+        return new ResponseEntity<>(clientService.update(organizationId, clientId, clientDTO), HttpStatus.OK);
     }
 
     /**
-     * 删除Client
+     * 根据clientId删除客户端
      *
-     * @param id Client ID
-     * @return 成功响应
+     * @param organizationId 组织id
+     * @param clientId       客户端id
+     * @return 删除是否成功
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "删除Client", notes = "根据ClienId,删除Client对象")
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
-        return new ResponseEntity<>(clientService.delete(organizationId, id), HttpStatus.OK);
+    @ApiOperation(value = "根据ClientId,删除客户端")
+    @DeleteMapping(value = "/{client_id}")
+    public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
+        return new ResponseEntity<>(clientService.delete(organizationId, clientId), HttpStatus.OK);
     }
 
     /**
-     * 根据ClienId,查询Client对象
+     * 根据ClientId,查询客户端对象
      *
-     * @param id Client ID
-     * @return Client对象
+     * @param organizationId 组织id
+     * @param clientId       客户端id
+     * @return 查询到的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询Client", notes = "根据ClientId,查询Client对象")
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
-        return Optional.ofNullable(clientService.query(organizationId, id))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new NotFoundException());
+    @ApiOperation(value = "根据ClientId,查询客户端对象")
+    @GetMapping(value = "/{client_id}")
+    public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
+        return new ResponseEntity<>(clientService.query(organizationId, clientId), HttpStatus.OK);
     }
 
     /**
-     * 根据ClienId,查询Client对象
+     * 根据客户端名称查询Client
      *
-     * @return Client对象
+     * @param organizationId 组织id
+     * @param clientName     客户端名称
+     * @return 查询到的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据客户端名字查询Client", notes = "根据客户端名字查询Client")
+    @ApiOperation(value = "根据客户端名称查询Client")
     @GetMapping("/query_by_name")
     public ResponseEntity<ClientDTO> queryByName(@PathVariable("organization_id") Long organizationId, @RequestParam(value = "client_name") String clientName) {
-        return Optional.ofNullable(clientService.queryByName(organizationId, clientName))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new NotFoundException());
+        return new ResponseEntity<>(clientService.queryByName(organizationId, clientName), HttpStatus.OK);
     }
 
     /**
-     * 分页查询Client
+     * 分页模糊查询客户端
      *
-     * @param pageRequest 分页封装对象
-     * @return 分页信息响应
+     * @param organizationId 组织id
+     * @param pageRequest    分页对象
+     * @param name           客户端名称
+     * @param params         模糊查询参数
+     * @return 查询到的客户端分页对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "分页查询Client", notes = "分页查询")
+    @ApiOperation(value = "分页模糊查询客户端")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<ClientDTO>> list(@PathVariable("organization_id") Long organizationId,
@@ -133,6 +137,13 @@ public class ClientController extends BaseController {
                 HttpStatus.OK);
     }
 
+    /**
+     * 客户端重名校验接口(name)，新建校验不传id,更新校验传id
+     *
+     * @param organizationId 组织id
+     * @param client         客户端对象
+     * @return 验证成功，否则失败
+     */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "客户端重名校验接口(name)，新建校验不传id,更新校验传id")
     @PostMapping(value = "/check")
