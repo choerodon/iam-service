@@ -23,7 +23,6 @@ import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 /**
  * @author wuguokai
  * @author superlee
- * @date 2018-04-10
  */
 @Component
 public class MenuServiceImpl implements MenuService {

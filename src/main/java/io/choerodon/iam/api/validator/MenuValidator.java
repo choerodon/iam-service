@@ -25,7 +25,7 @@ public class MenuValidator {
         ResourceLevelValidator.validate(menuDTO.getLevel());
         MenuDTO menuDTO1 = new MenuDTO();
         menuDTO1.setCode(menuDTO.getCode());
-        if (menuMapper.select(ConvertHelper.convert(menuDTO1, MenuDO.class)).size() > 0) {
+        if (!menuMapper.select(ConvertHelper.convert(menuDTO1, MenuDO.class)).isEmpty()) {
             throw new CommonException("error.menuCode.exist");
         }
     }
@@ -49,7 +49,7 @@ public class MenuValidator {
     public void delete(Long menuId) {
         MenuDO menuDO = new MenuDO();
         menuDO.setParentId(menuId);
-        if (menuMapper.select(menuDO).size() > 0) {
+        if (!menuMapper.select(menuDO).isEmpty()) {
             throw new CommonException("error.menu.have.children");
         }
         menuDO = menuMapper.selectByPrimaryKey(menuId);
