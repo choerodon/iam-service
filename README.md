@@ -16,7 +16,7 @@ The service is initialized with three built-in roles:
 
   After the service is initialized, a user admin is built in. Which has all the platform-wide privileges, including all permissions for all organizations and all projects.
 
-    Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
+  Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
 
 - Privilege
 
