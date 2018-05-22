@@ -99,7 +99,7 @@ public class ClientServiceImpl implements ClientService {
         ClientDO clientDO = ConvertHelper.convert(client, ClientDO.class);
         if (createCheck) {
             Boolean existed = clientRepository.selectOne(clientDO) != null;
-            if (existed && checkName) {
+            if (existed) {
                 throw new CommonException("error.clientName.exist");
             }
         } else {
@@ -107,7 +107,7 @@ public class ClientServiceImpl implements ClientService {
             clientDO.setId(null);
             ClientDO clientDO1 = clientRepository.selectOne(clientDO);
             Boolean existed = clientDO1 != null && !id.equals(clientDO1.getId());
-            if (existed && checkName) {
+            if (existed) {
                 throw new CommonException("error.clientName.exist");
             }
         }
@@ -116,7 +116,7 @@ public class ClientServiceImpl implements ClientService {
 
     private void isOrgExist(Long orgId) {
         if (organizationRepository.selectByPrimaryKey(orgId) == null) {
-            throw new CommonException("error.organization.not.exit");
+            throw new CommonException("error.organization.notFound");
         }
     }
 }

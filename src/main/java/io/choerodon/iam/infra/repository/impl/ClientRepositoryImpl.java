@@ -1,10 +1,8 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -22,7 +20,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class ClientRepositoryImpl implements ClientRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientRepositoryImpl.class);
 
     private ClientMapper clientMapper;
 
@@ -85,7 +82,6 @@ public class ClientRepositoryImpl implements ClientRepository {
         clientDO.setOrganizationId(clientDO.getOrganizationId());
         Page<ClientDO> clientDOPage
                 = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, params));
-        LOGGER.info("客户端查询结果： " + clientDOPage.getContent().size() +" : " + clientDOPage.getTotalElements());
         return ConvertPageHelper.convertPage(clientDOPage, ClientE.class);
     }
 
