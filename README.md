@@ -85,7 +85,7 @@ sh init-local-database.sh
 
 ## Dependencies
 - go-register-server: Register server
-- config-server：Configure servere
+- config-server：Configure service
 - kafka
 - mysql: iam_service database
 
