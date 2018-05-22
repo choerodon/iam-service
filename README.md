@@ -3,11 +3,12 @@ This project is with management functions of user, role, permission, organizatio
 
 - Role
 
-  The service is initialized with three built-in roles: 
-    - the platform administrator (having all privileges of platform global layout).
-    - the organization administrator (having all privileges of  a single organization's organizational layout). 
-    - and the project administrator (having all privileges of a single project's project layout).
-   
+The service is initialized with three built-in roles: 
+
+1. the platform administrator (having all privileges of platform global layout).
+2. the organization administrator (having all privileges of  a single organization's organizational layout). 
+3. and the project administrator (having all privileges of a single project's project layout).
+    
 
     When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
 
@@ -26,11 +27,12 @@ This project is with management functions of user, role, permission, organizatio
   After the service is initialized, an organization "operational organization" is built in. At the same time, the admin user has all the privileges of the organization.
 
 - Client
+
   
   The addition, deletion, and modification of the built-in client is a interface of organizational layer, which corresponds to the "client" needed to log in via `oauth-server`.
 
 - Directory
-  
+
   Corresponding to the front page display directory, including add, delete, change check, is the global layer interface.
   
 - Password policy
