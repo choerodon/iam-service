@@ -4,17 +4,17 @@ This project includes management functions of user, role, permission, organizati
 
 - Role
 
-  The service is initialized with three built-in roles: 
+  The service is initialized with three built-in roles:
     - the platform administrator (having all privileges of platform global layout).
-    - the organization administrator (having all privileges of  a single organization's organizational layout). 
+    - the organization administrator (having all privileges of  a single organization's organizational layout).
     - and the project administrator (having all privileges of a single project's project layout).
+
   When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
 
 - User
 
   After the service is initialized, a user admin is built in. Which has all the platform-wide privileges, including all permissions for all organizations and all projects.
-
-    Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
+  Creating, modifying, and deleting users lead to send events, gitlab synchronization to do the appropriate operation
 
 - Privilege
 
