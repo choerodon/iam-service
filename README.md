@@ -1,5 +1,5 @@
 # iam-service
-This project with management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and support for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
+This project includes management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and supports for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
 
 - Role
 
@@ -50,6 +50,7 @@ This project with management functions of user, role, permission, organization, 
 
 1. Start up [register-server](https://github.com/choerodon/eureka-server)
 2. In the local mysql, create the `iam_service` database. 
+
 ```sql
 CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
 CREATE DATABASE iam_service DEFAULT CHARACTER SET utf8;
