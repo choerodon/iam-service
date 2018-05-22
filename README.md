@@ -50,6 +50,7 @@ This project includes management functions of user, role, permission, organizati
 
 1. Start up [register-server](https://github.com/choerodon/eureka-server)
 2. In the local mysql, create the `iam_service` database. 
+
 ```sql
 CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
 CREATE DATABASE iam_service DEFAULT CHARACTER SET utf8;
