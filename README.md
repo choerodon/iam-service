@@ -51,6 +51,7 @@ The service is initialized with three built-in roles:
 
 1. Start up [register-server](https://github.com/choerodon/eureka-server)
 2. In the local mysql, create the `iam_service` database. 
+
 ```sql
 CREATE USER 'choerodon'@'%' IDENTIFIED BY "123456";
 CREATE DATABASE iam_service DEFAULT CHARACTER SET utf8;
@@ -83,7 +84,10 @@ sh init-local-database.sh
 4. Go to the project directory and run `mvn spring-boot:run` or run `IAMServiceApplication` in idea.
 
 ## Dependencies
-
+- go-register-server: Register server
+- config-server：Configure servere
+- kafka
+- mysql: iam_service database
 
 ## Reporting Issues
 
