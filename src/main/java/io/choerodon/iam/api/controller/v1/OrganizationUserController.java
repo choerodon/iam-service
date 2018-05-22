@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
+import io.choerodon.iam.app.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,12 @@ public class OrganizationUserController extends BaseController {
 
     private OrganizationUserService organizationUserService;
 
-    public OrganizationUserController(OrganizationUserService organizationUserService) {
+    private UserService userService;
+
+    public OrganizationUserController(OrganizationUserService organizationUserService,
+                                      UserService userService) {
         this.organizationUserService = organizationUserService;
+        this.userService = userService;
     }
 
     /**
@@ -130,6 +135,15 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<UserDTO> disableUser(@PathVariable(name = "organization_id") Long organizationId,
                                                @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.disableUser(organizationId, id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验json里面不传id,更新校验传id")
+    @PostMapping(value = "/check")
+    public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
+                                @RequestBody UserDTO user) {
+        userService.check(user);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

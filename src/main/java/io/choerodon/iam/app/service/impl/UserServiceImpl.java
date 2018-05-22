@@ -286,16 +286,16 @@ public class UserServiceImpl implements UserService {
         Boolean checkLoginName = !StringUtils.isEmpty(user.getLoginName());
         Boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
         if (!checkEmail && !checkLoginName) {
-            throw new CommonException("error.validation.fields.empty");
+            throw new CommonException("error.user.validation.fields.empty");
         }
         UserDO userDO = ConvertHelper.convert(user, UserDO.class);
         if (createCheck) {
             Boolean existed = userRepository.selectOne(userDO) != null;
             if (existed && checkLoginName) {
-                throw new CommonException("error.loginName.exist");
+                throw new CommonException("error.user.loginName.exist");
             }
             if (existed && checkEmail) {
-                throw new CommonException("error.email.exist");
+                throw new CommonException("error.user.email.exist");
             }
         } else {
             Long id = userDO.getId();
@@ -303,7 +303,7 @@ public class UserServiceImpl implements UserService {
             UserDO userDO1 = userRepository.selectOne(userDO);
             Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
             if (existed && checkEmail) {
-                throw new CommonException("error.email.exist");
+                throw new CommonException("error.user.email.exist");
             }
         }
     }
