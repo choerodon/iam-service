@@ -1,13 +1,13 @@
-# Iam Service
-This project is with management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and support for importing third-party users through ldap. This service is based on Domain Driven Design (DDD).
+# IAM Service
+This service includes management functions of user, role, permission, organization, project, password policy, fast code, client, menu, icon, multi-language , and supports for importing third-party users through ldap.
 
 - Role
 
-The service is initialized with three built-in roles: 
+There are three built-in roles in `iam-service`:
 
-1. the platform administrator (having all privileges of platform global layout).
-2. the organization administrator (having all privileges of  a single organization's organizational layout). 
-3. and the project administrator (having all privileges of a single project's project layout).
+1. Platform administrator (having all privileges of platform global layout).
+2. Organization administrator (having all privileges of  a single organization's organizational layout). 
+3. Project administrator (having all privileges of a single project's project layout).
     
 
     When assigning a role to a user, the role-associated labels are sent to the devops for processing, and the corresponding roles are assigned to gitlab.
@@ -84,10 +84,9 @@ sh init-local-database.sh
 4. Go to the project directory and run `mvn spring-boot:run` or run `IAMServiceApplication` in idea.
 
 ## Dependencies
-- go-register-server: Register server
-- config-server：Configure service
-- kafka
-- mysql: iam_service database
+- `go-register-server`
+- `config-server`
+- `kafka`
 
 ## Reporting Issues
 
