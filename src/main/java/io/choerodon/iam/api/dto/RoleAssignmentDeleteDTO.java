@@ -16,13 +16,13 @@ public class RoleAssignmentDeleteDTO {
     @NotNull(message = "error.memberRole.sourceId.null")
     private Long sourceId;
 
-    @NotEmpty(message = "error.memberRole.view.empty")
-    private String view;
-
     /**
      * view = "userView", key表示userId, value表示roleIds
      * view = "roleView", key表示roleId, value表示userIds
      */
+    @NotEmpty(message = "error.memberRole.view.empty")
+    private String view;
+
     @NotNull(message = "error.memberRole.data.null")
     private Map<Long, List<Long>> data;
 
