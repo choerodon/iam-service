@@ -66,6 +66,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
             userMemberEventMsg.setResourceId(sourceId);
+            userMemberEventMsg.setUserId(memberId);
             userMemberEventMsg.setResourceType(sourceType);
             userMemberEventMsg.setUsername(userE.getLoginName());
             Exception exception = eventProducerTemplate.execute("memberRole", "updateMemberRole",
@@ -177,6 +178,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     throw new CommonException("error.user.not.exist", memberId);
                 }
                 userMemberEventMsg.setUsername(user.getLoginName());
+                userMemberEventMsg.setUserId(memberId);
             }
         }
         return userMemberEventMsg;

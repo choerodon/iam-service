@@ -8,6 +8,8 @@ import java.util.Set;
  */
 public class UserMemberEventPayload {
 
+    private Long userId;
+
     private String username;
 
     private Long resourceId;
@@ -56,5 +58,13 @@ public class UserMemberEventPayload {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
