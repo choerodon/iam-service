@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.PermissionMapper">
     <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
         SELECT * FROM iam_permission ip
-        WHERE 1=1
+        WHERE ip.public_access = 0 AND ip.login_access = 0
         <if test="permissionDO.code != null">
             AND ip.code LIKE concat('%',#{permissionDO.code},'%')
         </if>
