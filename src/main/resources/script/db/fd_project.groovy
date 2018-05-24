@@ -31,4 +31,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
         }
         addUniqueConstraint(tableName: 'fd_project', columnNames: 'code, organization_id')
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-05-24-drop-unique') {
+        dropUniqueConstraint(constraintName: "code", tableName: "fd_project")
+    }
 }
