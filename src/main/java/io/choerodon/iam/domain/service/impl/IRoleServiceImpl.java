@@ -119,13 +119,19 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         if (roleRepository.selectByPrimaryKey(roleE.getId()) == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION, roleE.getId());
         }
-        RoleE role = roleRepository.updateSelective(roleE);
-        role.copyPermissionsAndLabels(roleE);
-        //维护role_permission关系
-        updateRolePermission(role);
-        //维护role_label表
-        updateRoleLabel(role);
-        return role;
+        //内置的角色不允许更新字段，只能更新label
+        if (roleE.getBuiltIn()) {
+            updateRoleLabel(roleE);
+            return roleE;
+        } else {
+            RoleE role = roleRepository.updateSelective(roleE);
+            role.copyPermissionsAndLabels(roleE);
+            //维护role_permission关系
+            updateRolePermission(role);
+            //维护role_label表
+            updateRoleLabel(role);
+            return role;
+        }
     }
 
     private void updateRoleLabel(RoleE roleE) {
