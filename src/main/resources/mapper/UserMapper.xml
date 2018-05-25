@@ -166,7 +166,7 @@
     <select id="selectUsersFromMemberRoleByOptions" resultType="io.choerodon.iam.infra.dataobject.UserDO">
         SELECT iu.*,imr.source_id
         FROM iam_user iu
-        RIGHT JOIN iam_member_role imr
+        INNER JOIN iam_member_role imr
         ON imr.member_id = iu.id
         WHERE imr.role_id = #{roleId}
         AND imr.member_type = #{memberType}
