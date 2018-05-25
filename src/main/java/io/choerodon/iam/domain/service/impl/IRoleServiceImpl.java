@@ -154,16 +154,14 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
             Exception exception = eventProducerTemplate.execute("memberRole", "updateMemberRole",
                     serviceName, userMemberEventPayloads, (String uuid) -> {
                         doUpdateAndDelete(roleE, insertList, deleteList);
-                        //查这个角色有那些Label
-                        List<LabelDO> labels1 = labelRepository.selectByRoleId(roleE.getId());
-                        List<String> names = labels1.stream().map(LabelDO::getName).collect(Collectors.toList());
                         users.forEach(user -> {
+                            List<LabelDO> labels1 = labelRepository.selectByUserId(user.getId());
                             UserMemberEventPayload payload = new UserMemberEventPayload();
                             payload.setResourceId(user.getSourceId());
                             payload.setResourceType(ResourceLevel.PROJECT.value());
                             payload.setUsername(user.getLoginName());
                             Set<String> nameSet = new HashSet<>();
-                            nameSet.addAll(names);
+                            nameSet.addAll(labels1.stream().map(LabelDO::getName).collect(Collectors.toList()));
                             payload.setRoleLabels(nameSet);
                             userMemberEventPayloads.add(payload);
                         });

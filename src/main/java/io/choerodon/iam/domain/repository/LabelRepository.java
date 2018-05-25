@@ -16,4 +16,11 @@ public interface LabelRepository {
     List<LabelDO> selectByRoleId(Long roleId);
 
     LabelDO selectOne(LabelDO labelDO);
+
+    /**
+     * 根据用户id查询用户角色所有的label.name
+     * @param id userId
+     * @return List<LabelDO> labelDos
+     */
+    List<LabelDO> selectByUserId(Long id);
 }
