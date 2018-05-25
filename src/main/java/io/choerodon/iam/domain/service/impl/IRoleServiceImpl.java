@@ -116,11 +116,12 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     @Override
     public RoleE update(RoleE roleE) {
-        if (roleRepository.selectByPrimaryKey(roleE.getId()) == null) {
+        RoleE role1 = roleRepository.selectByPrimaryKey(roleE.getId());
+        if (role1 == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION, roleE.getId());
         }
         //内置的角色不允许更新字段，只能更新label
-        if (roleE.getBuiltIn()) {
+        if (role1.getBuiltIn()) {
             updateRoleLabel(roleE);
             return roleE;
         } else {
