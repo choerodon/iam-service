@@ -40,6 +40,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         ProjectDO projectDO = ConvertHelper.convert(projectE, ProjectDO.class);
         ProjectDO project = new ProjectDO();
         project.setCode(projectE.getCode());
+        project.setOrganizationId(projectE.getOrganizationId());
         if (projectMapper.selectOne(project) != null) {
             throw new CommonException("error.project.code.duplicated");
         }
