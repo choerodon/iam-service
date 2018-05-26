@@ -188,23 +188,33 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void check(RoleDTO role) {
-        Boolean createCheck = StringUtils.isEmpty(role.getId());
-        String code = role.getCode();
-        if (StringUtils.isEmpty(code)) {
+        Boolean checkCode = !StringUtils.isEmpty(role.getCode());
+        if (!checkCode) {
             throw new CommonException("error.role.code.empty");
         }
+        if (checkCode) {
+            checkCode(role);
+        }
+    }
+
+    private void checkCode(RoleDTO role) {
+        Boolean createCheck = StringUtils.isEmpty(role.getId());
         RoleDO roleDO = new RoleDO();
-        roleDO.setCode(code);
+        roleDO.setCode(role.getCode());
         if (createCheck) {
-            if (roleRepository.select(roleDO).size() > 0) {
+            Boolean existed = roleRepository.selectOne(roleDO) != null;
+            if (existed) {
                 throw new CommonException("error.role.code.exist");
             }
         } else {
+            Long id = role.getId();
             RoleDO roleDO1 = roleRepository.selectOne(roleDO);
-            if (roleDO1 != null && !roleDO1.getId().equals(role.getId())) {
+            Boolean existed = roleDO1 != null && !id.equals(roleDO1.getId());
+            if (existed) {
                 throw new CommonException("error.role.code.exist");
             }
         }
+
     }
 
     @Override

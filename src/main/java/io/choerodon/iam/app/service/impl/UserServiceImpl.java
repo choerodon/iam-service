@@ -281,30 +281,57 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void check(UserDTO user) {
-        //传入id则为更新重名校验，不传id为新建重名校验
-        Boolean createCheck = StringUtils.isEmpty(user.getId());
         Boolean checkLoginName = !StringUtils.isEmpty(user.getLoginName());
         Boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
         if (!checkEmail && !checkLoginName) {
             throw new CommonException("error.user.validation.fields.empty");
         }
-        UserDO userDO = ConvertHelper.convert(user, UserDO.class);
+        if (checkLoginName){
+            checkLoginName(user);
+        }
+        if (checkEmail) {
+            checkEmail(user);
+        }
+    }
+
+    private void checkEmail(UserDTO user) {
+        Boolean createCheck = StringUtils.isEmpty(user.getId());
+        String email = user.getEmail();
+        UserDO userDO = new UserDO();
+        userDO.setEmail(email);
         if (createCheck) {
             Boolean existed = userRepository.selectOne(userDO) != null;
-            if (existed && checkLoginName) {
-                throw new CommonException("error.user.loginName.exist");
-            }
-            if (existed && checkEmail) {
+            if (existed) {
                 throw new CommonException("error.user.email.exist");
             }
         } else {
-            Long id = userDO.getId();
-            userDO.setId(null);
+            Long id = user.getId();
             UserDO userDO1 = userRepository.selectOne(userDO);
             Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
-            if (existed && checkEmail) {
+            if (existed) {
                 throw new CommonException("error.user.email.exist");
             }
+        }
+    }
+
+    private void checkLoginName(UserDTO user) {
+        Boolean createCheck = StringUtils.isEmpty(user.getId());
+        String loginName = user.getLoginName();
+        UserDO userDO = new UserDO();
+        userDO.setLoginName(loginName);
+        if (createCheck) {
+            Boolean existed = userRepository.selectOne(userDO) != null;
+            if (existed) {
+                throw new CommonException("error.user.loginName.exist");
+            }
+        } else {
+            Long id = user.getId();
+            UserDO userDO1 = userRepository.selectOne(userDO);
+            Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
+            if (existed) {
+                throw new CommonException("error.user.loginName.exist");
+            }
+
         }
     }
 

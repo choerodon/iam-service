@@ -74,20 +74,30 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void check(OrganizationDTO organization) {
-        Boolean createCheck = StringUtils.isEmpty(organization.getId());
-        String code = organization.getCode();
-        if (StringUtils.isEmpty(code)) {
+        Boolean checkCode = !StringUtils.isEmpty(organization.getCode());
+        if (!checkCode) {
             throw new CommonException("error.organization.code.empty");
         }
+        if (checkCode) {
+            checkCode(organization);
+        }
+    }
+
+    private void checkCode(OrganizationDTO organization) {
+        Boolean createCheck = StringUtils.isEmpty(organization.getId());
+        String code = organization.getCode();
         OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(code);
         if (createCheck) {
-            if (organizationRepository.select(organizationDO).size() > 0) {
+            Boolean existed = organizationRepository.selectOne(organizationDO) != null;
+            if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         } else {
+            Long id = organization.getId();
             OrganizationDO organizationDO1 = organizationRepository.selectOne(organizationDO);
-            if (organizationDO1 != null && !organizationDO1.getId().equals(organization.getId())) {
+            Boolean existed = organizationDO1 != null && !id.equals(organizationDO1.getId());
+            if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         }

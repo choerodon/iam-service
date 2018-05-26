@@ -91,20 +91,27 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void check(ClientDTO client) {
-        Boolean createCheck = StringUtils.isEmpty(client.getId());
         Boolean checkName = !StringUtils.isEmpty(client.getName());
         if (!checkName) {
             throw new CommonException("error.clientName.null");
         }
-        ClientDO clientDO = ConvertHelper.convert(client, ClientDO.class);
+        if (checkName) {
+            checkName(client);
+        }
+    }
+
+    private void checkName(ClientDTO client) {
+        Boolean createCheck = StringUtils.isEmpty(client.getId());
+        String name = client.getName();
+        ClientDO clientDO = new ClientDO();
+        clientDO.setName(name);
         if (createCheck) {
             Boolean existed = clientRepository.selectOne(clientDO) != null;
             if (existed) {
                 throw new CommonException("error.clientName.exist");
             }
         } else {
-            Long id = clientDO.getId();
-            clientDO.setId(null);
+            Long id = client.getId();
             ClientDO clientDO1 = clientRepository.selectOne(clientDO);
             Boolean existed = clientDO1 != null && !id.equals(clientDO1.getId());
             if (existed) {
