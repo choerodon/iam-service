@@ -223,21 +223,30 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public void check(ProjectDTO projectDTO) {
-        Boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
-        String code = projectDTO.getCode();
-        if (StringUtils.isEmpty(code)) {
+        Boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
+        if (!checkCode) {
             throw new CommonException("error.project.code.empty");
         }
-        ProjectDO projectDO = new ProjectDO();
-        projectDO.setCode(code);
-        projectDO.setOrganizationId(projectDTO.getOrganizationId());
+        if (checkCode) {
+            checkCode(projectDTO);
+        }
+    }
+
+    private void checkCode(ProjectDTO projectDTO) {
+        Boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
+        ProjectDO project = new ProjectDO();
+        project.setOrganizationId(projectDTO.getOrganizationId());
+        project.setCode(projectDTO.getCode());
         if (createCheck) {
-            if (projectRepository.selectByOptions(projectDO).size() > 0) {
+            Boolean existed = projectRepository.selectOne(project) != null;
+            if (existed) {
                 throw new CommonException("error.project.code.exist");
             }
         } else {
-            ProjectDO projectDO1 = projectRepository.selectOne(projectDO);
-            if (projectDO1 != null && !projectDO1.getId().equals(projectDTO.getId())) {
+            Long id = projectDTO.getId();
+            ProjectDO projectDO = projectRepository.selectOne(project);
+            Boolean existed = projectDO != null && !id.equals(projectDO.getId());
+            if (existed) {
                 throw new CommonException("error.project.code.exist");
             }
         }
