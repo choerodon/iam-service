@@ -3,7 +3,12 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectMapper">
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.ProjectDO">
+    <resultMap id="projectDO" type="io.choerodon.iam.infra.dataobject.ProjectDO">
+        <id column="id" property="id"></id>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="projectDO">
         SELECT *
         FROM fd_project
         WHERE organization_id = #{project.organizationId}
@@ -26,7 +31,7 @@
         </if>
     </select>
 
-    <select id="selectProjectsFromMemberRoleByOption" resultType="io.choerodon.iam.infra.dataobject.ProjectDO">
+    <select id="selectProjectsFromMemberRoleByOption" resultMap="projectDO">
         SELECT DISTINCT fd_project.*
         FROM fd_project
         JOIN iam_member_role
