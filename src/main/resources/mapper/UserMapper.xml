@@ -63,6 +63,7 @@
     </select>
 
     <select id="selectUserWithRolesBySourceIdAndType" resultMap="userWithRoles">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         iu.id,
         iu.login_name,
@@ -70,7 +71,7 @@
         iu.real_name,
         iu.is_enabled,
         role.id AS role_id,
-        role.name,
+        irt.name AS name,
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
@@ -109,6 +110,8 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
+        LEFT JOIN iam_role_tl irt ON role.id = irt.id
+        AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
