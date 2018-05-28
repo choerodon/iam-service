@@ -45,7 +45,8 @@ public class UserDO extends AuditDomain {
     private Date lockedUntilAt;
     private Integer passwordAttempt;
 
-    private Boolean isDefault;
+    @Column(name = "is_admin")
+    private Boolean admin;
 
     @Transient
     private Long sourceId;
@@ -197,12 +198,12 @@ public class UserDO extends AuditDomain {
         this.enabled = enabled;
     }
 
-    public Boolean getDefault() {
-        return isDefault;
+    public Boolean getAdmin() {
+        return admin;
     }
 
-    public void setDefault(Boolean aDefault) {
-        isDefault = aDefault;
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
     }
 
     public Boolean getLocked() {

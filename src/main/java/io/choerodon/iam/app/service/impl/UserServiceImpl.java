@@ -350,37 +350,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryDefaultUsers(PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(userRepository.pagingQueryDefaultUsers(pageRequest), UserDTO.class);
+    public Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(userRepository.pagingQueryAdminUsers(pageRequest), UserDTO.class);
     }
 
     @Override
     @Transactional
-    public void addDefaultUsers(long[] ids) {
+    public void addAdminUsers(long[] ids) {
         for (long id : ids) {
             UserE userE = userRepository.selectByPrimaryKey(id);
-            if (userE != null && !userE.getDefault()) {
-                userE.becomeDefaultUser();
+            if (userE != null && !userE.getAdmin()) {
+                userE.becomeAdminUser();
                 userRepository.updateSelective(userE);
             }
         }
     }
 
     @Override
-    public void deleteDefaultUser(long id) {
+    public void deleteAdminUser(long id) {
         UserE userE = userRepository.selectByPrimaryKey(id);
         if (userE == null) {
             throw new CommonException("error.user.not.exist");
         }
         UserDO userDO = new UserDO();
-        userDO.setDefault(true);
+        userDO.setAdmin(true);
         if (userRepository.selectCount(userDO) > 1) {
-            if (userE.getDefault()) {
-                userE.becomeNotDefaultUser();
+            if (userE.getAdmin()) {
+                userE.becomeNotAdminUser();
                 userRepository.updateSelective(userE);
             }
         } else {
-            throw new CommonException("error.user.default.size");
+            throw new CommonException("error.user.admin.size");
         }
     }
 

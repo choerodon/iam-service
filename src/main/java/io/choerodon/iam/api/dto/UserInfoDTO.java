@@ -25,7 +25,7 @@ public class UserInfoDTO {
     private String timeZone;
     private Boolean enabled;
     private Long objectVersionNumber;
-    private Boolean isDefault;
+    private Boolean admin;
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
@@ -124,11 +124,11 @@ public class UserInfoDTO {
         }
     }
 
-    public Boolean getDefault() {
-        return isDefault;
+    public Boolean getAdmin() {
+        return admin;
     }
 
-    public void setDefault(Boolean aDefault) {
-        isDefault = aDefault;
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
     }
 }

@@ -193,35 +193,35 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 分页查询所有的default用户
+     * 分页查询所有的admin用户
      *
      * @param pageRequest 分页信息
-     * @return 分页的default用户
+     * @return 分页的admin用户
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询所有的default用户")
+    @ApiOperation(value = "分页查询所有的admin用户")
     @CustomPageRequest
-    @GetMapping("/default")
-    public ResponseEntity<Page<UserDTO>> pagingQueryDefaultUsers(
+    @GetMapping("/admin")
+    public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest) {
-        return new ResponseEntity<>(userService.pagingQueryDefaultUsers(pageRequest), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest), HttpStatus.OK);
     }
 
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "批量添加default用户")
-    @PostMapping("/default")
+    @ApiOperation(value = "批量添加admin用户")
+    @PostMapping("/admin")
     public ResponseEntity<Page<UserDTO>> addDefaultUsers(@ModelAttribute("id") long[] ids) {
-        userService.addDefaultUsers(ids);
+        userService.addAdminUsers(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "批量添加default用户")
-    @DeleteMapping("/default/{id}")
+    @ApiOperation(value = "批量添加admin用户")
+    @DeleteMapping("/admin/{id}")
     public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
-        userService.deleteDefaultUser(id);
+        userService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

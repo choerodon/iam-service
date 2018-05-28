@@ -53,7 +53,7 @@ public class UserDTO {
     @JsonIgnore
     private String param;
 
-    private Boolean isDefault;
+    private Boolean admin;
 
     public String getParam() {
         return param;
@@ -167,11 +167,11 @@ public class UserDTO {
         this.roles = roles;
     }
 
-    public Boolean getDefault() {
-        return isDefault;
+    public Boolean getAdmin() {
+        return admin;
     }
 
-    public void setDefault(Boolean aDefault) {
-        isDefault = aDefault;
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
     }
 }
