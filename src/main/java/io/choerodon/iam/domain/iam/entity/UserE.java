@@ -11,7 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 public class UserE {
 
-    //线程安全的，放心用。
+    /**
+     * 线程安全的，放心用
+     */
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private Long id;
@@ -52,6 +54,8 @@ public class UserE {
 
     private Long objectVersionNumber;
 
+    private Boolean admin;
+
     private List<RoleE> roles;
 
     public UserE(String password) {
@@ -60,7 +64,7 @@ public class UserE {
 
     public UserE(Long id, String loginName, String email, String realName,
                  String phone, String imageUrl, String language, String timeZone,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean admin) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -70,6 +74,7 @@ public class UserE {
         this.language = language;
         this.timeZone = timeZone;
         this.objectVersionNumber = objectVersionNumber;
+        this.admin = admin;
     }
 
     public UserE(Long id, String loginName, String email, Long organizationId,
@@ -78,7 +83,7 @@ public class UserE {
                  String language, String timeZone, Date lastPasswordUpdatedAt,
                  Date lastLoginAt, Boolean enabled, Boolean locked, Boolean ldap,
                  Date lockedUntilAt, Integer passwordAttempt,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean admin) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -98,6 +103,7 @@ public class UserE {
         this.lockedUntilAt = lockedUntilAt;
         this.passwordAttempt = passwordAttempt;
         this.objectVersionNumber = objectVersionNumber;
+        this.admin = admin;
     }
 
     public Long getId() {
@@ -213,11 +219,23 @@ public class UserE {
         return this;
     }
 
+    public Boolean getAdmin() {
+        return admin;
+    }
+
     public Boolean comparePassword(String originalPassword) {
         return ENCODER.matches(originalPassword, this.password);
     }
 
     public void resetPassword(String password) {
         this.password = ENCODER.encode(password);
+    }
+
+    public void becomeAdminUser() {
+        this.admin = true;
+    }
+
+    public void becomeNotAdminUser() {
+        this.admin = false;
     }
 }

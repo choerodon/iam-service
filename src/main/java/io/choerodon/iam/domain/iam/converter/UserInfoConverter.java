@@ -33,7 +33,7 @@ public class UserInfoConverter implements ConvertorI<UserE, UserDO, UserInfoDTO>
     public UserE dtoToEntity(UserInfoDTO dto) {
         return new UserE(dto.getId(), dto.getLoginName(), dto.getEmail(), dto.getRealName(),
                         dto.getPhone(), dto.getImageUrl(), dto.getLanguage(), dto.getTimeZone(),
-                        dto.getObjectVersionNumber());
+                        dto.getObjectVersionNumber(), dto.getAdmin());
     }
 
     @Override

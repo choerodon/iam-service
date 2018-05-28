@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -16,6 +12,9 @@ import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -213,5 +212,19 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, memberType, null, sourceType, null);
+    }
+
+    @Override
+    public Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest, () -> {
+            UserDO userDO = new UserDO();
+            userDO.setAdmin(true);
+            return mapper.select(userDO);
+        });
+    }
+
+    @Override
+    public int selectCount(UserDO user) {
+        return mapper.selectCount(user);
     }
 }

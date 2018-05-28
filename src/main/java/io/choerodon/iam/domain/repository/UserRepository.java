@@ -1,19 +1,22 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+
 /**
  * @author dongfan117@gmail.com
  * @author superlee
  */
 public interface UserRepository {
+
     UserE selectByLoginName(String loginName);
+
+    int selectCount(UserDO user);
 
     UserE insertSelective(UserE userE);
 
@@ -59,4 +62,6 @@ public interface UserRepository {
                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId);
 
     List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
+
+    Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest);
 }

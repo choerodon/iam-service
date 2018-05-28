@@ -8,6 +8,7 @@
         <result property="email" column="email"/>
         <result property="realName" column="real_name"/>
         <result property="enabled" column="is_enabled"/>
+        <result property="admin" column="is_admin"/>
         <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
             <id property="id" column="role_id"/>
             <result property="name" column="name"/>
@@ -44,6 +45,9 @@
         </if>
         <if test="userDO.locked != null">
             AND is_locked = #{userDO.locked}
+        </if>
+        <if test="userDO.admin != null">
+            AND is_admin = #{userDO.admin}
         </if>
         <if test="userDO.email != null">
             AND email LIKE concat('%',#{userDO.email},'%')

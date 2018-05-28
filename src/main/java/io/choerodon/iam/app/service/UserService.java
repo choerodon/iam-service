@@ -13,6 +13,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author wuguokai
  */
 public interface UserService {
+
     UserDTO querySelf();
 
     List<OrganizationDTO> queryOrganizations(Long userId, Boolean includedDisabled);
@@ -57,4 +58,11 @@ public interface UserService {
                                                          Long roleId, Long sourceId);
 
     String uploadPhoto(Long id, MultipartFile file);
+
+
+    Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest);
+
+    void addAdminUsers(long[] ids);
+
+    void deleteAdminUser(long id);
 }
