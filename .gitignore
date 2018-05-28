@@ -32,3 +32,5 @@ rebel-remote.xml
 
 /temp
 src/main/resources/application-default.yml
+
+init-local-database.sh

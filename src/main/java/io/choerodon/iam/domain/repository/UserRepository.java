@@ -13,7 +13,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author superlee
  */
 public interface UserRepository {
+
     UserE selectByLoginName(String loginName);
+
+    int selectCount(UserDO user);
 
     UserE insertSelective(UserE userE);
 
@@ -59,4 +62,6 @@ public interface UserRepository {
                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId);
 
     List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
+
+    Page<UserDO> pagingQueryDefaultUsers(PageRequest pageRequest);
 }

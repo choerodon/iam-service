@@ -58,4 +58,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'jcalaz@163.com', id: '2018-05-28-add_column_is_default') {
+        addColumn(tableName: 'iam_user') {
+            column(name: 'is_default', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为default用户。1表示是，0表示不是')
+        }
+    }
 }

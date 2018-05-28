@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import io.choerodon.mybatis.pagehelper.Select;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -213,5 +214,19 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, memberType, null, sourceType, null);
+    }
+
+    @Override
+    public Page<UserDO> pagingQueryDefaultUsers(PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest, () -> {
+            UserDO userDO = new UserDO();
+            userDO.setDefault(true);
+            return mapper.select(userDO);
+        });
+    }
+
+    @Override
+    public int selectCount(UserDO user) {
+        return mapper.selectCount(user);
     }
 }

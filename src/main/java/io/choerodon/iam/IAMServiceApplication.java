@@ -19,7 +19,7 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient
 @SpringBootApplication
-@EnableChoerodonResourceServer
+//@EnableChoerodonResourceServer
 @EnableAsync
 public class IAMServiceApplication {
 

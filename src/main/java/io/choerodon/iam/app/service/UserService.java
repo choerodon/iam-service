@@ -57,4 +57,11 @@ public interface UserService {
                                                          Long roleId, Long sourceId);
 
     String uploadPhoto(Long id, MultipartFile file);
+
+
+    Page<UserDTO> pagingQueryDefaultUsers(PageRequest pageRequest);
+
+    void addDefaultUsers(long[] ids);
+
+    void deleteDefaultUser(long id);
 }

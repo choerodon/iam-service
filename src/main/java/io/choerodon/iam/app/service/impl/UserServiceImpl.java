@@ -1,25 +1,14 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import io.choerodon.event.producer.execute.EventProducerTemplate;
-import io.choerodon.iam.api.dto.payload.UserEventPayload;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
@@ -36,6 +25,17 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDATE_USER;
 
@@ -257,7 +257,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoDTO updateInfo(UserInfoDTO userInfo) {
         checkLoginUser(userInfo.getId());
         UserE userE = ConvertHelper.convert(userInfo, UserE.class);
-        UserInfoDTO dto ;
+        UserInfoDTO dto;
         if (devopsMessage) {
             dto = new UserInfoDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
@@ -286,7 +286,7 @@ public class UserServiceImpl implements UserService {
         if (!checkEmail && !checkLoginName) {
             throw new CommonException("error.user.validation.fields.empty");
         }
-        if (checkLoginName){
+        if (checkLoginName) {
             checkLoginName(user);
         }
         if (checkEmail) {
@@ -348,4 +348,40 @@ public class UserServiceImpl implements UserService {
         userE = userRepository.updateSelective(userE);
         return ConvertHelper.convert(userE, UserDTO.class);
     }
+
+    @Override
+    public Page<UserDTO> pagingQueryDefaultUsers(PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(userRepository.pagingQueryDefaultUsers(pageRequest), UserDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public void addDefaultUsers(long[] ids) {
+        for (long id : ids) {
+            UserE userE = userRepository.selectByPrimaryKey(id);
+            if (userE != null && !userE.getDefault()) {
+                userE.becomeDefaultUser();
+                userRepository.updateSelective(userE);
+            }
+        }
+    }
+
+    @Override
+    public void deleteDefaultUser(long id) {
+        UserE userE = userRepository.selectByPrimaryKey(id);
+        if (userE == null) {
+            throw new CommonException("error.user.not.exist");
+        }
+        UserDO userDO = new UserDO();
+        userDO.setDefault(true);
+        if (userRepository.selectCount(userDO) > 1) {
+            if (userE.getDefault()) {
+                userE.becomeNotDefaultUser();
+                userRepository.updateSelective(userE);
+            }
+        } else {
+            throw new CommonException("error.user.default.size");
+        }
+    }
+
 }

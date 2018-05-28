@@ -52,6 +52,8 @@ public class UserE {
 
     private Long objectVersionNumber;
 
+    private Boolean isDefault;
+
     private List<RoleE> roles;
 
     public UserE(String password) {
@@ -60,7 +62,7 @@ public class UserE {
 
     public UserE(Long id, String loginName, String email, String realName,
                  String phone, String imageUrl, String language, String timeZone,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean isDefault) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -70,6 +72,7 @@ public class UserE {
         this.language = language;
         this.timeZone = timeZone;
         this.objectVersionNumber = objectVersionNumber;
+        this.isDefault = isDefault;
     }
 
     public UserE(Long id, String loginName, String email, Long organizationId,
@@ -78,7 +81,7 @@ public class UserE {
                  String language, String timeZone, Date lastPasswordUpdatedAt,
                  Date lastLoginAt, Boolean enabled, Boolean locked, Boolean ldap,
                  Date lockedUntilAt, Integer passwordAttempt,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean isDefault) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -98,6 +101,7 @@ public class UserE {
         this.lockedUntilAt = lockedUntilAt;
         this.passwordAttempt = passwordAttempt;
         this.objectVersionNumber = objectVersionNumber;
+        this.isDefault = isDefault;
     }
 
     public Long getId() {
@@ -213,11 +217,23 @@ public class UserE {
         return this;
     }
 
+    public Boolean getDefault() {
+        return isDefault;
+    }
+
     public Boolean comparePassword(String originalPassword) {
         return ENCODER.matches(originalPassword, this.password);
     }
 
     public void resetPassword(String password) {
         this.password = ENCODER.encode(password);
+    }
+
+    public void becomeDefaultUser() {
+        this.isDefault = true;
+    }
+
+    public void becomeNotDefaultUser() {
+        this.isDefault = false;
     }
 }

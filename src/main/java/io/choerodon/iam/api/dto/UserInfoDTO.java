@@ -25,6 +25,7 @@ public class UserInfoDTO {
     private String timeZone;
     private Boolean enabled;
     private Long objectVersionNumber;
+    private Boolean isDefault;
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
@@ -121,5 +122,13 @@ public class UserInfoDTO {
         if (this.objectVersionNumber == null) {
             throw new CommonException("error.userInfo.objectVersionNumber.null");
         }
+    }
+
+    public Boolean getDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean aDefault) {
+        isDefault = aDefault;
     }
 }

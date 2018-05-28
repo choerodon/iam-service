@@ -1,16 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
@@ -22,6 +11,16 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author superlee
@@ -188,9 +187,41 @@ public class UserController extends BaseController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO
-            ) {
+    ) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
                 pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
     }
 
+    /**
+     * 分页查询所有的default用户
+     *
+     * @param pageRequest 分页信息
+     * @return 分页的default用户
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "分页查询所有的default用户")
+    @CustomPageRequest
+    @GetMapping("/default")
+    public ResponseEntity<Page<UserDTO>> pagingQueryDefaultUsers(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest) {
+        return new ResponseEntity<>(userService.pagingQueryDefaultUsers(pageRequest), HttpStatus.OK);
+    }
+
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "批量添加default用户")
+    @PostMapping("/default")
+    public ResponseEntity<Page<UserDTO>> addDefaultUsers(@ModelAttribute("id") long[] ids) {
+        userService.addDefaultUsers(ids);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "批量添加default用户")
+    @DeleteMapping("/default/{id}")
+    public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
+        userService.deleteDefaultUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
