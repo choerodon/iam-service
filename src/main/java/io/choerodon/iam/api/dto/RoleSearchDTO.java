@@ -9,16 +9,16 @@ public class RoleSearchDTO {
     private String name;
     private String code;
     private String level;
-    private Boolean isEnabled;
-    private Boolean isBuiltIn;
+    private Boolean enabled;
+    private Boolean builtIn;
     private String[] params;
 
     public Boolean getBuiltIn() {
-        return isBuiltIn;
+        return builtIn;
     }
 
     public void setBuiltIn(Boolean builtIn) {
-        isBuiltIn = builtIn;
+        this.builtIn = builtIn;
     }
 
     public String[] getParams() {
@@ -54,10 +54,10 @@ public class RoleSearchDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 }

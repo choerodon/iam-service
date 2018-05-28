@@ -18,29 +18,29 @@ public class RoleE {
     private String code;
     private String description;
     private String level;
-    private Boolean isEnabled;
-    private Boolean isModified;
-    private Boolean isEnableForbidden;
-    private Boolean isBuiltIn;
-    private Boolean isAssignable;
+    private Boolean enabled;
+    private Boolean modified;
+    private Boolean enableForbidden;
+    private Boolean builtIn;
+    private Boolean assignable;
     private Long objectVersionNumber;
     private List<PermissionE> permissions;
     private List<RolePermissionE> rolePermissions;
     private List<LabelE> labels;
 
     public RoleE(Long id, String name, String code, String description, String level,
-                 Boolean isEnabled, Boolean isModified, Boolean isEnableForbidden,
-                 Boolean isBuiltIn, Boolean isAssignable, Long objectVersionNumber) {
+                 Boolean enabled, Boolean modified, Boolean enableForbidden,
+                 Boolean builtIn, Boolean assignable, Long objectVersionNumber) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.description = description;
         this.level = level;
-        this.isEnabled = isEnabled;
-        this.isModified = isModified;
-        this.isEnableForbidden = isEnableForbidden;
-        this.isBuiltIn = isBuiltIn;
-        this.isAssignable = isAssignable;
+        this.enabled = enabled;
+        this.modified = modified;
+        this.enableForbidden = enableForbidden;
+        this.builtIn = builtIn;
+        this.assignable = assignable;
         this.objectVersionNumber = objectVersionNumber;
     }
 
@@ -65,23 +65,23 @@ public class RoleE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public Boolean getModified() {
-        return isModified;
+        return modified;
     }
 
     public Boolean getEnableForbidden() {
-        return isEnableForbidden;
+        return enableForbidden;
     }
 
     public Boolean getBuiltIn() {
-        return isBuiltIn;
+        return builtIn;
     }
 
     public Boolean getAssignable() {
-        return isAssignable;
+        return assignable;
     }
 
     public Long getObjectVersionNumber() {
@@ -97,23 +97,23 @@ public class RoleE {
     }
 
     public void createInit() {
-        this.isBuiltIn = false;
-        this.isEnabled = true;
-        this.isAssignable = false;
-        this.isEnableForbidden = true;
-        this.isModified = true;
+        this.builtIn = false;
+        this.enabled = true;
+        this.assignable = false;
+        this.enableForbidden = true;
+        this.modified = true;
     }
 
     public boolean removable() {
-        return !isBuiltIn;
+        return !builtIn;
     }
 
     public void enable() {
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
     public void disable() {
-        this.isEnabled = false;
+        this.enabled = false;
     }
 
     public List<RolePermissionE> getRolePermissions() {
