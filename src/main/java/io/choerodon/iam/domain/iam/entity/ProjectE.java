@@ -14,7 +14,7 @@ public class ProjectE {
 
     private String code;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     private Long objectVersionNumber;
 
@@ -51,11 +51,11 @@ public class ProjectE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Long getObjectVersionNumber() {

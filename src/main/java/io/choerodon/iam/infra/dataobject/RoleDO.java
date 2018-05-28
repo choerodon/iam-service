@@ -1,10 +1,7 @@
 package io.choerodon.iam.infra.dataobject;
 
 import java.util.List;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
@@ -28,12 +25,16 @@ public class RoleDO extends AuditDomain {
     private String code;
     private String description;
     private String level;
-    private Boolean isEnabled;
-    private Boolean isModified;
-    private Boolean isEnableForbidden;
-    private Boolean isBuiltIn;
-    private Boolean isAssignable;
-
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+    @Column(name = "is_modified")
+    private Boolean modified;
+    @Column(name = "is_enable_forbidden")
+    private Boolean enableForbidden;
+    @Column(name = "is_built_in")
+    private Boolean builtIn;
+    @Column(name = "is_assignable")
+    private Boolean assignable;
 
     @Transient
     private List<PermissionDO> permissions;
@@ -98,42 +99,42 @@ public class RoleDO extends AuditDomain {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Boolean getModified() {
-        return isModified;
+        return modified;
     }
 
     public void setModified(Boolean modified) {
-        isModified = modified;
+        this.modified = modified;
     }
 
     public Boolean getEnableForbidden() {
-        return isEnableForbidden;
+        return enableForbidden;
     }
 
     public void setEnableForbidden(Boolean enableForbidden) {
-        isEnableForbidden = enableForbidden;
+        this.enableForbidden = enableForbidden;
     }
 
     public Boolean getBuiltIn() {
-        return isBuiltIn;
+        return builtIn;
     }
 
     public void setBuiltIn(Boolean builtIn) {
-        isBuiltIn = builtIn;
+        this.builtIn = builtIn;
     }
 
     public Boolean getAssignable() {
-        return isAssignable;
+        return assignable;
     }
 
     public void setAssignable(Boolean assignable) {
-        isAssignable = assignable;
+        this.assignable = assignable;
     }
 }

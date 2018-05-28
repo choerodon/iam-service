@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.dataobject;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -26,7 +27,8 @@ public class ProjectDO extends AuditDomain {
 
     private Long organizationId;
 
-    private Boolean isEnabled;
+    @Column(name = "is_enabled")
+    private Boolean enabled;
 
     public ProjectDO() {
     }
@@ -68,11 +70,11 @@ public class ProjectDO extends AuditDomain {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     @Override
@@ -81,7 +83,7 @@ public class ProjectDO extends AuditDomain {
                 + ", name='" + name + '\''
                 + ", code='" + code + '\''
                 + ", organizationId=" + organizationId
-                + ", isEnabled=" + isEnabled
+                + ", enabled=" + enabled
                 + '}';
     }
 }

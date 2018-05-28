@@ -40,11 +40,11 @@ public class UserDTO {
 
     private String language;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
-    private Boolean isLocked;
+    private Boolean locked;
 
-    private Boolean isLdap;
+    private Boolean ldap;
 
     private Long objectVersionNumber;
 
@@ -118,27 +118,27 @@ public class UserDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Boolean getLocked() {
-        return isLocked;
+        return locked;
     }
 
     public void setLocked(Boolean locked) {
-        isLocked = locked;
+        this.locked = locked;
     }
 
     public Boolean getLdap() {
-        return isLdap;
+        return ldap;
     }
 
     public void setLdap(Boolean ldap) {
-        isLdap = ldap;
+        this.ldap = ldap;
     }
 
     public String getPhone() {

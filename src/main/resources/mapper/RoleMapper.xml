@@ -7,11 +7,11 @@
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="level" property="level" jdbcType="VARCHAR"/>
-        <result column="is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
-        <result column="is_modified" property="isModified" jdbcType="BOOLEAN"/>
-        <result column="is_enable_forbidden" property="isEnableForbidden" jdbcType="BOOLEAN"/>
-        <result column="is_built_in" property="isBuiltIn" jdbcType="BOOLEAN"/>
-        <result column="is_assignable" property="isAssignable" jdbcType="BOOLEAN"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
+        <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
+        <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
+        <result column="is_assignable" property="assignable" jdbcType="BOOLEAN"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
         <collection property="permissions" ofType="io.choerodon.iam.infra.dataobject.PermissionDO">
             <id column="permission_id" property="id"></id>
@@ -33,6 +33,16 @@
         </collection>
     </resultMap>
 
+    <!--建立boolean映射关系-->
+    <resultMap id="RoleDO" type="io.choerodon.iam.infra.dataobject.RoleDO">
+        <id column="id" property="id"></id>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
+        <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
+        <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
+        <result column="is_assignable" property="assignable" jdbcType="BOOLEAN"/>
+    </resultMap>
+
     <sql id="selectRole">
         SELECT
             r.id,
@@ -52,7 +62,7 @@
         AND iam_role_tl.lang = #{lang}
     </sql>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+    <select id="fulltextSearch" resultMap="RoleDO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         <include refid="selectRole"/>
         WHERE 1=1
@@ -132,7 +142,7 @@
         </foreach>
     </select>
 
-    <select id="selectRolesByLabelNameAndType" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+    <select id="selectRolesByLabelNameAndType" resultMap="RoleDO">
         SELECT ir.*
         FROM iam_role ir
         LEFT JOIN iam_role_label irl ON ir.id = irl.role_id

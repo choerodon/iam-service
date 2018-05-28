@@ -19,7 +19,7 @@ public class OrganizationE {
 
     private Long objectVersionNumber;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     private UserRepository userRepository;
 
@@ -27,13 +27,13 @@ public class OrganizationE {
 
     public OrganizationE(Long id, String name, String code,
                          Long objectVersionNumber,
-                         UserRepository userRepository, Boolean isEnabled, PasswordRecord passwordRecord) {
+                         UserRepository userRepository, Boolean enabled, PasswordRecord passwordRecord) {
         this.id = id;
         this.name = name;
         this.objectVersionNumber = objectVersionNumber;
         this.userRepository = userRepository;
         this.code = code;
-        this.isEnabled = isEnabled;
+        this.enabled = enabled;
         this.passwordRecord = passwordRecord;
     }
 
@@ -131,14 +131,14 @@ public class OrganizationE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void enable() {
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
     public void disable() {
-        this.isEnabled = false;
+        this.enabled = false;
     }
 }

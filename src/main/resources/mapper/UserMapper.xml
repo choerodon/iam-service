@@ -2,22 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.iam.infra.mapper.UserMapper">
-    <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
+    <resultMap id="userWithRoles" type="io.choerodon.iam.infra.dataobject.UserDO">
         <id property="id" column="id"/>
         <result property="loginName" column="login_name"/>
         <result property="email" column="email"/>
         <result property="realName" column="real_name"/>
-        <result property="isEnabled" column="is_enabled"/>
+        <result property="enabled" column="is_enabled"/>
         <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
             <id property="id" column="role_id"/>
             <result property="name" column="name"/>
             <result property="code" column="code"/>
             <result property="enabled" column="role_is_enabled"/>
-            <result property="isBuiltIn" column="role_is_built_in"/>
+            <result property="builtIn" column="role_is_built_in"/>
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+    <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
+        <id property="id" column="id"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="locked" column="is_locked"/>
+        <result property="ldap" column="is_ldap"/>
+    </resultMap>
+
+
+    <select id="fulltextSearch" resultMap="userDO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userDO.loginName!= null">
             AND login_name LIKE concat('%',#{userDO.loginName},'%')
@@ -54,7 +62,7 @@
         </if>
     </select>
 
-    <select id="selectUserWithRolesBySourceIdAndType" resultMap="userDO">
+    <select id="selectUserWithRolesBySourceIdAndType" resultMap="userWithRoles">
         SELECT
         iu.id,
         iu.login_name,
@@ -163,7 +171,7 @@
         ) t
     </select>
 
-    <select id="selectUsersFromMemberRoleByOptions" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+    <select id="selectUsersFromMemberRoleByOptions" resultMap="userDO">
         SELECT iu.*,imr.source_id
         FROM iam_user iu
         INNER JOIN iam_member_role imr
@@ -186,7 +194,7 @@
         </if>
     </select>
 
-    <select id="selectTheUsersOfProjectByParamAndProjectId" resultType="io.choerodon.iam.infra.dataobject.UserDO">
+    <select id="selectTheUsersOfProjectByParamAndProjectId" resultMap="userDO">
         SELECT iam_user.*
         FROM iam_user
         RIGHT JOIN

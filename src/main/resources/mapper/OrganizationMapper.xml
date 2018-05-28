@@ -5,17 +5,22 @@
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
-        <result column="is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <collection property="projects" ofType="io.choerodon.iam.infra.dataobject.ProjectDO">
             <id column="project_id" property="id"></id>
             <result column="project_name" property="name" jdbcType="VARCHAR"/>
             <result column="project_code" property="code" jdbcType="VARCHAR"/>
             <result column="organization_id" property="organizationId" jdbcType="DECIMAL"/>
-            <result column="project_is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+            <result column="project_is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <resultMap id="OrganizationDO" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        <id column="id" property="id"></id>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="OrganizationDO">
         SELECT * FROM fd_organization
         WHERE 1=1
         <if test="organization.name != null">
@@ -37,7 +42,7 @@
         </if>
     </select>
 
-    <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
         SELECT DISTINCT
           fd_organization.*
         FROM
@@ -55,7 +60,7 @@
         </if>
     </select>
 
-    <select id="selectOrgByUserAndPros" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <select id="selectOrgByUserAndPros" resultMap="OrganizationDO">
         SELECT DISTINCT fd_organization.* from fd_organization
         where id in (
           SELECT DISTINCT fp.organization_id from fd_project fp

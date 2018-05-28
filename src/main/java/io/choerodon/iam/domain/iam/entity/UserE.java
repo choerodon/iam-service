@@ -40,11 +40,11 @@ public class UserE {
 
     private Date lastLoginAt;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
-    private Boolean isLocked;
+    private Boolean locked;
 
-    private Boolean isLdap;
+    private Boolean ldap;
 
     private Date lockedUntilAt;
 
@@ -76,7 +76,7 @@ public class UserE {
                  String password, String realName,
                  String phone, String imageUrl, String profilePhoto,
                  String language, String timeZone, Date lastPasswordUpdatedAt,
-                 Date lastLoginAt, Boolean isEnabled, Boolean isLocked, Boolean isLdap,
+                 Date lastLoginAt, Boolean enabled, Boolean locked, Boolean ldap,
                  Date lockedUntilAt, Integer passwordAttempt,
                  Long objectVersionNumber) {
         this.id = id;
@@ -92,9 +92,9 @@ public class UserE {
         this.timeZone = timeZone;
         this.lastPasswordUpdatedAt = lastPasswordUpdatedAt;
         this.lastLoginAt = lastLoginAt;
-        this.isEnabled = isEnabled;
-        this.isLocked = isLocked;
-        this.isLdap = isLdap;
+        this.enabled = enabled;
+        this.locked = locked;
+        this.ldap = ldap;
         this.lockedUntilAt = lockedUntilAt;
         this.passwordAttempt = passwordAttempt;
         this.objectVersionNumber = objectVersionNumber;
@@ -153,15 +153,15 @@ public class UserE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public Boolean getLocked() {
-        return isLocked;
+        return locked;
     }
 
     public Boolean getLdap() {
-        return isLdap;
+        return ldap;
     }
 
     public Date getLockedUntilAt() {
@@ -177,11 +177,11 @@ public class UserE {
     }
 
     public void unlocked() {
-        this.isLocked = false;
+        this.locked = false;
     }
 
     public void locked() {
-        this.isLocked = true;
+        this.locked = true;
     }
 
     public void lockUtilAt(Date date) {
@@ -201,11 +201,11 @@ public class UserE {
     }
 
     public void enable() {
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
     public void disable() {
-        this.isEnabled = false;
+        this.enabled = false;
     }
 
     public UserE hiddenPassword() {

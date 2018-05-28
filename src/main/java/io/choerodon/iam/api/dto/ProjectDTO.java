@@ -30,7 +30,7 @@ public class ProjectDTO {
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
     private String code;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     private Long objectVersionNumber;
 
@@ -67,11 +67,11 @@ public class ProjectDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Long getObjectVersionNumber() {

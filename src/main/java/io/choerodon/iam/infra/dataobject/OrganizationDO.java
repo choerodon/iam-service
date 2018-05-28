@@ -1,10 +1,7 @@
 package io.choerodon.iam.infra.dataobject;
 
 import java.util.List;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -26,7 +23,8 @@ public class OrganizationDO extends AuditDomain {
 
     private String code;
 
-    private Boolean isEnabled;
+    @Column(name = "is_enabled")
+    private Boolean enabled;
 
     @Transient
     private List<ProjectDO> projects;
@@ -71,10 +69,10 @@ public class OrganizationDO extends AuditDomain {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 }

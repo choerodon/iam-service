@@ -29,11 +29,11 @@ public class RoleDTO {
     private String description;
     @NotEmpty(message = "error.role.level.empty")
     private String level;
-    private Boolean isEnabled;
-    private Boolean isModified;
-    private Boolean isEnableForbidden;
-    private Boolean isBuiltIn;
-    private Boolean isAssignable;
+    private Boolean enabled;
+    private Boolean modified;
+    private Boolean enableForbidden;
+    private Boolean builtIn;
+    private Boolean assignable;
     private Long objectVersionNumber;
     private Integer userCount;
     private List<PermissionDTO> permissions;
@@ -112,43 +112,43 @@ public class RoleDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Boolean getModified() {
-        return isModified;
+        return modified;
     }
 
     public void setModified(Boolean modified) {
-        isModified = modified;
+        this.modified = modified;
     }
 
     public Boolean getEnableForbidden() {
-        return isEnableForbidden;
+        return enableForbidden;
     }
 
     public void setEnableForbidden(Boolean enableForbidden) {
-        isEnableForbidden = enableForbidden;
+        this.enableForbidden = enableForbidden;
     }
 
     public Boolean getBuiltIn() {
-        return isBuiltIn;
+        return builtIn;
     }
 
     public void setBuiltIn(Boolean builtIn) {
-        isBuiltIn = builtIn;
+        this.builtIn = builtIn;
     }
 
     public Boolean getAssignable() {
-        return isAssignable;
+        return assignable;
     }
 
     public void setAssignable(Boolean assignable) {
-        isAssignable = assignable;
+        this.assignable = assignable;
     }
 
     public Long getObjectVersionNumber() {
