@@ -41,4 +41,9 @@ public class LabelRepositoryImpl implements LabelRepository {
     public LabelDO selectOne(LabelDO labelDO) {
         return labelMapper.selectOne(labelDO);
     }
+
+    @Override
+    public List<LabelDO> selectByUserId(Long id) {
+        return labelMapper.selectByUserId(id);
+    }
 }

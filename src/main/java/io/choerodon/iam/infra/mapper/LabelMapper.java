@@ -10,4 +10,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface LabelMapper extends BaseMapper<LabelDO> {
     List<LabelDO> selectByRoleId(Long roleId);
+
+    List<LabelDO> selectByUserId(Long id);
 }

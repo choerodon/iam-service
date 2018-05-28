@@ -9,4 +9,17 @@
         AND iam_label.type = 'role'
         WHERE iam_role_label.role_id = #{roleId}
     </select>
+
+    <select id="selectByUserId" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
+        SELECT DISTINCT il.*
+        FROM iam_user iu
+        JOIN iam_member_role imr
+        ON iu.id = imr.member_id
+        JOIN iam_role_label irl
+        ON imr.role_id = irl.role_id
+        JOIN iam_label il
+        ON irl.label_id = il.id
+        WHERE imr.member_type = 'user'
+        AND iu.id = #{id}
+    </select>
 </mapper>

@@ -259,12 +259,10 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 }
             });
         }
-        List<Long> ownRoleIds = new ArrayList<>();
-        List<Long> ids = existingRoleIds.stream().filter(item ->
-                !deleteList.contains(item)).collect(Collectors.toList());
-        ownRoleIds.addAll(insertList);
-        ownRoleIds.addAll(intersection);
-        ownRoleIds.addAll(ids);
+        //查当前用户有那些角色
+        List<MemberRoleE> ownMemberRoles = memberRoleRepository.select(memberRoleE);
+        List<Long> ownRoleIds =
+                ownMemberRoles.stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
         return ownRoleIds;
     }
 
