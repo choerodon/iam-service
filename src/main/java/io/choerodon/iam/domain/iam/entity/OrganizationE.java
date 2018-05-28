@@ -55,7 +55,7 @@ public class OrganizationE {
      */
     public UserE addUser(UserE userE) {
         if (userRepository.selectByLoginName(userE.getLoginName()) != null) {
-            throw new CommonException("error.entity.organization.user.exists");
+            throw new CommonException("error.user.loginName.exist");
         }
         //TODO
         //密码策略待添加
