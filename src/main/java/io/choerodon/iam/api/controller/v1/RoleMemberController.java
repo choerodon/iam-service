@@ -1,30 +1,29 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
+import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.validator.MemberRoleValidator;
+import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
+import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.validator.ValidList;
-import io.choerodon.iam.api.validator.MemberRoleValidator;
-import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.swagger.annotation.Permission;
 import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author superlee
