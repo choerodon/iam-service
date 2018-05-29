@@ -215,11 +215,10 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest) {
+    public Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO) {
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            UserDO userDO = new UserDO();
             userDO.setAdmin(true);
-            return mapper.select(userDO);
+            return mapper.selectAdminUserPage(userDO);
         });
     }
 
