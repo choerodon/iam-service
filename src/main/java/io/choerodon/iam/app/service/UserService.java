@@ -60,7 +60,7 @@ public interface UserService {
     String uploadPhoto(Long id, MultipartFile file);
 
 
-    Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO);
+    Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 
     void addAdminUsers(long[] ids);
 

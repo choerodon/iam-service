@@ -63,12 +63,13 @@ public interface UserRepository {
 
     List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
 
-    Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO);
-
     /**
      * 根据用户id集合查询用户的集合
+     *
      * @param ids 用户id数组
      * @return List<UserDO> 用户集合
      */
     List<UserDO> listUsersByIds(Long[] ids);
+
+    Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 }
