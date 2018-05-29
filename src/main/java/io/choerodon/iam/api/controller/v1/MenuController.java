@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,7 @@ public class MenuController {
      * @param level          查询的菜单层级
      * @return 返回的菜单集合
      */
+    /*
     @ApiOperation("获取菜单以及菜单下所有权限")
     @Permission(level = ResourceLevel.SITE)
     @GetMapping
@@ -51,6 +53,7 @@ public class MenuController {
         }
         return new ResponseEntity<>(menuService.list(level), HttpStatus.OK);
     }
+    */
 
     /**
      * 根据菜单id查询详情
@@ -111,15 +114,30 @@ public class MenuController {
     /**
      * 获取树形菜单
      *
-     * @param testPermission 是否获取校验权限之后的菜单树
      * @param level          菜单层级
-     * @return 菜单树集合
+     * @return ResponseEntity<List<MenuDTO>> 树形菜单结构，每个menu包含自己下面带有的permission
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("菜单配置获取树形菜单，每个菜单都带自己拥有的permissions")
+    @GetMapping("/tree")
+    public ResponseEntity<List<MenuDTO>> listTreeMenusWithPermissions(
+            @RequestParam(required = false, name = "test_permission") boolean testPermission,
+            @RequestParam String level) {
+        ResourceLevelValidator.validate(level);
+        return new ResponseEntity<>(menuService.listTreeMenusWithPermissions(testPermission, level), HttpStatus.OK);
+    }
+
+    /**
+     *
+     * @param level 菜单层级
+     * @return ResponseEntity<List<MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
      */
     @Permission(permissionLogin = true)
-    @ApiOperation("获取树形菜单")
-    @GetMapping("/tree")
-    public ResponseEntity<List<MenuDTO>> listTree(@RequestParam(value = "test_permission", required = false) Boolean testPermission, @RequestParam("level") String level) {
-        return new ResponseEntity<>(menuService.listTree(testPermission, level), HttpStatus.OK);
+    @ApiOperation("获取用户已经经过权限校验的左侧菜单，菜单下不带permissions")
+    @GetMapping
+    public ResponseEntity<List<MenuDTO>> listAfterTestPermission(@RequestParam String level) {
+        ResourceLevelValidator.validate(level);
+        return new ResponseEntity<>(menuService.listAfterTestPermission(level), HttpStatus.OK);
     }
 
     /**
