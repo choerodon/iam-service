@@ -1,6 +1,5 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -48,5 +47,5 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                             @Param("roleAssignmentSearchDTO")
                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO);
+    List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO, @Param("params") String params);
 }
