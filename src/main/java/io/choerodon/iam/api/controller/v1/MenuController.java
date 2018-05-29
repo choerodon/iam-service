@@ -120,9 +120,11 @@ public class MenuController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("菜单配置获取树形菜单，每个菜单都带自己拥有的permissions")
     @GetMapping("/tree")
-    public ResponseEntity<List<MenuDTO>> listTreeMenusWithPermissions(@RequestParam String level) {
+    public ResponseEntity<List<MenuDTO>> listTreeMenusWithPermissions(
+            @RequestParam(required = false, name = "test_permission") boolean testPermission,
+            @RequestParam String level) {
         ResourceLevelValidator.validate(level);
-        return new ResponseEntity<>(menuService.listTreeMenusWithPermissions(level), HttpStatus.OK);
+        return new ResponseEntity<>(menuService.listTreeMenusWithPermissions(testPermission, level), HttpStatus.OK);
     }
 
     /**

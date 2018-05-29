@@ -114,8 +114,21 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuDTO> listTreeMenusWithPermissions(String level) {
-        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
+    public List<MenuDTO> listTreeMenusWithPermissions(Boolean testPermission, String level) {
+        List<MenuDTO> menus;
+        if (testPermission) {
+            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+            if (userDetails == null) {
+                return new ArrayList<>();
+            }
+            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
+            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
+            menus = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
+                    "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+        } else {
+            menus = queryMenusWithPermissions(level, null);
+        }
+//        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
         return MenuTreeUtil.formatMenu(menus);
     }
 
@@ -132,7 +145,7 @@ public class MenuServiceImpl implements MenuService {
         if (level == null) {
             throw new CommonException("error.menuLevel.null");
         }
-        return listTreeMenusWithPermissions(level);
+        return listTreeMenusWithPermissions(false, level);
     }
 
     @Override

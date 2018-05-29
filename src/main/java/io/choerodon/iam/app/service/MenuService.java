@@ -28,5 +28,5 @@ public interface MenuService {
 
     List<MenuDTO> listAfterTestPermission(String level);
 
-    List<MenuDTO> listTreeMenusWithPermissions(String level);
+    List<MenuDTO> listTreeMenusWithPermissions(Boolean testPermission, String level);
 }
