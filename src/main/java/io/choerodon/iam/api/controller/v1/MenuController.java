@@ -117,7 +117,8 @@ public class MenuController {
      * @param level          菜单层级
      * @return ResponseEntity<List<MenuDTO>> 树形菜单结构，每个menu包含自己下面带有的permission
      */
-    @Permission(level = ResourceLevel.SITE)
+//    @Permission(level = ResourceLevel.SITE)
+    @Permission(permissionLogin = true)
     @ApiOperation("菜单配置获取树形菜单，每个菜单都带自己拥有的permissions")
     @GetMapping("/tree")
     public ResponseEntity<List<MenuDTO>> listTreeMenusWithPermissions(
