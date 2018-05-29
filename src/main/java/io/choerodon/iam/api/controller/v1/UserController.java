@@ -186,8 +186,7 @@ public class UserController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO
-    ) {
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
                 pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
     }
