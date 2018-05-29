@@ -1,18 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
+import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.infra.common.utils.ParamsUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -20,6 +11,14 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai

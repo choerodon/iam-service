@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.iam.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.UserInfoDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.infra.dataobject.UserDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author superlee
@@ -32,8 +31,8 @@ public class UserInfoConverter implements ConvertorI<UserE, UserDO, UserInfoDTO>
     @Override
     public UserE dtoToEntity(UserInfoDTO dto) {
         return new UserE(dto.getId(), dto.getLoginName(), dto.getEmail(), dto.getRealName(),
-                        dto.getPhone(), dto.getImageUrl(), dto.getLanguage(), dto.getTimeZone(),
-                        dto.getObjectVersionNumber(), dto.getAdmin());
+                dto.getPhone(), dto.getImageUrl(), dto.getLanguage(), dto.getTimeZone(),
+                dto.getObjectVersionNumber(), dto.getAdmin());
     }
 
     @Override

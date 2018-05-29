@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-
 import io.choerodon.iam.domain.iam.entity.LookupValueE;
 import io.choerodon.iam.infra.dataobject.LookupValueDO;
+
+import java.util.List;
 
 /**
  * @author superlee

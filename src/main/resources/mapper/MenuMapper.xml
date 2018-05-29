@@ -68,40 +68,40 @@
     <select id="queryMenusWithPermissionByTestPermission" resultMap="menusWithPermissions">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT DISTINCT
-            im.*
+        im.*
         FROM iam_menu im
         LEFT JOIN iam_menu_permission imp on im.id = imp.menu_id
         WHERE imp.permission_id in (
-                SELECT p.id
-                FROM iam_role_permission rp
-                LEFT JOIN iam_permission p on p.id=rp.permission_id
-                LEFT JOIN iam_role r on  r.id = rp.role_id
-                WHERE r.is_enabled = 1 AND p.login_access=1 or p.public_access=1
-                    or rp.role_id in (
-                    SELECT DISTINCT mr.role_id from iam_member_role mr
-                    where mr.member_type=#{memberType}
-                        and mr.member_id=#{memberId}
-                        <if test="sourceType != null">
-                            and mr.source_type = #{sourceType}
-                        </if>
-                        <if test="sourceId != null">
-                            and mr.source_id=#{sourceId}
-                        </if>
-                )
-            )
-            <if test="level != null">
-                AND im.level = #{level}
-            </if>
-          UNION
-            SELECT DISTINCT * FROM iam_menu
-            WHERE
-                <if test="level != null">
-                    level = #{level} AND
-                </if>
+        SELECT p.id
+        FROM iam_role_permission rp
+        LEFT JOIN iam_permission p on p.id=rp.permission_id
+        LEFT JOIN iam_role r on r.id = rp.role_id
+        WHERE r.is_enabled = 1 AND p.login_access=1 or p.public_access=1
+        or rp.role_id in (
+        SELECT DISTINCT mr.role_id from iam_member_role mr
+        where mr.member_type=#{memberType}
+        and mr.member_id=#{memberId}
+        <if test="sourceType != null">
+            and mr.source_type = #{sourceType}
+        </if>
+        <if test="sourceId != null">
+            and mr.source_id=#{sourceId}
+        </if>
+        )
+        )
+        <if test="level != null">
+            AND im.level = #{level}
+        </if>
+        UNION
+        SELECT DISTINCT * FROM iam_menu
+        WHERE
+        <if test="level != null">
+            level = #{level} AND
+        </if>
         (type = "root" or type = "dir")
     </select>
 
-    <delete id="deleteMenusById" >
+    <delete id="deleteMenusById">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         delete FROM iam_menu
         where 1!=1

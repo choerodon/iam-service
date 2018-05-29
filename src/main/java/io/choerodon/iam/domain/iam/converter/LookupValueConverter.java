@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.iam.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.LookupValueDTO;
 import io.choerodon.iam.domain.iam.entity.LookupValueE;
 import io.choerodon.iam.infra.dataobject.LookupValueDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author superlee

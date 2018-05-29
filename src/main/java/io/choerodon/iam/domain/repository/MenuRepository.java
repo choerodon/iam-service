@@ -1,10 +1,10 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.infra.dataobject.MenuDO;
+
+import java.util.List;
 
 /**
  * @author wuguokai

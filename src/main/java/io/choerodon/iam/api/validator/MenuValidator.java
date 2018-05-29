@@ -1,12 +1,11 @@
 package io.choerodon.iam.api.validator;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai

@@ -22,4 +22,16 @@
         WHERE imr.member_type = 'user'
         AND iu.id = #{id}
     </select>
+
+
+    <select id="selectLabelNamesInRoleIds" resultType="java.lang.String">
+        SELECT DISTINCT iam_label.name
+        FROM iam_label
+        INNER JOIN iam_role_label ON iam_role_label.label_id = iam_label.id
+        WHERE iam_role_label.role_id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
 </mapper>

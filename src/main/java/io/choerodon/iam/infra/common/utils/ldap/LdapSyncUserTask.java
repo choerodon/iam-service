@@ -1,14 +1,10 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import static java.lang.Thread.sleep;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.dataobject.UserDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +13,14 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
+
+import static java.lang.Thread.sleep;
 
 /**
  * @author wuguokai
@@ -111,7 +110,7 @@ public class LdapSyncUserTask {
             user.setOrganizationId(organizationId);
             if (usernameType == 0) {
                 user.setLoginName(attributes.get("employeeNumber").get().toString());
-            } else if (usernameType == 2){
+            } else if (usernameType == 2) {
                 user.setLoginName(attributes.get("mobile").get().toString());
             } else {
                 user.setLoginName(attributes.get("mail").get().toString());

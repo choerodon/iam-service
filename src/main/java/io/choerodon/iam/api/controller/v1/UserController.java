@@ -218,7 +218,7 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "批量添加admin用户")
+    @ApiOperation(value = "删除admin用户")
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
         userService.deleteAdminUser(id);

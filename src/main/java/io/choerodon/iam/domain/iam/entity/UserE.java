@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.iam.entity;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.Date;
 import java.util.List;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author dongfan117@gmail.com

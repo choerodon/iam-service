@@ -1,6 +1,9 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import java.util.*;
+import io.choerodon.iam.infra.dataobject.LdapDO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -8,11 +11,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.choerodon.iam.infra.dataobject.LdapDO;
+import java.util.*;
 
 /**
  * @author wuguokai

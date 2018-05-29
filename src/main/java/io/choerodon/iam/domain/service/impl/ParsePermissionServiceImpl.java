@@ -1,27 +1,28 @@
 package io.choerodon.iam.domain.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.domain.iam.entity.RoleE;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.iam.domain.iam.entity.InstanceE;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
+import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.service.ParsePermissionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author zhipeng.zuo
@@ -123,7 +124,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     }
 
     private void processPermission(SwaggerExtraData extraData, String path, String method,
-                                          String serviceName, String resourceCode, String description, Map<String, Long> initRoleMap) {
+                                   String serviceName, String resourceCode, String description, Map<String, Long> initRoleMap) {
         /**
          * 关于permission目前只有插入和更新操作，没有删除废弃的permission。因为目前的从swagger拿到的permission json无法判断是否与数据库中已存在的permission一致
          * 后续如果想通过parse的方式删除废弃的permission，目前的想法是只能在每个接口上加一个不变且各不相同的唯一标识，通过标识判断到底是删除了接口还是更新了接口
@@ -162,7 +163,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     private void updateRolePermission(PermissionE permission, Map<String, Long> initRoleMap) {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
-        for(Map.Entry<String, Long> entry : initRoleMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : initRoleMap.entrySet()) {
             if (entry.getKey().equals(level)) {
                 RolePermissionE rolePermission = new RolePermissionE(null, entry.getValue(), permissionId);
                 if (rolePermissionRepository.selectOne(rolePermission) == null) {
@@ -175,7 +176,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     private void insertRolePermission(PermissionE permission, Map<String, Long> initRoleMap) {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
-        for(Map.Entry<String, Long> entry : initRoleMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : initRoleMap.entrySet()) {
             if (entry.getKey().equals(level)) {
                 rolePermissionRepository.insert(new RolePermissionE(null, entry.getValue(), permissionId));
             }

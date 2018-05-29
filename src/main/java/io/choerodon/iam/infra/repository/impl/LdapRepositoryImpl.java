@@ -1,13 +1,12 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
 import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.mapper.LdapMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai

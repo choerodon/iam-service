@@ -1,12 +1,12 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-import java.util.Set;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -30,6 +30,6 @@ public interface PermissionRepository {
 
     List<PermissionDO> selectByRoleId(Long roleId);
 
-    Set<String> checkPermission( Long memberId, String source_type,
-                                  Long sourceId, Set<String> codes);
+    Set<String> checkPermission(Long memberId, String source_type,
+                                Long sourceId, Set<String> codes);
 }

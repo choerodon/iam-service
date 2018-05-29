@@ -1,6 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.validator.ValidList;
+import io.choerodon.iam.api.dto.MenuDTO;
+import io.choerodon.iam.api.validator.MenuValidator;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
+import io.choerodon.iam.app.service.MenuService;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,13 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.validator.ValidList;
-import io.choerodon.iam.api.dto.MenuDTO;
-import io.choerodon.iam.api.validator.MenuValidator;
-import io.choerodon.iam.app.service.MenuService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
@@ -114,8 +113,8 @@ public class MenuController {
     /**
      * 获取树形菜单
      *
-     * @param level          菜单层级
-     * @return ResponseEntity<List<MenuDTO>> 树形菜单结构，每个menu包含自己下面带有的permission
+     * @param level 菜单层级
+     * @return ResponseEntity<List   <   MenuDTO>> 树形菜单结构，每个menu包含自己下面带有的permission
      */
 //    @Permission(level = ResourceLevel.SITE)
     @Permission(permissionLogin = true)
@@ -129,9 +128,8 @@ public class MenuController {
     }
 
     /**
-     *
      * @param level 菜单层级
-     * @return ResponseEntity<List<MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
+     * @return ResponseEntity<List   <   MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
      */
     @Permission(permissionLogin = true)
     @ApiOperation("获取用户已经经过权限校验的左侧菜单，菜单下不带permissions")

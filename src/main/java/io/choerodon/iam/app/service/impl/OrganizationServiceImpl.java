@@ -1,8 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -13,6 +10,8 @@ import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * @author wuguokai

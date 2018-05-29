@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
@@ -9,6 +7,7 @@ import io.choerodon.iam.domain.oauth.entity.PasswordPolicyE;
 import io.choerodon.iam.domain.repository.PasswordPolicyRepository;
 import io.choerodon.iam.infra.dataobject.PasswordPolicyDO;
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai
