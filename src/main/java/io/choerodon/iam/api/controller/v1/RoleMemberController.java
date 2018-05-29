@@ -3,6 +3,14 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import javax.validation.Valid;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.app.service.RoleService;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,12 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
-import io.choerodon.iam.api.dto.MemberRoleDTO;
-import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.swagger.annotation.Permission;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author superlee
@@ -28,11 +35,20 @@ import io.choerodon.swagger.annotation.Permission;
 public class RoleMemberController extends BaseController {
 
     private RoleMemberService roleMemberService;
+
+    private UserService userService;
+
+    private RoleService roleService;
+
     @Autowired
     private MemberRoleValidator memberRoleValidator;
 
-    public RoleMemberController(RoleMemberService roleMemberService) {
+    public RoleMemberController(RoleMemberService roleMemberService,
+                                UserService userService,
+                                RoleService roleService) {
         this.roleMemberService = roleMemberService;
+        this.userService = userService;
+        this.roleService = roleService;
     }
 
     /**
@@ -205,5 +221,150 @@ public class RoleMemberController extends BaseController {
         roleAssignmentDeleteDTO.setSourceId(sourceId);
         roleMemberService.deleteOnProjectLevel(roleAssignmentDeleteDTO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 根据角色Id分页查询该角色被分配的用户
+     *
+     * @param pageRequest
+     * @param roleAssignmentSearchDTO
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/users")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnSiteLevel(
+                pageRequest, roleAssignmentSearchDTO, roleId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @CustomPageRequest
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnOrganizationLevel(
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @CustomPageRequest
+    @PostMapping(value = "/projects/{project_id}/role_members/users")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnProjectLevel(
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询site层角色,附带该角色下分配的用户数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "查询site层角色,附带该角色下分配的用户数")
+    @PostMapping(value = "/site/role_members/users/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnSiteLevel(
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithUserCountOnSiteLevel(
+                roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的用户数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询organization层角色,附带该角色下分配的用户数")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithUserCountOnOrganizationLevel(
+                roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询project层角色,附带该角色下分配的用户数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "查询project层角色,附带该角色下分配的用户数")
+    @PostMapping(value = "/projects/{project_id}/role_members/users/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithUserCountOnProjectLevel(
+                roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的site层的角色
+     *
+     * @param roleAssignmentSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/users/roles")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithSiteLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
+                pageRequest, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的organization层的角色
+     *
+     * @param roleAssignmentSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/organizations/{organization_id}/role_members/users/roles")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithOrganizationLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithOrganizationLevelRoles(
+                pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的project层的角色
+     *
+     * @param roleAssignmentSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
+                pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
     }
 }
