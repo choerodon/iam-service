@@ -1,9 +1,9 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.Size;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Size;
 
 /**
  * @author superlee

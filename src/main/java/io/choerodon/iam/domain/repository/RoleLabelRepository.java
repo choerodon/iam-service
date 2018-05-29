@@ -1,8 +1,8 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-
 import io.choerodon.iam.infra.dataobject.RoleLabelDO;
+
+import java.util.List;
 
 /**
  * @author superlee

@@ -1,17 +1,14 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.validator.PasswordPolicyValidator;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author wuguokai

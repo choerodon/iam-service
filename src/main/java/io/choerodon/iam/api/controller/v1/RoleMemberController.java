@@ -1,14 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
@@ -18,6 +9,14 @@ import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author superlee

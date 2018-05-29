@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.dataobject;
 
-import java.util.List;
-import javax.persistence.*;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * @author wuguokai

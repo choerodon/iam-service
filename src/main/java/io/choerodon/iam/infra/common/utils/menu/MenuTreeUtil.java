@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.common.utils.menu;
 
+import io.choerodon.iam.api.dto.MenuDTO;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import io.choerodon.iam.api.dto.MenuDTO;
 
 /**
  * 递归解析菜单列表为菜单树的形式

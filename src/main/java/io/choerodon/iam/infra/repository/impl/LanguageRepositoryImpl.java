@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.LanguageRepository;
@@ -9,6 +7,7 @@ import io.choerodon.iam.infra.dataobject.LanguageDO;
 import io.choerodon.iam.infra.mapper.LanguageMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 

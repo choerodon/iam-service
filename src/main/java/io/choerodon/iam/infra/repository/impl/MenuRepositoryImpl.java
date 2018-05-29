@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.MenuDTO;
@@ -11,6 +7,9 @@ import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.domain.repository.MenuRepository;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author wuguokai

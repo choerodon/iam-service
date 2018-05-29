@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.oauth.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.infra.dataobject.ClientDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai

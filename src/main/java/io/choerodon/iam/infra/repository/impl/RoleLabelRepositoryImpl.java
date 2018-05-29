@@ -1,13 +1,12 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.RoleLabelRepository;
 import io.choerodon.iam.infra.dataobject.RoleLabelDO;
 import io.choerodon.iam.infra.mapper.RoleLabelMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee

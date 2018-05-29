@@ -81,12 +81,12 @@
         role.is_built_in as role_is_built_in,
         imr.id
         FROM (
-            SELECT iam_user.*  FROM iam_user
-            LEFT JOIN iam_member_role imr on imr.member_id = iam_user.id
-            LEFT JOIN iam_role ir on ir.id = imr.role_id
-            WHERE imr.member_type = 'user'
-            AND imr.source_id = #{sourceId}
-            AND imr.source_type = #{sourceType}
+        SELECT iam_user.* FROM iam_user
+        LEFT JOIN iam_member_role imr on imr.member_id = iam_user.id
+        LEFT JOIN iam_role ir on ir.id = imr.role_id
+        WHERE imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
         <if test="roleAssignmentSearchDTO != null">
             <if test="roleAssignmentSearchDTO.loginName != null">
                 AND iam_user.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')

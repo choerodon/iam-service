@@ -1,13 +1,12 @@
 package io.choerodon.iam.domain.service.impl;
 
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.service.IProjectService;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
+import org.springframework.stereotype.Service;
 
 /**
  * @author superlee
