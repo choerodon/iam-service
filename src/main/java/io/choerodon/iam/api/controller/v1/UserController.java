@@ -223,4 +223,12 @@ public class UserController extends BaseController {
         userService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @ApiOperation(value = "根据id集合查询用户集合")
+    @PostMapping(value = "/ids")
+    public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids) {
+        return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);
+    }
+
+
 }

@@ -45,4 +45,6 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                             @Param("sourceType") String sourceType,
                                             @Param("roleAssignmentSearchDTO")
                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    List<UserDO> listUsersByIds(@Param("ids") Long[] ids);
 }
