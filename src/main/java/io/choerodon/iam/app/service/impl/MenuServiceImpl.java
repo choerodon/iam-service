@@ -14,7 +14,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.api.validator.MenuValidator;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.domain.repository.MenuRepository;
@@ -81,23 +80,43 @@ public class MenuServiceImpl implements MenuService {
         return ConvertHelper.convertList(menuRepository.selectByLevel(level), MenuDTO.class);
     }
 
+//    @Override
+//    public List<MenuDTO> listTree(Boolean testPermission, String level) {
+//        ResourceLevelValidator.validate(level);
+//        List<MenuDTO> menuDTOS = null;
+//        if (testPermission != null && testPermission) {
+//            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+//            if (userDetails == null) {
+//                return new ArrayList<>();
+//            }
+//            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
+//            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
+//            menuDTOS = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
+//                    "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+//        } else {
+//            menuDTOS = queryMenusWithPermissions(level, null);
+//        }
+//        return MenuTreeUtil.formatMenu(menuDTOS);
+//    }
+
     @Override
-    public List<MenuDTO> listTree(Boolean testPermission, String level) {
-        ResourceLevelValidator.validate(level);
-        List<MenuDTO> menuDTOS = null;
-        if (testPermission != null && testPermission) {
-            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-            if (userDetails == null) {
-                return new ArrayList<>();
-            }
-            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
-            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            menuDTOS = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                    "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
-        } else {
-            menuDTOS = queryMenusWithPermissions(level, null);
+    public List<MenuDTO> listAfterTestPermission(String level) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null) {
+            return new ArrayList<>();
         }
-        return MenuTreeUtil.formatMenu(menuDTOS);
+        //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
+        String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
+        List<MenuDTO> menus =
+                ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
+                "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+        return MenuTreeUtil.formatMenu(menus);
+    }
+
+    @Override
+    public List<MenuDTO> listTreeMenusWithPermissions(String level) {
+        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
+        return MenuTreeUtil.formatMenu(menus);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -113,13 +132,15 @@ public class MenuServiceImpl implements MenuService {
         if (level == null) {
             throw new CommonException("error.menuLevel.null");
         }
-        return listTree(false, level);
+        return listTreeMenusWithPermissions(level);
     }
 
     @Override
     public List<MenuDTO> queryMenusWithPermissions(String level, String type) {
         return ConvertHelper.convertList(menuRepository.queryMenusWithPermissions(level, type), MenuDTO.class);
     }
+
+
 
     private List<MenuDTO> deleteNeedlessOrAddNewMenu(List<MenuDTO> menuDTOList, String level) {
         //需要添加的菜单
