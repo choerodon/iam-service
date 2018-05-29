@@ -25,6 +25,14 @@
         <result property="ldap" column="is_ldap"/>
     </resultMap>
 
+    <select id="listUsersByIds" resultMap="userDO">
+        SELECT * FROM iam_user
+        WHERE id IN
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
     <select id="fulltextSearch" resultMap="userDO">
         SELECT * FROM iam_user WHERE 1=1

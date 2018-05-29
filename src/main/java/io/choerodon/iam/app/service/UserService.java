@@ -65,4 +65,11 @@ public interface UserService {
     void addAdminUsers(long[] ids);
 
     void deleteAdminUser(long id);
+
+    /**
+     * 根据用户id集合查询用户的集合
+     * @param ids 用户id数组
+     * @return List<UserDTO> 用户集合
+     */
+    List<UserDTO> listUsersByIds(Long[] ids);
 }

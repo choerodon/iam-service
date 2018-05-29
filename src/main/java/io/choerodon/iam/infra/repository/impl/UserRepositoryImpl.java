@@ -223,6 +223,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<UserDO> listUsersByIds(Long[] ids) {
+        return mapper.listUsersByIds(ids);
+    }
+
+    @Override
     public int selectCount(UserDO user) {
         return mapper.selectCount(user);
     }

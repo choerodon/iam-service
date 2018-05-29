@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -381,6 +382,15 @@ public class UserServiceImpl implements UserService {
             }
         } else {
             throw new CommonException("error.user.admin.size");
+        }
+    }
+
+    @Override
+    public List<UserDTO> listUsersByIds(Long[] ids) {
+        if (ids.length == 0) {
+            return new ArrayList<>();
+        } else {
+            return ConvertHelper.convertList(userRepository.listUsersByIds(ids), UserDTO.class);
         }
     }
 

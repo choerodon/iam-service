@@ -49,4 +49,6 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO);
+
+    List<UserDO> listUsersByIds(@Param("ids") Long[] ids);
 }
