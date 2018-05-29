@@ -130,7 +130,7 @@ public class UserController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验json里面不传id,更新校验传id")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody UserDTO user) {
