@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -12,6 +13,7 @@ import java.util.List;
  * @author superlee
  */
 public interface UserMapper extends BaseMapper<UserDO> {
+
     List<UserDO> fulltextSearch(@Param("userDO") UserDO userDO,
                                 @Param("params") String[] params);
 
@@ -45,4 +47,6 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                             @Param("sourceType") String sourceType,
                                             @Param("roleAssignmentSearchDTO")
                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO);
 }

@@ -350,8 +350,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(userRepository.pagingQueryAdminUsers(pageRequest), UserDTO.class);
+    public Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO) {
+        return ConvertPageHelper.convertPage(userRepository.pagingQueryAdminUsers(pageRequest, userDO), UserDTO.class);
     }
 
     @Override
