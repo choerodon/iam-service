@@ -210,6 +210,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             UserE user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
+            userEventPayload.setId(userId.toString());
             Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_ENABLE_USER,
                     serviceName, userEventPayload,
                     (String uuid) -> {
@@ -238,6 +239,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             UserE user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
+            userEventPayload.setId(userId.toString());
             Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_DISABLE_USER,
                     serviceName, userEventPayload,
                     (String uuid) -> {
