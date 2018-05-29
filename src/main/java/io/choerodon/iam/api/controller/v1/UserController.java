@@ -206,17 +206,18 @@ public class UserController extends BaseController {
     public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-            @RequestParam(required = false, name = "login_name") String loginName,
-            @RequestParam(required = false, name = "real_name") String realName,
+            @RequestParam(required = false, name = "loginName") String loginName,
+            @RequestParam(required = false, name = "realName") String realName,
             @RequestParam(required = false, name = "enabled") Boolean enabled,
-            @RequestParam(required = false, name = "locked") Boolean locked
+            @RequestParam(required = false, name = "locked") Boolean locked,
+            @RequestParam(required = false, name = "params") String params
             ) {
         UserDO userDO = new UserDO();
-        userDO.setLanguage(loginName);
+        userDO.setLoginName(loginName);
         userDO.setRealName(realName);
         userDO.setEnabled(enabled);
         userDO.setLocked(locked);
-        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO, params), HttpStatus.OK);
     }
 
 

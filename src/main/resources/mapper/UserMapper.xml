@@ -230,13 +230,18 @@
             AND login_name LIKE concat('%',#{userDO.loginName},'%')
         </if>
         <if test="userDO.realName != null">
-            AND real_name = #{userDO.realName}
+            AND real_name LIKE concat('%',#{userDO.realName},'%')
         </if>
         <if test="userDO.enabled != null">
             AND is_enabled = #{userDO.enabled}
         </if>
         <if test="userDO.locked != null">
             AND is_locked = #{userDO.locked}
+        </if>
+        <if test="params != null">
+            AND
+            login_name LIKE concat('%',#{params},'%') OR
+            real_name LIKE concat('%',#{params},'%')
         </if>
     </select>
 
