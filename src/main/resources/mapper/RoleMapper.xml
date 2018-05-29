@@ -45,18 +45,18 @@
 
     <sql id="selectRole">
         SELECT
-            r.id,
-            iam_role_tl.name AS name,
-            r.code,
-            r.level,
-            r.description,
-            r.is_enabled,
-            r.is_modified,
-            r.is_enable_forbidden,
-            r.is_built_in,
-            r.is_assignable
+        r.id,
+        iam_role_tl.name AS name,
+        r.code,
+        r.level,
+        r.description,
+        r.is_enabled,
+        r.is_modified,
+        r.is_enable_forbidden,
+        r.is_built_in,
+        r.is_assignable
         FROM
-            iam_role r
+        iam_role r
         LEFT JOIN iam_role_tl
         ON r.id = iam_role_tl.id
         AND iam_role_tl.lang = #{lang}
@@ -133,7 +133,7 @@
         WHERE ir.id = #{id}
     </select>
     <select id="rolesLevelCount" resultType="int">
-      <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT COUNT(DISTINCT `level`)
         from iam_role
         where id in

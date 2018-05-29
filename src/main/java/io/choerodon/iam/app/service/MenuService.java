@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
 import io.choerodon.iam.api.dto.MenuDTO;
+
+import java.util.List;
 
 /**
  * @author wuguokai

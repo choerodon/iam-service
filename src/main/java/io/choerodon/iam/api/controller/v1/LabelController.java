@@ -1,7 +1,11 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.LabelDTO;
+import io.choerodon.iam.api.validator.LabelTypeValidator;
+import io.choerodon.iam.app.service.LabelService;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,12 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.LabelDTO;
-import io.choerodon.iam.api.validator.LabelTypeValidator;
-import io.choerodon.iam.app.service.LabelService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
 
 /**
  * @author superlee

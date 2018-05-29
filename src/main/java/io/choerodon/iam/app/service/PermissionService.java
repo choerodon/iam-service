@@ -1,12 +1,12 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.CheckPermissionDTO;
+import io.choerodon.iam.api.dto.PermissionDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import java.util.List;
 import java.util.Set;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.PermissionDTO;
-import io.choerodon.iam.api.dto.CheckPermissionDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai

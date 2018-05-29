@@ -1,15 +1,8 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.iam.ResourceLevel;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.MenuDTO;
@@ -18,6 +11,12 @@ import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.domain.repository.MenuRepository;
 import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -109,7 +108,7 @@ public class MenuServiceImpl implements MenuService {
         String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
         List<MenuDTO> menus =
                 ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+                        "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
         return MenuTreeUtil.formatMenu(menus);
     }
 
@@ -152,7 +151,6 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuDTO> queryMenusWithPermissions(String level, String type) {
         return ConvertHelper.convertList(menuRepository.queryMenusWithPermissions(level, type), MenuDTO.class);
     }
-
 
 
     private List<MenuDTO> deleteNeedlessOrAddNewMenu(List<MenuDTO> menuDTOList, String level) {

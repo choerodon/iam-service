@@ -38,14 +38,14 @@
 
     <select id="selectByCodeWithLookupValues" resultMap="lookupWithValues">
         SELECT
-          fl.id,
-          fl.code,
-          fl.description,
-          fl.object_version_number,
-          flv.id AS value_id,
-          flv.lookup_id,
-          flv.code AS value_code,
-          flv.description AS value_description
+        fl.id,
+        fl.code,
+        fl.description,
+        fl.object_version_number,
+        flv.id AS value_id,
+        flv.lookup_id,
+        flv.code AS value_code,
+        flv.description AS value_description
         FROM fd_lookup fl
         LEFT JOIN fd_lookup_value flv ON fl.id = flv.lookup_id
         WHERE fl.code = #{code}

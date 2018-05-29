@@ -1,10 +1,9 @@
 package io.choerodon.iam.domain.iam.converter;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.IconDTO;
 import io.choerodon.iam.infra.dataobject.IconDO;
+import org.springframework.stereotype.Component;
 
 /**
  * @author superlee

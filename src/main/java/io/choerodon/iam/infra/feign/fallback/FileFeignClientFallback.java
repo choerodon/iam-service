@@ -1,11 +1,10 @@
 package io.choerodon.iam.infra.feign.fallback;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.feign.FileFeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.infra.feign.FileFeignClient;
 
 /**
  * @author superlee

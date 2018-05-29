@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.service;
 
-import java.util.List;
-
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+
+import java.util.List;
 
 /**
  * @author superlee

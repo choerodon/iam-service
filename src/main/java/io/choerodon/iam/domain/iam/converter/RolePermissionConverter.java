@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.iam.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.RolePermissionDTO;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.infra.dataobject.RolePermissionDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai

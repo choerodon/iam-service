@@ -1,10 +1,5 @@
 package io.choerodon.iam.domain.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.LookupE;
 import io.choerodon.iam.domain.iam.entity.LookupValueE;
@@ -13,6 +8,10 @@ import io.choerodon.iam.domain.repository.LookupValueRepository;
 import io.choerodon.iam.domain.service.ILookupService;
 import io.choerodon.iam.infra.dataobject.LookupDO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

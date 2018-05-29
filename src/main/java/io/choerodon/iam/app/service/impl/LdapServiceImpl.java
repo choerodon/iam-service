@@ -1,9 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import javax.naming.ldap.LdapContext;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapDTO;
@@ -15,6 +11,9 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import org.springframework.stereotype.Component;
+
+import javax.naming.ldap.LdapContext;
 
 /**
  * @author wuguokai

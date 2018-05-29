@@ -44,7 +44,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_policy.groovy') {
             column(name: 'enable_captcha', type: 'TINYINT UNSIGNED', defaultValue: '0', remarks: '启用验证码') {
                 constraints(nullable: false)
             }
-            column(name: 'max_check_captcha', type: 'INT', defaultValue: '0', remarks: '密码错误多少次需要验证码')  {
+            column(name: 'max_check_captcha', type: 'INT', defaultValue: '0', remarks: '密码错误多少次需要验证码') {
                 constraints(nullable: false)
             }
 

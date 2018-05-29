@@ -1,17 +1,16 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.LookupValueE;
 import io.choerodon.iam.domain.repository.LookupValueRepository;
 import io.choerodon.iam.infra.dataobject.LookupValueDO;
 import io.choerodon.iam.infra.mapper.LookupValueMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee
