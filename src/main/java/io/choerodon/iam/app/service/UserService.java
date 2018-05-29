@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,7 +60,7 @@ public interface UserService {
     String uploadPhoto(Long id, MultipartFile file);
 
 
-    Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest);
+    Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO);
 
     void addAdminUsers(long[] ids);
 

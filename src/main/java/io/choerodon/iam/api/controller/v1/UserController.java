@@ -6,6 +6,7 @@ import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -203,8 +204,18 @@ public class UserController extends BaseController {
     @GetMapping("/admin")
     public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest) {
-        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest), HttpStatus.OK);
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(required = false, name = "login_name") String loginName,
+            @RequestParam(required = false, name = "real_name") String realName,
+            @RequestParam(required = false, name = "enabled") Boolean enabled,
+            @RequestParam(required = false, name = "locked") Boolean locked
+            ) {
+        UserDO userDO = new UserDO();
+        userDO.setLanguage(loginName);
+        userDO.setRealName(realName);
+        userDO.setEnabled(enabled);
+        userDO.setLocked(locked);
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO), HttpStatus.OK);
     }
 
 

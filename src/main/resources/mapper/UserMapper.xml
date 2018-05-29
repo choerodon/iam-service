@@ -230,4 +230,22 @@
             )
         </if>
     </select>
+
+
+    <select id="selectAdminUserPage" resultMap="userDO">
+        SELECT * FROM iam_user WHERE 1 = 1
+        <if test="userDO.loginName!= null">
+            AND login_name LIKE concat('%',#{userDO.loginName},'%')
+        </if>
+        <if test="userDO.realName != null">
+            AND real_name = #{userDO.realName}
+        </if>
+        <if test="userDO.enabled != null">
+            AND is_enabled = #{userDO.enabled}
+        </if>
+        <if test="userDO.locked != null">
+            AND is_locked = #{userDO.locked}
+        </if>
+    </select>
+
 </mapper>
