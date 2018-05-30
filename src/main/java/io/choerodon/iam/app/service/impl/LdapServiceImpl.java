@@ -20,7 +20,6 @@ import javax.naming.ldap.LdapContext;
  */
 @Component
 public class LdapServiceImpl implements LdapService {
-    private static final String IDAP_PASSWORD = "unknown";
     private LdapRepository ldapRepository;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
@@ -94,7 +93,7 @@ public class LdapServiceImpl implements LdapService {
     public void syncLdapUser(Long orgId, UserDTO userDTO) {
         LdapDTO ldapDTO = queryByOrgId(orgId);
         LdapContext ldapContext = LdapUtil.authenticate(userDTO.getLoginName(),
-                IDAP_PASSWORD, ConvertHelper.convert(ldapDTO, LdapDO.class));
+                "unknown", ConvertHelper.convert(ldapDTO, LdapDO.class));
         if (ldapContext == null) {
             throw new CommonException("error.ldap.connect");
         }
