@@ -8,7 +8,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 /**
  * @author superlee
@@ -59,8 +58,6 @@ public class UserDTO {
     private Boolean admin;
 
     private Long objectVersionNumber;
-
-    private List<RoleDTO> roles;
 
     @JsonIgnore
     private String param;
@@ -202,11 +199,4 @@ public class UserDTO {
         this.password = password;
     }
 
-    public void setRoles(List<RoleDTO> roles) {
-        this.roles = roles;
-    }
-
-    public List<RoleDTO> getRoles() {
-        return roles;
-    }
 }

@@ -36,14 +36,14 @@ public interface UserService {
 
     List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled);
 
-    Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                              Long sourceId);
 
-    Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,

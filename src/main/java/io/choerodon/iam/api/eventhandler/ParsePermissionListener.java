@@ -22,7 +22,7 @@ public class ParsePermissionListener {
         this.parsePermissionService = parsePermissionService;
     }
 
-    //@KafkaListener(topics = SWAGGER_TOPIC_NAME)
+    @KafkaListener(topics = SWAGGER_TOPIC_NAME)
     public void parse(byte[] bytes) {
         LOGGER.info("### begin to parse message");
         String message = new String(bytes);

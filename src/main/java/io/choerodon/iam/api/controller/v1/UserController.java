@@ -58,7 +58,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "更新当前用户的个人中心数据")
     @PutMapping(value = "/{id}/info")
     public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
-                                              @RequestBody @Validated(value = UserValidator.UserInfoGroup.class) UserDTO userDTO) {
+                                              @RequestBody UserDTO userDTO) {
         userDTO.setId(id);
         userDTO.updateCheck();
         //不能修改状态
@@ -150,7 +150,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
     @CustomPageRequest
     @PostMapping(value = "/site_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithSiteLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -167,7 +167,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
     @CustomPageRequest
     @PostMapping(value = "/organization_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithOrganizationLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithOrganizationLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,
@@ -185,7 +185,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
     @CustomPageRequest
     @PostMapping(value = "/project_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,
