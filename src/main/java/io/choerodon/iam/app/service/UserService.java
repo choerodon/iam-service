@@ -22,15 +22,15 @@ public interface UserService {
 
     List<OrganizationDTO> queryOrganizationWithProjects();
 
-    UserInfoDTO queryByLoginName(String loginName);
+    UserDTO queryByLoginName(String loginName);
 
     void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword);
 
     UserDTO lockUser(Long userId, Integer lockExpireTime);
 
-    UserInfoDTO queryInfo(Long userId);
+    UserDTO queryInfo(Long userId);
 
-    UserInfoDTO updateInfo(UserInfoDTO userInfo);
+    UserDTO updateInfo(UserDTO user);
 
     void check(UserDTO user);
 

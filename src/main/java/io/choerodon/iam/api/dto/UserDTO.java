@@ -1,9 +1,11 @@
 package io.choerodon.iam.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.UserValidator;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -14,37 +16,47 @@ import java.util.List;
  */
 public class UserDTO {
 
-    public static final String EMAIL_REGULAR_EXPRESSION = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
+    private static final String EMAIL_REGULAR_EXPRESSION = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
 
-    public static final String PHONE_REGULAR_EXPRESSION = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
+    private static final String PHONE_REGULAR_EXPRESSION = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
 
     private Long id;
 
-    @NotEmpty(message = "error.user.login_name.empty")
-    @Size(min = 1, max = 128, message = "error.user.login_name.size")
-    private String loginName;
-
-    @Pattern(regexp = EMAIL_REGULAR_EXPRESSION, message = "error.user.email.illegal")
-    @NotEmpty(message = "error.user.email.empty")
-    private String email;
-
-    @Pattern(regexp = PHONE_REGULAR_EXPRESSION, message = "error.phone.illegal")
-    private String phone;
-
     private Long organizationId;
 
-    private String password;
+    @NotEmpty(message = "error.user.login_name.empty", groups = UserValidator.UserGroup.class)
+    @Size(min = 1, max = 128, message = "error.user.login_name.size", groups = UserValidator.UserGroup.class)
+    private String loginName;
 
-    @NotNull
+    @Pattern(regexp = EMAIL_REGULAR_EXPRESSION, message = "error.user.email.illegal",
+            groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
+    @NotEmpty(message = "error.user.email.empty",
+            groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
+    private String email;
+
+    @NotEmpty(groups = UserValidator.UserGroup.class)
     private String realName;
+
+    @Pattern(regexp = PHONE_REGULAR_EXPRESSION, message = "error.phone.illegal",
+            groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
+    private String phone;
+
+    private String imageUrl;
 
     private String language;
 
-    private Boolean enabled;
+    private String timeZone;
 
     private Boolean locked;
 
     private Boolean ldap;
+
+    private Boolean enabled;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
+    private Boolean admin;
 
     private Long objectVersionNumber;
 
@@ -52,8 +64,6 @@ public class UserDTO {
 
     @JsonIgnore
     private String param;
-
-    private Boolean admin;
 
     public String getParam() {
         return param;
@@ -69,6 +79,14 @@ public class UserDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 
     public String getLoginName() {
@@ -87,28 +105,28 @@ public class UserDTO {
         this.email = email;
     }
 
-    public Long getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(Long organizationId) {
-        this.organizationId = organizationId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getRealName() {
         return realName;
     }
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getLanguage() {
@@ -119,12 +137,12 @@ public class UserDTO {
         this.language = language;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
+    public String getTimeZone() {
+        return timeZone;
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 
     public Boolean getLocked() {
@@ -143,12 +161,20 @@ public class UserDTO {
         this.ldap = ldap;
     }
 
-    public String getPhone() {
-        return phone;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Boolean getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
     }
 
     public Long getObjectVersionNumber() {
@@ -159,19 +185,28 @@ public class UserDTO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public List<RoleDTO> getRoles() {
-        return roles;
+    public void updateCheck() {
+        if (this.id == null) {
+            throw new CommonException("error.user.id.null");
+        }
+        if (this.objectVersionNumber == null) {
+            throw new CommonException("error.user.objectVersionNumber.null");
+        }
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setRoles(List<RoleDTO> roles) {
         this.roles = roles;
     }
 
-    public Boolean getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Boolean admin) {
-        this.admin = admin;
+    public List<RoleDTO> getRoles() {
+        return roles;
     }
 }

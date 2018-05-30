@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -15,6 +16,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -46,7 +48,7 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "查询当前用户的个人中心数据")
     @GetMapping(value = "/{id}/info")
-    public ResponseEntity<UserInfoDTO> queryInfo(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> queryInfo(@PathVariable Long id) {
         return Optional.ofNullable(userService.queryInfo(id))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException());
@@ -55,15 +57,15 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "更新当前用户的个人中心数据")
     @PutMapping(value = "/{id}/info")
-    public ResponseEntity<UserInfoDTO> updateInfo(@PathVariable Long id,
-                                                  @RequestBody @Valid UserInfoDTO userInfo) {
-        userInfo.setId(id);
-        userInfo.updateCheck();
+    public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
+                                              @RequestBody @Validated(value = UserValidator.UserInfoGroup.class) UserDTO userDTO) {
+        userDTO.setId(id);
+        userDTO.updateCheck();
         //不能修改状态
-        userInfo.setEnabled(null);
-        userInfo.setOrganizationId(null);
-        userInfo.setLoginName(null);
-        return new ResponseEntity<>(userService.updateInfo(userInfo), HttpStatus.OK);
+        userDTO.setEnabled(null);
+        userDTO.setOrganizationId(null);
+        userDTO.setLoginName(null);
+        return new ResponseEntity<>(userService.updateInfo(userDTO), HttpStatus.OK);
     }
 
     /**
@@ -116,7 +118,7 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "根据用户登录名获取用户信息")
     @GetMapping
-    public ResponseEntity<UserInfoDTO> query(@RequestParam(name = "login_name") String loginName) {
+    public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
         return Optional.ofNullable(userService.queryByLoginName(loginName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException());

@@ -10,6 +10,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @data 2018/3/26
  */
 public interface OrganizationUserService {
+
     UserDTO create(UserDTO userDTO, boolean checkPassword);
 
     Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user);

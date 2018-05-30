@@ -1,7 +1,7 @@
 package io.choerodon.iam.domain.iam.converter;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.iam.api.dto.UserInfoDTO;
+import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import org.springframework.beans.BeanUtils;
@@ -12,34 +12,34 @@ import org.springframework.stereotype.Component;
  * @data 2018/4/13
  */
 @Component
-public class UserInfoConverter implements ConvertorI<UserE, UserDO, UserInfoDTO> {
+public class UserInfoConverter implements ConvertorI<UserE, UserDO, UserDTO> {
 
     @Override
-    public UserInfoDTO doToDto(UserDO dataObject) {
-        UserInfoDTO userInfo = new UserInfoDTO();
-        BeanUtils.copyProperties(dataObject, userInfo);
-        return userInfo;
+    public UserDTO doToDto(UserDO dataObject) {
+        UserDTO user = new UserDTO();
+        BeanUtils.copyProperties(dataObject, user);
+        return user;
     }
 
     @Override
-    public UserDO dtoToDo(UserInfoDTO dto) {
+    public UserDO dtoToDo(UserDTO dto) {
         UserDO userDO = new UserDO();
         BeanUtils.copyProperties(dto, userDO);
         return userDO;
     }
 
     @Override
-    public UserE dtoToEntity(UserInfoDTO dto) {
+    public UserE dtoToEntity(UserDTO dto) {
         return new UserE(dto.getId(), dto.getLoginName(), dto.getEmail(), dto.getRealName(),
                 dto.getPhone(), dto.getImageUrl(), dto.getLanguage(), dto.getTimeZone(),
                 dto.getObjectVersionNumber(), dto.getAdmin());
     }
 
     @Override
-    public UserInfoDTO entityToDto(UserE entity) {
-        UserInfoDTO userInfo = new UserInfoDTO();
-        BeanUtils.copyProperties(entity, userInfo);
-        return userInfo;
+    public UserDTO entityToDto(UserE entity) {
+        UserDTO user = new UserDTO();
+        BeanUtils.copyProperties(entity, user);
+        return user;
     }
 
 }

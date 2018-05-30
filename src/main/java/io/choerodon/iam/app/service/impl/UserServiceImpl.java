@@ -248,19 +248,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoDTO queryInfo(Long userId) {
+    public UserDTO queryInfo(Long userId) {
         checkLoginUser(userId);
         UserE user = userRepository.selectByPrimaryKey(userId);
-        return ConvertHelper.convert(user, UserInfoDTO.class);
+        return ConvertHelper.convert(user, UserDTO.class);
     }
 
     @Override
-    public UserInfoDTO updateInfo(UserInfoDTO userInfo) {
-        checkLoginUser(userInfo.getId());
-        UserE userE = ConvertHelper.convert(userInfo, UserE.class);
-        UserInfoDTO dto;
+    public UserDTO updateInfo(UserDTO userDTO) {
+        checkLoginUser(userDTO.getId());
+        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
+        UserDTO dto;
         if (devopsMessage) {
-            dto = new UserInfoDTO();
+            dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
             Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_UPDATE_USER,
                     serviceName, userEventPayload, (String uuid) -> {
@@ -275,7 +275,7 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException(exception.getMessage());
             }
         } else {
-            dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserInfoDTO.class);
+            dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserDTO.class);
         }
         return dto;
     }
@@ -337,8 +337,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoDTO queryByLoginName(String loginName) {
-        return ConvertHelper.convert(userRepository.selectByLoginName(loginName), UserInfoDTO.class);
+    public UserDTO queryByLoginName(String loginName) {
+        return ConvertHelper.convert(userRepository.selectByLoginName(loginName), UserDTO.class);
     }
 
     @Override

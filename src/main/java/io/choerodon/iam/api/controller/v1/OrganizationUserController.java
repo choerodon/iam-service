@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
+import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -15,6 +16,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -44,7 +46,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "新增用户")
     @PostMapping
     public ResponseEntity<UserDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                          @RequestBody @Valid UserDTO userDTO) {
+                                          @RequestBody @Validated(value = UserValidator.UserGroup.class) UserDTO userDTO) {
         userDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationUserService.create(userDTO, true), HttpStatus.OK);
     }
@@ -63,11 +65,6 @@ public class OrganizationUserController extends BaseController {
 
     /**
      * 更新用户
-     *
-     * @param organizationId
-     * @param id
-     * @param userDTO
-     * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据id修改用户")
@@ -82,11 +79,6 @@ public class OrganizationUserController extends BaseController {
 
     /**
      * 分页查询
-     *
-     * @param organizationId
-     * @param pageRequest
-     * @param user
-     * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询")
