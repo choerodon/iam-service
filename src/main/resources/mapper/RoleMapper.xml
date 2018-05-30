@@ -126,10 +126,10 @@
         LEFT JOIN iam_role_permission irp ON ir.id = irp.role_id
         LEFT JOIN iam_permission ip ON irp.permission_id = ip.id
         LEFT JOIN iam_role_tl irt ON ir.id = irt.id
+        AND irt.lang = #{lang}
         LEFT JOIN iam_role_label irl ON ir.id = irl.role_id
         LEFT JOIN iam_label il ON irl.label_id = il.id
         AND il.type = 'role'
-        AND irt.lang = #{lang}
         WHERE ir.id = #{id}
     </select>
     <select id="rolesLevelCount" resultType="int">

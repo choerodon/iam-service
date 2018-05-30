@@ -23,6 +23,7 @@
         <result property="enabled" column="is_enabled"/>
         <result property="locked" column="is_locked"/>
         <result property="ldap" column="is_ldap"/>
+        <result property="admin" column="is_admin"/>
     </resultMap>
 
     <select id="listUsersByIds" resultMap="userDO">
