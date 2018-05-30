@@ -234,7 +234,7 @@
 
 
     <select id="selectAdminUserPage" resultMap="userDO">
-        SELECT * FROM iam_user WHERE 1 = 1
+        SELECT * FROM iam_user WHERE is_admin = TRUE
         <if test="userDO.loginName!= null">
             AND login_name LIKE concat('%',#{userDO.loginName},'%')
         </if>

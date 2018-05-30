@@ -46,7 +46,7 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "查询当前用户的个人中心数据")
     @GetMapping(value = "/{id}/info")
-    public ResponseEntity<UserInfoDTO> queryInfo(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> queryInfo(@PathVariable Long id) {
         return Optional.ofNullable(userService.queryInfo(id))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException());
@@ -55,15 +55,15 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "更新当前用户的个人中心数据")
     @PutMapping(value = "/{id}/info")
-    public ResponseEntity<UserInfoDTO> updateInfo(@PathVariable Long id,
-                                                  @RequestBody @Valid UserInfoDTO userInfo) {
-        userInfo.setId(id);
-        userInfo.updateCheck();
+    public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
+                                              @RequestBody UserDTO userDTO) {
+        userDTO.setId(id);
+        userDTO.updateCheck();
         //不能修改状态
-        userInfo.setEnabled(null);
-        userInfo.setOrganizationId(null);
-        userInfo.setLoginName(null);
-        return new ResponseEntity<>(userService.updateInfo(userInfo), HttpStatus.OK);
+        userDTO.setEnabled(null);
+        userDTO.setOrganizationId(null);
+        userDTO.setLoginName(null);
+        return new ResponseEntity<>(userService.updateInfo(userDTO), HttpStatus.OK);
     }
 
     /**
@@ -116,7 +116,7 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "根据用户登录名获取用户信息")
     @GetMapping
-    public ResponseEntity<UserInfoDTO> query(@RequestParam(name = "login_name") String loginName) {
+    public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
         return Optional.ofNullable(userService.queryByLoginName(loginName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new NotFoundException());
@@ -148,7 +148,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
     @CustomPageRequest
     @PostMapping(value = "/site_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithSiteLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -165,7 +165,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
     @CustomPageRequest
     @PostMapping(value = "/organization_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithOrganizationLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithOrganizationLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,
@@ -183,7 +183,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
     @CustomPageRequest
     @PostMapping(value = "/project_level/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "source_id") Long sourceId,

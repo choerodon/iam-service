@@ -323,7 +323,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithSiteLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -340,7 +340,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithOrganizationLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithOrganizationLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(name = "organization_id") Long sourceId,
@@ -358,7 +358,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long sourceId,

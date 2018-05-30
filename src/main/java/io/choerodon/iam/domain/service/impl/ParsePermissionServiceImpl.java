@@ -57,7 +57,6 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             InstanceE instanceE = objectMapper.readValue(message, InstanceE.class);
             String serviceName = instanceE.getAppName();
             String json = instanceE.getApiData();
-            LOGGER.info("@@@exec parser json {}", json);
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();

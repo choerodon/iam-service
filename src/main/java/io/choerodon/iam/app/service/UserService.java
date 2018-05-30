@@ -22,28 +22,28 @@ public interface UserService {
 
     List<OrganizationDTO> queryOrganizationWithProjects();
 
-    UserInfoDTO queryByLoginName(String loginName);
+    UserDTO queryByLoginName(String loginName);
 
     void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword);
 
     UserDTO lockUser(Long userId, Integer lockExpireTime);
 
-    UserInfoDTO queryInfo(Long userId);
+    UserDTO queryInfo(Long userId);
 
-    UserInfoDTO updateInfo(UserInfoDTO userInfo);
+    UserDTO updateInfo(UserDTO user);
 
     void check(UserDTO user);
 
     List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled);
 
-    Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                              Long sourceId);
 
-    Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
+    Page<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
