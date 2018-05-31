@@ -50,6 +50,11 @@ public class PermissionServiceImpl implements PermissionService {
             checkPermissionDTOList.forEach(i -> i.setApprove(false));
             return checkPermissionDTOList;
         }
+        //super admin例外处理
+        if (details.getAdmin()) {
+            checkPermissionDTOList.forEach( cp -> cp.setApprove(true));
+            return checkPermissionDTOList;
+        }
         Long userId = details.getUserId();
         Set<String> siteCodes = checkPermissionDTOList.stream().filter(i -> ResourceLevel.SITE.value().equals(i.getResourceType()))
                 .map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
