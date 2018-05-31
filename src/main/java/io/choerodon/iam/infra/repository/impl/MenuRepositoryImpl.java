@@ -2,7 +2,6 @@ package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.domain.repository.MenuRepository;
 import io.choerodon.iam.infra.dataobject.MenuDO;
@@ -67,11 +66,6 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public List<MenuDTO> queryAll() {
-        return ConvertHelper.convertList(menuMapper.queryIncludeTl(), MenuDTO.class);
-    }
-
-    @Override
     public List<MenuDO> selectByLevel(String level) {
         MenuDO menuDO = new MenuDO();
         menuDO.setLevel(level);
@@ -86,5 +80,10 @@ public class MenuRepositoryImpl implements MenuRepository {
     @Override
     public List<MenuDO> queryMenusWithPermissionByTestPermission(String level, String memberType, Long memberId, String sourceType, Long sourceId) {
         return menuMapper.queryMenusWithPermissionByTestPermission(level, memberType, memberId, sourceType, sourceId);
+    }
+
+    @Override
+    public List<MenuDO> select(MenuDO menuDO) {
+        return menuMapper.select(menuDO);
     }
 }

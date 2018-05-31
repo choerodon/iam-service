@@ -129,7 +129,7 @@ public class MenuController {
 
     /**
      * @param level 菜单层级
-     * @return ResponseEntity<List   <   MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
+     * @return ResponseEntity<List<MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
      */
     @Permission(permissionLogin = true)
     @ApiOperation("获取用户已经经过权限校验的左侧菜单，菜单下不带permissions")
