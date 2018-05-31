@@ -72,6 +72,8 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<UserDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                           @PathVariable Long id,
                                           @RequestBody @Valid UserDTO userDTO) {
+        //不能更新admin字段
+        userDTO.setAdmin(null);
         userDTO.setOrganizationId(organizationId);
         userDTO.setId(id);
         return new ResponseEntity<>(organizationUserService.update(userDTO), HttpStatus.OK);

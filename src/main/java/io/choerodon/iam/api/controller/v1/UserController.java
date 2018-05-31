@@ -59,6 +59,7 @@ public class UserController extends BaseController {
                                               @RequestBody UserDTO userDTO) {
         userDTO.setId(id);
         userDTO.updateCheck();
+        userDTO.setAdmin(null);
         //不能修改状态
         userDTO.setEnabled(null);
         userDTO.setOrganizationId(null);
