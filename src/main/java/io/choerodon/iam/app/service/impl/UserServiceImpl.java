@@ -114,8 +114,12 @@ public class UserServiceImpl implements UserService {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
         boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        System.out.println("### iaAdmin: --> " + isAdmin);
+        UserE user = userRepository.selectByPrimaryKey(userId);
+        boolean isAdmin1 = user.getAdmin() == null ? false : user.getAdmin();
+        System.out.println("@@@ isAdmin1: --> " + isAdmin1);
         //superAdmin例外处理
-        if (isAdmin) {
+        if (isAdmin1) {
             return ConvertHelper.convertList(organizationRepository.selectAll(), OrganizationDTO.class);
         } else {
             return getOwnedOrganizations(userId, includedDisabled);
@@ -127,8 +131,12 @@ public class UserServiceImpl implements UserService {
     public List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled) {
         CustomUserDetails customUserDetails = checkLoginUser(id);
         boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        System.out.println("### iaAdmin: --> " + isAdmin);
+        UserE user = userRepository.selectByPrimaryKey(customUserDetails.getUserId());
+        boolean isAdmin1 = user.getAdmin() == null ? false : user.getAdmin();
+        System.out.println("@@@ isAdmin1: --> " + isAdmin1);
         //superAdmin例外处理
-        if (isAdmin) {
+        if (isAdmin1) {
             return ConvertHelper.convertList(projectRepository.selectAll(), ProjectDTO.class);
         } else {
             ProjectDO project = new ProjectDO();
