@@ -31,29 +31,6 @@ public class MenuController {
         this.menuValidator = menuValidator;
     }
 
-
-    /**
-     * 获取菜单以及菜单下所有权限
-     *
-     * @param withPermission 查询到的菜单是否携带permission集合
-     * @param type           查询的菜单类型
-     * @param level          查询的菜单层级
-     * @return 返回的菜单集合
-     */
-    /*
-    @ApiOperation("获取菜单以及菜单下所有权限")
-    @Permission(level = ResourceLevel.SITE)
-    @GetMapping
-    public ResponseEntity<List<MenuDTO>> queryMenusWithPermissions(@RequestParam("with_permissions") Boolean withPermission,
-                                                                   @RequestParam(value = "type", required = false) String type,
-                                                                   @RequestParam(required = false) String level) {
-        if (withPermission) {
-            return new ResponseEntity<>(menuService.queryMenusWithPermissions(level, type), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(menuService.list(level), HttpStatus.OK);
-    }
-    */
-
     /**
      * 根据菜单id查询详情
      *
