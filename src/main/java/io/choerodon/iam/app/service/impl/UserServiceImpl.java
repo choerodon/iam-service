@@ -113,19 +113,32 @@ public class UserServiceImpl implements UserService {
         if (!userId.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
-        return getOwnedOrganizations(userId, includedDisabled);
+        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        //superAdmin例外处理
+        if (isAdmin) {
+            return ConvertHelper.convertList(organizationRepository.selectAll(), OrganizationDTO.class);
+        } else {
+            return getOwnedOrganizations(userId, includedDisabled);
+        }
+
     }
 
     @Override
     public List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled) {
-        checkLoginUser(id);
-        ProjectDO project = new ProjectDO();
-        if (!includedDisabled) {
-            project.setEnabled(true);
+        CustomUserDetails customUserDetails = checkLoginUser(id);
+        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        //superAdmin例外处理
+        if (isAdmin) {
+            return ConvertHelper.convertList(projectRepository.selectAll(), ProjectDTO.class);
+        } else {
+            ProjectDO project = new ProjectDO();
+            if (!includedDisabled) {
+                project.setEnabled(true);
+            }
+            return ConvertHelper
+                    .convertList(projectRepository
+                            .selectProjectsFromMemberRoleByOptions(id, project), ProjectDTO.class);
         }
-        return ConvertHelper
-                .convertList(projectRepository
-                        .selectProjectsFromMemberRoleByOptions(id, project), ProjectDTO.class);
     }
 
     @Override
@@ -136,7 +149,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    private void checkLoginUser(Long id) {
+    private CustomUserDetails checkLoginUser(Long id) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
@@ -144,6 +157,7 @@ public class UserServiceImpl implements UserService {
         if (!id.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
+        return customUserDetails;
     }
 
     @Override
