@@ -21,8 +21,8 @@ public class UserConverter implements ConvertorI<UserE, UserDO, UserDTO> {
     public UserE dtoToEntity(UserDTO dto) {
         return new UserE(dto.getId(), dto.getLoginName(), dto.getEmail(),
                 dto.getOrganizationId(), dto.getPassword(),
-                dto.getRealName(), dto.getPhone(), null, null,
-                dto.getLanguage(), null, null, null,
+                dto.getRealName(), dto.getPhone(), dto.getImageUrl(), null,
+                dto.getLanguage(), dto.getTimeZone(), null, null,
                 dto.getEnabled(), dto.getLocked(), dto.getLdap(), null,
                 null, dto.getObjectVersionNumber(), dto.getAdmin());
     }
