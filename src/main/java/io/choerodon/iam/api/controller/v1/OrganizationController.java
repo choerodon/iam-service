@@ -40,8 +40,8 @@ public class OrganizationController extends BaseController {
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "修改目标组织信息")
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<OrganizationDTO> update(@PathVariable Long id,
+    @PutMapping(value = "/{organization_id}")
+    public ResponseEntity<OrganizationDTO> update(@PathVariable(name = "organization_id") Long id,
                                                   @RequestBody @Valid OrganizationDTO organizationDTO) {
         return new ResponseEntity<>(organizationService.updateOrganization(id, organizationDTO),
                 HttpStatus.OK);
@@ -55,8 +55,8 @@ public class OrganizationController extends BaseController {
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "根据组织id查询组织")
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<OrganizationDTO> query(@PathVariable Long id) {
+    @GetMapping(value = "/{organization_id}")
+    public ResponseEntity<OrganizationDTO> query(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.queryOrganizationById(id), HttpStatus.OK);
     }
 
@@ -81,15 +81,15 @@ public class OrganizationController extends BaseController {
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "启用组织")
-    @PutMapping(value = "/{id}/enable")
-    public ResponseEntity<OrganizationDTO> enableOrganization(@PathVariable Long id) {
+    @PutMapping(value = "/{organization_id}/enable")
+    public ResponseEntity<OrganizationDTO> enableOrganization(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.enableOrganization(id), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "禁用组织")
-    @PutMapping(value = "/{id}/disable")
-    public ResponseEntity<OrganizationDTO> disableOrganization(@PathVariable Long id) {
+    @PutMapping(value = "/{organization_id}/disable")
+    public ResponseEntity<OrganizationDTO> disableOrganization(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.disableOrganization(id), HttpStatus.OK);
     }
 
