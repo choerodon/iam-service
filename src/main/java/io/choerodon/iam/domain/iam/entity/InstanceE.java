@@ -1,5 +1,9 @@
 package io.choerodon.iam.domain.iam.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.util.Date;
+
 /**
  * @author superlee
  * @data 2018/4/3
@@ -10,13 +14,14 @@ public class InstanceE {
 
     private String appName;
 
-    private String id;
-
     private String version;
 
-    private String uuid;
+    private String instanceAddress;
 
     private String apiData;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh", timezone = "GMT+8")
+    private Date createTime;
 
     public String getStatus() {
         return status;
@@ -34,14 +39,6 @@ public class InstanceE {
         this.appName = appName;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getVersion() {
         return version;
     }
@@ -50,12 +47,20 @@ public class InstanceE {
         this.version = version;
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getInstanceAddress() {
+        return instanceAddress;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setInstanceAddress(String instanceAddress) {
+        this.instanceAddress = instanceAddress;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
     public String getApiData() {
