@@ -46,7 +46,13 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
             column(name: 'port', type: "VARCHAR(8)", defaultValue: "398", remarks: '端口号', afterColumn: 'server_address') {
                 constraints(nullable: false)
             }
-            column(name: 'use_ssl', type: "BIGINT UNSIGNED", defaultValue: "0", remarks: '使用ssl加密传输方式，默认情况为不使用', afterColumn:'port') {
+            column(name: 'account', type: "VARCHAR(128)", defaultValue: "", remarks: 'ldap登陆账户', afterColumn: 'port'){
+                constraints(nullable: false)
+            }
+            column(name: 'password', type: 'VARCHAR(128)', defaultValue: "", remarks: 'ldap登陆密码', afterColumn: 'account'){
+                constraints(nullable: false)
+            }
+            column(name: 'use_ssl', type: "BIGINT UNSIGNED", defaultValue: "0", remarks: '使用ssl加密传输方式，默认情况为不使用', afterColumn:'password') {
                 constraints(nullable: false)
             }
             column(name: 'is_enabled', type: "BIGINT UNSIGNED", defaultValue: "1", remarks: '是否启用，默认为启用', afterColumn:'use_ssl') {
