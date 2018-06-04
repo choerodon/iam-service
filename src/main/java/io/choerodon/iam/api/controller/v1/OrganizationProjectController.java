@@ -24,7 +24,7 @@ import javax.validation.Valid;
  * @author superlee
  */
 @RestController
-@RequestMapping(value = "/v1/organizations/{id}/projects")
+@RequestMapping(value = "/v1/organizations/{organization_id}/projects")
 public class OrganizationProjectController extends BaseController {
 
     private OrganizationProjectService organizationProjectService;
@@ -42,7 +42,7 @@ public class OrganizationProjectController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "添加项目")
     @PostMapping
-    public ResponseEntity<ProjectDTO> create(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                              @RequestBody @Valid ProjectDTO project) {
         project.setId(null);
         project.setOrganizationId(organizationId);
@@ -59,7 +59,7 @@ public class OrganizationProjectController extends BaseController {
     @GetMapping
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目")
-    public ResponseEntity<Page<ProjectDTO>> list(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity<Page<ProjectDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
                                                  @ApiIgnore
                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                          PageRequest pageRequest,
@@ -79,7 +79,7 @@ public class OrganizationProjectController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping(value = "/{project_id}")
     @ApiOperation(value = "更新项目")
-    public ResponseEntity<ProjectDTO> update(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                              @PathVariable(name = "project_id") Long projectId,
                                              @RequestBody ProjectDTO projectDTO) {
         projectDTO.updateCheck();
@@ -94,7 +94,7 @@ public class OrganizationProjectController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用项目")
     @PutMapping(value = "/{project_id}/enable")
-    public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                     @PathVariable(name = "project_id") Long projectId) {
         return new ResponseEntity<>(organizationProjectService.enableProject(organizationId, projectId), HttpStatus.OK);
     }
@@ -102,7 +102,7 @@ public class OrganizationProjectController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
-    public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                      @PathVariable(name = "project_id") Long projectId) {
         return new ResponseEntity<>(organizationProjectService.disableProject(
                 organizationId, projectId), HttpStatus.OK);
@@ -111,7 +111,7 @@ public class OrganizationProjectController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "project code校验接口，新建校验不传id,更新校验传id")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@PathVariable(name = "id") Long organizationId,
+    public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
                                 @RequestBody ProjectDTO projectDTO) {
         projectDTO.setOrganizationId(organizationId);
         organizationProjectService.check(projectDTO);
