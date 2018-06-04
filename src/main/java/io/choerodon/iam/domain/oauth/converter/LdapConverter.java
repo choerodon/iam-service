@@ -14,10 +14,9 @@ import org.springframework.stereotype.Component;
 public class LdapConverter implements ConvertorI<LdapE, LdapDO, LdapDTO> {
     @Override
     public LdapE dtoToEntity(LdapDTO dto) {
-        return new LdapE(dto.getId(), dto.getName(), dto.getOrganizationId(), dto.getServerAddress(),
-                dto.getEncryption(), dto.getStatus(), dto.getBaseDn(),
-                dto.getLdapAttributeName(), dto.getDomain(), dto.getDescription(),
-                dto.getObjectVersionNumber());
+        LdapE ldapE = new LdapE();
+        BeanUtils.copyProperties(dto, ldapE);
+        return ldapE;
     }
 
     @Override
@@ -29,10 +28,9 @@ public class LdapConverter implements ConvertorI<LdapE, LdapDO, LdapDTO> {
 
     @Override
     public LdapE doToEntity(LdapDO dataObject) {
-        return new LdapE(dataObject.getId(), dataObject.getName(), dataObject.getOrganizationId(),
-                dataObject.getServerAddress(), dataObject.getEncryption(), dataObject.getStatus(),
-                dataObject.getBaseDn(), dataObject.getLdapAttributeName(),
-                dataObject.getDomain(), dataObject.getDescription(), dataObject.getObjectVersionNumber());
+        LdapE ldapE = new LdapE();
+        BeanUtils.copyProperties(dataObject, ldapE);
+        return ldapE;
     }
 
     @Override
