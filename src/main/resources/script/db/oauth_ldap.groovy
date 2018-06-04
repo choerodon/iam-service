@@ -71,7 +71,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
             column(name: 'phone_field', type: "VARCHAR(64)", remarks: 'phone对应的字段名', defaultValue: 'phone', afterColumn:'password_field') {
                 constraints(nullable: false)
             }
-            column(name: 'total_sync_count', type: "BIGINT UNSIGNED", remarks: '累计同步用户数量', afterColumn:'phone_field')
+            column(name: 'total_sync_count', type: "INTEGER UNSIGNED", remarks: '累计同步用户数量', afterColumn:'phone_field')
             column(name: "sync_begin_time", type: "DATETIME", remarks: '同步任务开始的时间', defaultValueComputed: "CURRENT_TIMESTAMP", afterColumn:'total_sync_count')
         }
     }
