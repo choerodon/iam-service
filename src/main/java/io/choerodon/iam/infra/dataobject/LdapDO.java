@@ -4,9 +4,11 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * @author wuguokai
@@ -21,12 +23,24 @@ public class LdapDO extends AuditDomain {
     private String name;
     private Long organizationId;
     private String serverAddress;
-    private String encryption;
-    private String status;
+    private String port;
+    private String account;
+    private String password;
+    @Column(name = "use_ssl")
+    private Boolean useSSL;
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+    @Column(name = "is_syncing")
+    private Boolean syncing;
     private String baseDn;
-    private String ldapAttributeName;
-    private String domain;
-    private String description;
+    private String directoryType;
+    private String loginNameField;
+    private String realNameField;
+    private String emailField;
+    private String passwordField;
+    private String phoneField;
+    private Long totalSyncCount;
+    private Date syncBeginTime;
 
     public Long getId() {
         return id;
@@ -60,20 +74,36 @@ public class LdapDO extends AuditDomain {
         this.serverAddress = serverAddress;
     }
 
-    public String getEncryption() {
-        return encryption;
+    public String getPort() {
+        return port;
     }
 
-    public void setEncryption(String encryption) {
-        this.encryption = encryption;
+    public void setPort(String port) {
+        this.port = port;
     }
 
-    public String getStatus() {
-        return status;
+    public Boolean getUseSSL() {
+        return useSSL;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setUseSSL(Boolean useSSL) {
+        this.useSSL = useSSL;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Boolean getSyncing() {
+        return syncing;
+    }
+
+    public void setSyncing(Boolean syncing) {
+        this.syncing = syncing;
     }
 
     public String getBaseDn() {
@@ -84,27 +114,140 @@ public class LdapDO extends AuditDomain {
         this.baseDn = baseDn;
     }
 
-    public String getLdapAttributeName() {
-        return ldapAttributeName;
+    public String getDirectoryType() {
+        return directoryType;
     }
 
-    public void setLdapAttributeName(String ldapAttributeName) {
-        this.ldapAttributeName = ldapAttributeName;
+    public void setDirectoryType(String directoryType) {
+        this.directoryType = directoryType;
     }
 
-    public String getDomain() {
-        return domain;
+    public String getLoginNameField() {
+        return loginNameField;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
+    public void setLoginNameField(String loginNameField) {
+        this.loginNameField = loginNameField;
     }
 
-    public String getDescription() {
-        return description;
+    public String getRealNameField() {
+        return realNameField;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setRealNameField(String realNameField) {
+        this.realNameField = realNameField;
+    }
+
+    public String getEmailField() {
+        return emailField;
+    }
+
+    public void setEmailField(String emailField) {
+        this.emailField = emailField;
+    }
+
+    public String getPasswordField() {
+        return passwordField;
+    }
+
+    public void setPasswordField(String passwordField) {
+        this.passwordField = passwordField;
+    }
+
+    public String getPhoneField() {
+        return phoneField;
+    }
+
+    public void setPhoneField(String phoneField) {
+        this.phoneField = phoneField;
+    }
+
+    public Long getTotalSyncCount() {
+        return totalSyncCount;
+    }
+
+    public void setTotalSyncCount(Long totalSyncCount) {
+        this.totalSyncCount = totalSyncCount;
+    }
+
+    public Date getSyncBeginTime() {
+        return syncBeginTime;
+    }
+
+    public void setSyncBeginTime(Date syncBeginTime) {
+        this.syncBeginTime = syncBeginTime;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LdapDO ldapDO = (LdapDO) o;
+
+        if (!id.equals(ldapDO.id)) return false;
+        if (!name.equals(ldapDO.name)) return false;
+        if (!organizationId.equals(ldapDO.organizationId)) return false;
+        if (!serverAddress.equals(ldapDO.serverAddress)) return false;
+        if (!port.equals(ldapDO.port)) return false;
+        if (!account.equals(ldapDO.account)) return false;
+        if (!password.equals(ldapDO.password)) return false;
+        if (!useSSL.equals(ldapDO.useSSL)) return false;
+        if (!enabled.equals(ldapDO.enabled)) return false;
+        if (!syncing.equals(ldapDO.syncing)) return false;
+        if (baseDn != null ? !baseDn.equals(ldapDO.baseDn) : ldapDO.baseDn != null) return false;
+        if (directoryType != null ? !directoryType.equals(ldapDO.directoryType) : ldapDO.directoryType != null)
+            return false;
+        if (loginNameField != null ? !loginNameField.equals(ldapDO.loginNameField) : ldapDO.loginNameField != null)
+            return false;
+        if (realNameField != null ? !realNameField.equals(ldapDO.realNameField) : ldapDO.realNameField != null)
+            return false;
+        if (emailField != null ? !emailField.equals(ldapDO.emailField) : ldapDO.emailField != null) return false;
+        if (passwordField != null ? !passwordField.equals(ldapDO.passwordField) : ldapDO.passwordField != null)
+            return false;
+        if (phoneField != null ? !phoneField.equals(ldapDO.phoneField) : ldapDO.phoneField != null) return false;
+        if (totalSyncCount != null ? !totalSyncCount.equals(ldapDO.totalSyncCount) : ldapDO.totalSyncCount != null)
+            return false;
+        return syncBeginTime != null ? syncBeginTime.equals(ldapDO.syncBeginTime) : ldapDO.syncBeginTime == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + organizationId.hashCode();
+        result = 31 * result + serverAddress.hashCode();
+        result = 31 * result + port.hashCode();
+        result = 31 * result + account.hashCode();
+        result = 31 * result + password.hashCode();
+        result = 31 * result + useSSL.hashCode();
+        result = 31 * result + enabled.hashCode();
+        result = 31 * result + syncing.hashCode();
+        result = 31 * result + (baseDn != null ? baseDn.hashCode() : 0);
+        result = 31 * result + (directoryType != null ? directoryType.hashCode() : 0);
+        result = 31 * result + (loginNameField != null ? loginNameField.hashCode() : 0);
+        result = 31 * result + (realNameField != null ? realNameField.hashCode() : 0);
+        result = 31 * result + (emailField != null ? emailField.hashCode() : 0);
+        result = 31 * result + (passwordField != null ? passwordField.hashCode() : 0);
+        result = 31 * result + (phoneField != null ? phoneField.hashCode() : 0);
+        result = 31 * result + (totalSyncCount != null ? totalSyncCount.hashCode() : 0);
+        result = 31 * result + (syncBeginTime != null ? syncBeginTime.hashCode() : 0);
+        return result;
     }
 }

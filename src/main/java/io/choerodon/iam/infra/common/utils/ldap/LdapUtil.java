@@ -20,7 +20,7 @@ public class LdapUtil {
     private static final String INITIAL_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
     private static final String SECURITY_AUTHENTICATION = "simple";
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapUtil.class);
-    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
+//    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
 
 
     private LdapUtil() {
@@ -37,7 +37,7 @@ public class LdapUtil {
      */
     public static LdapContext authenticate(String userName, String password, LdapDO ldap) {
         String userDn;
-        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn());
+        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort());
         if (ldapContext == null) {
             return null;
         }
@@ -53,12 +53,13 @@ public class LdapUtil {
      *
      * @param url    ldap url
      * @param baseDn ldap baseDn
+     * @param port ldap port
      * @return 返回ldapContext
      */
-    public static LdapContext ldapConnect(String url, String baseDn) {
-        HashMap<String, String> ldapEnv = new HashMap<>();
+    public static LdapContext ldapConnect(String url, String baseDn, String port) {
+        HashMap<String, String> ldapEnv = new HashMap<>(5);
         ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
-        ldapEnv.put(Context.PROVIDER_URL, url + "/" + baseDn);//LDAP server
+        ldapEnv.put(Context.PROVIDER_URL, url + ":"+ port + "/" + baseDn);
         ldapEnv.put(Context.SECURITY_AUTHENTICATION, SECURITY_AUTHENTICATION);
         try {
             return new InitialLdapContext(new Hashtable<>(ldapEnv), null);
@@ -77,12 +78,30 @@ public class LdapUtil {
      * @return userDn
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
-        SearchControls constraints = new SearchControls();
+        Set<String> attributeSet = new HashSet<>();
+        attributeSet.add(ldap.getLoginNameField());
+        attributeSet.add(ldap.getRealNameField());
+        attributeSet.add(ldap.getEmailField());
+        attributeSet.add(ldap.getPasswordField());
+        attributeSet.add(ldap.getPhoneField());
+        NamingEnumeration namingEnumeration = getNamingEnumeration(ldapContext, username, attributeSet);
         StringBuilder userDn = new StringBuilder();
+        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
+            //maybe more than one element
+            Object obj = namingEnumeration.nextElement();
+            if (obj instanceof SearchResult) {
+                SearchResult searchResult = (SearchResult) obj;
+                userDn.append(searchResult.getName()).append(",").append(ldap.getBaseDn());
+            }
+        }
+        return userDn.toString();
+    }
+
+    public static NamingEnumeration getNamingEnumeration(LdapContext ldapContext, String username, Set<String> attributeSet) {
+        SearchControls constraints = new SearchControls();
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
         NamingEnumeration namingEnumeration = null;
         try {
-            attributeSet.add(ldap.getLdapAttributeName());
             Iterator<String> iterator = attributeSet.iterator();
             while (iterator.hasNext()) {
                 namingEnumeration = ldapContext.search("",
@@ -94,15 +113,7 @@ public class LdapUtil {
         } catch (NamingException e) {
             LOGGER.info("ldap search fail: {}", e);
         }
-        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-            //maybe more than one element
-            Object obj = namingEnumeration.nextElement();
-            if (obj instanceof SearchResult) {
-                SearchResult searchResult = (SearchResult) obj;
-                userDn.append(searchResult.getName()).append(",").append(ldap.getBaseDn());
-            }
-        }
-        return userDn.toString();
+        return namingEnumeration;
     }
 
     /**

@@ -2,12 +2,15 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.LdapAccountDTO;
+import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
 import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
@@ -21,16 +24,18 @@ import javax.naming.ldap.LdapContext;
 @Component
 public class LdapServiceImpl implements LdapService {
     private LdapRepository ldapRepository;
+    private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
 
     public LdapServiceImpl(LdapRepository ldapRepository, OrganizationRepository organizationRepository,
-                           LdapSyncUserTask ldapSyncUserTask) {
+                           LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService) {
         this.ldapRepository = ldapRepository;
         this.organizationRepository = organizationRepository;
         this.ldapSyncUserTask = ldapSyncUserTask;
+        this.iLdapService = iLdapService;
     }
 
     @Override
@@ -44,11 +49,11 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO update(Long orgId, Long id, LdapDTO ldapDTO) {
-        if (organizationRepository.selectByPrimaryKey(orgId) == null) {
+    public LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO) {
+        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        if (ldapRepository.query(id) == null) {
+        if (ldapRepository.queryById(id) == null) {
             throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         LdapE ldapE = ldapRepository.update(id, ConvertHelper.convert(ldapDTO, LdapE.class));
@@ -56,7 +61,7 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO queryByOrgId(Long orgId) {
+    public LdapDTO queryByOrganizationId(Long orgId) {
         if (organizationRepository.selectByPrimaryKey(orgId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
@@ -72,26 +77,33 @@ public class LdapServiceImpl implements LdapService {
         if (organizationRepository.selectByPrimaryKey(orgId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        if (ldapRepository.query(id) == null) {
+        if (ldapRepository.queryById(id) == null) {
             throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         return ldapRepository.delete(id);
     }
 
     @Override
-    public Boolean testConnect(Long orgId) {
-        LdapDTO ldapDTO = queryByOrgId(orgId);
-        LdapContext ldapContext = LdapUtil.ldapConnect(ldapDTO.getServerAddress(), ldapDTO.getBaseDn());
-        Boolean isConnect = true;
-        if (ldapContext == null) {
-            isConnect = false;
+    public LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccount) {
+        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return isConnect;
+        LdapDO ldap = ldapRepository.queryById(id);
+        if (ldap == null) {
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
+        }
+        if (!organizationId.equals(ldap.getOrganizationId())) {
+            throw new CommonException("error.organization.not.has.ldap", organizationId, id);
+        }
+        ldap.setAccount(ldapAccount.getAccount());
+        //todo ldap password 加密解密
+        ldap.setPassword(ldapAccount.getPassword());
+        return iLdapService.testConnect(ldap);
     }
 
     @Override
     public void syncLdapUser(Long orgId, UserDTO userDTO) {
-        LdapDTO ldapDTO = queryByOrgId(orgId);
+        LdapDTO ldapDTO = queryByOrganizationId(orgId);
         LdapContext ldapContext = LdapUtil.authenticate(userDTO.getLoginName(),
                 "unknown", ConvertHelper.convert(ldapDTO, LdapDO.class));
         if (ldapContext == null) {

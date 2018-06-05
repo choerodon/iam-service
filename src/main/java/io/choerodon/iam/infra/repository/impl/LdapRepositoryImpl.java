@@ -41,9 +41,8 @@ public class LdapRepositoryImpl implements LdapRepository {
     }
 
     @Override
-    public LdapE query(Long id) {
-        LdapDO ldapDO = ldapMapper.selectByPrimaryKey(id);
-        return ConvertHelper.convert(ldapDO, LdapE.class);
+    public LdapDO queryById(Long id) {
+        return ldapMapper.selectByPrimaryKey(id);
     }
 
     @Override
