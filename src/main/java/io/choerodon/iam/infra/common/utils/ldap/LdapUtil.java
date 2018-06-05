@@ -20,7 +20,7 @@ public class LdapUtil {
     private static final String INITIAL_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
     private static final String SECURITY_AUTHENTICATION = "simple";
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapUtil.class);
-//    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
+    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
 
 
     private LdapUtil() {
@@ -82,7 +82,6 @@ public class LdapUtil {
      * @return userDn
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
-        Set<String> attributeSet = new HashSet<>();
         attributeSet.add(ldap.getLoginNameField());
         attributeSet.add(ldap.getRealNameField());
         attributeSet.add(ldap.getEmailField());

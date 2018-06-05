@@ -13,10 +13,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author superlee
@@ -44,6 +41,8 @@ public class ILdapServiceImpl implements ILdapService {
             //todo 这个地方写的不好，写死了
             Map<String, String> attributeMap = initAttributeMap(ldap);
             Set<String> attributeSet = new HashSet<>(attributeMap.values());
+            //default attribute 处理
+            attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
             Set<String> keySet = new HashSet<>();
             NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
             while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
