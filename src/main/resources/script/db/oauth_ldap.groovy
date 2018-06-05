@@ -43,7 +43,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         dropColumn(tableName: 'oauth_ldap', columnName: 'ldap_attribute_name')
         dropColumn(tableName: 'oauth_ldap', columnName: 'domain')
         addColumn(tableName: 'oauth_ldap') {
-            column(name: 'port', type: "VARCHAR(8)", defaultValue: "398", remarks: '端口号', afterColumn: 'server_address') {
+            column(name: 'port', type: "VARCHAR(8)", defaultValue: "389", remarks: '端口号', afterColumn: 'server_address') {
                 constraints(nullable: false)
             }
             column(name: 'account', type: "VARCHAR(128)", defaultValue: "", remarks: 'ldap登陆账户', afterColumn: 'port'){
