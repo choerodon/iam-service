@@ -20,7 +20,7 @@ public class LdapUtil {
     private static final String INITIAL_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
     private static final String SECURITY_AUTHENTICATION = "simple";
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapUtil.class);
-//    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
+    private static final Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
 
 
     private LdapUtil() {
@@ -37,7 +37,7 @@ public class LdapUtil {
      */
     public static LdapContext authenticate(String userName, String password, LdapDO ldap) {
         String userDn;
-        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort());
+        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
         if (ldapContext == null) {
             return null;
         }
@@ -56,11 +56,15 @@ public class LdapUtil {
      * @param port ldap port
      * @return 返回ldapContext
      */
-    public static LdapContext ldapConnect(String url, String baseDn, String port) {
+    public static LdapContext ldapConnect(String url, String baseDn, String port, Boolean useSSL) {
         HashMap<String, String> ldapEnv = new HashMap<>(5);
         ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
         ldapEnv.put(Context.PROVIDER_URL, url + ":"+ port + "/" + baseDn);
         ldapEnv.put(Context.SECURITY_AUTHENTICATION, SECURITY_AUTHENTICATION);
+        if (useSSL) {
+            // Specify SSL
+            ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
+        }
         try {
             return new InitialLdapContext(new Hashtable<>(ldapEnv), null);
         } catch (NamingException e) {
@@ -78,7 +82,6 @@ public class LdapUtil {
      * @return userDn
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
-        Set<String> attributeSet = new HashSet<>();
         attributeSet.add(ldap.getLoginNameField());
         attributeSet.add(ldap.getRealNameField());
         attributeSet.add(ldap.getEmailField());

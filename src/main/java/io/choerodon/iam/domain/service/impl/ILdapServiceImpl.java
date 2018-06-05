@@ -13,10 +13,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author superlee
@@ -28,25 +25,12 @@ public class ILdapServiceImpl implements ILdapService {
     public LdapConnectionDTO testConnect(LdapDO ldap) {
         connectValidate(ldap);
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
-        ldapConnectionDTO.setCanConnectServer(ConnectServerTesting(ldap));
-        LdapContext ldapContext = LoginTesting(ldap);
+        ldapConnectionDTO.setCanConnectServer(connectServerTesting(ldap));
+        LdapContext ldapContext = loginTesting(ldap);
         ldapConnectionDTO.setCanLogin(ldapContext != null);
         matchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
         return ldapConnectionDTO;
     }
-
-//    private LdapTemplate initLdapTemplate(LdapDO ldap) {
-//        LdapContextSource ldapContextSource = new LdapContextSource();
-//        //如果port为空字符串，设置端口为默认389
-//        String port = StringUtils.isEmpty(ldap.getPort()) ? "389": ldap.getPort();
-//        String url = ldap.getServerAddress() + ":" + port + "/" + ldap.getBaseDn();
-//        ldapContextSource.setUrl(url);
-//        ldapContextSource.setBase(ldap.getBaseDn());
-//        ldapContextSource.setUserDn(ldap.getAccount());
-//        ldapContextSource.setPassword(ldap.getPassword());
-//        ldapContextSource.afterPropertiesSet();
-//        return new LdapTemplate(ldapContextSource);
-//    }
 
     private void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
                                        LdapDO ldap) {
@@ -55,13 +39,10 @@ public class ILdapServiceImpl implements ILdapService {
             ldapConnectionDTO.setMatchAttribute(false);
         } else {
             //todo 这个地方写的不好，写死了
-            Map<String, String> attributeMap = new HashMap<>(10);
-            attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
-            attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());
-            attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
-            attributeMap.put(LdapDTO.GET_PASSWORD_FIELD, ldap.getPasswordField());
-            attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
+            Map<String, String> attributeMap = initAttributeMap(ldap);
             Set<String> attributeSet = new HashSet<>(attributeMap.values());
+            //default attribute 处理
+            attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
             Set<String> keySet = new HashSet<>();
             NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
             while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
@@ -76,27 +57,39 @@ public class ILdapServiceImpl implements ILdapService {
                     }
                 }
             }
-            boolean match = true;
-            for (Map.Entry<String, String> entry : attributeMap.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                if (value != null) {
-                    if (!keySet.contains(value)) {
-                        match = false;
-                        ldapConnectionDTO.fullFields(key, value);
-                    }
-                }
-            }
-            ldapConnectionDTO.setMatchAttribute(match);
+            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
         }
     }
 
-    private LdapContext LoginTesting(LdapDO ldap) {
+    private void fullMathAttribute(LdapConnectionDTO ldapConnectionDTO, Map<String, String> attributeMap, Set<String> keySet) {
+        boolean match = true;
+        for (Map.Entry<String, String> entry : attributeMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value != null && !keySet.contains(value)) {
+                match = false;
+                ldapConnectionDTO.fullFields(key, value);
+            }
+        }
+        ldapConnectionDTO.setMatchAttribute(match);
+    }
+
+    private Map<String, String> initAttributeMap(LdapDO ldap) {
+        Map<String, String> attributeMap = new HashMap<>(10);
+        attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
+        attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());
+        attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
+        attributeMap.put(LdapDTO.GET_PASSWORD_FIELD, ldap.getPasswordField());
+        attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
+        return attributeMap;
+    }
+
+    private LdapContext loginTesting(LdapDO ldap) {
         return LdapUtil.authenticate(ldap.getAccount(), ldap.getPassword(), ldap);
     }
 
-    private boolean ConnectServerTesting(LdapDO ldap) {
-        return LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort()) != null;
+    private boolean connectServerTesting(LdapDO ldap) {
+        return LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL()) != null;
     }
 
     private void connectValidate(LdapDO ldap) {
