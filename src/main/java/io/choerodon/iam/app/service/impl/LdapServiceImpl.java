@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.UserDTO;
@@ -48,8 +49,8 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapDTO update(Long orgId, Long id, LdapDTO ldapDTO) {
-        if (organizationRepository.selectByPrimaryKey(orgId) == null) {
+    public LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO) {
+        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         if (ldapRepository.queryById(id) == null) {
@@ -83,7 +84,7 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapConnectionDTO testConnect(Long organizationId, Long id) {
+    public LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccount) {
         if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
@@ -94,6 +95,9 @@ public class LdapServiceImpl implements LdapService {
         if (!organizationId.equals(ldap.getOrganizationId())) {
             throw new CommonException("error.organization.not.has.ldap", organizationId, id);
         }
+        ldap.setAccount(ldapAccount.getAccount());
+        //todo ldap password 加密解密
+        ldap.setPassword(ldapAccount.getPassword());
         return iLdapService.testConnect(ldap);
     }
 

@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.UserDTO;
@@ -10,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * @author wuguokai
@@ -89,10 +92,11 @@ public class LdapController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "测试ldap连接")
-    @GetMapping("/{id}/test_connect")
+    @PostMapping("/{id}/test_connect")
     public ResponseEntity<LdapConnectionDTO> testConnect(@PathVariable("organization_id") Long organizationId,
-                                                         @PathVariable("id") Long id) {
-        return new ResponseEntity<>(ldapService.testConnect(organizationId, id), HttpStatus.OK);
+                                                         @PathVariable("id") Long id,
+                                                         @RequestBody @Valid LdapAccountDTO ldapAccount) {
+        return new ResponseEntity<>(ldapService.testConnect(organizationId, id, ldapAccount), HttpStatus.OK);
     }
 
     /**

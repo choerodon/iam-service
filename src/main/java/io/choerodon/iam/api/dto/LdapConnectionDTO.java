@@ -1,10 +1,10 @@
 package io.choerodon.iam.api.dto;
 
+
 /**
  * @author superlee
  */
 public class LdapConnectionDTO {
-
     private Boolean canConnectServer;
     private Boolean canLogin;
     private Boolean matchAttribute;
@@ -76,5 +76,23 @@ public class LdapConnectionDTO {
 
     public void setEmailField(String emailField) {
         this.emailField = emailField;
+    }
+
+    public void fullFields(String key, String value) {
+        if (LdapDTO.GET_LOGIN_NAME_FIELD.equals(key)) {
+            this.setLoginNameField(value);
+        }
+        if (LdapDTO.GET_REAL_NAME_FIELD.equals(key)) {
+            this.setUserNameField(value);
+        }
+        if (LdapDTO.GET_EMAIL_FIELD.equals(key)) {
+            this.setEmailField(value);
+        }
+        if (LdapDTO.GET_PASSWORD_FIELD.equals(key)) {
+            this.setPasswordField(value);
+        }
+        if (LdapDTO.GET_PHONE_FIELD.equals(key)) {
+            this.setPhoneField(value);
+        }
     }
 }

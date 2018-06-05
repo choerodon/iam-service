@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.service.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
+import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
@@ -12,7 +13,9 @@ import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,12 +54,14 @@ public class ILdapServiceImpl implements ILdapService {
             //登陆不成功，匹配属性测试也是失败的
             ldapConnectionDTO.setMatchAttribute(false);
         } else {
-            Set<String> attributeSet = new HashSet<>();
-            attributeSet.add(ldap.getLoginNameField());
-            attributeSet.add(ldap.getRealNameField());
-            attributeSet.add(ldap.getEmailField());
-            attributeSet.add(ldap.getPasswordField());
-            attributeSet.add(ldap.getPhoneField());
+            //todo 这个地方写的不好，写死了
+            Map<String, String> attributeMap = new HashMap<>(10);
+            attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
+            attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());
+            attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
+            attributeMap.put(LdapDTO.GET_PASSWORD_FIELD, ldap.getPasswordField());
+            attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
+            Set<String> attributeSet = new HashSet<>(attributeMap.values());
             Set<String> keySet = new HashSet<>();
             NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
             while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
@@ -72,20 +77,18 @@ public class ILdapServiceImpl implements ILdapService {
                 }
             }
             boolean match = true;
-            for (String attr : attributeSet) {
-                if (attr != null) {
-                    if (!keySet.contains(attr)) {
+            for (Map.Entry<String, String> entry : attributeMap.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (value != null) {
+                    if (!keySet.contains(value)) {
                         match = false;
+                        ldapConnectionDTO.fullFields(key, value);
                     }
                 }
             }
             ldapConnectionDTO.setMatchAttribute(match);
         }
-        ldapConnectionDTO.setEmailField(ldap.getEmailField());
-        ldapConnectionDTO.setLoginNameField(ldap.getLoginNameField());
-        ldapConnectionDTO.setPasswordField(ldap.getPasswordField());
-        ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
-        ldapConnectionDTO.setUserNameField(ldap.getRealNameField());
     }
 
     private LdapContext LoginTesting(LdapDO ldap) {
