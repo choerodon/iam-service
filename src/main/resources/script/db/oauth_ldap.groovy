@@ -62,21 +62,11 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
                 constraints(nullable: false)
             }
             column(name: 'directory_type', type: "VARCHAR(64)", remarks: '目录类型', afterColumn:'base_dn')
-            column(name: 'login_name_field', type: "VARCHAR(64)", remarks: 'login_name对应的字段名', defaultValue: 'login_name', afterColumn:'directory_type') {
-                constraints(nullable: false)
-            }
-            column(name: 'real_name_field', type: "VARCHAR(64)", remarks: 'real_name对应的字段名', defaultValue: 'real_name', afterColumn:'login_name_field') {
-                constraints(nullable: false)
-            }
-            column(name: 'email_field', type: "VARCHAR(64)", remarks: 'email对应的字段名', defaultValue: 'email', afterColumn:'real_name_field') {
-                constraints(nullable: false)
-            }
-            column(name: 'password_field', type: "VARCHAR(64)", remarks: 'password对应的字段名', defaultValue: 'password', afterColumn:'email_field') {
-                constraints(nullable: false)
-            }
-            column(name: 'phone_field', type: "VARCHAR(64)", remarks: 'phone对应的字段名', defaultValue: 'phone', afterColumn:'password_field') {
-                constraints(nullable: false)
-            }
+            column(name: 'login_name_field', type: "VARCHAR(64)", remarks: 'login_name对应的字段名', afterColumn:'directory_type')
+            column(name: 'real_name_field', type: "VARCHAR(64)", remarks: 'real_name对应的字段名', afterColumn:'login_name_field')
+            column(name: 'email_field', type: "VARCHAR(64)", remarks: 'email对应的字段名', afterColumn:'real_name_field')
+            column(name: 'password_field', type: "VARCHAR(64)", remarks: 'password对应的字段名', afterColumn:'email_field')
+            column(name: 'phone_field', type: "VARCHAR(64)", remarks: 'phone对应的字段名', afterColumn:'password_field')
             column(name: 'total_sync_count', type: "INTEGER UNSIGNED", remarks: '累计同步用户数量', afterColumn:'phone_field')
             column(name: "sync_begin_time", type: "DATETIME", remarks: '同步任务开始的时间', defaultValueComputed: "CURRENT_TIMESTAMP", afterColumn:'total_sync_count')
         }
