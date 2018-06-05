@@ -9,7 +9,7 @@ public class LdapConnectionDTO {
     private Boolean canLogin;
     private Boolean matchAttribute;
     private String loginNameField;
-    private String userNameField;
+    private String realNameField;
     private String passwordField;
     private String phoneField;
     private String emailField;
@@ -46,12 +46,12 @@ public class LdapConnectionDTO {
         this.loginNameField = loginNameField;
     }
 
-    public String getUserNameField() {
-        return userNameField;
+    public String getRealNameField() {
+        return realNameField;
     }
 
-    public void setUserNameField(String userNameField) {
-        this.userNameField = userNameField;
+    public void setRealNameField(String realNameField) {
+        this.realNameField = realNameField;
     }
 
     public String getPasswordField() {
@@ -83,7 +83,7 @@ public class LdapConnectionDTO {
             this.setLoginNameField(value);
         }
         if (LdapDTO.GET_REAL_NAME_FIELD.equals(key)) {
-            this.setUserNameField(value);
+            this.setRealNameField(value);
         }
         if (LdapDTO.GET_EMAIL_FIELD.equals(key)) {
             this.setEmailField(value);

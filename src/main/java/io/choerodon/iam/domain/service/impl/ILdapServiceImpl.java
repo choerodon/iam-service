@@ -90,7 +90,7 @@ public class ILdapServiceImpl implements ILdapService {
     }
 
     private boolean connectServerTesting(LdapDO ldap) {
-        return LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort()) != null;
+        return LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL()) != null;
     }
 
     private void connectValidate(LdapDO ldap) {
