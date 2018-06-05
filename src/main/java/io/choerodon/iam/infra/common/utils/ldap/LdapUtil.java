@@ -78,18 +78,30 @@ public class LdapUtil {
      * @return userDn
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
-        SearchControls constraints = new SearchControls();
-        StringBuilder userDn = new StringBuilder();
-        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration namingEnumeration = null;
         Set<String> attributeSet = new HashSet<>();
         attributeSet.add(ldap.getLoginNameField());
         attributeSet.add(ldap.getRealNameField());
         attributeSet.add(ldap.getEmailField());
         attributeSet.add(ldap.getPasswordField());
         attributeSet.add(ldap.getPhoneField());
+        NamingEnumeration namingEnumeration = getNamingEnumeration(ldapContext, username, attributeSet);
+        StringBuilder userDn = new StringBuilder();
+        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
+            //maybe more than one element
+            Object obj = namingEnumeration.nextElement();
+            if (obj instanceof SearchResult) {
+                SearchResult searchResult = (SearchResult) obj;
+                userDn.append(searchResult.getName()).append(",").append(ldap.getBaseDn());
+            }
+        }
+        return userDn.toString();
+    }
+
+    public static NamingEnumeration getNamingEnumeration(LdapContext ldapContext, String username, Set<String> attributeSet) {
+        SearchControls constraints = new SearchControls();
+        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration namingEnumeration = null;
         try {
-//            attributeSet.add(ldap.getLoginNameField());
             Iterator<String> iterator = attributeSet.iterator();
             while (iterator.hasNext()) {
                 namingEnumeration = ldapContext.search("",
@@ -101,15 +113,7 @@ public class LdapUtil {
         } catch (NamingException e) {
             LOGGER.info("ldap search fail: {}", e);
         }
-        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-            //maybe more than one element
-            Object obj = namingEnumeration.nextElement();
-            if (obj instanceof SearchResult) {
-                SearchResult searchResult = (SearchResult) obj;
-                userDn.append(searchResult.getName()).append(",").append(ldap.getBaseDn());
-            }
-        }
-        return userDn.toString();
+        return namingEnumeration;
     }
 
     /**

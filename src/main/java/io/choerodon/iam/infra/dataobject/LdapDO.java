@@ -214,11 +214,14 @@ public class LdapDO extends AuditDomain {
         if (baseDn != null ? !baseDn.equals(ldapDO.baseDn) : ldapDO.baseDn != null) return false;
         if (directoryType != null ? !directoryType.equals(ldapDO.directoryType) : ldapDO.directoryType != null)
             return false;
-        if (!loginNameField.equals(ldapDO.loginNameField)) return false;
-        if (!realNameField.equals(ldapDO.realNameField)) return false;
-        if (!emailField.equals(ldapDO.emailField)) return false;
-        if (!passwordField.equals(ldapDO.passwordField)) return false;
-        if (!phoneField.equals(ldapDO.phoneField)) return false;
+        if (loginNameField != null ? !loginNameField.equals(ldapDO.loginNameField) : ldapDO.loginNameField != null)
+            return false;
+        if (realNameField != null ? !realNameField.equals(ldapDO.realNameField) : ldapDO.realNameField != null)
+            return false;
+        if (emailField != null ? !emailField.equals(ldapDO.emailField) : ldapDO.emailField != null) return false;
+        if (passwordField != null ? !passwordField.equals(ldapDO.passwordField) : ldapDO.passwordField != null)
+            return false;
+        if (phoneField != null ? !phoneField.equals(ldapDO.phoneField) : ldapDO.phoneField != null) return false;
         if (totalSyncCount != null ? !totalSyncCount.equals(ldapDO.totalSyncCount) : ldapDO.totalSyncCount != null)
             return false;
         return syncBeginTime != null ? syncBeginTime.equals(ldapDO.syncBeginTime) : ldapDO.syncBeginTime == null;
@@ -238,11 +241,11 @@ public class LdapDO extends AuditDomain {
         result = 31 * result + syncing.hashCode();
         result = 31 * result + (baseDn != null ? baseDn.hashCode() : 0);
         result = 31 * result + (directoryType != null ? directoryType.hashCode() : 0);
-        result = 31 * result + loginNameField.hashCode();
-        result = 31 * result + realNameField.hashCode();
-        result = 31 * result + emailField.hashCode();
-        result = 31 * result + passwordField.hashCode();
-        result = 31 * result + phoneField.hashCode();
+        result = 31 * result + (loginNameField != null ? loginNameField.hashCode() : 0);
+        result = 31 * result + (realNameField != null ? realNameField.hashCode() : 0);
+        result = 31 * result + (emailField != null ? emailField.hashCode() : 0);
+        result = 31 * result + (passwordField != null ? passwordField.hashCode() : 0);
+        result = 31 * result + (phoneField != null ? phoneField.hashCode() : 0);
         result = 31 * result + (totalSyncCount != null ? totalSyncCount.hashCode() : 0);
         result = 31 * result + (syncBeginTime != null ? syncBeginTime.hashCode() : 0);
         return result;

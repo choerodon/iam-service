@@ -5,16 +5,15 @@ import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.mybatis.util.StringUtil;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -25,11 +24,9 @@ public class ILdapServiceImpl implements ILdapService {
     @Override
     public LdapConnectionDTO testConnect(LdapDO ldap) {
         connectValidate(ldap);
-//        LdapTemplate ldapTemplate = initLdapTemplate(ldap);
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         ldapConnectionDTO.setCanConnectServer(ConnectServerTesting(ldap));
         LdapContext ldapContext = LoginTesting(ldap);
-//        DirContext dirContext = ldapTemplate.getContextSource().getReadOnlyContext();
         ldapConnectionDTO.setCanLogin(ldapContext != null);
         matchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
         return ldapConnectionDTO;
@@ -51,20 +48,44 @@ public class ILdapServiceImpl implements ILdapService {
     private void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
                                        LdapDO ldap) {
         if (ldapContext == null) {
-            //登陆不成功，匹配属性测试也是成功的
+            //登陆不成功，匹配属性测试也是失败的
             ldapConnectionDTO.setMatchAttribute(false);
-            ldapConnectionDTO.setEmailField(ldap.getEmailField());
-            ldapConnectionDTO.setLoginNameField(ldap.getLoginNameField());
-            ldapConnectionDTO.setPasswordField(ldap.getPasswordField());
-            ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
-            ldapConnectionDTO.setUserNameField(ldap.getRealNameField());
         } else {
-//            try {
-//                ldapContext.geta
-//            } catch (NamingException e) {
-//                e.printStackTrace();
-//            }
+            Set<String> attributeSet = new HashSet<>();
+            attributeSet.add(ldap.getLoginNameField());
+            attributeSet.add(ldap.getRealNameField());
+            attributeSet.add(ldap.getEmailField());
+            attributeSet.add(ldap.getPasswordField());
+            attributeSet.add(ldap.getPhoneField());
+            Set<String> keySet = new HashSet<>();
+            NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
+            while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
+                //maybe more than one element
+                Object obj = namingEnumeration.nextElement();
+                if (obj instanceof SearchResult) {
+                    SearchResult searchResult = (SearchResult) obj;
+                    Attributes attributes = searchResult.getAttributes();
+                    NamingEnumeration attributesIDs = attributes.getIDs();
+                    while (attributesIDs != null && attributesIDs.hasMoreElements()) {
+                        keySet.add(attributesIDs.nextElement().toString());
+                    }
+                }
+            }
+            boolean match = true;
+            for (String attr : attributeSet) {
+                if (attr != null) {
+                    if (!keySet.contains(attr)) {
+                        match = false;
+                    }
+                }
+            }
+            ldapConnectionDTO.setMatchAttribute(match);
         }
+        ldapConnectionDTO.setEmailField(ldap.getEmailField());
+        ldapConnectionDTO.setLoginNameField(ldap.getLoginNameField());
+        ldapConnectionDTO.setPasswordField(ldap.getPasswordField());
+        ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
+        ldapConnectionDTO.setUserNameField(ldap.getRealNameField());
     }
 
     private LdapContext LoginTesting(LdapDO ldap) {
@@ -84,6 +105,12 @@ public class ILdapServiceImpl implements ILdapService {
         }
         if (StringUtils.isEmpty(ldap.getPassword())) {
             throw new CommonException("error.ldap.password.empty");
+        }
+        if (StringUtils.isEmpty(ldap.getLoginNameField())) {
+            throw new CommonException("error.ldap.loginNameField.empty");
+        }
+        if (StringUtils.isEmpty(ldap.getEmailField())) {
+            throw new CommonException("error.ldap.emailField.empty");
         }
     }
 }
