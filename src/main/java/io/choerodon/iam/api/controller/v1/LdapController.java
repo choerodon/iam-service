@@ -80,7 +80,7 @@ public class LdapController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据组织id删除Ldap")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> query(@PathVariable("organization_id") Long organizationId,
+    public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId,
                                          @PathVariable("id") Long id) {
         return new ResponseEntity<>(ldapService.delete(organizationId, id), HttpStatus.OK);
     }
