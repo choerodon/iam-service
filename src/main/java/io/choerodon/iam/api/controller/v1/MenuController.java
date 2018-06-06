@@ -38,7 +38,7 @@ public class MenuController {
      * @return 菜单对象
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("查看目录详情")
+    @ApiOperation("通过id查询目录")
     @GetMapping("/{menu_id}")
     public ResponseEntity<MenuDTO> query(@PathVariable("menu_id") Long menuId) {
         return new ResponseEntity<>(menuService.query(menuId), HttpStatus.OK);
@@ -66,7 +66,7 @@ public class MenuController {
      * @return 更新成功的目录对象
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("更新目录内容")
+    @ApiOperation("修改目录")
     @PostMapping("/{menu_id}")
     public ResponseEntity<MenuDTO> update(@PathVariable("menu_id") Long menuId, @RequestBody MenuDTO menuDTO) {
         menuDTO = menuValidator.update(menuId, menuDTO);
@@ -93,9 +93,8 @@ public class MenuController {
      * @param level 菜单层级
      * @return ResponseEntity<List   <   MenuDTO>> 树形菜单结构，每个menu包含自己下面带有的permission
      */
-//    @Permission(level = ResourceLevel.SITE)
     @Permission(permissionLogin = true)
-    @ApiOperation("菜单配置获取树形菜单，每个菜单都带自己拥有的permissions")
+    @ApiOperation("通过层级获取树形菜单")
     @GetMapping("/tree")
     public ResponseEntity<List<MenuDTO>> listTreeMenusWithPermissions(
             @RequestParam(required = false, name = "test_permission") boolean testPermission,
@@ -109,7 +108,7 @@ public class MenuController {
      * @return ResponseEntity<List<MenuDTO>> 返回当前用户经过权限校验的菜单栏，不包含permissions
      */
     @Permission(permissionLogin = true)
-    @ApiOperation("获取用户已经经过权限校验的左侧菜单，菜单下不带permissions")
+    @ApiOperation("通过层级获取已经经过权限校验的左侧菜单")
     @GetMapping
     public ResponseEntity<List<MenuDTO>> listAfterTestPermission(@RequestParam String level) {
         ResourceLevelValidator.validate(level);
@@ -123,7 +122,7 @@ public class MenuController {
      * @param menuDTOList 需要保存的树形菜单集合
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("保存树形菜单")
+    @ApiOperation("修改树形菜单")
     @PostMapping("/tree")
     public ResponseEntity<List<MenuDTO>> saveListTree(@RequestParam("level") String level,
                                                       @RequestBody @Valid ValidList<MenuDTO> menuDTOList) {

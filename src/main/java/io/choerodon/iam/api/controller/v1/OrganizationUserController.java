@@ -43,7 +43,7 @@ public class OrganizationUserController extends BaseController {
      * 新增用户
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "新增用户")
+    @ApiOperation(value = "创建用户")
     @PostMapping
     public ResponseEntity<UserDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                           @RequestBody @Validated(value = UserValidator.UserGroup.class) UserDTO userDTO) {
@@ -55,7 +55,7 @@ public class OrganizationUserController extends BaseController {
      * 删除组织下的用户
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据id删除用户")
+    @ApiOperation(value = "删除用户")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@PathVariable(name = "organization_id") Long organizationId,
                                  @PathVariable Long id) {
@@ -67,7 +67,7 @@ public class OrganizationUserController extends BaseController {
      * 更新用户
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据id修改用户")
+    @ApiOperation(value = "修改用户")
     @PutMapping(value = "/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                           @PathVariable Long id,
@@ -83,7 +83,7 @@ public class OrganizationUserController extends BaseController {
      * 分页查询
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "分页查询")
+    @ApiOperation(value = "分页查询用户")
     @CustomPageRequest
     @PostMapping(value = "/search")
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
@@ -96,7 +96,7 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据id查询组织下的用户")
+    @ApiOperation(value = "查询组织下的用户")
     @GetMapping(value = "/{id}")
     public ResponseEntity<UserDTO> query(@PathVariable(name = "organization_id") Long organizationId,
                                          @PathVariable Long id) {
@@ -107,7 +107,7 @@ public class OrganizationUserController extends BaseController {
      * 解锁用户
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据用户id解锁用户")
+    @ApiOperation(value = "解锁用户")
     @GetMapping(value = "/{id}/unlock")
     public ResponseEntity<UserDTO> unlock(@PathVariable(name = "organization_id") Long organizationId,
                                           @PathVariable Long id) {
@@ -115,7 +115,7 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "用户启用")
+    @ApiOperation(value = "启用用户")
     @PutMapping(value = "/{id}/enable")
     public ResponseEntity<UserDTO> enableUser(@PathVariable(name = "organization_id") Long organizationId,
                                               @PathVariable Long id) {
@@ -123,7 +123,7 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "用户禁用")
+    @ApiOperation(value = "禁用用户")
     @PutMapping(value = "/{id}/disable")
     public ResponseEntity<UserDTO> disableUser(@PathVariable(name = "organization_id") Long organizationId,
                                                @PathVariable Long id) {
@@ -131,7 +131,7 @@ public class OrganizationUserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验json里面不传id,更新校验传id")
+    @ApiOperation(value = "用户信息重名校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
                                 @RequestBody UserDTO user) {

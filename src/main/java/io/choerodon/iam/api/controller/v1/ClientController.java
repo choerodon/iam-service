@@ -43,7 +43,7 @@ public class ClientController extends BaseController {
      * @return 创建成功的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据Client对象创建一个新的客户端")
+    @ApiOperation(value = "创建客户端")
     @PostMapping
     public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid ClientDTO clientDTO) {
         clientValidator.create(clientDTO);
@@ -59,7 +59,7 @@ public class ClientController extends BaseController {
      * @return 更新成功的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据clientId更新Client")
+    @ApiOperation(value = "修改客户端")
     @PostMapping(value = "/{client_id}")
     public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId,
                                             @RequestBody ClientDTO clientDTO) {
@@ -75,7 +75,7 @@ public class ClientController extends BaseController {
      * @return 删除是否成功
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据ClientId,删除客户端")
+    @ApiOperation(value = "删除客户端")
     @DeleteMapping(value = "/{client_id}")
     public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
         return new ResponseEntity<>(clientService.delete(organizationId, clientId), HttpStatus.OK);
@@ -89,7 +89,7 @@ public class ClientController extends BaseController {
      * @return 查询到的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据ClientId,查询客户端对象")
+    @ApiOperation(value = "通过id查询客户端")
     @GetMapping(value = "/{client_id}")
     public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
         return new ResponseEntity<>(clientService.query(organizationId, clientId), HttpStatus.OK);
@@ -103,7 +103,7 @@ public class ClientController extends BaseController {
      * @return 查询到的客户端对象
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据客户端名称查询Client")
+    @ApiOperation(value = "通过名称查询客户端")
     @GetMapping("/query_by_name")
     public ResponseEntity<ClientDTO> queryByName(@PathVariable("organization_id") Long organizationId, @RequestParam(value = "client_name") String clientName) {
         return new ResponseEntity<>(clientService.queryByName(organizationId, clientName), HttpStatus.OK);
@@ -144,7 +144,7 @@ public class ClientController extends BaseController {
      * @return 验证成功，否则失败
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "客户端重名校验接口(name)，新建校验不传id,更新校验传id")
+    @ApiOperation(value = "客户端信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
                                 @RequestBody ClientDTO client) {

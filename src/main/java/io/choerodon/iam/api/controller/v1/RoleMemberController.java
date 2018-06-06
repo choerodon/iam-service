@@ -141,7 +141,7 @@ public class RoleMemberController extends BaseController {
      * is_edit 是否是编辑，如果false就表示新建角色，true表示是在是编辑角色
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "用户批量在site层分配角色")
+    @ApiOperation(value = "全局层批量分配给用户角色")
     @PostMapping(value = "/site/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnSiteLevel1(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                          @RequestParam(name = "member_ids") List<Long> memberIds,
@@ -155,7 +155,7 @@ public class RoleMemberController extends BaseController {
      * 在organization层分配角色
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "用户批量在organization层分配角色")
+    @ApiOperation(value = "组织层批量分配给用户角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnOrganizationLevel1(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                                  @PathVariable(name = "organization_id") Long sourceId,
@@ -170,7 +170,7 @@ public class RoleMemberController extends BaseController {
      * 在project层分配角色
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "用户批量在project层分配角色")
+    @ApiOperation(value = "项目层批量分配给用户角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOnProjectLevel1(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                     @PathVariable(name = "project_id") Long sourceId,
@@ -185,7 +185,7 @@ public class RoleMemberController extends BaseController {
      * 在site层根据成员id和角色id删除角色
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "在site层根据成员id和角色id删除角色")
+    @ApiOperation(value = "全局层批量移除用户的角色")
     @PostMapping(value = "/site/role_members/delete")
     public ResponseEntity deleteOnSiteLevel1(@RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
         RoleAssignmentViewValidator.validate(roleAssignmentDeleteDTO.getView());
@@ -198,7 +198,7 @@ public class RoleMemberController extends BaseController {
      * 在organization层根据成员id和角色id删除角色
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "在organization层根据成员id和角色id删除角色")
+    @ApiOperation(value = "组织层批量移除用户的角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members/delete")
     public ResponseEntity deleteOnOrganizationLevel1(@PathVariable(name = "organization_id") Long sourceId,
                                                     @RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
@@ -212,7 +212,7 @@ public class RoleMemberController extends BaseController {
      * 在project层根据id删除角色
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "在project层根据id删除角色")
+    @ApiOperation(value = "项目层批量移除用户的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/delete")
     public ResponseEntity deleteOnProjectLevel1(@PathVariable(name = "project_id") Long sourceId,
                                                @RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
@@ -230,7 +230,7 @@ public class RoleMemberController extends BaseController {
      * @return
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "全局层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
@@ -243,7 +243,7 @@ public class RoleMemberController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "组织层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
@@ -257,7 +257,7 @@ public class RoleMemberController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
@@ -276,7 +276,7 @@ public class RoleMemberController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "查询site层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "全局层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/site/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnSiteLevel(
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -290,7 +290,7 @@ public class RoleMemberController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询organization层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnOrganizationLevel(
             @PathVariable(name = "organization_id") Long sourceId,
@@ -305,7 +305,7 @@ public class RoleMemberController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "查询project层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
             @PathVariable(name = "project_id") Long sourceId,
@@ -320,7 +320,7 @@ public class RoleMemberController extends BaseController {
      * @param roleAssignmentSearchDTO 搜索条件
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
+    @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles")
     public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
@@ -337,7 +337,7 @@ public class RoleMemberController extends BaseController {
      * @param roleAssignmentSearchDTO 搜索条件
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
+    @ApiOperation(value = "组织层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/roles")
     public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithOrganizationLevelRoles(
@@ -355,7 +355,7 @@ public class RoleMemberController extends BaseController {
      * @param roleAssignmentSearchDTO 搜索条件
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
+    @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
     public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(

@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-
 /**
  * @author wuguokai
  */
@@ -35,7 +33,7 @@ public class LdapController {
      * @return ldapDTO
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "添加Ldap")
+    @ApiOperation(value = "创建Ldap")
     @PostMapping
     public ResponseEntity<LdapDTO> create(@PathVariable("organization_id") Long organizationId,
                                           @RequestBody LdapDTO ldapDTO) {
@@ -51,7 +49,7 @@ public class LdapController {
      * @return ldapDTO
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "更新Ldap")
+    @ApiOperation(value = "修改Ldap")
     @PostMapping(value = "/{id}")
     public ResponseEntity<LdapDTO> update(@PathVariable("organization_id") Long organizationId,
                                           @PathVariable("id") Long id, @RequestBody LdapDTO ldapDTO) {
@@ -65,7 +63,7 @@ public class LdapController {
      * @return ldapDTO
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据组织id查询Ldap")
+    @ApiOperation(value = "查询组织下的Ldap")
     @GetMapping
     public ResponseEntity<LdapDTO> queryByOrgId(@PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(ldapService.queryByOrganizationId(organizationId), HttpStatus.OK);
@@ -78,7 +76,7 @@ public class LdapController {
      * @return ldapDTO
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据组织id删除Ldap")
+    @ApiOperation(value = "删除组织下的Ldap")
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId,
                                          @PathVariable("id") Long id) {
