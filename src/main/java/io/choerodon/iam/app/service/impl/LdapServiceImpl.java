@@ -5,7 +5,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
 import io.choerodon.iam.domain.repository.LdapRepository;
@@ -102,13 +102,35 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public void syncLdapUser(Long orgId, UserDTO userDTO) {
-        LdapDTO ldapDTO = queryByOrganizationId(orgId);
-        LdapContext ldapContext = LdapUtil.authenticate(userDTO.getLoginName(),
-                "unknown", ConvertHelper.convert(ldapDTO, LdapDO.class));
-        if (ldapContext == null) {
-            throw new CommonException("error.ldap.connect");
+    public void syncLdapUser(Long organizationId, Long id) {
+        LdapDO ldap = ldapRepository.queryById(id);
+        if (ldap == null) {
+            throw new CommonException("error.ldap.not.exist");
         }
-        ldapSyncUserTask.syncLDAPUser(ldapContext, orgId, null);
+        LdapValidator.validate(ldap);
+        //匿名用户
+        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
+        LdapContext ldapContext = null;
+        LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
+        if (anonymous) {
+            //匿名用户只连接
+            ldapContext =LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+            if (ldapContext == null) {
+                throw new CommonException("error.ldap.connect");
+            }
+            iLdapService.anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+        } else {
+            //非匿名用户登陆
+            ldapContext = LdapUtil.authenticate(ldap.getAccount(), ldap.getPassword(), ldap);
+            if (ldapContext == null) {
+                throw new CommonException("error.ldap.connect");
+            }
+            //匹配属性
+            iLdapService.matchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+        }
+        if (!ldapConnectionDTO.getMatchAttribute()) {
+            throw new CommonException("error.ldap.attribute.match");
+        }
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, null);
     }
 }

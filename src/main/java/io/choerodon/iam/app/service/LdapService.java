@@ -3,7 +3,6 @@ package io.choerodon.iam.app.service;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 
 /**
  * @author wuguokai
@@ -25,5 +24,10 @@ public interface LdapService {
      */
     LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccountDTO);
 
-    void syncLdapUser(Long organizationId, UserDTO userDTO);
+    /**
+     * 根据ldap配置同步用户
+     * @param organizationId
+     * @param id
+     */
+    void syncLdapUser(Long organizationId, Long id);
 }
