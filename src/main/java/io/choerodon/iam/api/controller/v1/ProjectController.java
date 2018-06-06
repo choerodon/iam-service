@@ -39,7 +39,7 @@ public class ProjectController extends BaseController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @GetMapping(value = "/{project_id}")
-    @ApiOperation(value = "按照Id查询项目")
+    @ApiOperation(value = "通过id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.queryProjectById(id), HttpStatus.OK);
     }
@@ -53,7 +53,7 @@ public class ProjectController extends BaseController {
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "根据项目id分页查询该项目下的用户，可以进行模糊查询name和realName")
+    @ApiOperation(value = "分页模糊查询项目下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long id,
@@ -72,7 +72,7 @@ public class ProjectController extends BaseController {
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "更新项目")
+    @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
                                              @RequestBody ProjectDTO projectDTO) {

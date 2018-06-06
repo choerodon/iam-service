@@ -40,7 +40,7 @@ public class LookupController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "创建 Lookup")
+    @ApiOperation(value = "创建快码")
     @PostMapping
     public ResponseEntity<LookupDTO> create(@RequestBody @Valid LookupDTO lookupDTO) {
         lookupDTO.setId(null);
@@ -54,7 +54,7 @@ public class LookupController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "删除 Lookup")
+    @ApiOperation(value = "删除快码")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
         lookupService.delete(id);
@@ -65,7 +65,7 @@ public class LookupController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "修改 Lookup")
+    @ApiOperation(value = "修改快码")
     @PutMapping(value = "/{id}")
     public ResponseEntity<LookupDTO> update(@PathVariable Long id,
                                             @RequestBody @Valid LookupDTO lookupDTO) {
@@ -84,7 +84,7 @@ public class LookupController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询 Lookup 数据")
+    @ApiOperation(value = "分页查询快码")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<LookupDTO>> list(@ApiIgnore
@@ -95,7 +95,7 @@ public class LookupController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据lookUp的code查询lookup对象包含所有的value")
+    @ApiOperation(value = "通过code查询快码")
     @GetMapping(value = "/code")
     public ResponseEntity<LookupDTO> listByCode(@RequestParam(name = "value") String code) {
         return new ResponseEntity<>(lookupService.listByCodeWithLookupValues(code), HttpStatus.OK);
@@ -107,7 +107,7 @@ public class LookupController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "查看 Lookup")
+    @ApiOperation(value = "通过id查询快码")
     @GetMapping(value = "/{id}")
     public ResponseEntity<LookupDTO> queryById(@PathVariable Long id) {
         return new ResponseEntity<>(lookupService.queryById(id), HttpStatus.OK);
