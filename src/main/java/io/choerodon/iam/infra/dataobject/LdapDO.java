@@ -34,6 +34,7 @@ public class LdapDO extends AuditDomain {
     private Boolean syncing;
     private String baseDn;
     private String directoryType;
+    private String objectClass;
     private String loginNameField;
     private String realNameField;
     private String emailField;
@@ -194,6 +195,14 @@ public class LdapDO extends AuditDomain {
         this.password = password;
     }
 
+    public String getObjectClass() {
+        return objectClass;
+    }
+
+    public void setObjectClass(String objectClass) {
+        this.objectClass = objectClass;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -206,14 +215,15 @@ public class LdapDO extends AuditDomain {
         if (!organizationId.equals(ldapDO.organizationId)) return false;
         if (!serverAddress.equals(ldapDO.serverAddress)) return false;
         if (!port.equals(ldapDO.port)) return false;
-        if (!account.equals(ldapDO.account)) return false;
-        if (!password.equals(ldapDO.password)) return false;
+        if (account != null ? !account.equals(ldapDO.account) : ldapDO.account != null) return false;
+        if (password != null ? !password.equals(ldapDO.password) : ldapDO.password != null) return false;
         if (!useSSL.equals(ldapDO.useSSL)) return false;
         if (!enabled.equals(ldapDO.enabled)) return false;
         if (!syncing.equals(ldapDO.syncing)) return false;
         if (baseDn != null ? !baseDn.equals(ldapDO.baseDn) : ldapDO.baseDn != null) return false;
         if (directoryType != null ? !directoryType.equals(ldapDO.directoryType) : ldapDO.directoryType != null)
             return false;
+        if (!objectClass.equals(ldapDO.objectClass)) return false;
         if (loginNameField != null ? !loginNameField.equals(ldapDO.loginNameField) : ldapDO.loginNameField != null)
             return false;
         if (realNameField != null ? !realNameField.equals(ldapDO.realNameField) : ldapDO.realNameField != null)
@@ -234,13 +244,14 @@ public class LdapDO extends AuditDomain {
         result = 31 * result + organizationId.hashCode();
         result = 31 * result + serverAddress.hashCode();
         result = 31 * result + port.hashCode();
-        result = 31 * result + account.hashCode();
-        result = 31 * result + password.hashCode();
+        result = 31 * result + (account != null ? account.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + useSSL.hashCode();
         result = 31 * result + enabled.hashCode();
         result = 31 * result + syncing.hashCode();
         result = 31 * result + (baseDn != null ? baseDn.hashCode() : 0);
         result = 31 * result + (directoryType != null ? directoryType.hashCode() : 0);
+        result = 31 * result + objectClass.hashCode();
         result = 31 * result + (loginNameField != null ? loginNameField.hashCode() : 0);
         result = 31 * result + (realNameField != null ? realNameField.hashCode() : 0);
         result = 31 * result + (emailField != null ? emailField.hashCode() : 0);

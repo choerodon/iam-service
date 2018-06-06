@@ -18,7 +18,7 @@ public interface LdapRepository {
      */
     LdapDO queryById(Long id);
 
-    LdapE queryByOrgId(Long orgId);
+    LdapDO queryByOrgId(Long orgId);
 
     Boolean delete(Long id);
 }

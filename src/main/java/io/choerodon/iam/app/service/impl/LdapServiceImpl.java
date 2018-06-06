@@ -65,11 +65,11 @@ public class LdapServiceImpl implements LdapService {
         if (organizationRepository.selectByPrimaryKey(orgId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        LdapE ldapE = ldapRepository.queryByOrgId(orgId);
-        if (ldapE == null) {
+        LdapDO ldapDO = ldapRepository.queryByOrgId(orgId);
+        if (ldapDO == null) {
             throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
-        return ConvertHelper.convert(ldapE, LdapDTO.class);
+        return ConvertHelper.convert(ldapDO, LdapDTO.class);
     }
 
     @Override

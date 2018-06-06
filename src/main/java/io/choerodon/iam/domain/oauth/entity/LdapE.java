@@ -19,6 +19,7 @@ public class LdapE {
     private Boolean syncing;
     private String baseDn;
     private String directoryType;
+    private String objectClass;
     private String loginNameField;
     private String realNameField;
     private String emailField;
@@ -186,5 +187,13 @@ public class LdapE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getObjectClass() {
+        return objectClass;
+    }
+
+    public void setObjectClass(String objectClass) {
+        this.objectClass = objectClass;
     }
 }

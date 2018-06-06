@@ -3,7 +3,9 @@ package io.choerodon.iam.infra.common.utils.ldap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +32,9 @@ import static java.lang.Thread.sleep;
 public class LdapSyncUserTask {
     private static final Logger logger = LoggerFactory.getLogger(LdapSyncUserTask.class);
 
-    @Value("${choerodon.ldap.userNameType:1}")
-    private int ldapUserNameType;
+//    @Value("${choerodon.ldap.userNameType:1}")
+//    private int ldapUserNameType;
+    private static final String DIMISSION_VALUE = "1";
 
     @Autowired
     private UserRepository userRepository;
@@ -39,9 +42,13 @@ public class LdapSyncUserTask {
     @Autowired
     private OrganizationUserService organizationUserService;
 
+    @Autowired
+    private LdapRepository ldapRepository;
+
     @Async("ldap-executor")
     public void syncLDAPUser(LdapContext ldapContext, Long organizationId, FinishFallback fallback) {
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
+        LdapDO ldap = ldapRepository.queryByOrgId(organizationId);
         SearchControls constraints = new SearchControls();
         // 设置搜索范围
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -59,7 +66,7 @@ public class LdapSyncUserTask {
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
             Attributes attributes = searchResult.getAttributes();
-            UserDO user = extractUser(attributes, organizationId, ldapUserNameType);
+            UserDO user = extractUser(attributes, organizationId, ldap);
             if (user == null) {
                 continue;
             }
@@ -97,9 +104,37 @@ public class LdapSyncUserTask {
         }
     }
 
-    private UserDO extractUser(Attributes attributes, Long organizationId, int usernameType) {
+    private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {
         UserDO user = new UserDO();
         try {
+            //离职的用户不同步
+            if (DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
+                return null;
+            }
+            //loginNameField和emailField是必填字段，不匹配则返回
+            if (ldap.getLoginNameField() == null
+                    || attributes.get(ldap.getLoginNameField()) == null) {
+                return null;
+            }
+            if (ldap.getEmailField() == null
+                    || attributes.get(ldap.getEmailField()) == null) {
+                return null;
+            }
+
+
+
+
+//            if(attributes.get(ldap.getLoginNameField()) == null) {
+//                return null;
+//            }
+//            if (attributes.get(ldap.getEmailField()) == null) {
+//                return null;
+//            }
+//            if(ldap.get) {}
+
+            int usernameType = 0;
+
+
             if (attributes.get("employeeNumber") == null
                     || attributes.get("mail") == null
                     || attributes.get("displayName") == null
