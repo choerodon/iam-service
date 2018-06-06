@@ -40,7 +40,7 @@ public class PermissionController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("获取层级（site/organization/project/user）查询权限列表")
+    @ApiOperation("通过层级查询权限列表")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<PermissionDTO>> pagingQuery(@RequestParam("level") String level,
@@ -55,7 +55,7 @@ public class PermissionController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("根据角色id集合查询permissions")
+    @ApiOperation("通过角色查询权限列表")
     @PostMapping
     public ResponseEntity<Set<PermissionDTO>> queryByRoleIds(@RequestBody List<Long> roleIds) {
         return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);

@@ -32,7 +32,7 @@ public class IconController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询icons")
+    @ApiOperation(value = "分页查询icon")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<IconDTO>> list(@ApiIgnore
@@ -43,14 +43,14 @@ public class IconController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "创建Icon", notes = "根据Icon对象创建Icon")
+    @ApiOperation(value = "创建icon")
     @PostMapping
     public ResponseEntity<IconDTO> create(@RequestBody @Valid IconDTO iconDTO) {
         return new ResponseEntity<>(iconService.create(iconDTO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "删除Icon", notes = "根据IconId,删除Icon对象")
+    @ApiOperation(value = "删除icon")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
         iconService.deleteById(id);

@@ -41,7 +41,7 @@ public class LanguageController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "修改 Language")
+    @ApiOperation(value = "修改Language")
     @PutMapping(value = "/{id}")
     public ResponseEntity<LanguageDTO> update(@PathVariable Long id,
                                               @RequestBody @Valid LanguageDTO languageDTO) {
@@ -60,7 +60,7 @@ public class LanguageController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "分页查询 Language")
+    @ApiOperation(value = "分页查询Language")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<LanguageDTO>> pagingQuery(@ApiIgnore
@@ -85,13 +85,13 @@ public class LanguageController extends BaseController {
      * @return 返回信息
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "根据code查询Language")
+    @ApiOperation(value = "通过code查询Language")
     @GetMapping(value = "/code")
     public ResponseEntity<LanguageDTO> queryByCode(@RequestParam(name = "value") String code) {
         LanguageDTO language = new LanguageDTO();
         language.setCode(code);
         return Optional.ofNullable(languageService.queryByCode(language))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new NotFoundException());
+                .orElseThrow(NotFoundException::new);
     }
 }

@@ -30,7 +30,7 @@ public class LabelController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据label的type查询name列表")
+    @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<LabelDTO>> listByType(@RequestParam String type) {
         LabelTypeValidator.validate(type);

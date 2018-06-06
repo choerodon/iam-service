@@ -40,7 +40,7 @@ public class OrganizationProjectController extends BaseController {
      * @return 项目信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "添加项目")
+    @ApiOperation(value = "创建项目")
     @PostMapping
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                              @RequestBody @Valid ProjectDTO project) {
@@ -78,7 +78,7 @@ public class OrganizationProjectController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping(value = "/{project_id}")
-    @ApiOperation(value = "更新项目")
+    @ApiOperation(value = "修改项目")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                              @PathVariable(name = "project_id") Long projectId,
                                              @RequestBody ProjectDTO projectDTO) {
@@ -109,7 +109,7 @@ public class OrganizationProjectController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "project code校验接口，新建校验不传id,更新校验传id")
+    @ApiOperation(value = "项目信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
                                 @RequestBody ProjectDTO projectDTO) {

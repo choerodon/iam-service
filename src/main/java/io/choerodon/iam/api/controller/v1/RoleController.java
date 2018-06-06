@@ -62,7 +62,7 @@ public class RoleController extends BaseController {
                 pageRequest, needUsers, sourceId, sourceType, role), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "根据labelName和labelType关联查询所有的roleIds")
+    @ApiOperation(value = "通过label查询关联角色列表")
     @GetMapping(value = "/id")
     public ResponseEntity<List<Long>> queryIdsByLabelNameAndLabelType(@RequestParam(value = "label_name") String labelName,
                                                                       @RequestParam(value = "label_type") String labelType) {
@@ -75,7 +75,7 @@ public class RoleController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "查询site层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "查询全局层角色")
     @PostMapping(value = "/site_level/user_count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnSiteLevel(
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -89,7 +89,7 @@ public class RoleController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询organization层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "查询组织层角色")
     @PostMapping(value = "/organization_level/user_count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnOrganizationLevel(
             @RequestParam(name = "source_id") Long sourceId,
@@ -104,7 +104,7 @@ public class RoleController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "查询project层角色,附带该角色下分配的用户数")
+    @ApiOperation(value = "查询项目层角色")
     @PostMapping(value = "/project_level/user_count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
             @RequestParam(name = "source_id") Long sourceId,
@@ -119,7 +119,7 @@ public class RoleController extends BaseController {
      * @return 查询结果
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据角色id查询角色并带上拥有的permissions和labels")
+    @ApiOperation(value = "通过id查询角色")
     @GetMapping(value = "/{id}")
     public ResponseEntity<RoleDTO> queryWithPermissionsAndLabels(@PathVariable Long id) {
         return new ResponseEntity<>(roleService.queryWithPermissionsAndLabels(id), HttpStatus.OK);
@@ -127,7 +127,7 @@ public class RoleController extends BaseController {
 
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "新建角色")
+    @ApiOperation(value = "创建角色")
     @PostMapping
     public ResponseEntity<RoleDTO> create(@RequestBody @Validated RoleDTO roleDTO) {
         roleDTO.insertCheck();
@@ -176,7 +176,7 @@ public class RoleController extends BaseController {
      * @return
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "分页查询全局层角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/{id}/site_level/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
@@ -189,7 +189,7 @@ public class RoleController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "分页查询组织层角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/{id}/organization_level/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
@@ -203,7 +203,7 @@ public class RoleController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "根据角色Id分页查询该角色被分配的用户")
+    @ApiOperation(value = "分页查询项目层角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/{id}/project_level/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
@@ -218,7 +218,7 @@ public class RoleController extends BaseController {
 
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "role code校验接口，新建校验不传id,更新校验传id")
+    @ApiOperation(value = "角色信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody RoleDTO role) {
         roleService.check(role);
