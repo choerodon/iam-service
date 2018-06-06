@@ -3,14 +3,12 @@ package io.choerodon.iam.infra.common.utils.ldap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -22,7 +20,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
-import static java.lang.Thread.sleep;
 
 /**
  * @author wuguokai
@@ -32,8 +29,6 @@ import static java.lang.Thread.sleep;
 public class LdapSyncUserTask {
     private static final Logger logger = LoggerFactory.getLogger(LdapSyncUserTask.class);
 
-//    @Value("${choerodon.ldap.userNameType:1}")
-//    private int ldapUserNameType;
     private static final String DIMISSION_VALUE = "1";
 
     @Autowired
@@ -42,13 +37,10 @@ public class LdapSyncUserTask {
     @Autowired
     private OrganizationUserService organizationUserService;
 
-    @Autowired
-    private LdapRepository ldapRepository;
-
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapContext ldapContext, Long organizationId, FinishFallback fallback) {
+    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
+        Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
-        LdapDO ldap = ldapRepository.queryByOrgId(organizationId);
         SearchControls constraints = new SearchControls();
         // 设置搜索范围
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -62,34 +54,47 @@ public class LdapSyncUserTask {
         logger.info("start async user");
         ldapSyncReport.setStartTime(System.currentTimeMillis());
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
             Attributes attributes = searchResult.getAttributes();
-            UserDO user = extractUser(attributes, organizationId, ldap);
+            UserDO user = extractUser(attributes, organizationId, ldap, anonymous);
             if (user == null) {
                 continue;
             }
             ldapSyncReport.incrementCount();
-            UserDO old = ConvertHelper.convert(userRepository.selectByLoginName(user.getLoginName()), UserDO.class);
-            if (old == null) {
+            UserDTO oldUser =
+                    ConvertHelper.convert(userRepository.selectByLoginName(user.getLoginName()), UserDTO.class);
+            if (oldUser == null) {
+                //插入操作
                 try {
                     organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
-                    sleep(100);
+                    ldapSyncReport.incrementNewInsert();
+                    logger.info("{} 同步成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
                 } catch (Exception e) {
-                    logger.info(user.getLoginName(), e);
+                    logger.info("insert error, login_name = {}, exception : {}",user.getLoginName(), e);
                     ldapSyncReport.incrementError();
                 }
-                ldapSyncReport.incrementNewInsert();
-                logger.info("{} 同步成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
-            } else if (old.getPhone() == null || !old.getPhone().equals(user.getPhone())) {
-                old.setPhone(user.getPhone());
-                if (null == organizationUserService.update(ConvertHelper.convert(old, UserDTO.class))) {
-                    ldapSyncReport.incrementError();
-                    logger.info("update user phone error {} ", user.getLoginName());
+            } else {
+                //更新操作
+                //loginName和email不能更新
+                boolean doUpdate = false;
+                if (oldUser.getPhone() != null && !oldUser.getPhone().equals(user.getPhone())) {
+                    oldUser.setPhone(user.getPhone());
+                    doUpdate = true;
                 }
-                logger.info("update user phone  {} ", user.getLoginName());
-                ldapSyncReport.incrementUpdate();
+                if (oldUser.getRealName() != null && !oldUser.getRealName().equals(user.getRealName())) {
+                    oldUser.setRealName(user.getRealName());
+                    doUpdate = true;
+                }
+                if (doUpdate) {
+                    try {
+                        organizationUserService.update(oldUser);
+                    } catch (Exception e) {
+                        logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
+                        ldapSyncReport.incrementError();
+                    }
+                }
+
             }
         }
         ldapSyncReport.setEndTime(System.currentTimeMillis());
@@ -104,55 +109,34 @@ public class LdapSyncUserTask {
         }
     }
 
-    private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {
+    private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap, Boolean anonymous) {
         UserDO user = new UserDO();
+        user.setOrganizationId(organizationId);
         try {
             //离职的用户不同步
-            if (DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
+            if (attributes.get("employeeType") == null
+                    || DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
                 return null;
             }
-            //loginNameField和emailField是必填字段，不匹配则返回
             if (ldap.getLoginNameField() == null
                     || attributes.get(ldap.getLoginNameField()) == null) {
                 return null;
+            } else {
+                user.setLoginName(attributes.get(ldap.getLoginNameField()).get().toString());
             }
             if (ldap.getEmailField() == null
                     || attributes.get(ldap.getEmailField()) == null) {
                 return null;
-            }
-
-
-
-
-//            if(attributes.get(ldap.getLoginNameField()) == null) {
-//                return null;
-//            }
-//            if (attributes.get(ldap.getEmailField()) == null) {
-//                return null;
-//            }
-//            if(ldap.get) {}
-
-            int usernameType = 0;
-
-
-            if (attributes.get("employeeNumber") == null
-                    || attributes.get("mail") == null
-                    || attributes.get("displayName") == null
-                    || attributes.get("mobile") == null
-                    || "1".equals(attributes.get("employeeType").get().toString())) {
-                return null;
-            }
-            user.setOrganizationId(organizationId);
-            if (usernameType == 0) {
-                user.setLoginName(attributes.get("employeeNumber").get().toString());
-            } else if (usernameType == 2) {
-                user.setLoginName(attributes.get("mobile").get().toString());
             } else {
-                user.setLoginName(attributes.get("mail").get().toString());
+                user.setEmail(attributes.get(ldap.getEmailField()).get().toString());
             }
-            user.setRealName(attributes.get("displayName").get().toString());
-            user.setEmail(attributes.get("mail").get().toString());
-            user.setPhone(attributes.get("mobile").get().toString());
+            //不是匿名用户，匹配phone和displayName
+            if (ldap.getRealNameField() != null && attributes.get(ldap.getRealNameField()) != null) {
+                user.setRealName(attributes.get(ldap.getRealNameField()).get().toString());
+            }
+            if (ldap.getPhoneField() != null && attributes.get(ldap.getPhoneField()) != null) {
+                user.setPhone(attributes.get(ldap.getPhoneField()).get().toString());
+            }
         } catch (NamingException e) {
             logger.info("user extract fail: {}", e);
         }

@@ -1,13 +1,12 @@
 package io.choerodon.iam.domain.service.impl;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
+import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
@@ -23,7 +22,7 @@ public class ILdapServiceImpl implements ILdapService {
 
     @Override
     public LdapConnectionDTO testConnect(LdapDO ldap) {
-        connectValidate(ldap);
+        LdapValidator.validate(ldap);
         //匿名用户
         boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
@@ -52,7 +51,8 @@ public class ILdapServiceImpl implements ILdapService {
         return ldapConnectionDTO;
     }
 
-    private void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
+    @Override
+    public void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
                                        LdapDO ldap) {
             //todo 这个地方写的不好，写死了
             Map<String, String> attributeMap = initAttributeMap(ldap);
@@ -82,7 +82,8 @@ public class ILdapServiceImpl implements ILdapService {
      * @param ldapConnectionDTO
      * @param ldap
      */
-    private void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
+    @Override
+    public void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
                                                     LdapDO ldap) {
         Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap,ldapContext);
         //todo 这个地方写的不好，写死了
@@ -133,19 +134,4 @@ public class ILdapServiceImpl implements ILdapService {
         return LdapUtil.authenticate(ldap.getAccount(), ldap.getPassword(), ldap);
     }
 
-    private boolean connectServerTesting(LdapDO ldap) {
-        return LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL()) != null;
-    }
-
-    private void connectValidate(LdapDO ldap) {
-        if (StringUtils.isEmpty(ldap.getServerAddress())) {
-            throw new CommonException("error.ldap.serverAddress.empty");
-        }
-        if (StringUtils.isEmpty(ldap.getLoginNameField())) {
-            throw new CommonException("error.ldap.loginNameField.empty");
-        }
-        if (StringUtils.isEmpty(ldap.getEmailField())) {
-            throw new CommonException("error.ldap.emailField.empty");
-        }
-    }
 }

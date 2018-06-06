@@ -4,7 +4,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 
 /**
  * @author wuguokai
@@ -104,9 +102,10 @@ public class LdapController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "同步ldap用户")
-    @PostMapping("/sync_users")
-    public ResponseEntity syncUsers(@PathVariable("organization_id") Long organizationId, @RequestBody UserDTO userDTO) {
-        ldapService.syncLdapUser(organizationId, userDTO);
+    @PostMapping("/{id}/sync_users")
+    public ResponseEntity syncUsers(@PathVariable("organization_id") Long organizationId,
+                                    @PathVariable Long id) {
+        ldapService.syncLdapUser(organizationId, id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

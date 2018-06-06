@@ -1,0 +1,26 @@
+package io.choerodon.iam.api.validator;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dataobject.LdapDO;
+import org.springframework.util.StringUtils;
+
+/**
+ * @author superlee
+ */
+public class LdapValidator {
+
+    public static void validate(LdapDO ldap) {
+        if (StringUtils.isEmpty(ldap.getServerAddress())) {
+            throw new CommonException("error.ldap.serverAddress.empty");
+        }
+        if (StringUtils.isEmpty(ldap.getLoginNameField())) {
+            throw new CommonException("error.ldap.loginNameField.empty");
+        }
+        if (StringUtils.isEmpty(ldap.getEmailField())) {
+            throw new CommonException("error.ldap.emailField.empty");
+        }
+        if (StringUtils.isEmpty(ldap.getObjectClass())) {
+            throw new CommonException("error.ldap.objectClass.empty");
+        }
+    }
+}
