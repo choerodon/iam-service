@@ -72,4 +72,14 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         }
     }
 
+    changeSet(author: 'superleader8@gmail.com', id: '2018-06-06-oauth-ldap-add-column') {
+        addColumn(tableName: 'oauth_ldap') {
+            column(name: 'object_class', type: "VARCHAR(64)", remarks: '对象类型', afterColumn:'directory_type') {
+                constraints(nullable: false)
+            }
+        }
+        dropNotNullConstraint(tableName: 'oauth_ldap', columnName:'account', columnDataType: 'VARCHAR(128)')
+        dropNotNullConstraint(tableName: 'oauth_ldap', columnName:'password', columnDataType: 'VARCHAR(128)')
+    }
+
 }

@@ -95,7 +95,7 @@ public class LdapController {
     @PostMapping("/{id}/test_connect")
     public ResponseEntity<LdapConnectionDTO> testConnect(@PathVariable("organization_id") Long organizationId,
                                                          @PathVariable("id") Long id,
-                                                         @RequestBody @Valid LdapAccountDTO ldapAccount) {
+                                                         @RequestBody LdapAccountDTO ldapAccount) {
         return new ResponseEntity<>(ldapService.testConnect(organizationId, id, ldapAccount), HttpStatus.OK);
     }
 

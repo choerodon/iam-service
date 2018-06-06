@@ -24,20 +24,36 @@ public class ILdapServiceImpl implements ILdapService {
     @Override
     public LdapConnectionDTO testConnect(LdapDO ldap) {
         connectValidate(ldap);
+        //匿名用户
+        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
-        ldapConnectionDTO.setCanConnectServer(connectServerTesting(ldap));
-        LdapContext ldapContext = loginTesting(ldap);
-        ldapConnectionDTO.setCanLogin(ldapContext != null);
-        matchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+        //测试连接
+        LdapContext ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+        if (ldapContext != null) {
+            ldapConnectionDTO.setCanConnectServer(true);
+        } else {
+            ldapConnectionDTO.setCanConnectServer(false);
+        }
+        LdapContext context = null;
+        if (anonymous && ldapConnectionDTO.getCanConnectServer()) {
+            ldapConnectionDTO.setCanLogin(true);
+        } else {
+            context = loginTesting(ldap);
+            ldapConnectionDTO.setCanLogin(context != null);
+        }
+        //属性匹配
+        if (context != null) {
+            matchAttributeTesting(context, ldapConnectionDTO, ldap);
+        } else if (ldapContext != null) {
+            anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+        } else {
+            ldapConnectionDTO.setMatchAttribute(false);
+        }
         return ldapConnectionDTO;
     }
 
     private void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
                                        LdapDO ldap) {
-        if (ldapContext == null) {
-            //登陆不成功，匹配属性测试也是失败的
-            ldapConnectionDTO.setMatchAttribute(false);
-        } else {
             //todo 这个地方写的不好，写死了
             Map<String, String> attributeMap = initAttributeMap(ldap);
             Set<String> attributeSet = new HashSet<>(attributeMap.values());
@@ -58,6 +74,35 @@ public class ILdapServiceImpl implements ILdapService {
                 }
             }
             fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
+    }
+
+    /**
+     * 匿名匹配字段只能匹配loginNameField和emailField
+     * @param ldapContext
+     * @param ldapConnectionDTO
+     * @param ldap
+     */
+    private void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
+                                                    LdapDO ldap) {
+        Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap,ldapContext);
+        //todo 这个地方写的不好，写死了
+        Map<String, String> attributeMap = new HashMap<>(10);
+        attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
+        attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
+        Set<String> keySet = new HashSet<>();
+        if (attributes != null) {
+            NamingEnumeration attributesIDs = attributes.getIDs();
+            while (attributesIDs != null && attributesIDs.hasMoreElements()) {
+                keySet.add(attributesIDs.nextElement().toString());
+            }
+            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
+        } else {
+            ldapConnectionDTO.setMatchAttribute(false);
+            ldapConnectionDTO.setLoginNameField(ldap.getLoginNameField());
+            ldapConnectionDTO.setRealNameField(ldap.getRealNameField());
+            ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
+            ldapConnectionDTO.setEmailField(ldap.getEmailField());
+            ldapConnectionDTO.setPasswordField(ldap.getPasswordField());
         }
     }
 
@@ -95,12 +140,6 @@ public class ILdapServiceImpl implements ILdapService {
     private void connectValidate(LdapDO ldap) {
         if (StringUtils.isEmpty(ldap.getServerAddress())) {
             throw new CommonException("error.ldap.serverAddress.empty");
-        }
-        if (StringUtils.isEmpty(ldap.getAccount())) {
-            throw new CommonException("error.ldap.account.empty");
-        }
-        if (StringUtils.isEmpty(ldap.getPassword())) {
-            throw new CommonException("error.ldap.password.empty");
         }
         if (StringUtils.isEmpty(ldap.getLoginNameField())) {
             throw new CommonException("error.ldap.loginNameField.empty");

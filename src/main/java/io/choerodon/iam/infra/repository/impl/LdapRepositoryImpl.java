@@ -46,11 +46,10 @@ public class LdapRepositoryImpl implements LdapRepository {
     }
 
     @Override
-    public LdapE queryByOrgId(Long orgId) {
+    public LdapDO queryByOrgId(Long orgId) {
         LdapDO ldapDO = new LdapDO();
         ldapDO.setOrganizationId(orgId);
-        ldapDO = ldapMapper.selectOne(ldapDO);
-        return ConvertHelper.convert(ldapDO, LdapE.class);
+        return ldapMapper.selectOne(ldapDO);
     }
 
     @Override
