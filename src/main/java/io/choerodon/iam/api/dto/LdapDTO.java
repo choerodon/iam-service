@@ -3,7 +3,6 @@ package io.choerodon.iam.api.dto;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
 /**
  * @author wuguokai
@@ -31,7 +30,6 @@ public class LdapDTO {
     private String password;
     private Boolean useSSL;
     private Boolean enabled;
-    private Boolean syncing;
     private String baseDn;
     private String directoryType;
     @NotEmpty(message = "error.ldap.objectClass.empty")
@@ -39,10 +37,7 @@ public class LdapDTO {
     private String loginNameField;
     private String realNameField;
     private String emailField;
-    private String passwordField;
     private String phoneField;
-    private Long totalSyncCount;
-    private Date syncBeginTime;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -117,14 +112,6 @@ public class LdapDTO {
         this.enabled = enabled;
     }
 
-    public Boolean getSyncing() {
-        return syncing;
-    }
-
-    public void setSyncing(Boolean syncing) {
-        this.syncing = syncing;
-    }
-
     public String getBaseDn() {
         return baseDn;
     }
@@ -165,36 +152,12 @@ public class LdapDTO {
         this.emailField = emailField;
     }
 
-    public String getPasswordField() {
-        return passwordField;
-    }
-
-    public void setPasswordField(String passwordField) {
-        this.passwordField = passwordField;
-    }
-
     public String getPhoneField() {
         return phoneField;
     }
 
     public void setPhoneField(String phoneField) {
         this.phoneField = phoneField;
-    }
-
-    public Long getTotalSyncCount() {
-        return totalSyncCount;
-    }
-
-    public void setTotalSyncCount(Long totalSyncCount) {
-        this.totalSyncCount = totalSyncCount;
-    }
-
-    public Date getSyncBeginTime() {
-        return syncBeginTime;
-    }
-
-    public void setSyncBeginTime(Date syncBeginTime) {
-        this.syncBeginTime = syncBeginTime;
     }
 
     public Long getObjectVersionNumber() {

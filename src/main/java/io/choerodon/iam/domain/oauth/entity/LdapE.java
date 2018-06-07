@@ -1,7 +1,5 @@
 package io.choerodon.iam.domain.oauth.entity;
 
-import java.util.Date;
-
 /**
  * @author wuguokai
  * @author superlee
@@ -16,17 +14,13 @@ public class LdapE {
     private String password;
     private Boolean useSSL;
     private Boolean enabled;
-    private Boolean syncing;
     private String baseDn;
     private String directoryType;
     private String objectClass;
     private String loginNameField;
     private String realNameField;
     private String emailField;
-    private String passwordField;
     private String phoneField;
-    private Long totalSyncCount;
-    private Date syncBeginTime;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -101,14 +95,6 @@ public class LdapE {
         this.enabled = enabled;
     }
 
-    public Boolean getSyncing() {
-        return syncing;
-    }
-
-    public void setSyncing(Boolean syncing) {
-        this.syncing = syncing;
-    }
-
     public String getBaseDn() {
         return baseDn;
     }
@@ -149,36 +135,12 @@ public class LdapE {
         this.emailField = emailField;
     }
 
-    public String getPasswordField() {
-        return passwordField;
-    }
-
-    public void setPasswordField(String passwordField) {
-        this.passwordField = passwordField;
-    }
-
     public String getPhoneField() {
         return phoneField;
     }
 
     public void setPhoneField(String phoneField) {
         this.phoneField = phoneField;
-    }
-
-    public Long getTotalSyncCount() {
-        return totalSyncCount;
-    }
-
-    public void setTotalSyncCount(Long totalSyncCount) {
-        this.totalSyncCount = totalSyncCount;
-    }
-
-    public Date getSyncBeginTime() {
-        return syncBeginTime;
-    }
-
-    public void setSyncBeginTime(Date syncBeginTime) {
-        this.syncBeginTime = syncBeginTime;
     }
 
     public Long getObjectVersionNumber() {
