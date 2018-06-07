@@ -86,7 +86,6 @@ public class LdapUtil {
         attributeSet.add(ldap.getLoginNameField());
         attributeSet.add(ldap.getRealNameField());
         attributeSet.add(ldap.getEmailField());
-        attributeSet.add(ldap.getPasswordField());
         attributeSet.add(ldap.getPhoneField());
         NamingEnumeration namingEnumeration = getNamingEnumeration(ldapContext, username, attributeSet);
         StringBuilder userDn = new StringBuilder();

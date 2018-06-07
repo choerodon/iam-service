@@ -82,4 +82,11 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         dropNotNullConstraint(tableName: 'oauth_ldap', columnName:'password', columnDataType: 'VARCHAR(128)')
     }
 
+    changeSet(author: 'superleader8@gmail.com', id: '2018-06-07-oauth-ldap-drop-column') {
+        dropColumn(tableName: 'oauth_ldap', ColumnName: 'is_syncing')
+        dropColumn(tableName: 'oauth_ldap', ColumnName: 'password_field')
+        dropColumn(tableName: 'oauth_ldap', ColumnName: 'total_sync_count')
+        dropColumn(tableName: 'oauth_ldap', ColumnName: 'sync_begin_time')
+    }
+
 }
