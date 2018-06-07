@@ -37,14 +37,18 @@ public class LdapSyncUserTask {
 
     private OrganizationUserService organizationUserService;
 
+    private LdapHistoryRepository ldapHistoryRepository;
+
     public LdapSyncUserTask(UserRepository userRepository,
-                            OrganizationUserService organizationUserService) {
+                            OrganizationUserService organizationUserService,
+                            LdapHistoryRepository ldapHistoryRepository) {
         this.userRepository = userRepository;
         this.organizationUserService = organizationUserService;
+        this.ldapHistoryRepository = ldapHistoryRepository;
     }
 
     @Async("ldap-executor")
-    public LdapHistoryDO syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
+    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
         ldapSyncReport.setLdapId(ldap.getId());
@@ -60,6 +64,10 @@ public class LdapSyncUserTask {
         }
         logger.info("@@@ start async user");
         ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
+        LdapHistoryDO ldapHistory = new LdapHistoryDO();
+        ldapHistory.setLdapId(ldap.getId());
+        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
+        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
@@ -113,7 +121,7 @@ public class LdapSyncUserTask {
         } catch (NamingException e) {
             logger.warn("error.close.ldap.connect");
         }
-        return fallback.callback(ldapSyncReport);
+        fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
     private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap, Boolean anonymous) {
@@ -162,7 +170,7 @@ public class LdapSyncUserTask {
          *
          * @param ldapSyncReport 同步结果
          */
-        LdapHistoryDO callback(LdapSyncReport ldapSyncReport);
+        LdapHistoryDO callback(LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO);
     }
 
 
@@ -176,15 +184,12 @@ public class LdapSyncUserTask {
         }
 
         @Override
-        public LdapHistoryDO callback(LdapSyncReport ldapSyncReport) {
-            LdapHistoryDO ldapHistory = new LdapHistoryDO();
-            ldapHistory.setLdapId(ldapSyncReport.getLdapId());
-            ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
-            ldapHistory.setSyncEndTime(ldapSyncReport.getEndTime());
-            ldapHistory.setNewUserCount(ldapSyncReport.getInsert());
-            ldapHistory.setUpdateUserCount(ldapSyncReport.getUpdate());
-            ldapHistory.setErrorUserCount(ldapSyncReport.getError());
-            return ldapHistoryRepository.insertSelective(ldapHistory);
+        public LdapHistoryDO callback(LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) {
+            ldapHistoryDO.setSyncEndTime(ldapSyncReport.getEndTime());
+            ldapHistoryDO.setNewUserCount(ldapSyncReport.getInsert());
+            ldapHistoryDO.setUpdateUserCount(ldapSyncReport.getUpdate());
+            ldapHistoryDO.setErrorUserCount(ldapSyncReport.getError());
+            return ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO);
         }
     }
 }

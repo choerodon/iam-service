@@ -30,7 +30,7 @@ public interface LdapService {
      * @param organizationId
      * @param id
      */
-    LdapHistoryDTO syncLdapUser(Long organizationId, Long id);
+    void syncLdapUser(Long organizationId, Long id);
 
     /**
      * 根据ldap id 查询最新的一条记录

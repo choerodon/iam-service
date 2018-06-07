@@ -16,7 +16,6 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import org.springframework.stereotype.Component;
 
 import javax.naming.ldap.LdapContext;
@@ -111,7 +110,7 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapHistoryDTO syncLdapUser(Long organizationId, Long id) {
+    public void syncLdapUser(Long organizationId, Long id) {
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
             throw new CommonException("error.ldap.not.exist");
@@ -140,8 +139,7 @@ public class LdapServiceImpl implements LdapService {
         if (!ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
-        LdapHistoryDO ldapHistory = ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, finishFallback);
-        return ConvertHelper.convert(ldapHistory, LdapHistoryDTO.class);
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, finishFallback);
     }
 
     @Override

@@ -9,4 +9,6 @@ public interface LdapHistoryRepository {
     LdapHistoryDO insertSelective(LdapHistoryDO ldapHistory);
 
     LdapHistoryDO queryLatestHistory(Long id);
+
+    LdapHistoryDO updateByPrimaryKeySelective(LdapHistoryDO ldapHistoryDO);
 }

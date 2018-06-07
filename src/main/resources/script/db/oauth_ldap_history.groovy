@@ -12,8 +12,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap_history.groovy') {
             column(name: 'new_user_count', type: "INTEGER UNSIGNED", remarks: '同步用户新增数量')
             column(name: 'update_user_count', type: "INTEGER UNSIGNED", remarks: '同步用户更新数量')
             column(name: 'error_user_count', type: "INTEGER UNSIGNED", remarks: '同步用户失败数量')
-            column(name: "sync_begin_time", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP", remarks: '同步开始时间')
-            column(name: "sync_end_time", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP", remarks: '同步结束时间')
+            column(name: "sync_begin_time", type: "DATETIME", remarks: '同步开始时间')
+            column(name: "sync_end_time", type: "DATETIME", remarks: '同步结束时间')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)

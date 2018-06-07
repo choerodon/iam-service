@@ -30,4 +30,12 @@ public class LdapHistoryRepositoryImpl implements LdapHistoryRepository {
     public LdapHistoryDO queryLatestHistory(Long id) {
         return ldapHistoryMapper.queryLatestHistory(id);
     }
+
+    @Override
+    public LdapHistoryDO updateByPrimaryKeySelective(LdapHistoryDO ldapHistoryDO) {
+        if (ldapHistoryMapper.updateByPrimaryKeySelective(ldapHistoryDO) != 1) {
+            throw new CommonException("error.ldapHistory.update");
+        }
+        return ldapHistoryMapper.selectByPrimaryKey(ldapHistoryDO.getId());
+    }
 }
