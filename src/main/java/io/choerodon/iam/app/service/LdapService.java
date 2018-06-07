@@ -38,4 +38,8 @@ public interface LdapService {
      * @return
      */
     LdapHistoryDTO queryLatestHistory(Long id);
+
+    LdapDTO enableLdap(Long organizationId, Long id);
+
+    LdapDTO disableLdap(Long organizationId, Long id);
 }

@@ -30,14 +30,12 @@ public class LdapRepositoryImpl implements LdapRepository {
     }
 
     @Override
-    public LdapE update(Long id, LdapE ldapE) {
-        LdapDO ldapDO = ConvertHelper.convert(ldapE, LdapDO.class);
-        ldapDO.setId(id);
-        if (ldapMapper.updateByPrimaryKeySelective(ldapDO) != 1) {
+    public LdapDO update(Long id, LdapDO ldap) {
+        ldap.setId(id);
+        if (ldapMapper.updateByPrimaryKeySelective(ldap) != 1) {
             throw new CommonException("error.ldap.update");
         }
-        ldapDO = ldapMapper.selectByPrimaryKey(ldapDO.getId());
-        return ConvertHelper.convert(ldapDO, LdapE.class);
+        return ldapMapper.selectByPrimaryKey(id);
     }
 
     @Override

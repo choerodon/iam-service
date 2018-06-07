@@ -64,8 +64,8 @@ public class LdapServiceImpl implements LdapService {
         if (ldapRepository.queryById(id) == null) {
             throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
-        LdapE ldapE = ldapRepository.update(id, ConvertHelper.convert(ldapDTO, LdapE.class));
-        return ConvertHelper.convert(ldapE, LdapDTO.class);
+        LdapDO ldapDO = ldapRepository.update(id, ConvertHelper.convert(ldapDTO, LdapDO.class));
+        return ConvertHelper.convert(ldapDO, LdapDTO.class);
     }
 
     @Override
@@ -145,5 +145,31 @@ public class LdapServiceImpl implements LdapService {
     @Override
     public LdapHistoryDTO queryLatestHistory(Long id) {
         return ConvertHelper.convert(ldapHistoryRepository.queryLatestHistory(id), LdapHistoryDTO.class);
+    }
+
+    @Override
+    public LdapDTO enableLdap(Long organizationId, Long id) {
+        LdapDO ldap = ldapRepository.queryById(id);
+        if (ldap == null) {
+            throw new CommonException("error.ldap.not.exist");
+        }
+        if (!ldap.getOrganizationId().equals(organizationId)) {
+            throw new CommonException("error.ldap.organizationId.not.match");
+        }
+        ldap.setEnabled(true);
+        return ConvertHelper.convert(ldapRepository.update(ldap.getId(), ldap), LdapDTO.class);
+    }
+
+    @Override
+    public LdapDTO disableLdap(Long organizationId, Long id) {
+        LdapDO ldap = ldapRepository.queryById(id);
+        if (ldap == null) {
+            throw new CommonException("error.ldap.not.exist");
+        }
+        if (!ldap.getOrganizationId().equals(organizationId)) {
+            throw new CommonException("error.ldap.organizationId.not.match");
+        }
+        ldap.setEnabled(false);
+        return ConvertHelper.convert(ldapRepository.update(ldap.getId(), ldap), LdapDTO.class);
     }
 }
