@@ -29,23 +29,28 @@ public class ILdapServiceImpl implements ILdapService {
         //测试连接
         LdapContext ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
         if (ldapContext != null) {
+            //可以连接服务器测试登陆
             ldapConnectionDTO.setCanConnectServer(true);
+            if (anonymous) {
+                //匿名用户，直接为可登录
+                ldapConnectionDTO.setCanLogin(true);
+                //匿名属性匹配，只能匹配loginNameField和emailField
+                anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+            } else {
+                //非匿名用户，登陆测试
+                LdapContext context = loginTesting(ldap);
+                ldapConnectionDTO.setCanLogin(context != null);
+                if (ldapConnectionDTO.getCanLogin()) {
+                    //可以登陆，匹配属性
+                    matchAttributeTesting(context, ldapConnectionDTO, ldap);
+                } else {
+                    ldapConnectionDTO.setMatchAttribute(false);
+                }
+            }
         } else {
+            //连不上ldap服务器，全失败
             ldapConnectionDTO.setCanConnectServer(false);
-        }
-        LdapContext context = null;
-        if (anonymous && ldapConnectionDTO.getCanConnectServer()) {
-            ldapConnectionDTO.setCanLogin(true);
-        } else {
-            context = loginTesting(ldap);
-            ldapConnectionDTO.setCanLogin(context != null);
-        }
-        //属性匹配
-        if (context != null) {
-            matchAttributeTesting(context, ldapConnectionDTO, ldap);
-        } else if (ldapContext != null) {
-            anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
-        } else {
+            ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
         }
         return ldapConnectionDTO;
