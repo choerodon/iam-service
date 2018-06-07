@@ -1,19 +1,26 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
+import java.util.Date;
+
 /**
  * @author wuguokai
  */
 public class LdapSyncReport {
-    private long insert;
-    private long update;
-    private long error;
-    private long organizationId;
-    private long startTime;
-    private long endTime;
-    private long count;
+    private Long insert;
+    private Long update;
+    private Long error;
+    private Long organizationId;
+    private Date startTime;
+    private Date endTime;
+    private Long count;
+    private Long ldapId;
 
-    public LdapSyncReport(long organizationId) {
+    public LdapSyncReport(Long organizationId) {
         this.organizationId = organizationId;
+        this.insert = 0L;
+        this.update = 0L;
+        this.error = 0L;
+        this.count = 0L;
     }
 
 
@@ -33,56 +40,65 @@ public class LdapSyncReport {
         this.count++;
     }
 
-    public long getOrganizationId() {
+    public Long getOrganizationId() {
         return organizationId;
     }
 
-    public void setOrganizationId(long organizationId) {
+    public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
-    public long getInsert() {
+    public Long getInsert() {
         return insert;
     }
 
-    public long getUpdate() {
+    public Long getUpdate() {
         return update;
     }
 
-    public long getError() {
+    public Long getError() {
         return error;
     }
 
-    public long getCount() {
+    public Long getCount() {
         return count;
+    }
+
+    public Long getLdapId() {
+        return ldapId;
+    }
+
+    public void setLdapId(Long ldapId) {
+        this.ldapId = ldapId;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 
     @Override
     public String toString() {
-        return "LdapSyncReport{"
-                + "insert=" + insert
-                + ", update=" + update
-                + ", error=" + error
-                + ", organizationId=" + organizationId
-                + ", startTime=" + startTime
-                + ", endTime=" + endTime
-                + ", count=" + count
-                + '}';
+        return "LdapSyncReport{" +
+                "insert=" + insert +
+                ", update=" + update +
+                ", error=" + error +
+                ", organizationId=" + organizationId +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", count=" + count +
+                ", ldapId=" + ldapId +
+                '}';
     }
 }

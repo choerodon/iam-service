@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
+import io.choerodon.iam.api.dto.LdapHistoryDTO;
 
 /**
  * @author wuguokai
@@ -30,4 +31,11 @@ public interface LdapService {
      * @param id
      */
     void syncLdapUser(Long organizationId, Long id);
+
+    /**
+     * 根据ldap id 查询最新的一条记录
+     * @param id
+     * @return
+     */
+    LdapHistoryDTO queryLatestHistory(Long id);
 }

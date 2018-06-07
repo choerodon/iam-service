@@ -5,9 +5,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
+import io.choerodon.iam.api.dto.LdapHistoryDTO;
 import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
+import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.service.ILdapService;
@@ -27,15 +29,21 @@ public class LdapServiceImpl implements LdapService {
     private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
+    private LdapSyncUserTask.FinishFallback finishFallback;
+    private LdapHistoryRepository ldapHistoryRepository;
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
 
     public LdapServiceImpl(LdapRepository ldapRepository, OrganizationRepository organizationRepository,
-                           LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService) {
+                           LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService,
+                           LdapSyncUserTask.FinishFallback finishFallback,
+                           LdapHistoryRepository ldapHistoryRepository) {
         this.ldapRepository = ldapRepository;
         this.organizationRepository = organizationRepository;
         this.ldapSyncUserTask = ldapSyncUserTask;
         this.iLdapService = iLdapService;
+        this.finishFallback = finishFallback;
+        this.ldapHistoryRepository = ldapHistoryRepository;
     }
 
     @Override
@@ -131,6 +139,11 @@ public class LdapServiceImpl implements LdapService {
         if (!ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, null);
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, finishFallback);
+    }
+
+    @Override
+    public LdapHistoryDTO queryLatestHistory(Long id) {
+        return ConvertHelper.convert(ldapHistoryRepository.queryLatestHistory(id), LdapHistoryDTO.class);
     }
 }
