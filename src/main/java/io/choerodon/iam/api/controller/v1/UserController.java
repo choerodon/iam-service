@@ -62,6 +62,7 @@ public class UserController extends BaseController {
         userDTO.setAdmin(null);
         //不能修改状态
         userDTO.setEnabled(null);
+        userDTO.setLdap(null);
         userDTO.setOrganizationId(null);
         userDTO.setLoginName(null);
         return new ResponseEntity<>(userService.updateInfo(userDTO), HttpStatus.OK);
