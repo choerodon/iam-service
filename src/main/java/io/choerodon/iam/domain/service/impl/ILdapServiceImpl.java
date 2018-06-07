@@ -103,7 +103,6 @@ public class ILdapServiceImpl implements ILdapService {
             ldapConnectionDTO.setRealNameField(ldap.getRealNameField());
             ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
             ldapConnectionDTO.setEmailField(ldap.getEmailField());
-            ldapConnectionDTO.setPasswordField(ldap.getPasswordField());
         }
     }
 
@@ -125,7 +124,6 @@ public class ILdapServiceImpl implements ILdapService {
         attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
         attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());
         attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
-        attributeMap.put(LdapDTO.GET_PASSWORD_FIELD, ldap.getPasswordField());
         attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
         return attributeMap;
     }
