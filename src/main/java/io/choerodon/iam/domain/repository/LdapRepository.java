@@ -9,7 +9,7 @@ import io.choerodon.iam.infra.dataobject.LdapDO;
 public interface LdapRepository {
     LdapE create(LdapE ldapE);
 
-    LdapE update(Long id, LdapE ldapE);
+    LdapDO update(Long id, LdapDO ldapDO);
 
     /**
      * 根据ldap id查询ldap

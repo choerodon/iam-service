@@ -57,6 +57,21 @@ public class LdapController {
         return new ResponseEntity<>(ldapService.update(organizationId, id, ldapDTO), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用ldap")
+    @PutMapping(value = "/{id}/enable")
+    public ResponseEntity<LdapDTO> enableLdap(@PathVariable(name = "organization_id") Long organizationId,
+                                              @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.enableLdap(organizationId, id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "禁用ldap")
+    @PutMapping(value = "/{id}/disable")
+    public ResponseEntity<LdapDTO> disableLdap(@PathVariable(name = "organization_id") Long organizationId,
+                                              @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.disableLdap(organizationId, id), HttpStatus.OK);
+    }
     /**
      * 根据组织id查询Ldap
      *
