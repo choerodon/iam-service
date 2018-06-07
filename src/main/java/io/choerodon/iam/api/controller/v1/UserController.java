@@ -44,16 +44,16 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户的个人中心数据")
+    @ApiOperation(value = "根据id查询用户信息")
     @GetMapping(value = "/{id}/info")
     public ResponseEntity<UserDTO> queryInfo(@PathVariable Long id) {
         return Optional.ofNullable(userService.queryInfo(id))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new NotFoundException());
+                .orElseThrow(NotFoundException::new);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "更新当前用户的个人中心数据")
+    @ApiOperation(value = "修改用户信息")
     @PutMapping(value = "/{id}/info")
     public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
                                               @RequestBody UserDTO userDTO) {
@@ -72,14 +72,14 @@ public class UserController extends BaseController {
      * 上传头像到文件服务返回头像url
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "上传头像到文件服务返回头像url")
+    @ApiOperation(value = "用户头像上传")
     @PostMapping(value = "/{id}/photo")
     public ResponseEntity<String> uploadPhoto(@PathVariable Long id, @RequestPart MultipartFile file) {
         return new ResponseEntity<>(userService.uploadPhoto(id, file), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户被分配的所有组织")
+    @ApiOperation(value = "查询用户所在组织列表")
     @GetMapping(value = "/{id}/organizations")
     public ResponseEntity<List<OrganizationDTO>> queryOrganizations(@PathVariable Long id,
                                                                     @RequestParam(required = false, name = "included_disabled")
@@ -88,7 +88,7 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户被分配的所有项目")
+    @ApiOperation(value = "查询用户所在项目列表")
     @GetMapping(value = "/{id}/projects")
     public ResponseEntity<List<ProjectDTO>> queryProjects(@PathVariable Long id,
                                                           @RequestParam(required = false, name = "included_disabled")
@@ -96,36 +96,42 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
+    /**
+     * @deprecated 已过期
+     */
     @ApiIgnore
     @Deprecated
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户在某组织下被分配的启用的项目")
+    @ApiOperation(value = "查询当前用户在某组织下所在的项目列表")
     @GetMapping(value = "/{id}/organizations/{organization_id}/projects")
     public ResponseEntity<List<ProjectDTO>> queryProjectsByOrganizationId(@PathVariable Long id,
                                                                           @PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(userService.queryProjectsByOrganizationId(id, organizationId), HttpStatus.OK);
     }
 
+    /**
+     * @deprecated 已过期
+     */
     @ApiIgnore
     @Deprecated
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "查询当前用户被分配的所有组织并带有组织下的项目")
+    @ApiOperation(value = "查询当前用户所在组织列表以及用户在该组织下所在的项目列表")
     @GetMapping(value = "/self/organizations_projects")
     public ResponseEntity<List<OrganizationDTO>> queryOrganizationWithProjects() {
         return new ResponseEntity<>(userService.queryOrganizationWithProjects(), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "根据用户登录名获取用户信息")
+    @ApiOperation(value = "根据用户名查询用户信息")
     @GetMapping
     public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
         return Optional.ofNullable(userService.queryByLoginName(loginName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new NotFoundException());
+                .orElseThrow(NotFoundException::new);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "个人中心更新密码")
+    @ApiOperation(value = "修改密码")
     @PutMapping(value = "/{id}/password")
     public ResponseEntity selfUpdatePassword(@PathVariable Long id,
                                              @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
@@ -134,7 +140,7 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation(value = "用户信息重名校验接口(email/loginName)，新建校验json里面不传id,更新校验传id")
+    @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody UserDTO user) {
         userService.check(user);
@@ -201,7 +207,7 @@ public class UserController extends BaseController {
      * @return 分页的admin用户
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询所有的admin用户")
+    @ApiOperation(value = "分页模糊查询管理员用户列表")
     @CustomPageRequest
     @GetMapping("/admin")
     public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
@@ -223,7 +229,7 @@ public class UserController extends BaseController {
 
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "批量添加admin用户")
+    @ApiOperation(value = "批量给用户添加管理员身份")
     @PostMapping("/admin")
     public ResponseEntity<Page<UserDTO>> addDefaultUsers(@ModelAttribute("id") long[] ids) {
         userService.addAdminUsers(ids);
@@ -231,14 +237,14 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "删除admin用户")
+    @ApiOperation(value = "清除用户的管理员身份")
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
         userService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ApiOperation(value = "根据id集合查询用户集合")
+    @ApiOperation(value = "批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids) {
         return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);

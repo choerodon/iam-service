@@ -39,7 +39,7 @@ public class OrganizationController extends BaseController {
      * @return 修改成功后的组织信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "修改目标组织信息")
+    @ApiOperation(value = "修改组织")
     @PutMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> update(@PathVariable(name = "organization_id") Long id,
                                                   @RequestBody @Valid OrganizationDTO organizationDTO) {
@@ -61,7 +61,7 @@ public class OrganizationController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "分页查询所有组织列表")
+    @ApiOperation(value = "分页查询组织")
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<OrganizationDTO>> list(@ApiIgnore
@@ -94,7 +94,7 @@ public class OrganizationController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "organization code校验接口，新建校验不传id,更新校验传id")
+    @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody OrganizationDTO organization) {
         organizationService.check(organization);
