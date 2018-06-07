@@ -4,6 +4,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
+import io.choerodon.iam.api.dto.LdapHistoryDTO;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
@@ -107,5 +108,13 @@ public class LdapController {
                                     @PathVariable Long id) {
         ldapService.syncLdapUser(organizationId, id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据ldap id查询最新一条历史记录")
+    @GetMapping("/{id}/latest_history")
+    public ResponseEntity<LdapHistoryDTO> latestHistory(@PathVariable("organization_id") Long organizationId,
+                                                        @PathVariable Long id){
+        return new ResponseEntity<>(ldapService.queryLatestHistory(id), HttpStatus.OK);
     }
 }

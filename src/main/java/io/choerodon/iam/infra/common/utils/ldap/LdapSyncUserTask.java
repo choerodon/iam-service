@@ -3,12 +3,13 @@ package io.choerodon.iam.infra.common.utils.ldap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import java.util.Date;
 
 
 /**
@@ -31,16 +33,21 @@ public class LdapSyncUserTask {
 
     private static final String DIMISSION_VALUE = "1";
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private OrganizationUserService organizationUserService;
 
+    public LdapSyncUserTask(UserRepository userRepository,
+                            OrganizationUserService organizationUserService) {
+        this.userRepository = userRepository;
+        this.organizationUserService = organizationUserService;
+    }
+
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
+    public LdapHistoryDO syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
+        ldapSyncReport.setLdapId(ldap.getId());
         SearchControls constraints = new SearchControls();
         // 设置搜索范围
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -51,8 +58,8 @@ public class LdapSyncUserTask {
         } catch (NamingException e) {
             logger.info("ldap search fail: {}", e);
         }
-        logger.info("start async user");
-        ldapSyncReport.setStartTime(System.currentTimeMillis());
+        logger.info("@@@ start async user");
+        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
@@ -69,7 +76,7 @@ public class LdapSyncUserTask {
                 try {
                     organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
                     ldapSyncReport.incrementNewInsert();
-                    logger.info("{} 同步成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
+//                    logger.info("{} 同步成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
                 } catch (Exception e) {
                     logger.info("insert error, login_name = {}, exception : {}",user.getLoginName(), e);
                     ldapSyncReport.incrementError();
@@ -89,6 +96,8 @@ public class LdapSyncUserTask {
                 if (doUpdate) {
                     try {
                         organizationUserService.update(oldUser);
+                        ldapSyncReport.incrementUpdate();
+//                        logger.info("{} 同步更新成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
                     } catch (Exception e) {
                         logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
                         ldapSyncReport.incrementError();
@@ -97,16 +106,14 @@ public class LdapSyncUserTask {
 
             }
         }
-        ldapSyncReport.setEndTime(System.currentTimeMillis());
+        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
         try {
             ldapContext.close();
         } catch (NamingException e) {
             logger.warn("error.close.ldap.connect");
         }
-        if (fallback != null) {
-            fallback.callback(ldapSyncReport);
-        }
+        return fallback.callback(ldapSyncReport);
     }
 
     private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap, Boolean anonymous) {
@@ -155,6 +162,29 @@ public class LdapSyncUserTask {
          *
          * @param ldapSyncReport 同步结果
          */
-        void callback(LdapSyncReport ldapSyncReport);
+        LdapHistoryDO callback(LdapSyncReport ldapSyncReport);
+    }
+
+
+    @Component
+    public class FinishFallbackImpl implements FinishFallback {
+
+        private LdapHistoryRepository ldapHistoryRepository;
+
+        public FinishFallbackImpl (LdapHistoryRepository ldapHistoryRepository) {
+            this.ldapHistoryRepository = ldapHistoryRepository;
+        }
+
+        @Override
+        public LdapHistoryDO callback(LdapSyncReport ldapSyncReport) {
+            LdapHistoryDO ldapHistory = new LdapHistoryDO();
+            ldapHistory.setLdapId(ldapSyncReport.getLdapId());
+            ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
+            ldapHistory.setSyncEndTime(ldapSyncReport.getEndTime());
+            ldapHistory.setNewUserCount(ldapSyncReport.getInsert());
+            ldapHistory.setUpdateUserCount(ldapSyncReport.getUpdate());
+            ldapHistory.setErrorUserCount(ldapSyncReport.getError());
+            return ldapHistoryRepository.insertSelective(ldapHistory);
+        }
     }
 }
