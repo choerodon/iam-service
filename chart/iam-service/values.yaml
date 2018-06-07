@@ -9,6 +9,7 @@ image:
   pullPolicy: Always
 
 preJob:
+  appname: iam-service
   preConfig:
     configFile: application.yml
     mysql:
@@ -27,10 +28,10 @@ preJob:
 
 metrics:
   path: /prometheus
-  label: java-spring
+  group: spring-boot
 
 logs:
-  parser: java-spring
+  parser: spring-boot
 
 deployment:
   managementPort: 8031
