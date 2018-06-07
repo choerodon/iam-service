@@ -148,59 +148,6 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 在site层查询用户，用户包含拥有的site层的角色
-     *
-     * @param roleAssignmentSearchDTO 搜索条件
-     */
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "在site层查询用户，用户包含拥有的site层的角色")
-    @CustomPageRequest
-    @PostMapping(value = "/site_level/roles")
-    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
-                pageRequest, roleAssignmentSearchDTO), HttpStatus.OK);
-    }
-
-    /**
-     * 在site层查询用户，用户包含拥有的organization层的角色
-     *
-     * @param roleAssignmentSearchDTO 搜索条件
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "在organization层查询用户，用户包含拥有的organization层的角色")
-    @CustomPageRequest
-    @PostMapping(value = "/organization_level/roles")
-    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithOrganizationLevelRoles(
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-            @RequestParam(name = "source_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithOrganizationLevelRoles(
-                pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
-    }
-
-    /**
-     * 在site层查询用户，用户包含拥有的project层的角色
-     *
-     * @param roleAssignmentSearchDTO 搜索条件
-     */
-    @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "在project层查询用户，用户包含拥有的project层的角色")
-    @CustomPageRequest
-    @PostMapping(value = "/project_level/roles")
-    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-            @RequestParam(name = "source_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
-                pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
-    }
-
-    /**
      * 分页查询所有的admin用户
      *
      * @param pageRequest 分页信息
