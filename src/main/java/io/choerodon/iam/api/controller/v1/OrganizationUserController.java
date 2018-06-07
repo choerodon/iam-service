@@ -48,6 +48,8 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<UserDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                           @RequestBody @Validated(value = UserValidator.UserGroup.class) UserDTO userDTO) {
         userDTO.setOrganizationId(organizationId);
+        //新增用户不能创建ldap用户
+        userDTO.setLdap(false);
         return new ResponseEntity<>(organizationUserService.create(userDTO, true), HttpStatus.OK);
     }
 
@@ -74,6 +76,8 @@ public class OrganizationUserController extends BaseController {
                                           @RequestBody @Valid UserDTO userDTO) {
         //不能更新admin字段
         userDTO.setAdmin(null);
+        //不能更新ldap字段
+        userDTO.setLdap(null);
         userDTO.setOrganizationId(organizationId);
         userDTO.setId(id);
         return new ResponseEntity<>(organizationUserService.update(userDTO), HttpStatus.OK);

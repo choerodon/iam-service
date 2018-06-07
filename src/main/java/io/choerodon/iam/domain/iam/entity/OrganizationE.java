@@ -57,8 +57,6 @@ public class OrganizationE {
         if (userRepository.selectByLoginName(userE.getLoginName()) != null) {
             throw new CommonException("error.user.loginName.exist");
         }
-        //TODO
-        //密码策略待添加
         //默认添加用户未锁定,启用
         userE.unlocked();
         userE.enable();
@@ -66,9 +64,6 @@ public class OrganizationE {
         userE = userRepository.insertSelective(userE);
         passwordRecord.updatePassword(userE.getId(), userE.getPassword());
         return userE.hiddenPassword();
-        //TODO
-        //初始化角色
-        //用户创建成功发事件
     }
 
     public UserE updateUser(UserE userE) {
