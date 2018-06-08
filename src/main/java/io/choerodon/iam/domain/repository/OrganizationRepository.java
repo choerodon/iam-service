@@ -20,7 +20,7 @@ public interface OrganizationRepository {
 
     Boolean deleteByKey(Long organizationId);
 
-    Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String[] params);
+    Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String param);
 
     List<OrganizationDO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled);
 

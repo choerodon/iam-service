@@ -26,7 +26,7 @@ public interface PermissionRepository {
 
     void deleteById(Long id);
 
-    Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String[] params);
+    Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String param);
 
     List<PermissionDO> selectByRoleId(Long roleId);
 

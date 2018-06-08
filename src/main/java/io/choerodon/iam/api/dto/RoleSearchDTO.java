@@ -11,7 +11,7 @@ public class RoleSearchDTO {
     private String level;
     private Boolean enabled;
     private Boolean builtIn;
-    private String[] params;
+    private String params;
 
     public Boolean getBuiltIn() {
         return builtIn;
@@ -21,11 +21,11 @@ public class RoleSearchDTO {
         this.builtIn = builtIn;
     }
 
-    public String[] getParams() {
+    public String getParams() {
         return params;
     }
 
-    public void setParams(String[] params) {
+    public void setParams(String params) {
         this.params = params;
     }
 

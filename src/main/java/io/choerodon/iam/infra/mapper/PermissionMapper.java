@@ -12,7 +12,8 @@ import java.util.Set;
  * @author wuguokai
  */
 public interface PermissionMapper extends BaseMapper<PermissionDO> {
-    List fulltextSearch(@Param("permissionDO") PermissionDO permissionDO, @Param("params") String[] params);
+
+    List fulltextSearch(@Param("permissionDO") PermissionDO permissionDO, @Param("param") String param);
 
     @Select(" SELECT r.role_id"
             + " FROM iam_role_permission r LEFT JOIN iam_permission p"

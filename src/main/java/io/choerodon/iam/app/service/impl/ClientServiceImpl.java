@@ -80,12 +80,12 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String[] params) {
+    public Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String param) {
         isOrgExist(clientDTO.getOrganizationId());
         return ConvertPageHelper.convertPage(
                 clientRepository.pagingQuery(pageRequest,
                         ConvertHelper.convert(clientDTO, ClientDO.class),
-                        params), ClientDTO.class);
+                        param), ClientDTO.class);
     }
 
     @Override

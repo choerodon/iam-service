@@ -11,7 +11,7 @@ public class RoleAssignmentSearchDTO {
 
     private String realName;
 
-    private String[] param;
+    private String param;
 
     public String getLoginName() {
         return loginName;
@@ -37,11 +37,11 @@ public class RoleAssignmentSearchDTO {
         this.realName = realName;
     }
 
-    public String[] getParam() {
+    public String getParam() {
         return param;
     }
 
-    public void setParam(String[] param) {
+    public void setParam(String param) {
         this.param = param;
     }
 }

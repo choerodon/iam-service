@@ -77,10 +77,10 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String[] params) {
+    public Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String param) {
         clientDO.setOrganizationId(clientDO.getOrganizationId());
         Page<ClientDO> clientDOPage
-                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, params));
+                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, param));
         return ConvertPageHelper.convertPage(clientDOPage, ClientE.class);
     }
 

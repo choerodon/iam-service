@@ -16,7 +16,7 @@ public interface OrganizationProjectService {
 
     List<ProjectDTO> queryAll(ProjectDTO projectDTO);
 
-    Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String[] params);
+    Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param);
 
     ProjectDTO update(Long organizationId, ProjectDTO projectDTO);
 

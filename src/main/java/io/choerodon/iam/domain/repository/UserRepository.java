@@ -20,7 +20,7 @@ public interface UserRepository {
 
     UserE insertSelective(UserE userE);
 
-    Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String[] params);
+    Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param);
 
     UserE selectByPrimaryKey(Long id);
 

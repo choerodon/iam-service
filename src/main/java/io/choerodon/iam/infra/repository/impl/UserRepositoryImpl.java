@@ -46,10 +46,10 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String[] params) {
+    public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param) {
         //TODO
         //language code 转描述
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, params));
+        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, param));
     }
 
     @Override

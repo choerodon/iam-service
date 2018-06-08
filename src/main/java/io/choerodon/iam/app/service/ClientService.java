@@ -18,7 +18,7 @@ public interface ClientService {
 
     ClientDTO queryByName(Long orgId, String clientName);
 
-    Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String[] params);
+    Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String param);
 
     void check(ClientDTO client);
 }

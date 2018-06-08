@@ -81,14 +81,12 @@
         <if test="roleDO.builtIn != null">
             AND r.is_built_in = #{roleDO.builtIn}
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                r.name LIKE concat('%',#{item},'%') OR
-                r.code LIKE concat('%',#{item},'%') OR
-                r.level LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND (
+            r.name LIKE concat('%',#{param},'%') OR
+            r.code LIKE concat('%',#{param},'%') OR
+            r.level LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 

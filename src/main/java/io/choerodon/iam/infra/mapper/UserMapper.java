@@ -14,7 +14,7 @@ import java.util.List;
 public interface UserMapper extends BaseMapper<UserDO> {
 
     List<UserDO> fulltextSearch(@Param("userDO") UserDO userDO,
-                                @Param("params") String[] params);
+                                @Param("param") String param);
 
     List<UserDO> selectUserWithRolesBySourceIdAndType(
             @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
@@ -22,13 +22,13 @@ public interface UserMapper extends BaseMapper<UserDO> {
             @Param("sourceType") String sourceType,
             @Param("start") Integer start,
             @Param("size") Integer size,
-            @Param("params") String[] params);
+            @Param("param") String param);
 
     int selectCountUsers(@Param("roleAssignmentSearchDTO")
                                  RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                          @Param("sourceId") Long sourceId,
                          @Param("sourceType") String sourceType,
-                         @Param("params") String[] params);
+                         @Param("param") String param);
 
     List<UserDO> selectTheUsersOfProjectByParamAndProjectId(@Param("projectId") Long projectId,
                                                             @Param("param") String param);

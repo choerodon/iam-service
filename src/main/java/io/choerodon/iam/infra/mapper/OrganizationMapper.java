@@ -10,8 +10,9 @@ import java.util.List;
  * @author wuguokai
  */
 public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
+
     List fulltextSearch(@Param("organization") OrganizationDO organization,
-                        @Param("params") String[] params);
+                        @Param("param") String param);
 
     List selectFromMemberRoleByMemberId(@Param("memberId") Long memberId,
                                         @Param("includedDisabled") Boolean includedDisabled);
