@@ -161,7 +161,7 @@
     <select id="selectUserCountFromMemberRoleByOptions" resultType="int">
         SELECT COUNT(1) FROM (
         SELECT DISTINCT iu.id FROM iam_member_role imr
-        LEFT JOIN iam_user iu ON imr.member_id = iu.id
+        INNER JOIN iam_user iu ON imr.member_id = iu.id
         WHERE imr.role_id = #{roleId}
         AND imr.member_type = #{memberType}
         <if test="sourceId != null">
