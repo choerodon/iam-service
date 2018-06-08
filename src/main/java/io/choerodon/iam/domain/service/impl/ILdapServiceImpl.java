@@ -7,6 +7,7 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
@@ -24,7 +25,7 @@ public class ILdapServiceImpl implements ILdapService {
     public LdapConnectionDTO testConnect(LdapDO ldap) {
         LdapValidator.validate(ldap);
         //匿名用户
-        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
+        boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         //测试连接
         LdapContext ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());

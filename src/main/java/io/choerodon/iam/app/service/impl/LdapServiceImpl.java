@@ -17,6 +17,7 @@ import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.naming.ldap.LdapContext;
 
@@ -117,7 +118,7 @@ public class LdapServiceImpl implements LdapService {
         }
         LdapValidator.validate(ldap);
         //匿名用户
-        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
+        boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapContext ldapContext = null;
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         if (anonymous) {
