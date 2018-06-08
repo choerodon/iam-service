@@ -46,10 +46,14 @@ public class PermissionController {
                                                            @ApiIgnore
                                                            @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                                    PageRequest pageRequest,
-                                                           @RequestParam(required = false) String params) {
+                                                           @RequestParam(required = false) String[] params) {
         PermissionDTO permission = new PermissionDTO();
         permission.setLevel(level);
-        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission, params), HttpStatus.OK);
+        String param = null;
+        if (params.length == 1){
+            param = params[0];
+        }
+        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

@@ -126,11 +126,15 @@ public class ClientController extends BaseController {
                                                 @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                         PageRequest pageRequest,
                                                 @RequestParam(required = false) String name,
-                                                @RequestParam(required = false) String params) {
+                                                @RequestParam(required = false) String[] params) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);
-        return new ResponseEntity<>(clientService.list(clientDTO, pageRequest, params), HttpStatus.OK);
+        String param = null;
+        if (params.length == 1){
+            param = params[0];
+        }
+        return new ResponseEntity<>(clientService.list(clientDTO, pageRequest, param), HttpStatus.OK);
     }
 
     /**

@@ -69,12 +69,16 @@ public class OrganizationController extends BaseController {
                                                       @RequestParam(required = false) String name,
                                                       @RequestParam(required = false) String code,
                                                       @RequestParam(required = false) Boolean enabled,
-                                                      @RequestParam(required = false) String params) {
+                                                      @RequestParam(required = false) String[] params) {
         OrganizationDTO organization = new OrganizationDTO();
         organization.setName(name);
         organization.setCode(code);
         organization.setEnabled(enabled);
-        return new ResponseEntity<>(organizationService.pagingQuery(organization, pageRequest, params), HttpStatus.OK);
+        String param = null;
+        if (params.length == 1){
+            param = params[0];
+        }
+        return new ResponseEntity<>(organizationService.pagingQuery(organization, pageRequest, param), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

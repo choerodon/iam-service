@@ -164,14 +164,18 @@ public class UserController extends BaseController {
             @RequestParam(required = false, name = "realName") String realName,
             @RequestParam(required = false, name = "enabled") Boolean enabled,
             @RequestParam(required = false, name = "locked") Boolean locked,
-            @RequestParam(required = false, name = "params") String params
+            @RequestParam(required = false, name = "params") String[] params
             ) {
         UserDO userDO = new UserDO();
         userDO.setLoginName(loginName);
         userDO.setRealName(realName);
         userDO.setEnabled(enabled);
         userDO.setLocked(locked);
-        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO, params), HttpStatus.OK);
+        String param = null;
+        if (params.length == 1){
+            param = params[0];
+        }
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO, param), HttpStatus.OK);
     }
 
 
