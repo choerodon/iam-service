@@ -110,9 +110,10 @@ public class MenuController {
     @Permission(permissionLogin = true)
     @ApiOperation("通过层级获取已经经过权限校验的左侧菜单")
     @GetMapping
-    public ResponseEntity<List<MenuDTO>> listAfterTestPermission(@RequestParam String level) {
+    public ResponseEntity<List<MenuDTO>> listAfterTestPermission(@RequestParam String level,
+                                                                 @RequestParam(required = false, name = "source_id") Long sourceId) {
         ResourceLevelValidator.validate(level);
-        return new ResponseEntity<>(menuService.listAfterTestPermission(level), HttpStatus.OK);
+        return new ResponseEntity<>(menuService.listAfterTestPermission(level, sourceId), HttpStatus.OK);
     }
 
     /**
