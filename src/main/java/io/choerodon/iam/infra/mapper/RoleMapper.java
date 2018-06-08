@@ -1,12 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-
+import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
 
 /**
  * @author wuguokai
@@ -20,7 +19,7 @@ public interface RoleMapper extends BaseMapper<RoleDO> {
     List<Long> queryRoleByUser(@Param("user_id") Long userId, @Param("source_type") String sourceType,
                                @Param("source_id") Long sourceId);
 
-    List<RoleDO> fulltextSearch(@Param("roleDO") RoleDO roleDO, @Param("params") String[] params);
+    List<RoleDO> fulltextSearch(@Param("roleDO") RoleDO roleDO, @Param("param") String param);
 
     RoleDO selectRoleWithPermissionsAndLabels(Long id);
 

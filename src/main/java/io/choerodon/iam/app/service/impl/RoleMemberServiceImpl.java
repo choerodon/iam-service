@@ -1,11 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -14,6 +8,11 @@ import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.service.IRoleMemberService;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author superlee
@@ -68,7 +67,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
-                m.setMemberId(memberId)
+                    m.setMemberId(memberId)
             );
             memberRoleDTOS.addAll(ConvertHelper.convertList(
                     iRoleMemberService.insertOrUpdateRolesByMemberId(isEdit, projectId, memberId,

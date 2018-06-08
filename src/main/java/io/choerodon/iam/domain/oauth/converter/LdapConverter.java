@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.oauth.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai
@@ -15,10 +14,9 @@ import io.choerodon.iam.infra.dataobject.LdapDO;
 public class LdapConverter implements ConvertorI<LdapE, LdapDO, LdapDTO> {
     @Override
     public LdapE dtoToEntity(LdapDTO dto) {
-        return new LdapE(dto.getId(), dto.getName(), dto.getOrganizationId(), dto.getServerAddress(),
-                dto.getEncryption(), dto.getStatus(), dto.getBaseDn(),
-                dto.getLdapAttributeName(), dto.getDomain(), dto.getDescription(),
-                dto.getObjectVersionNumber());
+        LdapE ldapE = new LdapE();
+        BeanUtils.copyProperties(dto, ldapE);
+        return ldapE;
     }
 
     @Override
@@ -30,10 +28,9 @@ public class LdapConverter implements ConvertorI<LdapE, LdapDO, LdapDTO> {
 
     @Override
     public LdapE doToEntity(LdapDO dataObject) {
-        return new LdapE(dataObject.getId(), dataObject.getName(), dataObject.getOrganizationId(),
-                dataObject.getServerAddress(), dataObject.getEncryption(), dataObject.getStatus(),
-                dataObject.getBaseDn(), dataObject.getLdapAttributeName(),
-                dataObject.getDomain(), dataObject.getDescription(), dataObject.getObjectVersionNumber());
+        LdapE ldapE = new LdapE();
+        BeanUtils.copyProperties(dataObject, ldapE);
+        return ldapE;
     }
 
     @Override

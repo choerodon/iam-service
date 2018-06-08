@@ -1,16 +1,15 @@
 package io.choerodon.iam.api.dto;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.validation.constraints.Size;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
+import javax.validation.constraints.Size;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author superlee
@@ -29,11 +28,11 @@ public class RoleDTO {
     private String description;
     @NotEmpty(message = "error.role.level.empty")
     private String level;
-    private Boolean isEnabled;
-    private Boolean isModified;
-    private Boolean isEnableForbidden;
-    private Boolean isBuiltIn;
-    private Boolean isAssignable;
+    private Boolean enabled;
+    private Boolean modified;
+    private Boolean enableForbidden;
+    private Boolean builtIn;
+    private Boolean assignable;
     private Long objectVersionNumber;
     private Integer userCount;
     private List<PermissionDTO> permissions;
@@ -112,43 +111,43 @@ public class RoleDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Boolean getModified() {
-        return isModified;
+        return modified;
     }
 
     public void setModified(Boolean modified) {
-        isModified = modified;
+        this.modified = modified;
     }
 
     public Boolean getEnableForbidden() {
-        return isEnableForbidden;
+        return enableForbidden;
     }
 
     public void setEnableForbidden(Boolean enableForbidden) {
-        isEnableForbidden = enableForbidden;
+        this.enableForbidden = enableForbidden;
     }
 
     public Boolean getBuiltIn() {
-        return isBuiltIn;
+        return builtIn;
     }
 
     public void setBuiltIn(Boolean builtIn) {
-        isBuiltIn = builtIn;
+        this.builtIn = builtIn;
     }
 
     public Boolean getAssignable() {
-        return isAssignable;
+        return assignable;
     }
 
     public void setAssignable(Boolean assignable) {
-        isAssignable = assignable;
+        this.assignable = assignable;
     }
 
     public Long getObjectVersionNumber() {
@@ -217,7 +216,7 @@ public class RoleDTO {
             throw new CommonException("error.role.code.length");
         }
         String[] codes = code.split("/");
-        String lastCode = codes[codes.length-1];
+        String lastCode = codes[codes.length - 1];
         Pattern p = Pattern.compile(CODE_REGULAR_EXPRESSION);
         Matcher m = p.matcher(lastCode);
         boolean isCheck = m.matches();

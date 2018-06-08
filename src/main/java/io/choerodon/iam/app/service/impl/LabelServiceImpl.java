@@ -1,13 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.iam.api.dto.LabelDTO;
 import io.choerodon.iam.app.service.LabelService;
 import io.choerodon.iam.domain.repository.LabelRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee

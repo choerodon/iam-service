@@ -1,11 +1,10 @@
 package io.choerodon.iam.api.dto;
 
-import java.util.List;
-import java.util.regex.Matcher;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * @author wuguokai
@@ -27,7 +26,7 @@ public class OrganizationDTO {
 
     private Long objectVersionNumber;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     private Boolean isInto = true;
 
@@ -82,10 +81,10 @@ public class OrganizationDTO {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 }

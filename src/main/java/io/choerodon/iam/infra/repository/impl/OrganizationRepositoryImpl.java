@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -13,6 +9,9 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author wuguokai
@@ -67,8 +66,8 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String[] params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.fulltextSearch(organizationDO, params));
+    public Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.fulltextSearch(organizationDO, param));
     }
 
     @Override

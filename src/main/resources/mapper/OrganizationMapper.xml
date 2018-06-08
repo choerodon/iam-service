@@ -5,17 +5,22 @@
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
-        <result column="is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <collection property="projects" ofType="io.choerodon.iam.infra.dataobject.ProjectDO">
             <id column="project_id" property="id"></id>
             <result column="project_name" property="name" jdbcType="VARCHAR"/>
             <result column="project_code" property="code" jdbcType="VARCHAR"/>
             <result column="organization_id" property="organizationId" jdbcType="DECIMAL"/>
-            <result column="project_is_enabled" property="isEnabled" jdbcType="BOOLEAN"/>
+            <result column="project_is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <resultMap id="OrganizationDO" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        <id column="id" property="id"></id>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="OrganizationDO">
         SELECT * FROM fd_organization
         WHERE 1=1
         <if test="organization.name != null">
@@ -27,40 +32,38 @@
         <if test="organization.enabled != null">
             AND is_enabled = #{organization.enabled}
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                name LIKE concat('%',#{item},'%') OR
-                code LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            name LIKE concat('%',#{param},'%') OR
+            code LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 
-    <select id="selectFromMemberRoleByMemberId" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
         SELECT DISTINCT
-          fd_organization.*
+        fd_organization.*
         FROM
-          fd_organization
+        fd_organization
         JOIN
-          iam_member_role
+        iam_member_role
         ON
-          fd_organization.id = iam_member_role.source_id
+        fd_organization.id = iam_member_role.source_id
         AND
-          iam_member_role.source_type = "organization"
+        iam_member_role.source_type = "organization"
         WHERE
-          iam_member_role.member_id = #{memberId}
+        iam_member_role.member_id = #{memberId}
         <if test="!includedDisabled">
             AND fd_organization.is_enabled = true
         </if>
     </select>
 
-    <select id="selectOrgByUserAndPros" resultType="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <select id="selectOrgByUserAndPros" resultMap="OrganizationDO">
         SELECT DISTINCT fd_organization.* from fd_organization
         where id in (
-          SELECT DISTINCT fp.organization_id from fd_project fp
-          LEFT JOIN iam_member_role imr on imr.source_id=fp.id and imr.source_type="project"
-          WHERE imr.member_id=#{memberId})
+        SELECT DISTINCT fp.organization_id from fd_project fp
+        LEFT JOIN iam_member_role imr on imr.source_id=fp.id and imr.source_type="project"
+        WHERE imr.member_id=#{memberId})
         <if test="!includedDisabled">
             AND fd_organization.is_enabled = true
         </if>

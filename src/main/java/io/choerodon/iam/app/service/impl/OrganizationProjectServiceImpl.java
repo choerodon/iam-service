@@ -1,15 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_CREATE_PROJECT;
-import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UPDATE_PROJECT;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.event.producer.execute.EventProducerTemplate;
+import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
+import io.choerodon.iam.app.service.OrganizationProjectService;
+import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.domain.iam.entity.ProjectE;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.domain.service.IProjectService;
+import io.choerodon.iam.infra.dataobject.LabelDO;
+import io.choerodon.iam.infra.dataobject.OrganizationDO;
+import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -17,26 +29,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.domain.iam.entity.MemberRoleE;
-import io.choerodon.iam.domain.repository.*;
-import io.choerodon.iam.infra.dataobject.LabelDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
-import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.service.IProjectService;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_CREATE_PROJECT;
+import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UPDATE_PROJECT;
 
 /**
  * @author flyleft
@@ -115,7 +114,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                         projectEventMsg.setOrganizationName(organizationDO.getName());
                         BeanUtils.copyProperties(newProjectE, dto);
                     });
-            if (exception != null ) {
+            if (exception != null) {
                 throw new CommonException(exception.getMessage());
             }
         } else {
@@ -159,10 +158,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String[] params) {
+    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param) {
         ProjectDO projectDO = ConvertHelper.convert(projectDTO, ProjectDO.class);
         return ConvertPageHelper.convertPage(projectRepository.pagingQuery(
-                projectDO, pageRequest, params), ProjectDTO.class);
+                projectDO, pageRequest, param), ProjectDTO.class);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -223,21 +222,29 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public void check(ProjectDTO projectDTO) {
-        Boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
-        String code = projectDTO.getCode();
-        if (StringUtils.isEmpty(code)) {
+        Boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
+        if (!checkCode) {
             throw new CommonException("error.project.code.empty");
+        } else {
+            checkCode(projectDTO);
         }
-        ProjectDO projectDO = new ProjectDO();
-        projectDO.setCode(code);
-        projectDO.setOrganizationId(projectDTO.getOrganizationId());
+    }
+
+    private void checkCode(ProjectDTO projectDTO) {
+        Boolean createCheck = StringUtils.isEmpty(projectDTO.getId());
+        ProjectDO project = new ProjectDO();
+        project.setOrganizationId(projectDTO.getOrganizationId());
+        project.setCode(projectDTO.getCode());
         if (createCheck) {
-            if (projectRepository.selectByOptions(projectDO).size() > 0) {
+            Boolean existed = projectRepository.selectOne(project) != null;
+            if (existed) {
                 throw new CommonException("error.project.code.exist");
             }
         } else {
-            ProjectDO projectDO1 = projectRepository.selectOne(projectDO);
-            if (projectDO1 != null && !projectDO1.getId().equals(projectDTO.getId())) {
+            Long id = projectDTO.getId();
+            ProjectDO projectDO = projectRepository.selectOne(project);
+            Boolean existed = projectDO != null && !id.equals(projectDO.getId());
+            if (existed) {
                 throw new CommonException("error.project.code.exist");
             }
         }

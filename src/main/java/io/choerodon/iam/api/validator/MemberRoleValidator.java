@@ -1,13 +1,12 @@
 package io.choerodon.iam.api.validator;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.MemberRoleDTO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author wuguokai

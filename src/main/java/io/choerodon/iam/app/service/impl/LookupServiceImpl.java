@@ -1,10 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.iam.domain.repository.LookupValueRepository;
-import io.choerodon.iam.infra.dataobject.LookupValueDO;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -13,9 +8,13 @@ import io.choerodon.iam.api.dto.LookupDTO;
 import io.choerodon.iam.app.service.LookupService;
 import io.choerodon.iam.domain.iam.entity.LookupE;
 import io.choerodon.iam.domain.repository.LookupRepository;
+import io.choerodon.iam.domain.repository.LookupValueRepository;
 import io.choerodon.iam.domain.service.ILookupService;
 import io.choerodon.iam.infra.dataobject.LookupDO;
+import io.choerodon.iam.infra.dataobject.LookupValueDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author superlee

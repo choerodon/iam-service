@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -13,6 +9,9 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -27,8 +26,8 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String[] params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(roleDO, params));
+    public Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(roleDO, param));
     }
 
     @Override

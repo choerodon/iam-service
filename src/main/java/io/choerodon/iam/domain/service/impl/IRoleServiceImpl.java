@@ -1,27 +1,29 @@
 package io.choerodon.iam.domain.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.infra.dataobject.LabelDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.LabelE;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
+import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dataobject.RoleLabelDO;
+import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -116,16 +118,23 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     @Override
     public RoleE update(RoleE roleE) {
-        if (roleRepository.selectByPrimaryKey(roleE.getId()) == null) {
+        RoleE role1 = roleRepository.selectByPrimaryKey(roleE.getId());
+        if (role1 == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION, roleE.getId());
         }
-        RoleE role = roleRepository.updateSelective(roleE);
-        role.copyPermissionsAndLabels(roleE);
-        //维护role_permission关系
-        updateRolePermission(role);
-        //维护role_label表
-        updateRoleLabel(role);
-        return role;
+        //内置的角色不允许更新字段，只能更新label
+        if (role1.getBuiltIn()) {
+            updateRoleLabel(roleE);
+            return roleE;
+        } else {
+            RoleE role = roleRepository.updateSelective(roleE);
+            role.copyPermissionsAndLabels(roleE);
+            //维护role_permission关系
+            updateRolePermission(role);
+            //维护role_label表
+            updateRoleLabel(role);
+            return role;
+        }
     }
 
     private void updateRoleLabel(RoleE roleE) {

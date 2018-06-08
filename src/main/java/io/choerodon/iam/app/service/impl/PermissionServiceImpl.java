@@ -1,10 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -19,6 +14,10 @@ import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -36,11 +35,11 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String[] params) {
+    public Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param) {
         ResourceLevelValidator.validate(permissionDTO.getLevel());
         Page<PermissionDO> permissionDOPage =
                 permissionRepository.pagingQuery(
-                        pageRequest, ConvertHelper.convert(permissionDTO, PermissionDO.class), params);
+                        pageRequest, ConvertHelper.convert(permissionDTO, PermissionDO.class), param);
         return ConvertPageHelper.convertPage(permissionDOPage, PermissionDTO.class);
     }
 
@@ -51,6 +50,11 @@ public class PermissionServiceImpl implements PermissionService {
             checkPermissionDTOList.forEach(i -> i.setApprove(false));
             return checkPermissionDTOList;
         }
+        //super admin例外处理
+        if (details.getAdmin()) {
+            checkPermissionDTOList.forEach(cp -> cp.setApprove(true));
+            return checkPermissionDTOList;
+        }
         Long userId = details.getUserId();
         Set<String> siteCodes = checkPermissionDTOList.stream().filter(i -> ResourceLevel.SITE.value().equals(i.getResourceType()))
                 .map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
@@ -58,12 +62,12 @@ public class PermissionServiceImpl implements PermissionService {
         siteCodes = permissionRepository.checkPermission(userId, ResourceLevel.SITE.value(), 0L, siteCodes);
         //组织层分组再校验
         List<CheckPermissionDTO> organizationPermissions = checkPermissionDTOList.stream().filter(i -> ResourceLevel.ORGANIZATION.value().equals(i.getResourceType()))
-                                                            .collect(Collectors.toList());
+                .collect(Collectors.toList());
         Map<Long, List<CheckPermissionDTO>> orgPermissionMaps = new HashMap<>();
         organizationPermissions.forEach(p -> {
             if (orgPermissionMaps.get(p.getOrganizationId()) != null && !orgPermissionMaps.get(p.getOrganizationId()).isEmpty()) {
                 orgPermissionMaps.get(p.getOrganizationId()).add(p);
-            }else {
+            } else {
                 List<CheckPermissionDTO> list = new ArrayList<>();
                 list.add(p);
                 orgPermissionMaps.put(p.getOrganizationId(), list);
@@ -83,7 +87,7 @@ public class PermissionServiceImpl implements PermissionService {
         projectPermissions.forEach(p -> {
             if (projectMaps.get(p.getProjectId()) != null && !projectMaps.get(p.getProjectId()).isEmpty()) {
                 projectMaps.get(p.getProjectId()).add(p);
-            }else {
+            } else {
                 List<CheckPermissionDTO> list = new ArrayList<>();
                 list.add(p);
                 projectMaps.put(p.getProjectId(), list);

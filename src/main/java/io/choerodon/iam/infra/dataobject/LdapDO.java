@@ -1,12 +1,13 @@
 package io.choerodon.iam.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @author wuguokai
@@ -21,12 +22,20 @@ public class LdapDO extends AuditDomain {
     private String name;
     private Long organizationId;
     private String serverAddress;
-    private String encryption;
-    private String status;
+    private String port;
+    private String account;
+    private String password;
+    @Column(name = "use_ssl")
+    private Boolean useSSL;
+    @Column(name = "is_enabled")
+    private Boolean enabled;
     private String baseDn;
-    private String ldapAttributeName;
-    private String domain;
-    private String description;
+    private String directoryType;
+    private String objectClass;
+    private String loginNameField;
+    private String realNameField;
+    private String emailField;
+    private String phoneField;
 
     public Long getId() {
         return id;
@@ -60,20 +69,28 @@ public class LdapDO extends AuditDomain {
         this.serverAddress = serverAddress;
     }
 
-    public String getEncryption() {
-        return encryption;
+    public String getPort() {
+        return port;
     }
 
-    public void setEncryption(String encryption) {
-        this.encryption = encryption;
+    public void setPort(String port) {
+        this.port = port;
     }
 
-    public String getStatus() {
-        return status;
+    public Boolean getUseSSL() {
+        return useSSL;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setUseSSL(Boolean useSSL) {
+        this.useSSL = useSSL;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String getBaseDn() {
@@ -84,27 +101,68 @@ public class LdapDO extends AuditDomain {
         this.baseDn = baseDn;
     }
 
-    public String getLdapAttributeName() {
-        return ldapAttributeName;
+    public String getDirectoryType() {
+        return directoryType;
     }
 
-    public void setLdapAttributeName(String ldapAttributeName) {
-        this.ldapAttributeName = ldapAttributeName;
+    public void setDirectoryType(String directoryType) {
+        this.directoryType = directoryType;
     }
 
-    public String getDomain() {
-        return domain;
+    public String getLoginNameField() {
+        return loginNameField;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
+    public void setLoginNameField(String loginNameField) {
+        this.loginNameField = loginNameField;
     }
 
-    public String getDescription() {
-        return description;
+    public String getRealNameField() {
+        return realNameField;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setRealNameField(String realNameField) {
+        this.realNameField = realNameField;
     }
+
+    public String getEmailField() {
+        return emailField;
+    }
+
+    public void setEmailField(String emailField) {
+        this.emailField = emailField;
+    }
+
+    public String getPhoneField() {
+        return phoneField;
+    }
+
+    public void setPhoneField(String phoneField) {
+        this.phoneField = phoneField;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getObjectClass() {
+        return objectClass;
+    }
+
+    public void setObjectClass(String objectClass) {
+        this.objectClass = objectClass;
+    }
+
 }

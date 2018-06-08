@@ -1,12 +1,11 @@
 package io.choerodon.iam.api.validator;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai
@@ -25,7 +24,7 @@ public class MenuValidator {
         ResourceLevelValidator.validate(menuDTO.getLevel());
         MenuDTO menuDTO1 = new MenuDTO();
         menuDTO1.setCode(menuDTO.getCode());
-        if (menuMapper.select(ConvertHelper.convert(menuDTO1, MenuDO.class)).size() > 0) {
+        if (!menuMapper.select(ConvertHelper.convert(menuDTO1, MenuDO.class)).isEmpty()) {
             throw new CommonException("error.menuCode.exist");
         }
     }
@@ -49,7 +48,7 @@ public class MenuValidator {
     public void delete(Long menuId) {
         MenuDO menuDO = new MenuDO();
         menuDO.setParentId(menuId);
-        if (menuMapper.select(menuDO).size() > 0) {
+        if (!menuMapper.select(menuDO).isEmpty()) {
             throw new CommonException("error.menu.have.children");
         }
         menuDO = menuMapper.selectByPrimaryKey(menuId);

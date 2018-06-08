@@ -1,15 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.LdapAccountDTO;
+import io.choerodon.iam.api.dto.LdapConnectionDTO;
+import io.choerodon.iam.api.dto.LdapDTO;
+import io.choerodon.iam.api.dto.LdapHistoryDTO;
+import io.choerodon.iam.app.service.LdapService;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.app.service.LdapService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
@@ -31,8 +32,8 @@ public class LdapController {
      * @param ldapDTO
      * @return ldapDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "添加Ldap")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "创建Ldap")
     @PostMapping
     public ResponseEntity<LdapDTO> create(@PathVariable("organization_id") Long organizationId,
                                           @RequestBody LdapDTO ldapDTO) {
@@ -47,12 +48,28 @@ public class LdapController {
      * @param ldapDTO
      * @return ldapDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "更新Ldap")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "修改Ldap")
     @PostMapping(value = "/{id}")
     public ResponseEntity<LdapDTO> update(@PathVariable("organization_id") Long organizationId,
                                           @PathVariable("id") Long id, @RequestBody LdapDTO ldapDTO) {
         return new ResponseEntity<>(ldapService.update(organizationId, id, ldapDTO), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用ldap")
+    @PutMapping(value = "/{id}/enable")
+    public ResponseEntity<LdapDTO> enableLdap(@PathVariable(name = "organization_id") Long organizationId,
+                                              @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.enableLdap(organizationId, id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "禁用ldap")
+    @PutMapping(value = "/{id}/disable")
+    public ResponseEntity<LdapDTO> disableLdap(@PathVariable(name = "organization_id") Long organizationId,
+                                               @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.disableLdap(organizationId, id), HttpStatus.OK);
     }
 
     /**
@@ -61,11 +78,11 @@ public class LdapController {
      * @param organizationId
      * @return ldapDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "根据组织id查询Ldap")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询组织下的Ldap")
     @GetMapping
     public ResponseEntity<LdapDTO> queryByOrgId(@PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(ldapService.queryByOrgId(organizationId), HttpStatus.OK);
+        return new ResponseEntity<>(ldapService.queryByOrganizationId(organizationId), HttpStatus.OK);
     }
 
     /**
@@ -74,11 +91,11 @@ public class LdapController {
      * @param organizationId
      * @return ldapDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "根据组织id删除Ldap")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除组织下的Ldap")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> query(@PathVariable("organization_id") Long organizationId,
-                                         @PathVariable("id") Long id) {
+    public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId,
+                                          @PathVariable("id") Long id) {
         return new ResponseEntity<>(ldapService.delete(organizationId, id), HttpStatus.OK);
     }
 
@@ -87,21 +104,32 @@ public class LdapController {
      *
      * @return 是否连接成功
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "测试ldap连接")
-    @GetMapping("/test_connect")
-    public ResponseEntity<Boolean> testConnect(@PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(ldapService.testConnect(organizationId), HttpStatus.OK);
+    @PostMapping("/{id}/test_connect")
+    public ResponseEntity<LdapConnectionDTO> testConnect(@PathVariable("organization_id") Long organizationId,
+                                                         @PathVariable("id") Long id,
+                                                         @RequestBody LdapAccountDTO ldapAccount) {
+        return new ResponseEntity<>(ldapService.testConnect(organizationId, id, ldapAccount), HttpStatus.OK);
     }
 
     /**
      * 同步ldap用户
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "同步ldap用户")
-    @PostMapping("/sync_users")
-    public ResponseEntity syncUsers(@PathVariable("organization_id") Long organizationId, @RequestBody UserDTO userDTO) {
-        ldapService.syncLdapUser(organizationId, userDTO);
+    @PostMapping("/{id}/sync_users")
+    public ResponseEntity syncUsers(@PathVariable("organization_id") Long organizationId,
+                                    @PathVariable Long id) {
+        ldapService.syncLdapUser(organizationId, id);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据ldap id查询最新一条历史记录")
+    @GetMapping("/{id}/latest_history")
+    public ResponseEntity<LdapHistoryDTO> latestHistory(@PathVariable("organization_id") Long organizationId,
+                                                        @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.queryLatestHistory(id), HttpStatus.OK);
     }
 }

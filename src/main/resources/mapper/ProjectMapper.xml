@@ -3,7 +3,12 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectMapper">
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.ProjectDO">
+    <resultMap id="projectDO" type="io.choerodon.iam.infra.dataobject.ProjectDO">
+        <id column="id" property="id"></id>
+        <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="projectDO">
         SELECT *
         FROM fd_project
         WHERE organization_id = #{project.organizationId}
@@ -16,17 +21,15 @@
         <if test="project.enabled != null">
             AND is_enabled = #{project.enabled}
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                name LIKE concat('%',#{item},'%') OR
-                code LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            name LIKE concat('%',#{param},'%') OR
+            code LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 
-    <select id="selectProjectsFromMemberRoleByOption" resultType="io.choerodon.iam.infra.dataobject.ProjectDO">
+    <select id="selectProjectsFromMemberRoleByOption" resultMap="projectDO">
         SELECT DISTINCT fd_project.*
         FROM fd_project
         JOIN iam_member_role

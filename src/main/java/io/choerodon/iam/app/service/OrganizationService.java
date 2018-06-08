@@ -13,7 +13,7 @@ public interface OrganizationService {
 
     OrganizationDTO queryOrganizationById(Long organizationId);
 
-    Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String[] params);
+    Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param);
 
     OrganizationDTO enableOrganization(Long organizationId);
 

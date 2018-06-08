@@ -1,8 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -13,6 +10,8 @@ import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * @author wuguokai
@@ -43,10 +42,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String[] params) {
+    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param) {
         Page<OrganizationDO> organizationDOPage =
                 organizationRepository.pagingQuery(ConvertHelper.convert(
-                        organizationDTO, OrganizationDO.class), pageRequest, params);
+                        organizationDTO, OrganizationDO.class), pageRequest, param);
         return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 
@@ -74,20 +73,29 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void check(OrganizationDTO organization) {
+        Boolean checkCode = !StringUtils.isEmpty(organization.getCode());
+        if (!checkCode) {
+            throw new CommonException("error.organization.code.empty");
+        } else {
+            checkCode(organization);
+        }
+    }
+
+    private void checkCode(OrganizationDTO organization) {
         Boolean createCheck = StringUtils.isEmpty(organization.getId());
         String code = organization.getCode();
-        if (StringUtils.isEmpty(code)) {
-            throw new CommonException("error.organization.code.empty");
-        }
         OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(code);
         if (createCheck) {
-            if (organizationRepository.select(organizationDO).size() > 0) {
+            Boolean existed = organizationRepository.selectOne(organizationDO) != null;
+            if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         } else {
+            Long id = organization.getId();
             OrganizationDO organizationDO1 = organizationRepository.selectOne(organizationDO);
-            if (organizationDO1 != null && !organizationDO1.getId().equals(organization.getId())) {
+            Boolean existed = organizationDO1 != null && !id.equals(organizationDO1.getId());
+            if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         }

@@ -1,19 +1,11 @@
 package io.choerodon.iam.domain.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import io.choerodon.event.producer.execute.EventProducerTemplate;
-import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
-import io.choerodon.iam.infra.enums.RoleLabel;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.event.producer.execute.EventProducerTemplate;
+import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
+import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.LabelRepository;
@@ -22,7 +14,16 @@ import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
+import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.mybatis.service.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -30,6 +31,9 @@ import io.choerodon.mybatis.service.BaseServiceImpl;
 @Service
 @RefreshScope
 public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implements IRoleMemberService {
+
+    private static final String MEMBER_ROLE_NOT_EXIST_EXCEPTION = "error.memberRole.not.exist";
+
 
     private UserRepository userRepository;
 
@@ -66,13 +70,14 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             UserMemberEventPayload userMemberEventMsg = new UserMemberEventPayload();
             userMemberEventMsg.setResourceId(sourceId);
+            userMemberEventMsg.setUserId(memberId);
             userMemberEventMsg.setResourceType(sourceType);
             userMemberEventMsg.setUsername(userE.getLoginName());
             Exception exception = eventProducerTemplate.execute("memberRole", "updateMemberRole",
                     serviceName, userMemberEventPayloads, (String uuid) -> {
                         List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
                                 isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
-                        setRoleLabels(userMemberEventMsg, ownRoleIds);
+                        userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
                         userMemberEventPayloads.add(userMemberEventMsg);
                     });
             if (exception != null) {
@@ -96,7 +101,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
             Exception exception = eventProducerTemplate.execute("memberRole", "deleteMemberRole",
                     serviceName, userMemberEventPayloads, (String uuid) ->
-                deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads)
+                            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads)
             );
             if (exception != null) {
                 throw new CommonException(exception.getMessage());
@@ -109,7 +114,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     private void deleteByView(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO,
                               String sourceType,
                               List<UserMemberEventPayload> userMemberEventPayloads) {
-        boolean doSendEvent = !(userMemberEventPayloads == null);
+        boolean doSendEvent = userMemberEventPayloads != null;
         String memberType =
                 roleAssignmentDeleteDTO.getMemberType() == null ? "user" : roleAssignmentDeleteDTO.getMemberType();
         String view = roleAssignmentDeleteDTO.getView();
@@ -147,12 +152,12 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     }
 
     private UserMemberEventPayload delete(Long roleId, Long memberId, String memberType,
-                        Long sourceId, String sourceType, boolean doSendEvent) {
+                                          Long sourceId, String sourceType, boolean doSendEvent) {
         MemberRoleE memberRole =
                 new MemberRoleE(null, roleId, memberId, memberType, sourceId, sourceType);
         MemberRoleE mr = memberRoleRepository.selectOne(memberRole);
         if (mr == null) {
-            throw new CommonException("error.memberRole.not.exist", roleId, memberId);
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION, roleId, memberId);
         }
         memberRoleRepository.deleteById(mr.getId());
         UserMemberEventPayload userMemberEventMsg = null;
@@ -177,19 +182,10 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     throw new CommonException("error.user.not.exist", memberId);
                 }
                 userMemberEventMsg.setUsername(user.getLoginName());
+                userMemberEventMsg.setUserId(memberId);
             }
         }
         return userMemberEventMsg;
-    }
-
-    private void setRoleLabels(UserMemberEventPayload userMemberEventMsg,
-                               List<Long> ownRoleIds) {
-        Set<String> roleLabels = new HashSet<>();
-        ownRoleIds.forEach( roleId -> {
-            List<LabelDO> labels = labelRepository.selectByRoleId(roleId);
-            labels.forEach(label -> roleLabels.add(label.getName()));
-        });
-        userMemberEventMsg.setRoleLabels(roleLabels);
     }
 
     @Override
@@ -201,7 +197,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     public void deleteByIdOnOrganizationLevel(Long id, Long organizationId) {
         MemberRoleE memberRoleE = memberRoleRepository.selectByPrimaryKey(id);
         if (memberRoleE == null) {
-            throw new CommonException("error.memberRole.not.exist");
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION);
         }
         if (organizationId.equals(memberRoleE.getSourceId())
                 && ResourceLevel.ORGANIZATION.value().equals(memberRoleE.getSourceType())) {
@@ -215,7 +211,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     public void deleteByIdOnProjectLevel(Long id, Long projectId) {
         MemberRoleE memberRoleE = memberRoleRepository.selectByPrimaryKey(id);
         if (memberRoleE == null) {
-            throw new CommonException("error.memberRole.not.exist");
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION);
         }
         if (projectId.equals(memberRoleE.getSourceId())
                 && ResourceLevel.PROJECT.value().equals(memberRoleE.getSourceType())) {
@@ -226,9 +222,9 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     }
 
     private List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
-                                                                   Long memberId, String sourceType,
-                                                                   List<MemberRoleE> memberRoleEList,
-                                                                   List<MemberRoleE> returnList) {
+                                                            Long memberId, String sourceType,
+                                                            List<MemberRoleE> memberRoleEList,
+                                                            List<MemberRoleE> returnList) {
         MemberRoleE memberRoleE =
                 new MemberRoleE(null, null, memberId, "user", sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);
@@ -249,26 +245,23 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             MemberRoleE mr = new MemberRoleE(null, item, memberId, "user", sourceId, sourceType);
             returnList.add(memberRoleRepository.insertSelective(mr));
         });
-        if (isEdit != null && isEdit) {
-            deleteList.forEach(item -> {
-                MemberRoleE mr = new MemberRoleE(null, item, memberId, "user", sourceId, sourceType);
-                mr = memberRoleRepository.selectOne(mr);
-                if (mr != null) {
-                    memberRoleRepository.deleteById(mr.getId());
-                    exceptDelete(returnList, mr);
-                }
-            });
+        if (isEdit != null && isEdit && !deleteList.isEmpty()) {
+            memberRoleRepository.selectDeleteList(deleteList, memberId, sourceId, sourceType)
+                    .forEach(t -> {
+                        if (t != null) {
+                            memberRoleRepository.deleteById(t);
+                            exceptDelete(returnList, t);
+                        }
+                    });
         }
         //查当前用户有那些角色
-        List<MemberRoleE> ownMemberRoles = memberRoleRepository.select(memberRoleE);
-        List<Long> ownRoleIds =
-                ownMemberRoles.stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
-        return ownRoleIds;
+        return memberRoleRepository.select(memberRoleE)
+                .stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
     }
 
-    private void exceptDelete(List<MemberRoleE> memberRoleES, MemberRoleE memberRoleE) {
+    private void exceptDelete(List<MemberRoleE> memberRoleES, Long memberRoleId) {
         for (int i = 0; i < memberRoleES.size(); i++) {
-            if (memberRoleES.get(i).getId() == memberRoleE.getId()) {
+            if (memberRoleES.get(i).getId().equals(memberRoleId)) {
                 memberRoleES.remove(i);
             }
         }

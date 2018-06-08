@@ -1,9 +1,5 @@
 package io.choerodon.iam.api.eventhandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.event.EventPayload;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.event.consumer.annotation.EventListener;
@@ -14,6 +10,9 @@ import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -48,6 +47,10 @@ public class OrganizationListener {
             ldapDTO.setOrganizationId(orgId);
             ldapDTO.setName(organizationDTO.getName());
             ldapDTO.setServerAddress("");
+            ldapDTO.setPort("389");
+            ldapDTO.setEnabled(true);
+            ldapDTO.setUseSSL(false);
+            ldapDTO.setObjectClass("person");
             ldapService.create(orgId, ldapDTO);
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization {}", orgId);

@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -14,6 +10,9 @@ import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author flyleft
@@ -65,8 +64,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String[] params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.fulltextSearch(projectDO, params));
+    public Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.fulltextSearch(projectDO, param));
     }
 
     @Override

@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.PermissionMapper">
     <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
         SELECT * FROM iam_permission ip
-        WHERE 1=1
+        WHERE ip.public_access = 0 AND ip.login_access = 0
         <if test="permissionDO.code != null">
             AND ip.code LIKE concat('%',#{permissionDO.code},'%')
         </if>
@@ -16,13 +16,11 @@
         <if test="permissionDO.serviceName != null">
             AND ip.service_name LIKE concat('%',#{permissionDO.serviceName},'%')
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                ip.code LIKE concat('%',#{item},'%') OR
-                ip.description LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            ip.code LIKE concat('%',#{param},'%') OR
+            ip.description LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 
@@ -36,20 +34,20 @@
 
     <select id="checkPermission" resultType="String">
         SELECT DISTINCT
-            p.CODE
+        p.CODE
         FROM
-            iam_role_permission rp
-            left JOIN iam_permission p ON rp.permission_id = p.id
-            left JOIN iam_role r ON r.id = rp.role_id
-            left JOIN iam_member_role mu ON mu.role_id = r.id
+        iam_role_permission rp
+        left JOIN iam_permission p ON rp.permission_id = p.id
+        left JOIN iam_role r ON r.id = rp.role_id
+        left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
-            p.login_access=1 OR p.public_access=1
-            or p.LEVEL = #{source_type}
-            AND member_type = 'user'
-            AND member_id = #{member_id}
-            AND source_type = #{source_type}
-            AND source_id = #{source_id}
-            AND r.is_enabled = 1
+        p.login_access=1 OR p.public_access=1
+        or p.LEVEL = #{source_type}
+        AND member_type = 'user'
+        AND member_id = #{member_id}
+        AND source_type = #{source_type}
+        AND source_id = #{source_id}
+        AND r.is_enabled = 1
         <if test="codes != null and !codes.isEmpty()">
             AND p.CODE IN
             <foreach collection="codes" item="item" index="index" open="(" separator="," close=")">

@@ -8,10 +8,10 @@ public class UserSearchDTO {
     private Long organizationId;
     private String loginName;
     private String realName;
-    private Boolean isLdap;
+    private Boolean ldap;
     private String language;
-    private Boolean isEnabled;
-    private Boolean isLocked;
+    private Boolean enabled;
+    private Boolean locked;
     private String[] params;
     private String email;
 
@@ -64,26 +64,26 @@ public class UserSearchDTO {
     }
 
     public Boolean getLdap() {
-        return isLdap;
+        return ldap;
     }
 
     public void setLdap(Boolean ldap) {
-        isLdap = ldap;
+        this.ldap = ldap;
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public Boolean getLocked() {
-        return isLocked;
+        return locked;
     }
 
     public void setLocked(Boolean locked) {
-        isLocked = locked;
+        this.locked = locked;
     }
 }

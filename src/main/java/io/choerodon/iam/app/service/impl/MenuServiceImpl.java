@@ -1,6 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.MenuDTO;
+import io.choerodon.iam.api.validator.MenuValidator;
+import io.choerodon.iam.app.service.MenuService;
+import io.choerodon.iam.domain.iam.entity.MenuE;
+import io.choerodon.iam.domain.repository.MenuRepository;
+import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
+import io.choerodon.iam.infra.dataobject.MenuDO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,28 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.MenuDTO;
-import io.choerodon.iam.api.validator.MenuValidator;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
-import io.choerodon.iam.app.service.MenuService;
-import io.choerodon.iam.domain.iam.entity.MenuE;
-import io.choerodon.iam.domain.repository.MenuRepository;
-import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
-
 /**
  * @author wuguokai
  * @author superlee
- * @date 2018-04-10
  */
 @Component
 public class MenuServiceImpl implements MenuService {
 
     private MenuRepository menuRepository;
     private MenuValidator menuValidator;
+
 
     public MenuServiceImpl(MenuRepository menuRepository, MenuValidator menuValidator) {
         this.menuRepository = menuRepository;
@@ -83,22 +82,46 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuDTO> listTree(Boolean testPermission, String level) {
-        ResourceLevelValidator.validate(level);
-        List<MenuDTO> menuDTOS = null;
-        if (testPermission != null && testPermission) {
+    public List<MenuDTO> listAfterTestPermission(String level) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null) {
+            return new ArrayList<>();
+        }
+        boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
+        //例外super admin,如果是的话能看到所有菜单
+        List<MenuDTO> menus;
+        if (isAdmin) {
+            MenuDO menu = new MenuDO();
+            menu.setLevel(level);
+            List<MenuDO> menuDOList = menuRepository.select(menu);
+            menus = ConvertHelper.convertList(menuDOList, MenuDTO.class);
+        } else {
+            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
+            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
+            menus =
+                    ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
+                            "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+        }
+        return MenuTreeUtil.formatMenu(menus);
+    }
+
+    @Override
+    public List<MenuDTO> listTreeMenusWithPermissions(Boolean testPermission, String level) {
+        List<MenuDTO> menus;
+        if (testPermission) {
             CustomUserDetails userDetails = DetailsHelper.getUserDetails();
             if (userDetails == null) {
                 return new ArrayList<>();
             }
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            menuDTOS = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
+            menus = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
                     "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
         } else {
-            menuDTOS = queryMenusWithPermissions(level, null);
+            menus = queryMenusWithPermissions(level, null);
         }
-        return MenuTreeUtil.formatMenu(menuDTOS);
+//        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
+        return MenuTreeUtil.formatMenu(menus);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -114,13 +137,14 @@ public class MenuServiceImpl implements MenuService {
         if (level == null) {
             throw new CommonException("error.menuLevel.null");
         }
-        return listTree(false, level);
+        return listTreeMenusWithPermissions(false, level);
     }
 
     @Override
     public List<MenuDTO> queryMenusWithPermissions(String level, String type) {
         return ConvertHelper.convertList(menuRepository.queryMenusWithPermissions(level, type), MenuDTO.class);
     }
+
 
     private List<MenuDTO> deleteNeedlessOrAddNewMenu(List<MenuDTO> menuDTOList, String level) {
         //需要添加的菜单

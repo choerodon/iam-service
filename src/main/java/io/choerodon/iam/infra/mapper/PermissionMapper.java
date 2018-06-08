@@ -1,19 +1,19 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
+import io.choerodon.iam.infra.dataobject.PermissionDO;
+import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import io.choerodon.iam.infra.dataobject.PermissionDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
  */
 public interface PermissionMapper extends BaseMapper<PermissionDO> {
-    List fulltextSearch(@Param("permissionDO") PermissionDO permissionDO, @Param("params") String[] params);
+
+    List fulltextSearch(@Param("permissionDO") PermissionDO permissionDO, @Param("param") String param);
 
     @Select(" SELECT r.role_id"
             + " FROM iam_role_permission r LEFT JOIN iam_permission p"
@@ -24,5 +24,5 @@ public interface PermissionMapper extends BaseMapper<PermissionDO> {
     List<PermissionDO> selectByRoleId(Long roleId);
 
     Set<String> checkPermission(@Param("member_id") Long memberId, @Param("source_type") String source_type,
-                                 @Param("source_id") Long sourceId, @Param("codes") Set<String> codes);
+                                @Param("source_id") Long sourceId, @Param("codes") Set<String> codes);
 }

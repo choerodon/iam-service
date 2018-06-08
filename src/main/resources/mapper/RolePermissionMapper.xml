@@ -8,7 +8,7 @@
         from iam_role_permission
         where role_id in
         <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
-          #{item}
+            #{item}
         </foreach>
     </select>
 </mapper>

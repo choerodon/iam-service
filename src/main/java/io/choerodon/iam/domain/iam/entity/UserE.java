@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.iam.entity;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.Date;
 import java.util.List;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author dongfan117@gmail.com
@@ -11,7 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 public class UserE {
 
-    //线程安全的，放心用。
+    /**
+     * 线程安全的，放心用
+     */
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private Long id;
@@ -40,17 +42,19 @@ public class UserE {
 
     private Date lastLoginAt;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
-    private Boolean isLocked;
+    private Boolean locked;
 
-    private Boolean isLdap;
+    private Boolean ldap;
 
     private Date lockedUntilAt;
 
     private Integer passwordAttempt;
 
     private Long objectVersionNumber;
+
+    private Boolean admin;
 
     private List<RoleE> roles;
 
@@ -60,7 +64,7 @@ public class UserE {
 
     public UserE(Long id, String loginName, String email, String realName,
                  String phone, String imageUrl, String language, String timeZone,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean admin) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -70,15 +74,16 @@ public class UserE {
         this.language = language;
         this.timeZone = timeZone;
         this.objectVersionNumber = objectVersionNumber;
+        this.admin = admin;
     }
 
     public UserE(Long id, String loginName, String email, Long organizationId,
                  String password, String realName,
                  String phone, String imageUrl, String profilePhoto,
                  String language, String timeZone, Date lastPasswordUpdatedAt,
-                 Date lastLoginAt, Boolean isEnabled, Boolean isLocked, Boolean isLdap,
+                 Date lastLoginAt, Boolean enabled, Boolean locked, Boolean ldap,
                  Date lockedUntilAt, Integer passwordAttempt,
-                 Long objectVersionNumber) {
+                 Long objectVersionNumber, Boolean admin) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -92,12 +97,13 @@ public class UserE {
         this.timeZone = timeZone;
         this.lastPasswordUpdatedAt = lastPasswordUpdatedAt;
         this.lastLoginAt = lastLoginAt;
-        this.isEnabled = isEnabled;
-        this.isLocked = isLocked;
-        this.isLdap = isLdap;
+        this.enabled = enabled;
+        this.locked = locked;
+        this.ldap = ldap;
         this.lockedUntilAt = lockedUntilAt;
         this.passwordAttempt = passwordAttempt;
         this.objectVersionNumber = objectVersionNumber;
+        this.admin = admin;
     }
 
     public Long getId() {
@@ -153,15 +159,15 @@ public class UserE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public Boolean getLocked() {
-        return isLocked;
+        return locked;
     }
 
     public Boolean getLdap() {
-        return isLdap;
+        return ldap;
     }
 
     public Date getLockedUntilAt() {
@@ -177,11 +183,11 @@ public class UserE {
     }
 
     public void unlocked() {
-        this.isLocked = false;
+        this.locked = false;
     }
 
     public void locked() {
-        this.isLocked = true;
+        this.locked = true;
     }
 
     public void lockUtilAt(Date date) {
@@ -201,16 +207,20 @@ public class UserE {
     }
 
     public void enable() {
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
     public void disable() {
-        this.isEnabled = false;
+        this.enabled = false;
     }
 
     public UserE hiddenPassword() {
         this.password = null;
         return this;
+    }
+
+    public Boolean getAdmin() {
+        return admin;
     }
 
     public Boolean comparePassword(String originalPassword) {
@@ -219,5 +229,13 @@ public class UserE {
 
     public void resetPassword(String password) {
         this.password = ENCODER.encode(password);
+    }
+
+    public void becomeAdminUser() {
+        this.admin = true;
+    }
+
+    public void becomeNotAdminUser() {
+        this.admin = false;
     }
 }

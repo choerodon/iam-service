@@ -1,11 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -16,13 +10,15 @@ import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.mapper.ClientMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author wuguokai
  */
 @Component
 public class ClientRepositoryImpl implements ClientRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientRepositoryImpl.class);
 
     private ClientMapper clientMapper;
 
@@ -81,11 +77,10 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String[] params) {
+    public Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String param) {
         clientDO.setOrganizationId(clientDO.getOrganizationId());
         Page<ClientDO> clientDOPage
-                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, params));
-        LOGGER.info("客户端查询结果： " + clientDOPage.getContent().size() +" : " + clientDOPage.getTotalElements());
+                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, param));
         return ConvertPageHelper.convertPage(clientDOPage, ClientE.class);
     }
 

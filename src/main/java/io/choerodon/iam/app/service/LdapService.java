@@ -1,21 +1,48 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.iam.api.dto.LdapAccountDTO;
+import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.api.dto.LdapHistoryDTO;
 
 /**
  * @author wuguokai
  */
 public interface LdapService {
-    LdapDTO create(Long orgId, LdapDTO ldapDTO);
+    LdapDTO create(Long organizationId, LdapDTO ldapDTO);
 
-    LdapDTO update(Long orgId, Long id, LdapDTO ldapDTO);
+    LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO);
 
-    LdapDTO queryByOrgId(Long orgId);
+    LdapDTO queryByOrganizationId(Long organizationId);
 
-    Boolean delete(Long orgId, Long id);
+    Boolean delete(Long organizationId, Long id);
 
-    Boolean testConnect(Long orgId);
+    /**
+     * 测试是否能连接到ldap
+     *
+     * @param organizationId 组织id
+     * @param id             ldapId
+     * @return LdapConnectionDTO 连接测试结构体
+     */
+    LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccountDTO);
 
-    void syncLdapUser(Long orgId, UserDTO userDTO);
+    /**
+     * 根据ldap配置同步用户
+     *
+     * @param organizationId
+     * @param id
+     */
+    void syncLdapUser(Long organizationId, Long id);
+
+    /**
+     * 根据ldap id 查询最新的一条记录
+     *
+     * @param id
+     * @return
+     */
+    LdapHistoryDTO queryLatestHistory(Long id);
+
+    LdapDTO enableLdap(Long organizationId, Long id);
+
+    LdapDTO disableLdap(Long organizationId, Long id);
 }

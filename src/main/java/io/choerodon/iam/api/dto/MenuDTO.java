@@ -1,9 +1,9 @@
 package io.choerodon.iam.api.dto;
 
-import java.util.List;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 /**
  * @author wuguokai

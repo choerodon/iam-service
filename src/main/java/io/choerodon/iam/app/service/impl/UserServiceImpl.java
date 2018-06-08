@@ -1,25 +1,14 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import io.choerodon.event.producer.execute.EventProducerTemplate;
-import io.choerodon.iam.api.dto.payload.UserEventPayload;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
@@ -36,6 +25,18 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDATE_USER;
 
@@ -46,32 +47,21 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDAT
 @RefreshScope
 public class UserServiceImpl implements UserService {
 
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
-    @Value("${spring.application.name:default}")
-    private String serviceName;
-
-    private UserRepository userRepository;
-
-    private IUserService iUserService;
-
-    private OrganizationRepository organizationRepository;
-
-    private ProjectRepository projectRepository;
-
-    private PasswordRecord passwordRecord;
-
-    private FileFeignClient fileFeignClient;
-
-    private BasePasswordPolicyMapper basePasswordPolicyMapper;
-
-    private PasswordPolicyManager passwordPolicyManager;
-
-    private EventProducerTemplate eventProducerTemplate;
-
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
+    @Value("${spring.application.name:default}")
+    private String serviceName;
+    private UserRepository userRepository;
+    private IUserService iUserService;
+    private OrganizationRepository organizationRepository;
+    private ProjectRepository projectRepository;
+    private PasswordRecord passwordRecord;
+    private FileFeignClient fileFeignClient;
+    private BasePasswordPolicyMapper basePasswordPolicyMapper;
+    private PasswordPolicyManager passwordPolicyManager;
+    private EventProducerTemplate eventProducerTemplate;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -112,19 +102,32 @@ public class UserServiceImpl implements UserService {
         if (!userId.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
-        return getOwnedOrganizations(userId, includedDisabled);
+        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        //superAdmin例外处理
+        if (isAdmin) {
+            return ConvertHelper.convertList(organizationRepository.selectAll(), OrganizationDTO.class);
+        } else {
+            return getOwnedOrganizations(userId, includedDisabled);
+        }
+
     }
 
     @Override
     public List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled) {
-        checkLoginUser(id);
-        ProjectDO project = new ProjectDO();
-        if (!includedDisabled) {
-            project.setEnabled(true);
+        CustomUserDetails customUserDetails = checkLoginUser(id);
+        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        //superAdmin例外处理
+        if (isAdmin) {
+            return ConvertHelper.convertList(projectRepository.selectAll(), ProjectDTO.class);
+        } else {
+            ProjectDO project = new ProjectDO();
+            if (!includedDisabled) {
+                project.setEnabled(true);
+            }
+            return ConvertHelper
+                    .convertList(projectRepository
+                            .selectProjectsFromMemberRoleByOptions(id, project), ProjectDTO.class);
         }
-        return ConvertHelper
-                .convertList(projectRepository
-                        .selectProjectsFromMemberRoleByOptions(id, project), ProjectDTO.class);
     }
 
     @Override
@@ -135,7 +138,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    private void checkLoginUser(Long id) {
+    private CustomUserDetails checkLoginUser(Long id) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
@@ -143,27 +146,28 @@ public class UserServiceImpl implements UserService {
         if (!id.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
+        return customUserDetails;
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+    public Page<UserWithRoleDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersWithSiteLevelRoles(
-                        pageRequest, roleAssignmentSearchDTO), UserDTO.class);
+                        pageRequest, roleAssignmentSearchDTO), UserWithRoleDTO.class);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
+    public Page<UserWithRoleDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersWithOrganizationLevelRoles(
-                        pageRequest, roleAssignmentSearchDTO, sourceId), UserDTO.class);
+                        pageRequest, roleAssignmentSearchDTO, sourceId), UserWithRoleDTO.class);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
+    public Page<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersWithProjectLevelRoles(
-                        pageRequest, roleAssignmentSearchDTO, sourceId), UserDTO.class);
+                        pageRequest, roleAssignmentSearchDTO, sourceId), UserWithRoleDTO.class);
     }
 
     @Override
@@ -247,19 +251,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoDTO queryInfo(Long userId) {
+    public UserDTO queryInfo(Long userId) {
         checkLoginUser(userId);
         UserE user = userRepository.selectByPrimaryKey(userId);
-        return ConvertHelper.convert(user, UserInfoDTO.class);
+        return ConvertHelper.convert(user, UserDTO.class);
     }
 
     @Override
-    public UserInfoDTO updateInfo(UserInfoDTO userInfo) {
-        checkLoginUser(userInfo.getId());
-        UserE userE = ConvertHelper.convert(userInfo, UserE.class);
-        UserInfoDTO dto ;
+    public UserDTO updateInfo(UserDTO userDTO) {
+        checkLoginUser(userDTO.getId());
+        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
+        UserDTO dto;
         if (devopsMessage) {
-            dto = new UserInfoDTO();
+            dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
             Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_UPDATE_USER,
                     serviceName, userEventPayload, (String uuid) -> {
@@ -274,43 +278,70 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException(exception.getMessage());
             }
         } else {
-            dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserInfoDTO.class);
+            dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserDTO.class);
         }
         return dto;
     }
 
     @Override
     public void check(UserDTO user) {
-        //传入id则为更新重名校验，不传id为新建重名校验
-        Boolean createCheck = StringUtils.isEmpty(user.getId());
         Boolean checkLoginName = !StringUtils.isEmpty(user.getLoginName());
         Boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
         if (!checkEmail && !checkLoginName) {
-            throw new CommonException("error.validation.fields.empty");
+            throw new CommonException("error.user.validation.fields.empty");
         }
-        UserDO userDO = ConvertHelper.convert(user, UserDO.class);
+        if (checkLoginName) {
+            checkLoginName(user);
+        }
+        if (checkEmail) {
+            checkEmail(user);
+        }
+    }
+
+    private void checkEmail(UserDTO user) {
+        Boolean createCheck = StringUtils.isEmpty(user.getId());
+        String email = user.getEmail();
+        UserDO userDO = new UserDO();
+        userDO.setEmail(email);
         if (createCheck) {
             Boolean existed = userRepository.selectOne(userDO) != null;
-            if (existed && checkLoginName) {
-                throw new CommonException("error.loginName.exist");
-            }
-            if (existed && checkEmail) {
-                throw new CommonException("error.email.exist");
+            if (existed) {
+                throw new CommonException("error.user.email.exist");
             }
         } else {
-            Long id = userDO.getId();
-            userDO.setId(null);
+            Long id = user.getId();
             UserDO userDO1 = userRepository.selectOne(userDO);
             Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
-            if (existed && checkEmail) {
-                throw new CommonException("error.email.exist");
+            if (existed) {
+                throw new CommonException("error.user.email.exist");
             }
         }
     }
 
+    private void checkLoginName(UserDTO user) {
+        Boolean createCheck = StringUtils.isEmpty(user.getId());
+        String loginName = user.getLoginName();
+        UserDO userDO = new UserDO();
+        userDO.setLoginName(loginName);
+        if (createCheck) {
+            Boolean existed = userRepository.selectOne(userDO) != null;
+            if (existed) {
+                throw new CommonException("error.user.loginName.exist");
+            }
+        } else {
+            Long id = user.getId();
+            UserDO userDO1 = userRepository.selectOne(userDO);
+            Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
+            if (existed) {
+                throw new CommonException("error.user.loginName.exist");
+            }
+
+        }
+    }
+
     @Override
-    public UserInfoDTO queryByLoginName(String loginName) {
-        return ConvertHelper.convert(userRepository.selectByLoginName(loginName), UserInfoDTO.class);
+    public UserDTO queryByLoginName(String loginName) {
+        return ConvertHelper.convert(userRepository.selectByLoginName(loginName), UserDTO.class);
     }
 
     @Override
@@ -321,4 +352,50 @@ public class UserServiceImpl implements UserService {
         userE = userRepository.updateSelective(userE);
         return ConvertHelper.convert(userE, UserDTO.class);
     }
+
+    @Override
+    public Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params) {
+        return ConvertPageHelper.convertPage(userRepository
+                .pagingQueryAdminUsers(pageRequest, userDO, params), UserDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public void addAdminUsers(long[] ids) {
+        for (long id : ids) {
+            UserE userE = userRepository.selectByPrimaryKey(id);
+            if (userE != null && !userE.getAdmin()) {
+                userE.becomeAdminUser();
+                userRepository.updateSelective(userE);
+            }
+        }
+    }
+
+    @Override
+    public void deleteAdminUser(long id) {
+        UserE userE = userRepository.selectByPrimaryKey(id);
+        if (userE == null) {
+            throw new CommonException("error.user.not.exist");
+        }
+        UserDO userDO = new UserDO();
+        userDO.setAdmin(true);
+        if (userRepository.selectCount(userDO) > 1) {
+            if (userE.getAdmin()) {
+                userE.becomeNotAdminUser();
+                userRepository.updateSelective(userE);
+            }
+        } else {
+            throw new CommonException("error.user.admin.size");
+        }
+    }
+
+    @Override
+    public List<UserDTO> listUsersByIds(Long[] ids) {
+        if (ids.length == 0) {
+            return new ArrayList<>();
+        } else {
+            return ConvertHelper.convertList(userRepository.listUsersByIds(ids), UserDTO.class);
+        }
+    }
+
 }

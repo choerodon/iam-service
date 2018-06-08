@@ -1,12 +1,12 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.iam.domain.repository.LabelRepository;
 import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.mapper.LabelMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -45,5 +45,10 @@ public class LabelRepositoryImpl implements LabelRepository {
     @Override
     public List<LabelDO> selectByUserId(Long id) {
         return labelMapper.selectByUserId(id);
+    }
+
+    @Override
+    public Set<String> selectLabelNamesInRoleIds(List<Long> roleIds) {
+        return labelMapper.selectLabelNamesInRoleIds(roleIds);
     }
 }

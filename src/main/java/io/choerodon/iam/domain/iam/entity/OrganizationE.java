@@ -19,7 +19,7 @@ public class OrganizationE {
 
     private Long objectVersionNumber;
 
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     private UserRepository userRepository;
 
@@ -27,13 +27,13 @@ public class OrganizationE {
 
     public OrganizationE(Long id, String name, String code,
                          Long objectVersionNumber,
-                         UserRepository userRepository, Boolean isEnabled, PasswordRecord passwordRecord) {
+                         UserRepository userRepository, Boolean enabled, PasswordRecord passwordRecord) {
         this.id = id;
         this.name = name;
         this.objectVersionNumber = objectVersionNumber;
         this.userRepository = userRepository;
         this.code = code;
-        this.isEnabled = isEnabled;
+        this.enabled = enabled;
         this.passwordRecord = passwordRecord;
     }
 
@@ -55,10 +55,8 @@ public class OrganizationE {
      */
     public UserE addUser(UserE userE) {
         if (userRepository.selectByLoginName(userE.getLoginName()) != null) {
-            throw new CommonException("error.entity.organization.user.exists");
+            throw new CommonException("error.user.loginName.exist");
         }
-        //TODO
-        //密码策略待添加
         //默认添加用户未锁定,启用
         userE.unlocked();
         userE.enable();
@@ -66,9 +64,6 @@ public class OrganizationE {
         userE = userRepository.insertSelective(userE);
         passwordRecord.updatePassword(userE.getId(), userE.getPassword());
         return userE.hiddenPassword();
-        //TODO
-        //初始化角色
-        //用户创建成功发事件
     }
 
     public UserE updateUser(UserE userE) {
@@ -131,14 +126,14 @@ public class OrganizationE {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void enable() {
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
     public void disable() {
-        this.isEnabled = false;
+        this.enabled = false;
     }
 }

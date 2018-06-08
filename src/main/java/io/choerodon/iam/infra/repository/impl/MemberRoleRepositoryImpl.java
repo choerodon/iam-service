@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -14,6 +10,9 @@ import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -88,5 +87,11 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
         return ConvertHelper.convert(
                 memberRoleMapper.selectOne(
                         ConvertHelper.convert(memberRole, MemberRoleDO.class)), MemberRoleE.class);
+    }
+
+    @Override
+    public List<Long> selectDeleteList(final List<Long> deleteList, final long memberId,
+                                       final long sourceId, final String sourceType) {
+        return memberRoleMapper.selectDeleteList(memberId, sourceId, sourceType, deleteList);
     }
 }

@@ -1,11 +1,10 @@
 package io.choerodon.iam.api.eventhandler;
 
+import io.choerodon.iam.domain.service.ParsePermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-
-import io.choerodon.iam.domain.service.ParsePermissionService;
 
 /**
  * 根据接口解析权限

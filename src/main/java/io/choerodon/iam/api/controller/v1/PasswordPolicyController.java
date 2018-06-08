@@ -1,17 +1,14 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.validator.PasswordPolicyValidator;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author wuguokai
@@ -34,7 +31,7 @@ public class PasswordPolicyController {
      * @return 目标组织密码策略
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "查询目标组织密码策略")
+    @ApiOperation(value = "查询组织的密码策略")
     @GetMapping
     public ResponseEntity<PasswordPolicyDTO> queryByOrganizationId(@PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(passwordPolicyService.queryByOrgId(organizationId), HttpStatus.OK);
@@ -53,7 +50,7 @@ public class PasswordPolicyController {
      * @return 更新后的密码策略
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-    @ApiOperation(value = "更新密码策略")
+    @ApiOperation(value = "修改组织的密码策略")
     @PostMapping("/{id}")
     public ResponseEntity<PasswordPolicyDTO> update(@PathVariable("organization_id") Long organizationId,
                                                     @PathVariable("id") Long id,
@@ -62,19 +59,4 @@ public class PasswordPolicyController {
         return new ResponseEntity<>(passwordPolicyService.update(organizationId, id, passwordPolicyDTO), HttpStatus.OK);
     }
 
-
-    /**
-     * 业务上暂时没有添加密码策略的需求
-     *
-     * 为目标组织添加密码策略
-     *
-     * @return 目标组织密码策略
-     */
-//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
-//    @ApiOperation(value = "添加密码策略")
-//    @PostMapping
-//    public ResponseEntity<PasswordPolicyDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid PasswordPolicyDTO passwordPolicyDTO) {
-//        passwordPolicyValidator.create(organizationId, passwordPolicyDTO);
-//        return new ResponseEntity<>(passwordPolicyService.create(organizationId, passwordPolicyDTO), HttpStatus.OK);
-//    }
 }

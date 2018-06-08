@@ -1,12 +1,11 @@
 package io.choerodon.iam.domain.iam.converter;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author flyleft
