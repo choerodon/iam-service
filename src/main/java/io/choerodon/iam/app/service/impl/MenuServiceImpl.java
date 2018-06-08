@@ -82,7 +82,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuDTO> listAfterTestPermission(String level) {
+    public List<MenuDTO> listAfterTestPermission(String level, Long sourceId) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         if (userDetails == null) {
             return new ArrayList<>();
@@ -100,7 +100,7 @@ public class MenuServiceImpl implements MenuService {
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                            "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+                            "user", userDetails.getUserId(), sourceType, sourceId), MenuDTO.class);
         }
         return MenuTreeUtil.formatMenu(menus);
     }
