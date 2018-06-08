@@ -47,6 +47,10 @@ public class OrganizationListener {
             ldapDTO.setOrganizationId(orgId);
             ldapDTO.setName(organizationDTO.getName());
             ldapDTO.setServerAddress("");
+            ldapDTO.setPort("389");
+            ldapDTO.setEnabled(true);
+            ldapDTO.setUseSSL(false);
+            ldapDTO.setObjectClass("person");
             ldapService.create(orgId, ldapDTO);
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization {}", orgId);
