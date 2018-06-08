@@ -64,6 +64,10 @@ public class ILdapServiceImpl implements ILdapService {
             Set<String> attributeSet = new HashSet<>(attributeMap.values());
             //default attribute 处理
             attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
+            //移除null对象的情况
+            if (attributeSet.contains(null)) {
+                attributeSet.remove(null);
+            }
             Set<String> keySet = new HashSet<>();
             NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
             while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {

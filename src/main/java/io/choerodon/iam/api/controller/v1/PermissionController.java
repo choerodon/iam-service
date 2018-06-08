@@ -34,6 +34,7 @@ public class PermissionController {
     }
 
     @PostMapping(value = "/checkPermission")
+    @ApiOperation("通过permission code鉴权，判断用户是否有查看的权限")
     @Permission(permissionLogin = true)
     public ResponseEntity<List<CheckPermissionDTO>> checkPermission(@RequestBody List<CheckPermissionDTO> checkPermissions) {
         return new ResponseEntity<>(permissionService.checkPermission(checkPermissions), HttpStatus.OK);

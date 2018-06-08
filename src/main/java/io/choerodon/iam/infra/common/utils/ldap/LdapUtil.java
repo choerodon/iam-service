@@ -82,11 +82,7 @@ public class LdapUtil {
      * @return userDn
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
-        Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
-        attributeSet.add(ldap.getLoginNameField());
-        attributeSet.add(ldap.getRealNameField());
-        attributeSet.add(ldap.getEmailField());
-        attributeSet.add(ldap.getPhoneField());
+        Set<String> attributeSet = initAttributeSet(ldap);
         NamingEnumeration namingEnumeration = getNamingEnumeration(ldapContext, username, attributeSet);
         StringBuilder userDn = new StringBuilder();
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
@@ -98,6 +94,23 @@ public class LdapUtil {
             }
         }
         return userDn.toString();
+    }
+
+    private static Set<String> initAttributeSet(LdapDO ldap) {
+        Set<String> attributeSet = new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile"));
+        if (ldap.getLoginNameField() != null) {
+            attributeSet.add(ldap.getLoginNameField());
+        }
+        if (ldap.getRealNameField() != null) {
+            attributeSet.add(ldap.getRealNameField());
+        }
+        if (ldap.getEmailField() != null) {
+            attributeSet.add(ldap.getEmailField());
+        }
+        if (ldap.getPhoneField() != null) {
+            attributeSet.add(ldap.getPhoneField());
+        }
+        return attributeSet;
     }
 
     public static NamingEnumeration getNamingEnumeration(LdapContext ldapContext, String username, Set<String> attributeSet) {
