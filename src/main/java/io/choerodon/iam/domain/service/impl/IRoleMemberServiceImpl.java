@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 @RefreshScope
 public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implements IRoleMemberService {
 
+    private static final String MEMBER_ROLE_NOT_EXIST_EXCEPTION = "error.memberRole.not.exist";
+
+
     private UserRepository userRepository;
 
     private MemberRoleRepository memberRoleRepository;
@@ -111,7 +114,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     private void deleteByView(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO,
                               String sourceType,
                               List<UserMemberEventPayload> userMemberEventPayloads) {
-        boolean doSendEvent = !(userMemberEventPayloads == null);
+        boolean doSendEvent = userMemberEventPayloads != null;
         String memberType =
                 roleAssignmentDeleteDTO.getMemberType() == null ? "user" : roleAssignmentDeleteDTO.getMemberType();
         String view = roleAssignmentDeleteDTO.getView();
@@ -154,7 +157,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 new MemberRoleE(null, roleId, memberId, memberType, sourceId, sourceType);
         MemberRoleE mr = memberRoleRepository.selectOne(memberRole);
         if (mr == null) {
-            throw new CommonException("error.memberRole.not.exist", roleId, memberId);
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION, roleId, memberId);
         }
         memberRoleRepository.deleteById(mr.getId());
         UserMemberEventPayload userMemberEventMsg = null;
@@ -194,7 +197,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     public void deleteByIdOnOrganizationLevel(Long id, Long organizationId) {
         MemberRoleE memberRoleE = memberRoleRepository.selectByPrimaryKey(id);
         if (memberRoleE == null) {
-            throw new CommonException("error.memberRole.not.exist");
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION);
         }
         if (organizationId.equals(memberRoleE.getSourceId())
                 && ResourceLevel.ORGANIZATION.value().equals(memberRoleE.getSourceType())) {
@@ -208,7 +211,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     public void deleteByIdOnProjectLevel(Long id, Long projectId) {
         MemberRoleE memberRoleE = memberRoleRepository.selectByPrimaryKey(id);
         if (memberRoleE == null) {
-            throw new CommonException("error.memberRole.not.exist");
+            throw new CommonException(MEMBER_ROLE_NOT_EXIST_EXCEPTION);
         }
         if (projectId.equals(memberRoleE.getSourceId())
                 && ResourceLevel.PROJECT.value().equals(memberRoleE.getSourceType())) {

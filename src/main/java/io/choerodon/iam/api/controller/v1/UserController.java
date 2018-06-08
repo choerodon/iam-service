@@ -169,7 +169,7 @@ public class UserController extends BaseController {
             @RequestParam(required = false, name = "enabled") Boolean enabled,
             @RequestParam(required = false, name = "locked") Boolean locked,
             @RequestParam(required = false, name = "params") String[] params
-            ) {
+    ) {
         UserDO userDO = new UserDO();
         userDO.setLoginName(loginName);
         userDO.setRealName(realName);

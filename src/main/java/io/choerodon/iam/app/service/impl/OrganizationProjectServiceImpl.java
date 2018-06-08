@@ -225,8 +225,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         Boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
             throw new CommonException("error.project.code.empty");
-        }
-        if (checkCode) {
+        } else {
             checkCode(projectDTO);
         }
     }

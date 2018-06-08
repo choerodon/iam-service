@@ -79,43 +79,7 @@ public class LdapSyncUserTask {
             ldapSyncReport.incrementCount();
             UserDTO oldUser =
                     ConvertHelper.convert(userRepository.selectByLoginName(user.getLoginName()), UserDTO.class);
-            if (oldUser == null) {
-                //插入操作
-                try {
-                    organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
-                    ldapSyncReport.incrementNewInsert();
-                } catch (Exception e) {
-                    logger.info("insert error, login_name = {}, exception : {}",user.getLoginName(), e);
-                    ldapSyncReport.incrementError();
-                }
-            } else {
-                //更新操作，只更新realName和phone字段
-                //更新策略：数据库存在的用户和ldap拿到的用户，根据loginName判断是不是同一个用户，
-                //同一个用户的话，以phone为例：
-                //新用户phone和旧用户phone都为空，不更新
-                //新用户phone为空，旧用户phone不为空，不更新
-                //新用户phone不为空，旧用户phone为空，更新
-                //新用户和旧用户phone字段都不为空，且新用户phone与旧用户phone不相等，更新，否则不更新
-                boolean doUpdate = false;
-                if (user.getPhone() != null && !user.getPhone().equals(oldUser.getPhone())) {
-                    oldUser.setPhone(user.getPhone());
-                    doUpdate = true;
-                }
-                if (user.getRealName() != null && !user.getRealName().equals(oldUser.getRealName())) {
-                    oldUser.setRealName(user.getRealName());
-                    doUpdate = true;
-                }
-                if (doUpdate) {
-                    try {
-                        organizationUserService.update(oldUser);
-                        ldapSyncReport.incrementUpdate();
-                    } catch (Exception e) {
-                        logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
-                        ldapSyncReport.incrementError();
-                    }
-                }
-
-            }
+            insertOrUpdateUser(ldapSyncReport, user, oldUser);
         }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
@@ -125,6 +89,46 @@ public class LdapSyncUserTask {
             logger.warn("error.close.ldap.connect");
         }
         fallback.callback(ldapSyncReport, ldapHistoryDO);
+    }
+
+    private void insertOrUpdateUser(LdapSyncReport ldapSyncReport, UserDO user, UserDTO oldUser) {
+        if (oldUser == null) {
+            //插入操作
+            try {
+                organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
+                ldapSyncReport.incrementNewInsert();
+            } catch (Exception e) {
+                logger.info("insert error, login_name = {}, exception : {}", user.getLoginName(), e);
+                ldapSyncReport.incrementError();
+            }
+        } else {
+            //更新操作，只更新realName和phone字段
+            //更新策略：数据库存在的用户和ldap拿到的用户，根据loginName判断是不是同一个用户，
+            //同一个用户的话，以phone为例：
+            //新用户phone和旧用户phone都为空，不更新
+            //新用户phone为空，旧用户phone不为空，不更新
+            //新用户phone不为空，旧用户phone为空，更新
+            //新用户和旧用户phone字段都不为空，且新用户phone与旧用户phone不相等，更新，否则不更新
+            boolean doUpdate = false;
+            if (user.getPhone() != null && !user.getPhone().equals(oldUser.getPhone())) {
+                oldUser.setPhone(user.getPhone());
+                doUpdate = true;
+            }
+            if (user.getRealName() != null && !user.getRealName().equals(oldUser.getRealName())) {
+                oldUser.setRealName(user.getRealName());
+                doUpdate = true;
+            }
+            if (doUpdate) {
+                try {
+                    organizationUserService.update(oldUser);
+                    ldapSyncReport.incrementUpdate();
+                } catch (Exception e) {
+                    logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
+                    ldapSyncReport.incrementError();
+                }
+            }
+
+        }
     }
 
     private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {
@@ -182,7 +186,7 @@ public class LdapSyncUserTask {
 
         private LdapHistoryRepository ldapHistoryRepository;
 
-        public FinishFallbackImpl (LdapHistoryRepository ldapHistoryRepository) {
+        public FinishFallbackImpl(LdapHistoryRepository ldapHistoryRepository) {
             this.ldapHistoryRepository = ldapHistoryRepository;
         }
 

@@ -88,9 +88,9 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层批量分配给用户角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
-                                                                    @PathVariable(name = "project_id") Long sourceId,
-                                                                    @RequestParam(name = "member_ids") List<Long> memberIds,
-                                                                    @RequestBody ValidList<MemberRoleDTO> memberRoleDTOList) {
+                                                                            @PathVariable(name = "project_id") Long sourceId,
+                                                                            @RequestParam(name = "member_ids") List<Long> memberIds,
+                                                                            @RequestBody ValidList<MemberRoleDTO> memberRoleDTOList) {
         memberRoleValidator.distributionRoleValidator(ResourceLevel.PROJECT.value(), memberRoleDTOList);
         return new ResponseEntity<>(roleMemberService.createOrUpdateRolesByMemberIdOnProjectLevel(
                 isEdit, sourceId, memberIds, memberRoleDTOList), HttpStatus.OK);

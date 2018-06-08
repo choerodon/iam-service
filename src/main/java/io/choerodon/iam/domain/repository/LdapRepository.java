@@ -13,6 +13,7 @@ public interface LdapRepository {
 
     /**
      * 根据ldap id查询ldap
+     *
      * @param id 主键id
      * @return ldap data object
      */

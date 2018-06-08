@@ -37,25 +37,17 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.*;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
+    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
-
     @Value("${spring.application.name:default}")
     private String serviceName;
-
     private OrganizationRepository organizationRepository;
-
     private UserRepository userRepository;
-
     private IUserService iUserService;
-
     private EventProducerTemplate eventProducerTemplate;
-
     private PasswordPolicyManager passwordPolicyManager;
-
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
-
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
 
     public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
                                        UserRepository userRepository,

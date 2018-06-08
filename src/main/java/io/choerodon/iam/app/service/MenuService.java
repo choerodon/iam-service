@@ -20,8 +20,6 @@ public interface MenuService {
 
     List<MenuDTO> list(String level);
 
-//    List<MenuDTO> listTree(Boolean testPermission, String level);
-
     List<MenuDTO> saveListTree(String level, List<MenuDTO> menuDTOList);
 
     List<MenuDTO> queryMenusWithPermissions(String level, String type);

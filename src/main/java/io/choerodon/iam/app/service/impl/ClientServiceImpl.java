@@ -20,9 +20,9 @@ import org.springframework.util.StringUtils;
 @Component
 public class ClientServiceImpl implements ClientService {
 
+    private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
     private OrganizationRepository organizationRepository;
     private ClientRepository clientRepository;
-    private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
 
     public ClientServiceImpl(OrganizationRepository organizationRepository, ClientRepository clientRepository) {
         this.organizationRepository = organizationRepository;
@@ -93,8 +93,7 @@ public class ClientServiceImpl implements ClientService {
         Boolean checkName = !StringUtils.isEmpty(client.getName());
         if (!checkName) {
             throw new CommonException("error.clientName.null");
-        }
-        if (checkName) {
+        } else {
             checkName(client);
         }
     }

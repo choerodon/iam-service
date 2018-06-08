@@ -68,9 +68,10 @@ public class LdapController {
     @ApiOperation(value = "禁用ldap")
     @PutMapping(value = "/{id}/disable")
     public ResponseEntity<LdapDTO> disableLdap(@PathVariable(name = "organization_id") Long organizationId,
-                                              @PathVariable Long id) {
+                                               @PathVariable Long id) {
         return new ResponseEntity<>(ldapService.disableLdap(organizationId, id), HttpStatus.OK);
     }
+
     /**
      * 根据组织id查询Ldap
      *
@@ -94,7 +95,7 @@ public class LdapController {
     @ApiOperation(value = "删除组织下的Ldap")
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId,
-                                         @PathVariable("id") Long id) {
+                                          @PathVariable("id") Long id) {
         return new ResponseEntity<>(ldapService.delete(organizationId, id), HttpStatus.OK);
     }
 
@@ -128,7 +129,7 @@ public class LdapController {
     @ApiOperation(value = "根据ldap id查询最新一条历史记录")
     @GetMapping("/{id}/latest_history")
     public ResponseEntity<LdapHistoryDTO> latestHistory(@PathVariable("organization_id") Long organizationId,
-                                                        @PathVariable Long id){
+                                                        @PathVariable Long id) {
         return new ResponseEntity<>(ldapService.queryLatestHistory(id), HttpStatus.OK);
     }
 }

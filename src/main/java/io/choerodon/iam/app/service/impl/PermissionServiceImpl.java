@@ -52,7 +52,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin()) {
-            checkPermissionDTOList.forEach( cp -> cp.setApprove(true));
+            checkPermissionDTOList.forEach(cp -> cp.setApprove(true));
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();

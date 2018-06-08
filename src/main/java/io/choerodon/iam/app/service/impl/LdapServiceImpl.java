@@ -25,14 +25,14 @@ import javax.naming.ldap.LdapContext;
  */
 @Component
 public class LdapServiceImpl implements LdapService {
+    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
     private LdapRepository ldapRepository;
     private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapSyncUserTask.FinishFallback finishFallback;
     private LdapHistoryRepository ldapHistoryRepository;
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
-    private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
 
     public LdapServiceImpl(LdapRepository ldapRepository, OrganizationRepository organizationRepository,
                            LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService,
@@ -113,7 +113,7 @@ public class LdapServiceImpl implements LdapService {
     public void syncLdapUser(Long organizationId, Long id) {
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
-            throw new CommonException("error.ldap.not.exist");
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         LdapValidator.validate(ldap);
         //匿名用户
@@ -122,7 +122,7 @@ public class LdapServiceImpl implements LdapService {
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         if (anonymous) {
             //匿名用户只连接
-            ldapContext =LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+            ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
             if (ldapContext == null) {
                 throw new CommonException("error.ldap.connect");
             }

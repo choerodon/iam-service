@@ -47,32 +47,21 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDAT
 @RefreshScope
 public class UserServiceImpl implements UserService {
 
-    @Value("${choerodon.devops.message:false}")
-    private boolean devopsMessage;
-
-    @Value("${spring.application.name:default}")
-    private String serviceName;
-
-    private UserRepository userRepository;
-
-    private IUserService iUserService;
-
-    private OrganizationRepository organizationRepository;
-
-    private ProjectRepository projectRepository;
-
-    private PasswordRecord passwordRecord;
-
-    private FileFeignClient fileFeignClient;
-
-    private BasePasswordPolicyMapper basePasswordPolicyMapper;
-
-    private PasswordPolicyManager passwordPolicyManager;
-
-    private EventProducerTemplate eventProducerTemplate;
-
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
+    @Value("${spring.application.name:default}")
+    private String serviceName;
+    private UserRepository userRepository;
+    private IUserService iUserService;
+    private OrganizationRepository organizationRepository;
+    private ProjectRepository projectRepository;
+    private PasswordRecord passwordRecord;
+    private FileFeignClient fileFeignClient;
+    private BasePasswordPolicyMapper basePasswordPolicyMapper;
+    private PasswordPolicyManager passwordPolicyManager;
+    private EventProducerTemplate eventProducerTemplate;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,

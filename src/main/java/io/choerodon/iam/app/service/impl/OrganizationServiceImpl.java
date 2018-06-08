@@ -76,8 +76,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         Boolean checkCode = !StringUtils.isEmpty(organization.getCode());
         if (!checkCode) {
             throw new CommonException("error.organization.code.empty");
-        }
-        if (checkCode) {
+        } else {
             checkCode(organization);
         }
     }
