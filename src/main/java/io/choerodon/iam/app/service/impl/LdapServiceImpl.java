@@ -139,7 +139,7 @@ public class LdapServiceImpl implements LdapService {
         if (!ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, finishFallback);
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, finishFallback);
     }
 
     @Override

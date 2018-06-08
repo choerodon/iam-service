@@ -48,7 +48,7 @@ public class LdapSyncUserTask {
     }
 
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, Boolean anonymous, FinishFallback fallback) {
+    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, FinishFallback fallback) {
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
         ldapSyncReport.setLdapId(ldap.getId());
@@ -72,7 +72,7 @@ public class LdapSyncUserTask {
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
             Attributes attributes = searchResult.getAttributes();
-            UserDO user = extractUser(attributes, organizationId, ldap, anonymous);
+            UserDO user = extractUser(attributes, organizationId, ldap);
             if (user == null) {
                 continue;
             }
@@ -84,20 +84,24 @@ public class LdapSyncUserTask {
                 try {
                     organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
                     ldapSyncReport.incrementNewInsert();
-//                    logger.info("{} 同步成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
                 } catch (Exception e) {
                     logger.info("insert error, login_name = {}, exception : {}",user.getLoginName(), e);
                     ldapSyncReport.incrementError();
                 }
             } else {
-                //更新操作
-                //loginName和email不能更新
+                //更新操作，只更新realName和phone字段
+                //更新策略：数据库存在的用户和ldap拿到的用户，根据loginName判断是不是同一个用户，
+                //同一个用户的话，以phone为例：
+                //新用户phone和旧用户phone都为空，不更新
+                //新用户phone为空，旧用户phone不为空，不更新
+                //新用户phone不为空，旧用户phone为空，更新
+                //新用户和旧用户phone字段都不为空，且新用户phone与旧用户phone不相等，更新，否则不更新
                 boolean doUpdate = false;
-                if (oldUser.getPhone() != null && !oldUser.getPhone().equals(user.getPhone())) {
+                if (user.getPhone() != null && !user.getPhone().equals(oldUser.getPhone())) {
                     oldUser.setPhone(user.getPhone());
                     doUpdate = true;
                 }
-                if (oldUser.getRealName() != null && !oldUser.getRealName().equals(user.getRealName())) {
+                if (user.getRealName() != null && !user.getRealName().equals(oldUser.getRealName())) {
                     oldUser.setRealName(user.getRealName());
                     doUpdate = true;
                 }
@@ -105,7 +109,6 @@ public class LdapSyncUserTask {
                     try {
                         organizationUserService.update(oldUser);
                         ldapSyncReport.incrementUpdate();
-//                        logger.info("{} 同步更新成功,已经同步用户数：{}", user.getLoginName(), ldapSyncReport.getCount());
                     } catch (Exception e) {
                         logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
                         ldapSyncReport.incrementError();
@@ -124,7 +127,7 @@ public class LdapSyncUserTask {
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap, Boolean anonymous) {
+    private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {
         UserDO user = new UserDO();
         user.setOrganizationId(organizationId);
         try {
