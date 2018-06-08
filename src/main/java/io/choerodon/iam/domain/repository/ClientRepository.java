@@ -19,7 +19,7 @@ public interface ClientRepository {
 
     ClientE update(Long clientId, ClientE clientE);
 
-    Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String[] params);
+    Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String param);
 
     ClientDO selectOne(ClientDO clientDO);
 }

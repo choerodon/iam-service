@@ -13,6 +13,7 @@ import java.util.List;
  * @author wuguokai
  */
 public interface RoleService {
+
     Page<RoleDTO> pagingQuery(PageRequest pageRequest, Boolean needUsers, Long sourceId, String sourceType, RoleSearchDTO role);
 
     RoleDTO create(RoleDTO roleDTO);

@@ -42,10 +42,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String[] params) {
+    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param) {
         Page<OrganizationDO> organizationDOPage =
                 organizationRepository.pagingQuery(ConvertHelper.convert(
-                        organizationDTO, OrganizationDO.class), pageRequest, params);
+                        organizationDTO, OrganizationDO.class), pageRequest, param);
         return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 

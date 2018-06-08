@@ -19,7 +19,7 @@ public interface RoleMapper extends BaseMapper<RoleDO> {
     List<Long> queryRoleByUser(@Param("user_id") Long userId, @Param("source_type") String sourceType,
                                @Param("source_id") Long sourceId);
 
-    List<RoleDO> fulltextSearch(@Param("roleDO") RoleDO roleDO, @Param("params") String[] params);
+    List<RoleDO> fulltextSearch(@Param("roleDO") RoleDO roleDO, @Param("param") String param);
 
     RoleDO selectRoleWithPermissionsAndLabels(Long id);
 

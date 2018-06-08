@@ -118,8 +118,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
+        String param = null;
+        if (user.getParams().length == 1) {
+            param = user.getParams()[0];
+        }
         Page<UserDO> userDOPage =
-                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class), user.getParams());
+                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class), param);
         return ConvertPageHelper.convertPage(userDOPage, UserDTO.class);
     }
 

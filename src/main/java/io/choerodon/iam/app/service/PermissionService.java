@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public interface PermissionService {
 
-    Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String[] params);
+    Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param);
 
     List<CheckPermissionDTO> checkPermission(List<CheckPermissionDTO> checkPermissionDTOList);
 

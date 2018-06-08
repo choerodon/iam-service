@@ -12,7 +12,7 @@ import java.util.List;
 public interface ProjectMapper extends BaseMapper<ProjectDO> {
 
     List<ProjectDO> fulltextSearch(@Param("project") ProjectDO projectDO,
-                                   @Param("params") String[] params);
+                                   @Param("param") String param);
 
     List selectProjectsFromMemberRoleByOption(@Param("userId") Long userId,
                                               @Param("projectDO") ProjectDO projectDO);
