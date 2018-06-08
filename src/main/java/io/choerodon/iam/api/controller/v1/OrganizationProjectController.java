@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.app.service.OrganizationProjectService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -71,11 +72,7 @@ public class OrganizationProjectController extends BaseController {
         project.setName(name);
         project.setCode(code);
         project.setEnabled(enabled);
-        String param = null;
-        if (params.length == 1){
-            param = params[0];
-        }
-        return new ResponseEntity<>(organizationProjectService.pagingQuery(project, pageRequest, param),
+        return new ResponseEntity<>(organizationProjectService.pagingQuery(project, pageRequest, ParamUtils.arrToStr(params)),
                 HttpStatus.OK);
     }
 
