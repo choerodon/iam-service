@@ -9,7 +9,6 @@ image:
   pullPolicy: Always
 
 preJob:
-  appname: iam-service
   preConfig:
     configFile: application.yml
     mysql:
