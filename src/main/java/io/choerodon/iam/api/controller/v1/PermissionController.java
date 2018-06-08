@@ -5,7 +5,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
-import io.choerodon.iam.infra.common.utils.ParamsUtil;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -34,6 +34,7 @@ public class PermissionController {
     }
 
     @PostMapping(value = "/checkPermission")
+    @ApiOperation("通过permission code鉴权，判断用户是否有查看的权限")
     @Permission(permissionLogin = true)
     public ResponseEntity<List<CheckPermissionDTO>> checkPermission(@RequestBody List<CheckPermissionDTO> checkPermissions) {
         return new ResponseEntity<>(permissionService.checkPermission(checkPermissions), HttpStatus.OK);
@@ -47,11 +48,11 @@ public class PermissionController {
                                                            @ApiIgnore
                                                            @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                                    PageRequest pageRequest,
-                                                           @RequestParam(required = false) String params) {
-        String[] paramArray = ParamsUtil.parseParams(params);
+                                                           @RequestParam(required = false) String[] params) {
         PermissionDTO permission = new PermissionDTO();
         permission.setLevel(level);
-        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission, paramArray), HttpStatus.OK);
+        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission,
+                ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

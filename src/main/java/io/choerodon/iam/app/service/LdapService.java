@@ -19,6 +19,7 @@ public interface LdapService {
 
     /**
      * 测试是否能连接到ldap
+     *
      * @param organizationId 组织id
      * @param id             ldapId
      * @return LdapConnectionDTO 连接测试结构体
@@ -27,6 +28,7 @@ public interface LdapService {
 
     /**
      * 根据ldap配置同步用户
+     *
      * @param organizationId
      * @param id
      */
@@ -34,6 +36,7 @@ public interface LdapService {
 
     /**
      * 根据ldap id 查询最新的一条记录
+     *
      * @param id
      * @return
      */

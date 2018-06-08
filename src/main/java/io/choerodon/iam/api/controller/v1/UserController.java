@@ -4,8 +4,12 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.api.dto.UserPasswordDTO;
 import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -164,14 +168,14 @@ public class UserController extends BaseController {
             @RequestParam(required = false, name = "realName") String realName,
             @RequestParam(required = false, name = "enabled") Boolean enabled,
             @RequestParam(required = false, name = "locked") Boolean locked,
-            @RequestParam(required = false, name = "params") String params
-            ) {
+            @RequestParam(required = false, name = "params") String[] params
+    ) {
         UserDO userDO = new UserDO();
         userDO.setLoginName(loginName);
         userDO.setRealName(realName);
         userDO.setEnabled(enabled);
         userDO.setLocked(locked);
-        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO, params), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDO, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
 

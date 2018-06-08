@@ -12,7 +12,6 @@ public class LdapDTO {
     public static final String GET_LOGIN_NAME_FIELD = "getLoginNameField";
     public static final String GET_REAL_NAME_FIELD = "getRealNameField";
     public static final String GET_EMAIL_FIELD = "getEmailField";
-    public static final String GET_PASSWORD_FIELD = "getPasswordField";
     public static final String GET_PHONE_FIELD = "getPhoneField";
 
     private Long id;

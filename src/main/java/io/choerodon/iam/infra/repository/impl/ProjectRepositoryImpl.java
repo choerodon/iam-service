@@ -64,8 +64,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String[] params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.fulltextSearch(projectDO, params));
+    public Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.fulltextSearch(projectDO, param));
     }
 
     @Override

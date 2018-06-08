@@ -17,6 +17,7 @@ import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.naming.ldap.LdapContext;
 
@@ -25,14 +26,14 @@ import javax.naming.ldap.LdapContext;
  */
 @Component
 public class LdapServiceImpl implements LdapService {
+    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
     private LdapRepository ldapRepository;
     private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapSyncUserTask.FinishFallback finishFallback;
     private LdapHistoryRepository ldapHistoryRepository;
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
-    private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
 
     public LdapServiceImpl(LdapRepository ldapRepository, OrganizationRepository organizationRepository,
                            LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService,
@@ -113,16 +114,16 @@ public class LdapServiceImpl implements LdapService {
     public void syncLdapUser(Long organizationId, Long id) {
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
-            throw new CommonException("error.ldap.not.exist");
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         LdapValidator.validate(ldap);
         //匿名用户
-        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
+        boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapContext ldapContext = null;
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         if (anonymous) {
             //匿名用户只连接
-            ldapContext =LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+            ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
             if (ldapContext == null) {
                 throw new CommonException("error.ldap.connect");
             }
@@ -139,7 +140,7 @@ public class LdapServiceImpl implements LdapService {
         if (!ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, anonymous, finishFallback);
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, finishFallback);
     }
 
     @Override

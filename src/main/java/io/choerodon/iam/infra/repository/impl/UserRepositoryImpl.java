@@ -8,6 +8,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -46,10 +47,10 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String[] params) {
+    public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param) {
         //TODO
         //language code 转描述
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, params));
+        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, param));
     }
 
     @Override
@@ -87,12 +88,13 @@ public class UserRepositoryImpl implements UserRepository {
         int size = pageRequest.getSize();
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
+
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(),
-                roleAssignmentSearchDTO.getParam());
+                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
                 mapper.selectUserWithRolesBySourceIdAndType(
                         roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(), start, size,
-                        roleAssignmentSearchDTO.getParam());
+                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
         //TODO
         //筛选非空角色以及角色内部按id排序
@@ -110,11 +112,11 @@ public class UserRepositoryImpl implements UserRepository {
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(),
-                roleAssignmentSearchDTO.getParam());
+                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
                 mapper.selectUserWithRolesBySourceIdAndType(
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(), start, size,
-                        roleAssignmentSearchDTO.getParam());
+                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
         //TODO
         //筛选非空角色以及角色内部按id排序
@@ -132,11 +134,11 @@ public class UserRepositoryImpl implements UserRepository {
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
-                roleAssignmentSearchDTO.getParam());
+                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
                 mapper.selectUserWithRolesBySourceIdAndType(
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), start, size,
-                        roleAssignmentSearchDTO.getParam());
+                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
         //TODO
         //筛选非空角色以及角色内部按id排序

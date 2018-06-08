@@ -64,14 +64,12 @@
         <if test="userDO.language != null">
             AND `language` LIKE concat('%',#{userDO.language},'%')
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                login_name LIKE concat('%',#{item},'%') OR
-                email LIKE concat('%',#{item},'%') OR
-                real_name LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            login_name LIKE concat('%',#{param},'%') OR
+            email LIKE concat('%',#{param},'%') OR
+            real_name LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 
@@ -106,15 +104,13 @@
             <if test="roleAssignmentSearchDTO.roleName != null">
                 AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
             </if>
-            <if test="params != null and params.length > 0">
-                AND
-                <foreach item="item" index="index" collection="params"
-                         open="(" separator="or" close=")">
-                    iam_user.login_name LIKE concat('%',#{item},'%') OR
-                    iam_user.real_name LIKE concat('%',#{item},'%') OR
-                    ir.name LIKE concat('%',#{item},'%') OR
-                    imr.member_type LIKE concat('%',#{item},'%')
-                </foreach>
+            <if test="param != null">
+                AND(
+                iam_user.login_name LIKE concat('%',#{param},'%') OR
+                iam_user.real_name LIKE concat('%',#{param},'%') OR
+                ir.name LIKE concat('%',#{param},'%') OR
+                imr.member_type LIKE concat('%',#{param},'%')
+                )
             </if>
         </if>
         GROUP BY iam_user.id
@@ -150,15 +146,13 @@
             <if test="roleAssignmentSearchDTO.roleName != null">
                 AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
             </if>
-            <if test="params != null and params.length > 0">
-                AND
-                <foreach item="item" index="index" collection="params"
-                         open="(" separator="or" close=")">
-                    iu.login_name LIKE concat('%',#{item},'%') OR
-                    iu.real_name LIKE concat('%',#{item},'%') OR
-                    ir.name LIKE concat('%',#{item},'%') OR
-                    imr.member_type LIKE concat('%',#{item},'%')
-                </foreach>
+            <if test="param != null">
+                AND(
+                iu.login_name LIKE concat('%',#{param},'%') OR
+                iu.real_name LIKE concat('%',#{param},'%') OR
+                ir.name LIKE concat('%',#{param},'%') OR
+                imr.member_type LIKE concat('%',#{param},'%')
+                )
             </if>
         </if>
         ) t
@@ -167,7 +161,7 @@
     <select id="selectUserCountFromMemberRoleByOptions" resultType="int">
         SELECT COUNT(1) FROM (
         SELECT DISTINCT iu.id FROM iam_member_role imr
-        LEFT JOIN iam_user iu ON imr.member_id = iu.id
+        INNER JOIN iam_user iu ON imr.member_id = iu.id
         WHERE imr.role_id = #{roleId}
         AND imr.member_type = #{memberType}
         <if test="sourceId != null">

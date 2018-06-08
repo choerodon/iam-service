@@ -44,10 +44,10 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String[] params) {
+    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String param) {
         return
                 PageHelper.doPageAndSort(
-                        pageRequest, () -> permissionMapper.fulltextSearch(permissionDO, params));
+                        pageRequest, () -> permissionMapper.fulltextSearch(permissionDO, param));
     }
 
     @Override

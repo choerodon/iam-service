@@ -14,6 +14,7 @@ import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -36,25 +37,17 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.*;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
+    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
-
     @Value("${spring.application.name:default}")
     private String serviceName;
-
     private OrganizationRepository organizationRepository;
-
     private UserRepository userRepository;
-
     private IUserService iUserService;
-
     private EventProducerTemplate eventProducerTemplate;
-
     private PasswordPolicyManager passwordPolicyManager;
-
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
-
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
 
     public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
                                        UserRepository userRepository,
@@ -119,7 +112,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     public Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
         Page<UserDO> userDOPage =
-                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class), user.getParams());
+                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class),
+                        ParamUtils.arrToStr(user.getParams()));
         return ConvertPageHelper.convertPage(userDOPage, UserDTO.class);
     }
 

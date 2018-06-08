@@ -6,7 +6,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.validator.ClientValidator;
 import io.choerodon.iam.app.service.ClientService;
-import io.choerodon.iam.infra.common.utils.ParamsUtil;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -127,13 +127,12 @@ public class ClientController extends BaseController {
                                                 @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                         PageRequest pageRequest,
                                                 @RequestParam(required = false) String name,
-                                                @RequestParam(required = false) String params) {
+                                                @RequestParam(required = false) String[] params) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);
-        return new ResponseEntity<>(
-                clientService.list(clientDTO, pageRequest, ParamsUtil.parseParams(params)),
-                HttpStatus.OK);
+
+        return new ResponseEntity<>(clientService.list(clientDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**

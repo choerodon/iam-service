@@ -26,8 +26,8 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String[] params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(roleDO, params));
+    public Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(roleDO, param));
     }
 
     @Override

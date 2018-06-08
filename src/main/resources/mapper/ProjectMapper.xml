@@ -21,13 +21,11 @@
         <if test="project.enabled != null">
             AND is_enabled = #{project.enabled}
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                name LIKE concat('%',#{item},'%') OR
-                code LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            name LIKE concat('%',#{param},'%') OR
+            code LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 

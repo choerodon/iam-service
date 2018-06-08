@@ -27,5 +27,6 @@ public interface MenuRepository {
 
     List<MenuDO> queryMenusWithPermissionByTestPermission(String level, String memberType, Long memberId,
                                                           String sourceType, Long sourceId);
+
     List<MenuDO> select(MenuDO menuDO);
 }

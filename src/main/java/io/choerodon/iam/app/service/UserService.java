@@ -37,14 +37,14 @@ public interface UserService {
     List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled);
 
     Page<UserWithRoleDTO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
-                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     Page<UserWithRoleDTO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
-                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                             Long sourceId);
+                                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                     Long sourceId);
 
     Page<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
-                                                        RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
                                                       RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId);
@@ -68,6 +68,7 @@ public interface UserService {
 
     /**
      * 根据用户id集合查询用户的集合
+     *
      * @param ids 用户id数组
      * @return List<UserDTO> 用户集合
      */

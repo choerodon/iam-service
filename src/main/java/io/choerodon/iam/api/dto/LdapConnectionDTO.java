@@ -88,9 +88,6 @@ public class LdapConnectionDTO {
         if (LdapDTO.GET_EMAIL_FIELD.equals(key)) {
             this.setEmailField(value);
         }
-        if (LdapDTO.GET_PASSWORD_FIELD.equals(key)) {
-            this.setPasswordField(value);
-        }
         if (LdapDTO.GET_PHONE_FIELD.equals(key)) {
             this.setPhoneField(value);
         }

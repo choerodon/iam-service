@@ -14,6 +14,7 @@ import io.choerodon.iam.domain.repository.RolePermissionRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -57,7 +58,7 @@ public class RoleServiceImpl implements RoleService {
             role.setLevel(sourceType);
         }
         Page<RoleDO> roleDOPage = roleRepository.pagingQuery(
-                pageRequest, ConvertHelper.convert(role, RoleDO.class), role.getParams());
+                pageRequest, ConvertHelper.convert(role, RoleDO.class), ParamUtils.arrToStr(role.getParams()));
         Page<RoleDTO> roleDTOPage = ConvertPageHelper.convertPage(roleDOPage, RoleDTO.class);
         if (needUsers != null && needUsers) {
             roleDTOPage.getContent().forEach(roleDTO -> {

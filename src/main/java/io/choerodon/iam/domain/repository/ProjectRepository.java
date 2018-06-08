@@ -19,7 +19,7 @@ public interface ProjectRepository {
 
     List<ProjectDO> query(ProjectDO projectDO);
 
-    Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String[] params);
+    Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param);
 
     Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO);
 

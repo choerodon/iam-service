@@ -16,13 +16,11 @@
         <if test="permissionDO.serviceName != null">
             AND ip.service_name LIKE concat('%',#{permissionDO.serviceName},'%')
         </if>
-        <if test="params != null and params.length > 0">
-            AND
-            <foreach item="item" index="index" collection="params"
-                     open="(" separator="or" close=")">
-                ip.code LIKE concat('%',#{item},'%') OR
-                ip.description LIKE concat('%',#{item},'%')
-            </foreach>
+        <if test="param != null">
+            AND(
+            ip.code LIKE concat('%',#{param},'%') OR
+            ip.description LIKE concat('%',#{param},'%')
+            )
         </if>
     </select>
 

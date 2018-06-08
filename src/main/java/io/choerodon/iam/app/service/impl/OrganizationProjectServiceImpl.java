@@ -158,10 +158,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String[] params) {
+    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param) {
         ProjectDO projectDO = ConvertHelper.convert(projectDTO, ProjectDO.class);
         return ConvertPageHelper.convertPage(projectRepository.pagingQuery(
-                projectDO, pageRequest, params), ProjectDTO.class);
+                projectDO, pageRequest, param), ProjectDTO.class);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -225,8 +225,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         Boolean checkCode = !StringUtils.isEmpty(projectDTO.getCode());
         if (!checkCode) {
             throw new CommonException("error.project.code.empty");
-        }
-        if (checkCode) {
+        } else {
             checkCode(projectDTO);
         }
     }

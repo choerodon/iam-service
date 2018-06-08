@@ -12,7 +12,8 @@ import java.util.List;
  * @data 2018/3/27
  */
 public interface RoleRepository {
-    Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String[] params);
+
+    Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String param);
 
     RoleE selectByName(String name);
 

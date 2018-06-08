@@ -35,11 +35,11 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String[] params) {
+    public Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param) {
         ResourceLevelValidator.validate(permissionDTO.getLevel());
         Page<PermissionDO> permissionDOPage =
                 permissionRepository.pagingQuery(
-                        pageRequest, ConvertHelper.convert(permissionDTO, PermissionDO.class), params);
+                        pageRequest, ConvertHelper.convert(permissionDTO, PermissionDO.class), param);
         return ConvertPageHelper.convertPage(permissionDOPage, PermissionDTO.class);
     }
 
@@ -52,7 +52,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin()) {
-            checkPermissionDTOList.forEach( cp -> cp.setApprove(true));
+            checkPermissionDTOList.forEach(cp -> cp.setApprove(true));
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();

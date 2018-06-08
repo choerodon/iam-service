@@ -7,6 +7,7 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
@@ -24,7 +25,7 @@ public class ILdapServiceImpl implements ILdapService {
     public LdapConnectionDTO testConnect(LdapDO ldap) {
         LdapValidator.validate(ldap);
         //匿名用户
-        boolean anonymous = ldap.getAccount() == null || ldap.getPassword() == null;
+        boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         //测试连接
         LdapContext ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
@@ -58,39 +59,44 @@ public class ILdapServiceImpl implements ILdapService {
 
     @Override
     public void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
-                                       LdapDO ldap) {
-            //todo 这个地方写的不好，写死了
-            Map<String, String> attributeMap = initAttributeMap(ldap);
-            Set<String> attributeSet = new HashSet<>(attributeMap.values());
-            //default attribute 处理
-            attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
-            Set<String> keySet = new HashSet<>();
-            NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
-            while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-                //maybe more than one element
-                Object obj = namingEnumeration.nextElement();
-                if (obj instanceof SearchResult) {
-                    SearchResult searchResult = (SearchResult) obj;
-                    Attributes attributes = searchResult.getAttributes();
-                    NamingEnumeration attributesIDs = attributes.getIDs();
-                    while (attributesIDs != null && attributesIDs.hasMoreElements()) {
-                        keySet.add(attributesIDs.nextElement().toString());
-                    }
+                                      LdapDO ldap) {
+        //todo 这个地方写的不好，写死了
+        Map<String, String> attributeMap = initAttributeMap(ldap);
+        Set<String> attributeSet = new HashSet<>(attributeMap.values());
+        //default attribute 处理
+        attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
+        //移除null对象的情况
+        if (attributeSet.contains(null)) {
+            attributeSet.remove(null);
+        }
+        Set<String> keySet = new HashSet<>();
+        NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
+        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
+            //maybe more than one element
+            Object obj = namingEnumeration.nextElement();
+            if (obj instanceof SearchResult) {
+                SearchResult searchResult = (SearchResult) obj;
+                Attributes attributes = searchResult.getAttributes();
+                NamingEnumeration attributesIDs = attributes.getIDs();
+                while (attributesIDs != null && attributesIDs.hasMoreElements()) {
+                    keySet.add(attributesIDs.nextElement().toString());
                 }
             }
-            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
+        }
+        fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
     }
 
     /**
      * 匿名匹配字段只能匹配loginNameField和emailField
+     *
      * @param ldapContext
      * @param ldapConnectionDTO
      * @param ldap
      */
     @Override
     public void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
-                                                    LdapDO ldap) {
-        Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap,ldapContext);
+                                                   LdapDO ldap) {
+        Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap, ldapContext);
         //todo 这个地方写的不好，写死了
         Map<String, String> attributeMap = new HashMap<>(10);
         attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
