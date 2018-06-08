@@ -14,6 +14,7 @@ import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -118,12 +119,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
-        String param = null;
-        if (user.getParams().length == 1) {
-            param = user.getParams()[0];
-        }
         Page<UserDO> userDOPage =
-                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class), param);
+                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class),
+                        ParamUtils.arrToStr(user.getParams()));
         return ConvertPageHelper.convertPage(userDOPage, UserDTO.class);
     }
 

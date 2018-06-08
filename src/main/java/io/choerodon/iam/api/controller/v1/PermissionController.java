@@ -5,6 +5,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -50,11 +51,8 @@ public class PermissionController {
                                                            @RequestParam(required = false) String[] params) {
         PermissionDTO permission = new PermissionDTO();
         permission.setLevel(level);
-        String param = null;
-        if (params.length == 1){
-            param = params[0];
-        }
-        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission, param), HttpStatus.OK);
+        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission,
+                ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
