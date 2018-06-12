@@ -106,4 +106,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     public List<RoleDO> selectRolesByLabelNameAndType(String name, String type) {
         return mapper.selectRolesByLabelNameAndType(name, type);
     }
+
+    @Override
+    public List<RoleDO> selectInitRolesByPermissionId(Long permissionId) {
+        return mapper.selectInitRolesByPermissionId(permissionId);
+    }
 }

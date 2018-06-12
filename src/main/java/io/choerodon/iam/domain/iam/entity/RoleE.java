@@ -7,12 +7,6 @@ import java.util.List;
  */
 public class RoleE {
 
-    public static final String SITE_ADMINISTRATOR_CODE = "role/site/default/administrator";
-
-    public static final String ORGANIZATION_ADMINISTRATOR_CODE = "role/organization/default/administrator";
-
-    public static final String PROJECT_ADMINISTRATOR_CODE = "role/project/default/administrator";
-
     private Long id;
     private String name;
     private String code;
