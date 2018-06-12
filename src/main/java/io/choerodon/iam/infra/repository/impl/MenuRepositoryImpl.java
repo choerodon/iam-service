@@ -86,4 +86,9 @@ public class MenuRepositoryImpl implements MenuRepository {
     public List<MenuDO> select(MenuDO menuDO) {
         return menuMapper.select(menuDO);
     }
+
+    @Override
+    public MenuDO selectOne(MenuDO menuDO) {
+        return menuMapper.selectOne(menuDO);
+    }
 }
