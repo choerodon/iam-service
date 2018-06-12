@@ -29,4 +29,6 @@ public interface MenuRepository {
                                                           String sourceType, Long sourceId);
 
     List<MenuDO> select(MenuDO menuDO);
+
+    MenuDO selectOne(MenuDO menuDO);
 }

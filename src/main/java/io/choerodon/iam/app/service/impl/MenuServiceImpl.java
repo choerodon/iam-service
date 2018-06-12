@@ -14,6 +14,7 @@ import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +123,37 @@ public class MenuServiceImpl implements MenuService {
         }
 //        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
         return MenuTreeUtil.formatMenu(menus);
+    }
+
+    @Override
+    public void check(MenuDTO menu) {
+        boolean skipCode = StringUtils.isEmpty(menu.getCode());
+        if (skipCode) {
+            throw new CommonException("error.menu.code.empty");
+        } else {
+            checkCode(menu);
+        }
+
+    }
+
+    private void checkCode(MenuDTO menu) {
+        boolean createCheck = menu.getId() == null;
+        String code = menu.getCode();
+        MenuDO menuDO = new MenuDO();
+        menuDO.setCode(code);
+        if (createCheck) {
+            Boolean existed = menuRepository.selectOne(menuDO) != null;
+            if (existed) {
+                throw new CommonException("error.menu.code.exist");
+            }
+        } else {
+            Long id = menu.getId();
+            MenuDO menuDO1 = menuRepository.selectOne(menuDO);
+            Boolean existed = menuDO1 != null && !id.equals(menuDO1.getId());
+            if (existed) {
+                throw new CommonException("error.menu.code.exist");
+            }
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
