@@ -173,9 +173,9 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         //删掉除去SITE_ADMINISTRATOR，ORGANIZATION_ADMINISTRATOR，PROJECT_ADMINISTRATOR的所有role_permission关系
         for (RoleDO roleDO : roleList) {
             String code = roleDO.getCode();
-            if (!InitRoleCode.SITE_ADMINISTRATOR.value().equals(code)
-                    && !InitRoleCode.PROJECT_ADMINISTRATOR.value().equals(code)
-                    && !InitRoleCode.ORGANIZATION_ADMINISTRATOR.value().equals(code)) {
+            if (!InitRoleCode.SITE_ADMINISTRATOR.equals(code)
+                    && !InitRoleCode.PROJECT_ADMINISTRATOR.equals(code)
+                    && !InitRoleCode.ORGANIZATION_ADMINISTRATOR.equals(code)) {
                 RolePermissionE rolePermission = new RolePermissionE(null, roleDO.getId(), permissionId);
                 rolePermissionRepository.delete(rolePermission);
             }
@@ -200,8 +200,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private void processRolePermission(Map<String, RoleE> initRoleMap, String[] roles, Long permissionId, String level) {
         if (roles != null) {
-            for (String roleName : roles) {
-                String roleCode = generateCode(roleName,level);
+            for (String roleCode : roles) {
                 RoleE roleE = initRoleMap.get(roleCode);
                 if (roleE == null) {
                     //找不到code，说明没有初始化进去角色或者角色code拼错了
@@ -215,31 +214,21 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RoleE getRoleByLevel(Map<String, RoleE> initRoleMap, String level) {
         if (ResourceLevel.SITE.value().equals(level)) {
-            return initRoleMap.get(InitRoleCode.SITE_ADMINISTRATOR.value());
+            return initRoleMap.get(InitRoleCode.SITE_ADMINISTRATOR);
         }
         if (ResourceLevel.ORGANIZATION.value().equals(level)) {
-            return initRoleMap.get(InitRoleCode.ORGANIZATION_ADMINISTRATOR.value());
+            return initRoleMap.get(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         }
         if (ResourceLevel.PROJECT.value().equals(level)) {
-            return initRoleMap.get(InitRoleCode.PROJECT_ADMINISTRATOR.value());
+            return initRoleMap.get(InitRoleCode.PROJECT_ADMINISTRATOR);
         }
         return null;
     }
 
-    private String generateCode(String roleName, String level) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("role/");
-        sb.append(level);
-        sb.append("/default/");
-        sb.append(roleName);
-        return sb.toString();
-    }
-
     private Map<String, RoleE> queryInitRoleByCode() {
         Map<String, RoleE> map = new HashMap<>(10);
-        InitRoleCode[] initRoleCodeArray = InitRoleCode.values();
-        for (InitRoleCode initRoleCode : initRoleCodeArray) {
-            String code = initRoleCode.value();
+        String[] codes = InitRoleCode.values();
+        for (String code : codes) {
             RoleE role = roleRepository.selectByCode(code);
             if (role == null) {
                 throw new CommonException("error.init.role.not.exist", code);
