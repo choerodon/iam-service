@@ -165,9 +165,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
         RoleE role = getRoleByLevel(initRoleMap, level);
-        RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
-        if (rolePermissionRepository.selectOne(rp) == null) {
-            rolePermissionRepository.insert(rp);
+        if (role != null) {
+            RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
+            if (rolePermissionRepository.selectOne(rp) == null) {
+                rolePermissionRepository.insert(rp);
+            }
         }
         List<RoleDO> roleList = roleRepository.selectInitRolesByPermissionId(permissionId);
         //删掉除去SITE_ADMINISTRATOR，ORGANIZATION_ADMINISTRATOR，PROJECT_ADMINISTRATOR的所有role_permission关系
@@ -180,7 +182,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 rolePermissionRepository.delete(rolePermission);
             }
         }
-        processRolePermission(initRoleMap, roles, permissionId, level);
+        processRolePermission(initRoleMap, roles, permissionId);
     }
 
     private void insertRolePermission(PermissionE permission, Map<String, RoleE> initRoleMap, String[] roles) {
@@ -193,12 +195,14 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
          * level=project -> PROJECT_ADMINISTRATOR
          */
         RoleE role = getRoleByLevel(initRoleMap, level);
-        rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
+        if (role != null) {
+            rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
+        }
         //roles不为空，关联自定义角色
-        processRolePermission(initRoleMap, roles, permissionId, level);
+        processRolePermission(initRoleMap, roles, permissionId);
     }
 
-    private void processRolePermission(Map<String, RoleE> initRoleMap, String[] roles, Long permissionId, String level) {
+    private void processRolePermission(Map<String, RoleE> initRoleMap, String[] roles, Long permissionId) {
         if (roles != null) {
             for (String roleCode : roles) {
                 RoleE roleE = initRoleMap.get(roleCode);
