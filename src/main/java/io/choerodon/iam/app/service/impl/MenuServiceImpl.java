@@ -127,31 +127,35 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public void check(MenuDTO menu) {
-        boolean skipCode = StringUtils.isEmpty(menu.getCode());
-        if (skipCode) {
+        if (StringUtils.isEmpty(menu.getCode())) {
             throw new CommonException("error.menu.code.empty");
-        } else {
-            checkCode(menu);
         }
-
+        if (StringUtils.isEmpty(menu.getLevel())) {
+            throw new CommonException("error.menu.level.empty");
+        }
+        if (StringUtils.isEmpty(menu.getType())) {
+            throw new CommonException("error.menu.type.empty");
+        }
+        checkCode(menu);
     }
 
     private void checkCode(MenuDTO menu) {
         boolean createCheck = menu.getId() == null;
-        String code = menu.getCode();
         MenuDO menuDO = new MenuDO();
-        menuDO.setCode(code);
+        menuDO.setCode(menu.getCode());
+        menuDO.setLevel(menu.getLevel());
+        menuDO.setType(menu.getType());
         if (createCheck) {
             Boolean existed = menuRepository.selectOne(menuDO) != null;
             if (existed) {
-                throw new CommonException("error.menu.code.exist");
+                throw new CommonException("error.menu.code-level-type.exist");
             }
         } else {
             Long id = menu.getId();
             MenuDO menuDO1 = menuRepository.selectOne(menuDO);
             Boolean existed = menuDO1 != null && !id.equals(menuDO1.getId());
             if (existed) {
-                throw new CommonException("error.menu.code.exist");
+                throw new CommonException("error.menu.code-level-type.exist");
             }
         }
     }
