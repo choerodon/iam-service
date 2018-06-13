@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author zhipeng.zuo
@@ -204,7 +201,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private void processRolePermission(Map<String, RoleE> initRoleMap, String[] roles, Long permissionId) {
         if (roles != null) {
-            for (String roleCode : roles) {
+            Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
+            for (String roleCode : roleSet) {
                 RoleE roleE = initRoleMap.get(roleCode);
                 if (roleE == null) {
                     //找不到code，说明没有初始化进去角色或者角色code拼错了
