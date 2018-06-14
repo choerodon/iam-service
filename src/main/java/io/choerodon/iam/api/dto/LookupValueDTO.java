@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @ApiModel(value = "lookupValue", description = "快码值对象")
 public class LookupValueDTO {
 
-    @ApiModelProperty(value = "快码值id", hidden = true)
     private Long id;
 
     @ApiModelProperty(value = "所属快码id", hidden = true)
