@@ -49,9 +49,9 @@ public class LookupRepositoryImpl implements LookupRepository {
     }
 
     @Override
-    public LookupE update(LookupE lookupE) {
+    public LookupE update(LookupE lookupE, Long id) {
         LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
-        if (mapper.selectOne(lookupDO) == null) {
+        if (mapper.selectByPrimaryKey(id) == null) {
             throw new CommonException("error.repo.lookup.notExist");
         }
         if (mapper.updateByPrimaryKeySelective(lookupDO) != 1) {

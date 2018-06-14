@@ -31,36 +31,32 @@ public class LookupValueRepositoryImpl implements LookupValueRepository {
         LookupValueDO lookupValueDO = ConvertHelper.convert(lookupValueE, LookupValueDO.class);
         if (mapper.insertSelective(lookupValueDO) != 1) {
             LOGGER.debug("insert lookup value fail:{}", lookupValueDO);
-            throw new CommonException("error.repo.lookupValue.insert");
+            throw new CommonException("error.lookupValue.insert");
         }
         return ConvertHelper.convert(mapper.selectByPrimaryKey(lookupValueDO.getId()), LookupValueE.class);
     }
 
     @Override
-    public List<LookupValueE> selectByLookupId(Long id) {
+    public List<LookupValueDO> selectByLookupId(Long id) {
         LookupValueDO lookupValueDO = new LookupValueDO();
         lookupValueDO.setLookupId(id);
-        return ConvertHelper.convertList(mapper.select(lookupValueDO), LookupValueE.class);
+        return mapper.select(lookupValueDO);
     }
 
     @Override
     public void deleteById(Long id) {
         if (mapper.deleteByPrimaryKey(id) != 1) {
-            throw new CommonException("error.repo.lookupValue.delete");
+            throw new CommonException("error.lookupValue.delete");
         }
     }
 
     @Override
-    public LookupValueE update(LookupValueE lookupValueE) {
-        LookupValueDO lookupValueDO = ConvertHelper.convert(lookupValueE, LookupValueDO.class);
-        if (mapper.selectOne(lookupValueDO) == null) {
-            throw new CommonException("error.repo.lookupValue.notExist");
+    public LookupValueE updateById(LookupValueDO lookupValueDO, Long id) {
+        if (mapper.selectByPrimaryKey(id) == null) {
+            throw new CommonException("error.lookupValue.notExist");
         }
-        if (mapper.updateByPrimaryKeySelective(lookupValueDO) != 1) {
-            LOGGER.debug("update lookup value fail:{}", lookupValueDO);
-            throw new CommonException("error.repo.lookupValue.update");
-        }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(lookupValueDO.getId()), LookupValueE.class);
+        mapper.updateByPrimaryKeySelective(lookupValueDO);
+        return ConvertHelper.convert(mapper.selectByPrimaryKey(id), LookupValueE.class);
     }
 
     @Override

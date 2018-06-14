@@ -18,7 +18,7 @@ public interface LookupRepository {
 
     void delete(LookupE lookupE);
 
-    LookupE update(LookupE lookupE);
+    LookupE update(LookupE lookupE, Long id);
 
     LookupE selectById(Long id);
 

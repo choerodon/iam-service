@@ -18,8 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient
 @SpringBootApplication
-//todo 22
-//@EnableChoerodonResourceServer
+@EnableChoerodonResourceServer
 @EnableAsync
 public class IAMServiceApplication {
 
