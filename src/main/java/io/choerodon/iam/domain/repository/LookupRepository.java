@@ -11,6 +11,7 @@ import java.util.List;
  * @author superlee
  */
 public interface LookupRepository {
+
     LookupE insert(LookupE lookupE);
 
     Page<LookupDO> pagingQuery(PageRequest pageRequest, LookupDO lookupDO, String param);

@@ -9,6 +9,7 @@ import java.util.List;
  * @author superlee
  */
 public interface LookupValueRepository {
+
     LookupValueE insert(LookupValueE lookupValueE);
 
     List<LookupValueE> selectByLookupId(Long id);

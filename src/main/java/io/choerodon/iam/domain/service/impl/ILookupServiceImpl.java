@@ -32,12 +32,16 @@ public class ILookupServiceImpl extends BaseServiceImpl<LookupDO> implements ILo
 
     @Override
     public LookupE create(LookupE lookupE) {
+        lookupE.setId(null);
+        lookupE.setObjectVersionNumber(null);
         LookupE le = lookupRepository.insert(lookupE);
         List<LookupValueE> lookupValueEList = lookupE.getLookupValues();
         List<LookupValueE> retuenList = new ArrayList<>();
         if (lookupValueEList != null
                 && !lookupValueEList.isEmpty()) {
             lookupValueEList.forEach(lve -> {
+                lve.setId(null);
+                lve.setObjectVersionNumber(null);
                 lve.setLookupId(le.getId());
                 retuenList.add(lookupValueRepository.insert(lve));
             });

@@ -8,6 +8,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author superlee
  */
 public interface LookupService {
+
     LookupDTO create(LookupDTO lookupDTO);
 
     Page<LookupDTO> pagingQuery(PageRequest pageRequest, LookupDTO lookupDTO);
