@@ -109,6 +109,8 @@ public class LdapSyncUserTask {
             //新用户phone为空，旧用户phone不为空，不更新
             //新用户phone不为空，旧用户phone为空，更新
             //新用户和旧用户phone字段都不为空，且新用户phone与旧用户phone不相等，更新，否则不更新
+
+            /*
             boolean doUpdate = false;
             if (user.getPhone() != null && !user.getPhone().equals(oldUser.getPhone())) {
                 oldUser.setPhone(user.getPhone());
@@ -127,7 +129,7 @@ public class LdapSyncUserTask {
                     ldapSyncReport.incrementError();
                 }
             }
-
+            */
         }
     }
 
