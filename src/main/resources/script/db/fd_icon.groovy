@@ -17,4 +17,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_icon.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-06-20-fd-icon-drop') {
+        dropTable(tableName: "fd_icon")
+    }
 }
