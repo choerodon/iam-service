@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.*;
@@ -84,7 +85,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在project层分配角色
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层批量分配给用户角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
@@ -126,7 +127,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在project层根据id删除角色
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层批量移除用户的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/delete")
     public ResponseEntity deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
@@ -171,7 +172,7 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
@@ -219,7 +220,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
@@ -269,7 +270,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
