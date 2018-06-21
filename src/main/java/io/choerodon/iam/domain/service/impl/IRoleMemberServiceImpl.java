@@ -77,7 +77,9 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     serviceName, userMemberEventPayloads, (String uuid) -> {
                         List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
                                 isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
-                        userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
+                        if (!ownRoleIds.isEmpty()) {
+                            userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
+                        }
                         userMemberEventPayloads.add(userMemberEventMsg);
                     });
             if (exception != null) {
