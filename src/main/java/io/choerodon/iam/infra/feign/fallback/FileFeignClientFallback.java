@@ -20,6 +20,11 @@ public class FileFeignClientFallback implements FileFeignClient {
     }
 
     @Override
+    public ResponseEntity<String> uploadPhoto(String bucketName, String fileName, MultipartFile multipartFile) {
+        throw new CommonException("error.file.upload");
+    }
+
+    @Override
     public ResponseEntity<FileDTO> upload(String bucketName, String fileName, MultipartFile multipartFile) {
         throw new CommonException("error.file.upload");
     }
