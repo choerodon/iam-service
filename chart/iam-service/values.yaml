@@ -25,6 +25,7 @@ preJob:
       database: iam_service
       username: username
       password: password
+      exclusion: iam_user.password,oauth_client.web_server_redirect_uri
 
 metrics:
   path: /prometheus
