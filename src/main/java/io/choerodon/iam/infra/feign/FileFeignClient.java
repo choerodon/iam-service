@@ -34,7 +34,7 @@ public interface FileFeignClient {
             value = "/v1/documents",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<FileDTO> upload(@RequestParam("bucketName") String bucketName,
+    ResponseEntity<FileDTO> upload(@RequestParam("bucket_name") String bucketName,
                                    @RequestParam("fileName") String fileName,
-                                   @RequestParam("file") MultipartFile multipartFile);
+                                   @RequestPart("file") MultipartFile multipartFile);
 }
