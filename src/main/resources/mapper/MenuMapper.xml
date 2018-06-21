@@ -55,7 +55,7 @@
         ip.service_name
         FROM iam_menu im
         LEFT JOIN iam_menu_permission imp on im.id = imp.menu_id
-        LEFT JOIN iam_permission ip on imp.permission_id = ip.id
+        LEFT JOIN iam_permission ip on imp.permission_code = ip.code
         WHERE 1=1
         <if test="level != null">
             AND im.level = #{level}
@@ -72,9 +72,9 @@
         FROM iam_menu im
         LEFT JOIN iam_menu_permission imp
           ON im.id = imp.menu_id
-        WHERE imp.permission_id IN
+        WHERE imp.permission_code IN
         (
-          SELECT p.id
+          SELECT p.code
           FROM iam_role_permission rp
           LEFT JOIN iam_permission p
             ON p.id=rp.permission_id
