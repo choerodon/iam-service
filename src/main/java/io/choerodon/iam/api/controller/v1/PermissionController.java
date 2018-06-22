@@ -62,4 +62,14 @@ public class PermissionController {
         return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("通过层级，服务名，code查询Permission列表")
+    @GetMapping("/permissionList")
+    public ResponseEntity<List<PermissionDTO>> query(@ApiIgnore
+                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC)
+                                                     @RequestParam("level") String level,
+                                                     @RequestParam("service_name") String serviceName,
+                                                     @RequestParam("code") String code) {
+        return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
+    }
 }
