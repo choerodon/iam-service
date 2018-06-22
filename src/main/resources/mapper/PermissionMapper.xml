@@ -27,7 +27,7 @@
     <select id="selectByRoleId" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
         SELECT iam_permission.*
         FROM iam_role_permission
-        LEFT JOIN iam_permission
+        INNER JOIN iam_permission
         ON iam_role_permission.permission_id = iam_permission.id
         WHERE iam_role_permission.role_id = #{roleId}
     </select>
