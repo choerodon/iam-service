@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
         checkLoginUser(id);
         Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
         String bakcetName = "iam-service";
-        return fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
+        return fileFeignClient.uploadPhoto(bakcetName, file.getOriginalFilename(), file).getBody();
 //        FileDTO fileDTO = fileFeignClient.upload(bakcetName, file.getOriginalFilename(), file).getBody();
 //        return bakcetName + fileDTO.getFileName();
     }

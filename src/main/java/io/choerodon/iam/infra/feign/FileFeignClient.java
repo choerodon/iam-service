@@ -33,7 +33,7 @@ public interface FileFeignClient {
     @PostMapping(
             value = "/v1/files",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<String> uploadPhoto(@RequestParam("bucket_name") String bucketName,
                                        @RequestParam("file_name") String fileName,
                                        @RequestPart("file") MultipartFile multipartFile);
