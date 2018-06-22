@@ -122,4 +122,9 @@ public class PermissionServiceImpl implements PermissionService {
         });
         return permissions;
     }
+
+    @Override
+    public List<PermissionDTO> query(String level, String serviceName, String code) {
+        return ConvertHelper.convertList(permissionRepository.query(level, serviceName, code), PermissionDTO.class);
+    }
 }

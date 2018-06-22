@@ -91,4 +91,13 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     public Set<String> checkPermission(Long memberId, String source_type, Long sourceId, Set<String> codes) {
         return permissionMapper.checkPermission(memberId, source_type, sourceId, codes);
     }
+
+    @Override
+    public List<PermissionE> query(String level, String serviceName, String code) {
+        PermissionDO permissionDO = new PermissionDO();
+        permissionDO.setLevel(level);
+        permissionDO.setServiceName(serviceName);
+        permissionDO.setCode(code);
+        return ConvertHelper.convertList(permissionMapper.select(permissionDO), PermissionE.class);
+    }
 }

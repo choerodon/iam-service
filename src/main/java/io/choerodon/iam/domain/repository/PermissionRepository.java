@@ -32,4 +32,6 @@ public interface PermissionRepository {
 
     Set<String> checkPermission(Long memberId, String source_type,
                                 Long sourceId, Set<String> codes);
+
+    List<PermissionE> query(String level, String serviceName, String code);
 }
