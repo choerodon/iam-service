@@ -12,7 +12,8 @@ import java.util.Set;
  * @author wuguokai
  */
 public interface PermissionRepository {
-    List<Long> queryRolesByPermission(String code, String level);
+
+    boolean existByCode(String code);
 
     PermissionE selectByCode(String code);
 
@@ -22,15 +23,13 @@ public interface PermissionRepository {
 
     PermissionE selectByPrimaryKey(Object key);
 
-    List<PermissionE> selectByServiceName(String serviceName);
-
     void deleteById(Long id);
 
     Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String param);
 
     List<PermissionDO> selectByRoleId(Long roleId);
 
-    Set<String> checkPermission(Long memberId, String source_type,
+    Set<String> checkPermission(Long memberId, String sourceType,
                                 Long sourceId, Set<String> codes);
 
     List<PermissionE> query(String level, String serviceName, String code);

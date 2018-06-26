@@ -27,15 +27,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public List<Long> queryRolesByPermission(String code, String level) {
-        return permissionMapper.queryRolesByPermission(code, level);
-    }
-
-    @Override
-    public List<PermissionE> selectByServiceName(String serviceName) {
-        PermissionDO permissionDO = new PermissionDO();
-        permissionDO.setServiceName(serviceName);
-        return ConvertHelper.convertList(permissionMapper.select(permissionDO), PermissionE.class);
+    public boolean existByCode(String code) {
+        return permissionMapper.selectOne(new PermissionDO(code)) != null;
     }
 
     @Override
@@ -88,8 +81,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Set<String> checkPermission(Long memberId, String source_type, Long sourceId, Set<String> codes) {
-        return permissionMapper.checkPermission(memberId, source_type, sourceId, codes);
+    public Set<String> checkPermission(Long memberId, String sourceType, Long sourceId, Set<String> codes) {
+        return permissionMapper.checkPermission(memberId, sourceType, sourceId, codes);
     }
 
     @Override
