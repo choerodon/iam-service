@@ -16,6 +16,6 @@ public interface PermissionMapper extends BaseMapper<PermissionDO> {
 
     List<PermissionDO> selectByRoleId(Long roleId);
 
-    Set<String> checkPermission(@Param("member_id") Long memberId, @Param("source_type") String source_type,
+    Set<String> checkPermission(@Param("member_id") Long memberId, @Param("source_type") String sourceType,
                                 @Param("source_id") Long sourceId, @Param("codes") Set<String> codes);
 }

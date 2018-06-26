@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
         checkLoginUser(userId);
         ProjectDO projectDO = new ProjectDO();
         projectDO.setOrganizationId(organizationId);
-        return null;
+        return new ArrayList<>();
     }
 
     private CustomUserDetails checkLoginUser(Long id) {
@@ -194,16 +194,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-        String bakcetName = "iam-service";
-        return fileFeignClient.uploadPhoto(bakcetName, file.getOriginalFilename(), file).getBody();
-//        FileDTO fileDTO = fileFeignClient.upload(bakcetName, file.getOriginalFilename(), file).getBody();
-//        return bakcetName + fileDTO.getFileName();
+        return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
     @Override
     public List<OrganizationDTO> queryOrganizationWithProjects() {
-        return null;
+        return new ArrayList<>(0);
     }
 
 
@@ -234,7 +230,7 @@ public class UserServiceImpl implements UserService {
             throw new CommonException("error.password.originalPassword");
         }
         //密码策略
-        if (checkPassword && user != null) {
+        if (checkPassword) {
             BaseUserDO baseUserDO = new BaseUserDO();
             BeanUtils.copyProperties(user, baseUserDO);
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());

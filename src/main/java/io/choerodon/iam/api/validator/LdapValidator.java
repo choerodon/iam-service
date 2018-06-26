@@ -9,6 +9,9 @@ import org.springframework.util.StringUtils;
  */
 public class LdapValidator {
 
+    private LdapValidator() {
+    }
+
     public static void validate(LdapDO ldap) {
         if (StringUtils.isEmpty(ldap.getServerAddress())) {
             throw new CommonException("error.ldap.serverAddress.empty");

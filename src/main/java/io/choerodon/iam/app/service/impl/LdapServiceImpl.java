@@ -152,7 +152,7 @@ public class LdapServiceImpl implements LdapService {
     public LdapDTO enableLdap(Long organizationId, Long id) {
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
-            throw new CommonException("error.ldap.not.exist");
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         if (!ldap.getOrganizationId().equals(organizationId)) {
             throw new CommonException("error.ldap.organizationId.not.match");
@@ -165,7 +165,7 @@ public class LdapServiceImpl implements LdapService {
     public LdapDTO disableLdap(Long organizationId, Long id) {
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
-            throw new CommonException("error.ldap.not.exist");
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
         }
         if (!ldap.getOrganizationId().equals(organizationId)) {
             throw new CommonException("error.ldap.organizationId.not.match");
