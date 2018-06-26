@@ -4,10 +4,7 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.OrganizationDTO;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.api.dto.UserPasswordDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
@@ -201,5 +198,18 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id获取组织列表和角色")
+    @GetMapping("/{id}/organization_roles")
+    public ResponseEntity<List<OrganizationWithRoleDTO>> listOrganizationAndRoleById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.listOrganizationAndRoleById(id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id获取项目列表和角色")
+    @GetMapping("/")
+    public ResponseEntity<List<ProjectWithRoleDTO>> listProjectAndRoleById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.listProjectAndRoleById(id), HttpStatus.OK);
+    }
 
 }

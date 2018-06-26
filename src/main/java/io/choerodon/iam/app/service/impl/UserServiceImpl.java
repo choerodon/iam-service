@@ -19,6 +19,7 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -62,6 +63,7 @@ public class UserServiceImpl implements UserService {
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
     private EventProducerTemplate eventProducerTemplate;
+    private OrganizationMapper organizationMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -71,7 +73,8 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            EventProducerTemplate eventProducerTemplate,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
-                           PasswordPolicyManager passwordPolicyManager) {
+                           PasswordPolicyManager passwordPolicyManager,
+                           OrganizationMapper organizationMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -81,6 +84,7 @@ public class UserServiceImpl implements UserService {
         this.eventProducerTemplate = eventProducerTemplate;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -396,4 +400,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id) {
+        return organizationMapper.listOrganizationAndRoleById(id);
+    }
+
+    @Override
+    public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
+        return organizationMapper.listProjectAndRoleById(id);
+    }
 }
