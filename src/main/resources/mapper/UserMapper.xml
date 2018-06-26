@@ -242,9 +242,10 @@
             AND is_locked = #{userDO.locked}
         </if>
         <if test="params != null">
-            AND
-            login_name LIKE concat('%',#{params},'%') OR
-            real_name LIKE concat('%',#{params},'%')
+            AND (
+                login_name LIKE concat('%',#{params},'%') OR
+                real_name LIKE concat('%',#{params},'%')
+            )
         </if>
     </select>
 
