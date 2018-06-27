@@ -72,4 +72,18 @@ public class PermissionController {
                                                      @RequestParam("code") String code) {
         return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
     }
+
+    /**
+     * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常
+     * @param code  the code of permission
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("根据permission code删除permission, 只能删除废弃的permission")
+    @DeleteMapping
+    public ResponseEntity deleteByCode(@RequestParam String code) {
+        permissionService.deleteByCode(code);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }
