@@ -18,7 +18,7 @@ public class MenuPermissionDO {
     @GeneratedValue
     private Long id;
     private Long menuId;
-    private Long permissionId;
+    private String permissionCode;
 
     public Long getId() {
         return id;
@@ -36,11 +36,11 @@ public class MenuPermissionDO {
         this.menuId = menuId;
     }
 
-    public Long getPermissionId() {
-        return permissionId;
+    public String getPermissionCode() {
+        return permissionCode;
     }
 
-    public void setPermissionId(Long permissionId) {
-        this.permissionId = permissionId;
+    public void setPermissionCode(String permissionCode) {
+        this.permissionCode = permissionCode;
     }
 }

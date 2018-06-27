@@ -18,8 +18,10 @@ import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
+import io.choerodon.iam.domain.repository.MenuPermissionRepository;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
+import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
@@ -53,14 +55,18 @@ public class PermissionServiceImpl implements PermissionService {
 
     private DiscoveryClient discoveryClient;
 
+    private MenuPermissionRepository menuPermissionRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PermissionServiceImpl(PermissionRepository permissionRepository,
                                  DiscoveryClient discoveryClient,
-                                 RolePermissionRepository rolePermissionRepository) {
+                                 RolePermissionRepository rolePermissionRepository,
+                                 MenuPermissionRepository menuPermissionRepository) {
         this.permissionRepository = permissionRepository;
         this.discoveryClient = discoveryClient;
         this.rolePermissionRepository = rolePermissionRepository;
+        this.menuPermissionRepository = menuPermissionRepository;
     }
 
 
@@ -188,11 +194,14 @@ public class PermissionServiceImpl implements PermissionService {
                                 return true;
                             }
                         })
-                        .orElseThrow(() -> new CommonException("error.permission.not.exist"));
+                        .orElseThrow(() -> new CommonException("error.permission.does.not.exist"));
         if (deleted) {
             permissionRepository.deleteById(permissionE.getId());
             RolePermissionE rolePermission = new RolePermissionE(null, null, permissionE.getId());
             rolePermissionRepository.delete(rolePermission);
+            MenuPermissionDO menuPermission = new MenuPermissionDO();
+            menuPermission.setPermissionCode(code);
+            menuPermissionRepository.delete(menuPermission);
         } else {
             throw new CommonException("error.permission.not.obsoleting");
         }

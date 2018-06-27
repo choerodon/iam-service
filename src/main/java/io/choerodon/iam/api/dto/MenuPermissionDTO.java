@@ -6,7 +6,7 @@ package io.choerodon.iam.api.dto;
 public class MenuPermissionDTO {
     private Long id;
     private Long menuId;
-    private Long permissionId;
+    private String permissionCode;
 
     public Long getId() {
         return id;
@@ -24,11 +24,11 @@ public class MenuPermissionDTO {
         this.menuId = menuId;
     }
 
-    public Long getPermissionId() {
-        return permissionId;
+    public String getPermissionCode() {
+        return permissionCode;
     }
 
-    public void setPermissionId(Long permissionId) {
-        this.permissionId = permissionId;
+    public void setPermissionCode(String permissionCode) {
+        this.permissionCode = permissionCode;
     }
 }
