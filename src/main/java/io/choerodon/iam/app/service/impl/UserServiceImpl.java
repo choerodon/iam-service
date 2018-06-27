@@ -19,6 +19,7 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -62,6 +63,7 @@ public class UserServiceImpl implements UserService {
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
     private EventProducerTemplate eventProducerTemplate;
+    private OrganizationMapper organizationMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -71,7 +73,8 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            EventProducerTemplate eventProducerTemplate,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
-                           PasswordPolicyManager passwordPolicyManager) {
+                           PasswordPolicyManager passwordPolicyManager,
+                           OrganizationMapper organizationMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -81,6 +84,7 @@ public class UserServiceImpl implements UserService {
         this.eventProducerTemplate = eventProducerTemplate;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -135,7 +139,7 @@ public class UserServiceImpl implements UserService {
         checkLoginUser(userId);
         ProjectDO projectDO = new ProjectDO();
         projectDO.setOrganizationId(organizationId);
-        return null;
+        return new ArrayList<>();
     }
 
     private CustomUserDetails checkLoginUser(Long id) {
@@ -194,16 +198,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-        String bakcetName = "iam-service";
-        return fileFeignClient.uploadPhoto(bakcetName, file.getOriginalFilename(), file).getBody();
-//        FileDTO fileDTO = fileFeignClient.upload(bakcetName, file.getOriginalFilename(), file).getBody();
-//        return bakcetName + fileDTO.getFileName();
+        return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
     @Override
     public List<OrganizationDTO> queryOrganizationWithProjects() {
-        return null;
+        return new ArrayList<>(0);
     }
 
 
@@ -234,7 +234,7 @@ public class UserServiceImpl implements UserService {
             throw new CommonException("error.password.originalPassword");
         }
         //密码策略
-        if (checkPassword && user != null) {
+        if (checkPassword) {
             BaseUserDO baseUserDO = new BaseUserDO();
             BeanUtils.copyProperties(user, baseUserDO);
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
@@ -400,4 +400,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id) {
+        return organizationMapper.listOrganizationAndRoleById(id);
+    }
+
+    @Override
+    public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
+        return organizationMapper.listProjectAndRoleById(id);
+    }
 }

@@ -73,4 +73,9 @@ public interface UserService {
      * @return List<UserDTO> 用户集合
      */
     List<UserDTO> listUsersByIds(Long[] ids);
+
+    List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id);
+
+    List<ProjectWithRoleDTO> listProjectAndRoleById(Long id);
+
 }

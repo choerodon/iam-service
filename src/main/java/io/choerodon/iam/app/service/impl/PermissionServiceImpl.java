@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * @author wuguokai
  */
-@Component
+@Service
 public class PermissionServiceImpl implements PermissionService {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionServiceImpl.class);
@@ -73,6 +74,7 @@ public class PermissionServiceImpl implements PermissionService {
         return ConvertPageHelper.convertPage(permissionDOPage, PermissionDTO.class);
     }
 
+
     @Override
     public List<CheckPermissionDTO> checkPermission(List<CheckPermissionDTO> checkPermissionDTOList) {
         CustomUserDetails details = DetailsHelper.getUserDetails();
@@ -82,15 +84,32 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin()) {
-            checkPermissionDTOList.forEach(cp -> cp.setApprove(true));
+            checkPermissionDTOList.stream().filter(t -> permissionRepository.existByCode(t.getCode().trim())).forEach(cp -> cp.setApprove(true));
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();
+        Set<String> resultCodes = new HashSet<>();
+        resultCodes.addAll(checkSitePermission(checkPermissionDTOList, userId));
+        resultCodes.addAll(checkOrgPermission(checkPermissionDTOList, userId));
+        resultCodes.addAll(checkProjectPermission(checkPermissionDTOList, userId));
+        checkPermissionDTOList.forEach(p -> {
+            p.setApprove(false);
+            if (resultCodes.contains(p.getCode())) {
+                p.setApprove(true);
+            }
+        });
+        return checkPermissionDTOList;
+    }
+
+    private Set<String> checkSitePermission(final List<CheckPermissionDTO> checkPermissionDTOList, final Long userId) {
         Set<String> siteCodes = checkPermissionDTOList.stream().filter(i -> ResourceLevel.SITE.value().equals(i.getResourceType()))
                 .map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
         //site层校验之后的权限集
         siteCodes = permissionRepository.checkPermission(userId, ResourceLevel.SITE.value(), 0L, siteCodes);
-        //组织层分组再校验
+        return siteCodes;
+    }
+
+    private Set<String> checkOrgPermission(final List<CheckPermissionDTO> checkPermissionDTOList, final Long userId) {
         List<CheckPermissionDTO> organizationPermissions = checkPermissionDTOList.stream().filter(i -> ResourceLevel.ORGANIZATION.value().equals(i.getResourceType()))
                 .collect(Collectors.toList());
         Map<Long, List<CheckPermissionDTO>> orgPermissionMaps = new HashMap<>();
@@ -110,7 +129,10 @@ public class PermissionServiceImpl implements PermissionService {
             searchOrganizationCodes = permissionRepository.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes);
             organizationCodes.addAll(searchOrganizationCodes);
         }
-        //项目层分组再校验
+        return organizationCodes;
+    }
+
+    private Set<String> checkProjectPermission(final List<CheckPermissionDTO> checkPermissionDTOList, final Long userId) {
         List<CheckPermissionDTO> projectPermissions = checkPermissionDTOList.stream().filter(i -> ResourceLevel.PROJECT.value().equals(i.getResourceType()))
                 .collect(Collectors.toList());
         Map<Long, List<CheckPermissionDTO>> projectMaps = new HashMap<>();
@@ -130,17 +152,9 @@ public class PermissionServiceImpl implements PermissionService {
             searchProjectCodes = permissionRepository.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes);
             projectCodes.addAll(searchProjectCodes);
         }
-        Set<String> resultCodes = siteCodes;
-        resultCodes.addAll(organizationCodes);
-        resultCodes.addAll(projectCodes);
-        checkPermissionDTOList.forEach(p -> {
-            p.setApprove(false);
-            if (resultCodes.contains(p.getCode())) {
-                p.setApprove(true);
-            }
-        });
-        return checkPermissionDTOList;
+        return projectCodes;
     }
+
 
     @Override
     public Set<PermissionDTO> queryByRoleIds(List<Long> roleIds) {

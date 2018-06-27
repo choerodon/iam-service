@@ -11,6 +11,9 @@ import io.choerodon.oauth.core.password.record.PasswordRecord;
  */
 public class OrganizationEFactory {
 
+    private OrganizationEFactory() {
+    }
+
     public static OrganizationE createOrganizationE(
             Long id, String name, String code, Long objectVersionNumber, Boolean isEnabled) {
         UserRepository userRepository = ApplicationContextHelper.getSpringFactory().getBean(UserRepository.class);

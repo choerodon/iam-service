@@ -8,6 +8,9 @@ import io.choerodon.core.iam.MenuType;
  */
 public class MenuTypeValidator {
 
+    private MenuTypeValidator() {
+    }
+
     public static void validate(String type) {
         boolean rightType = false;
         for (MenuType mt : MenuType.values()) {

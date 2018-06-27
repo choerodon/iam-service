@@ -116,4 +116,11 @@ public class PermissionDO extends AuditDomain {
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
+
+    public PermissionDO(String code) {
+        this.code = code;
+    }
+
+    public PermissionDO() {
+    }
 }

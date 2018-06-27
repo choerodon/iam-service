@@ -8,6 +8,9 @@ import io.choerodon.iam.infra.enums.LabelType;
  */
 public class LabelTypeValidator {
 
+    private LabelTypeValidator() {
+    }
+
     public static void validate(String type) {
         boolean rightType = false;
         for (LabelType lt : LabelType.values()) {

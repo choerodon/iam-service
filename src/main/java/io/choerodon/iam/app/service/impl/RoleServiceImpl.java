@@ -93,7 +93,7 @@ public class RoleServiceImpl implements RoleService {
             throw new CommonException("error.roles.in.same.level");
         }
         List<PermissionDTO> permissionDTOS = new ArrayList<>();
-        if (roleIds.size() > 0) {
+        if (!roleIds.isEmpty()) {
             List<Long> permissionIds = rolePermissionRepository.queryPermissionIdsByRoles(roleIds);
             for (Long id : permissionIds) {
                 PermissionE permissionE = permissionRepository.selectByPrimaryKey(id);
@@ -192,9 +192,7 @@ public class RoleServiceImpl implements RoleService {
         if (!checkCode) {
             throw new CommonException("error.role.code.empty");
         }
-        if (checkCode) {
-            checkCode(role);
-        }
+        checkCode(role);
     }
 
     private void checkCode(RoleDTO role) {
