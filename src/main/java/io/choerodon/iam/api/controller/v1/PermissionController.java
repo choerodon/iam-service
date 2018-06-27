@@ -65,17 +65,17 @@ public class PermissionController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
-    public ResponseEntity<List<PermissionDTO>> query(@ApiIgnore
-                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC)
-                                                     @RequestParam("level") String level,
+    public ResponseEntity<List<PermissionDTO>> query(@RequestParam("level") String level,
                                                      @RequestParam("service_name") String serviceName,
-                                                     @RequestParam("code") String code) {
+                                                     @RequestParam("code") String code,
+                                                     @ApiIgnore
+                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest) {
         return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
     }
 
     /**
      * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常
-     * @param code  the code of permission
+     * @param code the code of permission
      * @return
      */
     @Permission(level = ResourceLevel.SITE)

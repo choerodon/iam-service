@@ -207,7 +207,7 @@ public class UserController extends BaseController {
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation("根据id获取项目列表和角色")
-    @GetMapping("/")
+    @GetMapping("/{id}/project_roles")
     public ResponseEntity<List<ProjectWithRoleDTO>> listProjectAndRoleById(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userService.listProjectAndRoleById(id), HttpStatus.OK);
     }

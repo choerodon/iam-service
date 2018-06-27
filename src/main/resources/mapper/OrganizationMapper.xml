@@ -94,8 +94,8 @@
         SELECT
         fo.name AS organizationName,
         fo.code AS organizationCode,
-        iam_role.name AS roleName,
-        iam_role.code AS roleCode
+        ir.name AS roleName,
+        ir.code AS roleCode
         FROM
         iam_member_role imr
         INNER JOIN
