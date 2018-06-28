@@ -41,11 +41,13 @@
         left JOIN iam_role r ON r.id = rp.role_id
         left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
-        (p.login_access=1 OR p.public_access=1 OR p.LEVEL = #{source_type})
+        (p.login_access=1 OR p.public_access=1 OR (
+        p.LEVEL = #{source_type}
         AND member_type = 'user'
         AND member_id = #{member_id}
         AND source_type = #{source_type}
         AND source_id = #{source_id}
+        ))
         AND r.is_enabled = 1
         <if test="codes != null and !codes.isEmpty()">
             AND p.CODE IN
