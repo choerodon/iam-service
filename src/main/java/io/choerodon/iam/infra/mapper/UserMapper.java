@@ -31,6 +31,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
                          @Param("param") String param);
 
     List<UserDO> selectTheUsersOfProjectByParamAndProjectId(@Param("projectId") Long projectId,
+                                                            @Param("userId") Long userId,
                                                             @Param("param") String param);
 
     Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
