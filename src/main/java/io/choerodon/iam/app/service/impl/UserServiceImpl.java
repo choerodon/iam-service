@@ -221,6 +221,7 @@ public class UserServiceImpl implements UserService {
             if (startX != null && startY != null && endX != null && endY != null) {
                 if (outputStream.size() > 0) {
                     final InputStream rotateInputStream = parse(outputStream);
+                    outputStream.reset();
                     Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
                 } else {
                     Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
