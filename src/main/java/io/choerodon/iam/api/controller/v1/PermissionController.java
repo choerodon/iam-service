@@ -66,8 +66,8 @@ public class PermissionController {
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
     public ResponseEntity<List<PermissionDTO>> query(@RequestParam("level") String level,
-                                                     @RequestParam("service_name") String serviceName,
-                                                     @RequestParam("code") String code,
+                                                     @RequestParam(value = "service_name", required = false) String serviceName,
+                                                     @RequestParam(value = "code", required = false) String code,
                                                      @ApiIgnore
                                                      @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest) {
         return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
