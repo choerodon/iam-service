@@ -74,7 +74,7 @@ public class UserController extends BaseController {
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传")
-    @PostMapping(value = "/{id}/photo")
+    @PostMapping(value = "/{id}/upload_photo")
     public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
                                               @RequestPart MultipartFile file) {
         return new ResponseEntity<>(userService.uploadPhoto(id, file), HttpStatus.OK);
@@ -85,7 +85,7 @@ public class UserController extends BaseController {
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
-    @PostMapping(value = "/{id}/savePhoto")
+    @PostMapping(value = "/{id}/save_photo")
     public ResponseEntity<String> savePhoto(@PathVariable Long id,
                                             @RequestPart MultipartFile file,
                                             @RequestParam(required = false) Double rotate,
