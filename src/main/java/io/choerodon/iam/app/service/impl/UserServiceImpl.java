@@ -29,6 +29,7 @@ import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -39,7 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -213,23 +216,22 @@ public class UserServiceImpl implements UserService {
     public String savePhoto(Long id, MultipartFile file, Double rotate, Integer startX, Integer startY, Integer endX, Integer endY) {
         checkLoginUser(id);
         try {
-            BufferedImage bufferedImage = null;
-            String suffix = PhotoUtils.getSuffix(file.getOriginalFilename());
+            OutputStream outputStream = new ByteArrayOutputStream();
             if (rotate != null) {
-                bufferedImage = Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).asBufferedImage();
+                Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).toOutputStream(outputStream);
             }
             if (startX != null && startY != null && endX != null && endY != null) {
-                if (bufferedImage != null) {
-                    bufferedImage = Thumbnails.of(bufferedImage).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).asBufferedImage();
+                if (!ArrayUtils.isEmpty(((ByteArrayOutputStream) outputStream).toByteArray())) {
+                    final InputStream rotateInputStream = PhotoUtils.parse(outputStream);
+                    Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
 
                 } else {
-                    bufferedImage = Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).asBufferedImage();
-
+                    Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
                 }
             }
-            if (bufferedImage != null) {
+            if (!ArrayUtils.isEmpty(((ByteArrayOutputStream) outputStream).toByteArray())) {
                 file = new MockMultipartFile(file.getName(), file.getOriginalFilename(),
-                        file.getContentType(), PhotoUtils.imageToBytes(bufferedImage, suffix));
+                        file.getContentType(), ((ByteArrayOutputStream) outputStream).toByteArray());
             }
             String photoUrl = fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
             userRepository.updatePhoto(id, photoUrl);
