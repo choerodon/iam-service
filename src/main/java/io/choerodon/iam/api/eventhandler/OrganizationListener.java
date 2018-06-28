@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 
 /**
  * @author wuguokai
@@ -38,9 +40,9 @@ public class OrganizationListener {
         OrganizationEventPayload organizationEventPayload = payload.getData();
         Long orgId = organizationEventPayload.getOrganizationId();
         OrganizationDTO organizationDTO = organizationService.queryOrganizationById(orgId);
-        if (organizationDTO == null) {
-            throw new CommonException("error.organization.not exist");
-        }
+        Optional
+                .ofNullable(organizationDTO)
+                .orElseThrow(() -> new CommonException("error.organization.not exist"));
         try {
             LOGGER.info("### begin create ldap of organization {} ", orgId);
             LdapDTO ldapDTO = new LdapDTO();
