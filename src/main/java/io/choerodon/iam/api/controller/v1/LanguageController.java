@@ -46,10 +46,12 @@ public class LanguageController extends BaseController {
     public ResponseEntity<LanguageDTO> update(@PathVariable Long id,
                                               @RequestBody @Valid LanguageDTO languageDTO) {
         languageDTO.setId(id);
-        if (languageDTO.getObjectVersionNumber() == null) {
-            throw new CommonException("error.language.objectVersionNumber.empty");
-        }
-        return new ResponseEntity<>(languageService.update(languageDTO), HttpStatus.OK);
+        LanguageDTO language =
+                Optional
+                        .ofNullable(languageDTO.getObjectVersionNumber())
+                        .map(i -> languageService.update(languageDTO))
+                        .orElseThrow(() -> new CommonException("error.language.objectVersionNumber.empty"));
+        return new ResponseEntity<>(language, HttpStatus.OK);
     }
 
     /**
