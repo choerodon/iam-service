@@ -94,8 +94,8 @@
         SELECT
         fo.name AS organizationName,
         fo.code AS organizationCode,
-        iam_role.name AS roleName,
-        iam_role.code AS roleCode
+        ir.name AS roleName,
+        ir.code AS roleCode
         FROM
         iam_member_role imr
         INNER JOIN
@@ -106,7 +106,7 @@
         iam_role ir
         ON
         imr.role_id = ir.id
-        WHERE imr.member_id = #{memberId}
+        WHERE imr.member_id = #{memberId} AND imr.source_type = "organization"
     </select>
 
     <select id="listProjectAndRoleById" resultType="io.choerodon.iam.api.dto.ProjectWithRoleDTO">
@@ -130,6 +130,6 @@
         fd_organization fo
         ON
         fp.organization_id = fo.id
-        WHERE imr.member_id = #{memberId}
+        WHERE imr.member_id = #{memberId} AND imr.source_type = "project"
     </select>
 </mapper>
