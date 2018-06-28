@@ -7,7 +7,7 @@
 ### 修改
 
 - 升级了chart中dbtool的版本为0.5.2。
-- 升级choerodon-starter依赖版本为0.5.2.RELEASE。
+- 升级choerodon-starter依赖版本为0.5.3.RELEASE。
 - 将菜单和权限的关联方式由原来的id关联，修改为code关联。
 
 ### 新增
