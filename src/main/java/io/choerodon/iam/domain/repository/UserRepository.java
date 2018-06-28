@@ -26,6 +26,8 @@ public interface UserRepository {
 
     UserE updateSelective(UserE userE);
 
+    void updatePhoto(Long userId, String photoUrl);
+
     void deleteById(Long id);
 
     Page<UserDO> pagingQueryUsersWithSiteLevelRoles(

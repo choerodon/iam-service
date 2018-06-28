@@ -75,9 +75,27 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传")
     @PostMapping(value = "/{id}/photo")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long id, @RequestPart MultipartFile file) {
+    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+                                              @RequestPart MultipartFile file) {
         return new ResponseEntity<>(userService.uploadPhoto(id, file), HttpStatus.OK);
     }
+
+    /**
+     * 上传头像，支持裁剪，旋转，并保存
+     */
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
+    @PostMapping(value = "/{id}/savePhoto")
+    public ResponseEntity<String> savePhoto(@PathVariable Long id,
+                                            @RequestPart MultipartFile file,
+                                            @RequestParam(required = false) Double rotate,
+                                            @RequestParam(required = false) Integer startX,
+                                            @RequestParam(required = false) Integer startY,
+                                            @RequestParam(required = false) Integer endX,
+                                            @RequestParam(required = false) Integer endY) {
+        return new ResponseEntity<>(userService.savePhoto(id, file, rotate, startX, startY, endX, endY), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在组织列表")

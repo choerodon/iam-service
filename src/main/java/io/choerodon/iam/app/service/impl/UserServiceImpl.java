@@ -15,6 +15,8 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.MockMultipartFile;
+import io.choerodon.iam.infra.common.utils.PhotoUtils;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
@@ -26,6 +28,9 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import net.coobird.thumbnailator.Thumbnails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -34,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +53,8 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDAT
 @Component
 @RefreshScope
 public class UserServiceImpl implements UserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -200,6 +208,38 @@ public class UserServiceImpl implements UserService {
         checkLoginUser(id);
         return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
     }
+
+    @Override
+    public String savePhoto(Long id, MultipartFile file, Double rotate, Integer startX, Integer startY, Integer endX, Integer endY) {
+        checkLoginUser(id);
+        try {
+            BufferedImage bufferedImage = null;
+            String suffix = PhotoUtils.getSuffix(file.getOriginalFilename());
+            if (rotate != null) {
+                bufferedImage = Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).asBufferedImage();
+            }
+            if (startX != null && startY != null && endX != null && endY != null) {
+                if (bufferedImage != null) {
+                    bufferedImage = Thumbnails.of(bufferedImage).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).asBufferedImage();
+
+                } else {
+                    bufferedImage = Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).asBufferedImage();
+
+                }
+            }
+            if (bufferedImage != null) {
+                file = new MockMultipartFile(file.getName(), file.getOriginalFilename(),
+                        file.getContentType(), PhotoUtils.imageToBytes(bufferedImage, suffix));
+            }
+            String photoUrl = fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
+            userRepository.updatePhoto(id, photoUrl);
+            return photoUrl;
+        } catch (Exception e) {
+            LOGGER.warn("error happened when save photo {}", e.getMessage());
+            throw new CommonException("error.user.photo.save");
+        }
+    }
+
 
     @Override
     public List<OrganizationDTO> queryOrganizationWithProjects() {
