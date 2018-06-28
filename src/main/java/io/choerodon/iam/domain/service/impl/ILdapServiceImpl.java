@@ -69,6 +69,9 @@ public class ILdapServiceImpl implements ILdapService {
         if (attributeSet.contains(null)) {
             attributeSet.remove(null);
         }
+        if (attributeSet.contains("")) {
+            attributeSet.remove("");
+        }
         Set<String> keySet = new HashSet<>();
         NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
