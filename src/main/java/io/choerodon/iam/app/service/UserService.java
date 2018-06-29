@@ -59,6 +59,7 @@ public interface UserService {
 
     String uploadPhoto(Long id, MultipartFile file);
 
+    String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
     Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 
@@ -73,4 +74,9 @@ public interface UserService {
      * @return List<UserDTO> 用户集合
      */
     List<UserDTO> listUsersByIds(Long[] ids);
+
+    List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id);
+
+    List<ProjectWithRoleDTO> listProjectAndRoleById(Long id);
+
 }

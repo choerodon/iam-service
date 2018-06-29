@@ -121,7 +121,6 @@ public class MenuServiceImpl implements MenuService {
         } else {
             menus = queryMenusWithPermissions(level, null);
         }
-//        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
         return MenuTreeUtil.formatMenu(menus);
     }
 
@@ -190,8 +189,7 @@ public class MenuServiceImpl implements MenuService {
         List<MenuDTO> existMenus = list(level);
         List<Long> existMenuIds = existMenus.stream().map(MenuDTO::getId).collect(Collectors.toList());
         //交集，传入的menuId与数据库里存在的menuId相交,需要更新的菜单
-        List<Long> intersection = existMenuIds.stream().filter(item ->
-                newMenuIds.contains(item)).collect(Collectors.toList());
+        List<Long> intersection = existMenuIds.stream().filter(newMenuIds::contains).collect(Collectors.toList());
         //数据库存在的roleId与交集的差集为要删除的roleId
         List<Long> deleteList = existMenuIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());

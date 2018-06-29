@@ -28,6 +28,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static io.choerodon.iam.api.dto.payload.UserEventPayload.*;
 
 /**
@@ -66,47 +68,58 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public UserDTO create(UserDTO userDTO, boolean checkPassword) {
-        if (userDTO.getPassword() == null) {
-            throw new CommonException("error.user.password.empty");
-        }
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
-        if (organizationDO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
+        String password =
+                Optional.ofNullable(userDTO.getPassword())
+                        .orElseThrow(() -> new CommonException("error.user.password.empty"));
+        OrganizationDO organizationDO =
+                Optional.ofNullable(organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId()))
+                        .orElseThrow(() -> new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION));
+        Long organizationId = organizationDO.getId();
         OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
-        UserDTO dto;
-        //密码策略校验
         if (checkPassword) {
-            UserE userE = ConvertHelper.convert(userDTO, UserE.class);
-            BaseUserDO baseUserDO = new BaseUserDO();
-            BeanUtils.copyProperties(userDTO, baseUserDO);
-            BasePasswordPolicyDO basePasswordPolicyDO =
-                    basePasswordPolicyMapper.selectByPrimaryKey(
-                            basePasswordPolicyMapper.findByOrgId(organizationE.getId()));
-            if (userE.getPassword() != null && !userE.getPassword().equals(basePasswordPolicyDO.getOriginalPassword())) {
-                passwordPolicyManager.passwordValidate(userE.getPassword(), baseUserDO, basePasswordPolicyDO);
-            }
+            validatePasswordPolicy(userDTO, password, organizationId);
         }
+        UserDTO dto;
         if (devopsMessage) {
-            dto = new UserDTO();
-            UserEventPayload userEventPayload = new UserEventPayload();
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_CREATE_USER,
-                    serviceName, userEventPayload, (String uuid) -> {
-                        UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
-                        userEventPayload.setEmail(user.getEmail());
-                        userEventPayload.setId(user.getId().toString());
-                        userEventPayload.setName(user.getRealName());
-                        userEventPayload.setUsername(user.getLoginName());
-                        BeanUtils.copyProperties(user, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
-            }
+            dto = createUserAndSendEvent(userDTO, organizationE);
         } else {
             UserE userE = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
             dto = ConvertHelper.convert(userE, UserDTO.class);
         }
         return dto;
+    }
+
+    private UserDTO createUserAndSendEvent(UserDTO userDTO, OrganizationE organizationE) {
+        UserDTO dto;
+        dto = new UserDTO();
+        UserEventPayload userEventPayload = new UserEventPayload();
+        Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_CREATE_USER,
+                serviceName, userEventPayload, (String uuid) -> {
+                    UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
+                    userEventPayload.setEmail(user.getEmail());
+                    userEventPayload.setId(user.getId().toString());
+                    userEventPayload.setName(user.getRealName());
+                    userEventPayload.setUsername(user.getLoginName());
+                    BeanUtils.copyProperties(user, dto);
+                });
+        Optional.ofNullable(exception)
+                .map(e -> {
+                    throw new CommonException(e.getMessage());
+                });
+        return dto;
+    }
+
+    private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {
+        BaseUserDO baseUserDO = new BaseUserDO();
+        BeanUtils.copyProperties(userDTO, baseUserDO);
+        BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.findByOrgId(organizationId);
+        Optional.ofNullable(basePasswordPolicyDO)
+                .map(passwordPolicy -> {
+                    if(!password.equals(passwordPolicy.getOriginalPassword())) {
+                        passwordPolicyManager.passwordValidate(password, baseUserDO, passwordPolicy);
+                    }
+                    return null;
+                });
     }
 
     @Override

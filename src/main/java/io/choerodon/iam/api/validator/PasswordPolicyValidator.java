@@ -18,12 +18,12 @@ public class PasswordPolicyValidator {
     public void create(Long orgId, PasswordPolicyDTO passwordPolicyDTO) {
         PasswordPolicyDO passwordPolicyDO = new PasswordPolicyDO();
         passwordPolicyDO.setOrganizationId(orgId);
-        if (passwordPolicyMapper.select(passwordPolicyDO).size() > 0) {
+        if (!passwordPolicyMapper.select(passwordPolicyDO).isEmpty()) {
             throw new CommonException("error.passwordPolicy.organizationId.exist");
         }
         passwordPolicyDO.setOrganizationId(null);
         passwordPolicyDO.setCode(passwordPolicyDTO.getCode());
-        if (passwordPolicyMapper.select(passwordPolicyDO).size() > 0) {
+        if (!passwordPolicyMapper.select(passwordPolicyDO).isEmpty()) {
             throw new CommonException("error.passwordPolicy.code.exist");
         }
     }

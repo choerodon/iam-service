@@ -4,10 +4,7 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.OrganizationDTO;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.api.dto.UserPasswordDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
@@ -17,6 +14,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,10 +75,33 @@ public class UserController extends BaseController {
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传")
-    @PostMapping(value = "/{id}/photo")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long id, @RequestPart MultipartFile file) {
+    @PostMapping(value = "/{id}/upload_photo")
+    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+                                              @RequestPart MultipartFile file) {
         return new ResponseEntity<>(userService.uploadPhoto(id, file), HttpStatus.OK);
     }
+
+    /**
+     * 上传头像，支持裁剪，旋转，并保存
+     */
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
+    @PostMapping(value = "/{id}/save_photo")
+    public ResponseEntity<String> savePhoto(@PathVariable Long id,
+                                            @RequestPart MultipartFile file,
+                                            @ApiParam(name = "rotate", value = "顺时针旋转的角度", example = "90")
+                                            @RequestParam(required = false) Double rotate,
+                                            @ApiParam(name = "startX", value = "裁剪的X轴", example = "100")
+                                            @RequestParam(required = false, name = "startX") Integer axisX,
+                                            @ApiParam(name = "startY", value = "裁剪的Y轴", example = "100")
+                                            @RequestParam(required = false, name = "startY") Integer axisY,
+                                            @ApiParam(name = "endX", value = "裁剪的宽度", example = "200")
+                                            @RequestParam(required = false, name = "endX") Integer width,
+                                            @ApiParam(name = "endY", value = "裁剪的高度", example = "200")
+                                            @RequestParam(required = false, name = "endY") Integer height) {
+        return new ResponseEntity<>(userService.savePhoto(id, file, rotate, axisX, axisY, width, height), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询用户所在组织列表")
@@ -201,5 +222,18 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id获取组织列表和角色")
+    @GetMapping("/{id}/organization_roles")
+    public ResponseEntity<List<OrganizationWithRoleDTO>> listOrganizationAndRoleById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.listOrganizationAndRoleById(id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据id获取项目列表和角色")
+    @GetMapping("/{id}/project_roles")
+    public ResponseEntity<List<ProjectWithRoleDTO>> listProjectAndRoleById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.listProjectAndRoleById(id), HttpStatus.OK);
+    }
 
 }

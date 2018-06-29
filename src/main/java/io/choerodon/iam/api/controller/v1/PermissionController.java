@@ -65,11 +65,25 @@ public class PermissionController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
-    public ResponseEntity<List<PermissionDTO>> query(@ApiIgnore
-                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC)
-                                                     @RequestParam("level") String level,
-                                                     @RequestParam("service_name") String serviceName,
-                                                     @RequestParam("code") String code) {
+    public ResponseEntity<List<PermissionDTO>> query(@RequestParam("level") String level,
+                                                     @RequestParam(value = "service_name", required = false) String serviceName,
+                                                     @RequestParam(value = "code", required = false) String code,
+                                                     @ApiIgnore
+                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest) {
         return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
     }
+
+    /**
+     * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常
+     * @param code the code of permission
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("根据permission code删除permission, 只能删除废弃的permission")
+    @DeleteMapping
+    public ResponseEntity deleteByCode(@RequestParam String code) {
+        permissionService.deleteByCode(code);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }

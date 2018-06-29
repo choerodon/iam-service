@@ -149,8 +149,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
             newLabelIds.addAll(labels.stream().map(LabelE::getId).collect(Collectors.toList()));
         }
         //labelId交集
-        List<Long> intersection = existingLabelIds.stream().filter(item ->
-                newLabelIds.contains(item)).collect(Collectors.toList());
+        List<Long> intersection = existingLabelIds.stream().filter(newLabelIds::contains).collect(Collectors.toList());
         //删除的labelId集合
         List<Long> deleteList = existingLabelIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
@@ -219,8 +218,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         List<Long> newPermissionId =
                 permissions.stream().map(PermissionE::getId).collect(Collectors.toList());
         //permissionId交集
-        List<Long> intersection = existingPermissionId.stream().filter(item ->
-                newPermissionId.contains(item)).collect(Collectors.toList());
+        List<Long> intersection = existingPermissionId.stream().filter(newPermissionId::contains).collect(Collectors.toList());
         //删除的permissionId集合
         List<Long> deleteList = existingPermissionId.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());

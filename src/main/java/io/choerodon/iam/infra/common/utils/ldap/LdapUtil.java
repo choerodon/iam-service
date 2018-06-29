@@ -83,6 +83,12 @@ public class LdapUtil {
      */
     public static String getUserDn(LdapContext ldapContext, LdapDO ldap, String username) {
         Set<String> attributeSet = initAttributeSet(ldap);
+        if (attributeSet.contains("")) {
+            attributeSet.remove("");
+        }
+        if (attributeSet.contains(null)) {
+            attributeSet.remove(null);
+        }
         NamingEnumeration namingEnumeration = getNamingEnumeration(ldapContext, username, attributeSet);
         StringBuilder userDn = new StringBuilder();
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {

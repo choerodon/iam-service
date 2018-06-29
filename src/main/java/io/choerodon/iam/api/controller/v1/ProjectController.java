@@ -53,7 +53,7 @@ public class ProjectController extends BaseController {
      * @param param
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页模糊查询项目下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
@@ -61,8 +61,9 @@ public class ProjectController extends BaseController {
                                               @ApiIgnore
                                               @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                       PageRequest pageRequest,
+                                              @RequestParam(required = false, name = "id") Long userId,
                                               @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, pageRequest, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, pageRequest, param), HttpStatus.OK);
     }
 
     /**

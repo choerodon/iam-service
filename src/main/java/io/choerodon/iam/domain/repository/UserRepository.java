@@ -26,6 +26,8 @@ public interface UserRepository {
 
     UserE updateSelective(UserE userE);
 
+    void updatePhoto(Long userId, String photoUrl);
+
     void deleteById(Long id);
 
     Page<UserDO> pagingQueryUsersWithSiteLevelRoles(
@@ -41,7 +43,7 @@ public interface UserRepository {
 
     UserDO selectOne(UserDO user);
 
-    Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, PageRequest pageRequest, String param);
+    Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, Long userId, PageRequest pageRequest, String param);
 
     Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId,
                                                    String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
