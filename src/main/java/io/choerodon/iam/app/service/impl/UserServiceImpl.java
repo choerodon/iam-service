@@ -210,21 +210,22 @@ public class UserServiceImpl implements UserService {
         return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
+
     @Override
-    public String savePhoto(Long id, MultipartFile file, Double rotate, Integer startX, Integer startY, Integer endX, Integer endY) {
+    public String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
         checkLoginUser(id);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             if (rotate != null) {
                 Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).toOutputStream(outputStream);
             }
-            if (startX != null && startY != null && endX != null && endY != null) {
+            if (axisX != null && axisY != null && width != null && height != null) {
                 if (outputStream.size() > 0) {
                     final InputStream rotateInputStream = parse(outputStream);
                     outputStream.reset();
-                    Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
+                    Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
                 } else {
-                    Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(startX, startY, endX, endY).toOutputStream(outputStream);
+                    Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
                 }
             }
             if (outputStream.size() > 0) {

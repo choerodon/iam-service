@@ -59,7 +59,7 @@ public interface UserService {
 
     String uploadPhoto(Long id, MultipartFile file);
 
-    String savePhoto(Long id, MultipartFile file, Double rotate, Integer startX, Integer startY, Integer endX, Integer endY);
+    String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
     Page<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 

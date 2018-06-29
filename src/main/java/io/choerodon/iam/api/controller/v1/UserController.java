@@ -14,6 +14,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -88,12 +89,17 @@ public class UserController extends BaseController {
     @PostMapping(value = "/{id}/save_photo")
     public ResponseEntity<String> savePhoto(@PathVariable Long id,
                                             @RequestPart MultipartFile file,
+                                            @ApiParam(name = "rotate", value = "顺时针旋转的角度", example = "90")
                                             @RequestParam(required = false) Double rotate,
-                                            @RequestParam(required = false) Integer startX,
-                                            @RequestParam(required = false) Integer startY,
-                                            @RequestParam(required = false) Integer endX,
-                                            @RequestParam(required = false) Integer endY) {
-        return new ResponseEntity<>(userService.savePhoto(id, file, rotate, startX, startY, endX, endY), HttpStatus.OK);
+                                            @ApiParam(name = "axisX", value = "裁剪的X轴", example = "100")
+                                            @RequestParam(required = false) Integer axisX,
+                                            @ApiParam(name = "axisY", value = "裁剪的Y轴", example = "100")
+                                            @RequestParam(required = false) Integer axisY,
+                                            @ApiParam(name = "width", value = "裁剪的宽度", example = "200")
+                                            @RequestParam(required = false) Integer width,
+                                            @ApiParam(name = "height", value = "裁剪的高度", example = "200")
+                                            @RequestParam(required = false) Integer height) {
+        return new ResponseEntity<>(userService.savePhoto(id, file, rotate, axisX, axisY, width, height), HttpStatus.OK);
     }
 
 
