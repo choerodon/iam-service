@@ -26,7 +26,7 @@ public class MenuTreeUtil {
                 displayMenus.add(menuDTO);
             }
         }
-        if (displayMenus.isEmpty()) {
+        if (!displayMenus.isEmpty()) {
             return sortMenu(displayMenus);
         }
         return displayMenus;
