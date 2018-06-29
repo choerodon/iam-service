@@ -57,12 +57,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void updatePhoto(Long userId, String photoUrl) {
+    public UserDO updatePhoto(Long userId, String photoUrl) {
         UserDO userDO = mapper.selectByPrimaryKey(userId);
         userDO.setImageUrl(photoUrl);
         if (mapper.updateByPrimaryKeySelective(userDO) != 1) {
             throw new CommonException("error.user.update");
         }
+        return mapper.selectByPrimaryKey(userId);
     }
 
     @Override

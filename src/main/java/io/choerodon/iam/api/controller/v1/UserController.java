@@ -87,7 +87,7 @@ public class UserController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
     @PostMapping(value = "/{id}/save_photo")
-    public ResponseEntity<String> savePhoto(@PathVariable Long id,
+    public ResponseEntity<UserDTO> savePhoto(@PathVariable Long id,
                                             @RequestPart MultipartFile file,
                                             @ApiParam(name = "rotate", value = "顺时针旋转的角度", example = "90")
                                             @RequestParam(required = false) Double rotate,
