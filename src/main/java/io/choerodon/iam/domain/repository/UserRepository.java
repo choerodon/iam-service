@@ -26,7 +26,7 @@ public interface UserRepository {
 
     UserE updateSelective(UserE userE);
 
-    UserDO updatePhoto(Long userId, String photoUrl);
+    void updatePhoto(Long userId, String photoUrl);
 
     void deleteById(Long id);
 

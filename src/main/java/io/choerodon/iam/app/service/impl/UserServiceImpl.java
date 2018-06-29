@@ -212,7 +212,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDTO savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
+    public String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
         checkLoginUser(id);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -233,8 +233,8 @@ public class UserServiceImpl implements UserService {
                         file.getContentType(), outputStream.toByteArray());
             }
             String photoUrl = fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
-
-            return ConvertHelper.convert(userRepository.updatePhoto(id, photoUrl), UserDTO.class);
+            userRepository.updatePhoto(id, photoUrl);
+            return photoUrl;
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
             throw new CommonException("error.user.photo.save");
