@@ -30,8 +30,6 @@ event:
     service:
       name: event-store-service
 choerodon:
-  ldap:
-    userNameType: 0
   devops:
     message: true
   event:
