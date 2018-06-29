@@ -18,9 +18,6 @@
         SELECT * FROM fd_lookup
         WHERE 1=1
         <if test="lookupDO != null">
-            <if test="lookupDO.organizationId != null">
-                AND organization_id = #{lookupDO.organizationId}
-            </if>
             <if test="lookupDO.code != null">
                 AND code LIKE concat('%',#{lookupDO.code},'%')
             </if>

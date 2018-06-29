@@ -38,4 +38,6 @@ public interface RoleRepository {
     boolean judgeRolesSameLevel(List<Long> roleIds);
 
     List<RoleDO> selectRolesByLabelNameAndType(String name, String type);
+
+    List<RoleDO> selectInitRolesByPermissionId(Long permissionId);
 }

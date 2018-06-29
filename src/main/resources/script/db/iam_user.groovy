@@ -70,4 +70,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
             column(name: 'is_admin', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为管理员用户。1表示是，0表示不是', afterColumn: 'is_ldap')
         }
     }
+
+    changeSet(author: 'jcalaz@163.com', id: '2018-06-29-update_image_url') {
+        renameColumn(tableName: 'iam_user', oldColumnName: 'image_url', newColumnName: 'image_url', columnDataType: 'VARCHAR(255)')
+    }
 }

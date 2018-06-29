@@ -30,9 +30,11 @@ public class LookupServiceImpl implements LookupService {
     private LookupValueRepository lookupValueRepository;
 
     public LookupServiceImpl(ILookupService service,
-                             LookupRepository lookupRepository) {
+                             LookupRepository lookupRepository,
+                             LookupValueRepository lookupValueRepository) {
         this.service = service;
         this.lookupRepository = lookupRepository;
+        this.lookupValueRepository = lookupValueRepository;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -49,6 +51,7 @@ public class LookupServiceImpl implements LookupService {
                 lookupRepository.pagingQuery(
                         pageRequest, ConvertHelper.convert(
                                 lookupDTO, LookupDO.class), lookupDTO.getParam());
+        lookupDOPage.getContent().forEach(t -> t.setLookupValues(lookupValueRepository.selectByLookupId(t.getId())));
         return ConvertPageHelper.convertPage(lookupDOPage, LookupDTO.class);
     }
 

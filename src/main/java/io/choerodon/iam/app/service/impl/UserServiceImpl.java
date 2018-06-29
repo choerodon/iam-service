@@ -15,16 +15,21 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import net.coobird.thumbnailator.Thumbnails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -33,6 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +54,8 @@ import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDAT
 @Component
 @RefreshScope
 public class UserServiceImpl implements UserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -62,6 +72,7 @@ public class UserServiceImpl implements UserService {
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
     private EventProducerTemplate eventProducerTemplate;
+    private OrganizationMapper organizationMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -71,7 +82,8 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            EventProducerTemplate eventProducerTemplate,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
-                           PasswordPolicyManager passwordPolicyManager) {
+                           PasswordPolicyManager passwordPolicyManager,
+                           OrganizationMapper organizationMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -81,6 +93,7 @@ public class UserServiceImpl implements UserService {
         this.eventProducerTemplate = eventProducerTemplate;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -135,7 +148,7 @@ public class UserServiceImpl implements UserService {
         checkLoginUser(userId);
         ProjectDO projectDO = new ProjectDO();
         projectDO.setOrganizationId(organizationId);
-        return null;
+        return new ArrayList<>();
     }
 
     private CustomUserDetails checkLoginUser(Long id) {
@@ -194,14 +207,48 @@ public class UserServiceImpl implements UserService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-        String bakcetName = "iam-service";
-        return fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
+        return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
     }
+
+
+    @Override
+    public String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
+        checkLoginUser(id);
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            if (rotate != null) {
+                Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).toOutputStream(outputStream);
+            }
+            if (axisX != null && axisY != null && width != null && height != null) {
+                if (outputStream.size() > 0) {
+                    final InputStream rotateInputStream = parse(outputStream);
+                    outputStream.reset();
+                    Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
+                } else {
+                    Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
+                }
+            }
+            if (outputStream.size() > 0) {
+                file = new MockMultipartFile(file.getName(), file.getOriginalFilename(),
+                        file.getContentType(), outputStream.toByteArray());
+            }
+            String photoUrl = fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
+            userRepository.updatePhoto(id, photoUrl);
+            return photoUrl;
+        } catch (Exception e) {
+            LOGGER.warn("error happened when save photo {}", e.getMessage());
+            throw new CommonException("error.user.photo.save");
+        }
+    }
+
+    private ByteArrayInputStream parse(ByteArrayOutputStream out) {
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
 
     @Override
     public List<OrganizationDTO> queryOrganizationWithProjects() {
-        return null;
+        return new ArrayList<>(0);
     }
 
 
@@ -232,7 +279,7 @@ public class UserServiceImpl implements UserService {
             throw new CommonException("error.password.originalPassword");
         }
         //密码策略
-        if (checkPassword && user != null) {
+        if (checkPassword) {
             BaseUserDO baseUserDO = new BaseUserDO();
             BeanUtils.copyProperties(user, baseUserDO);
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
@@ -398,4 +445,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id) {
+        return organizationMapper.listOrganizationAndRoleById(id);
+    }
+
+    @Override
+    public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
+        return organizationMapper.listProjectAndRoleById(id);
+    }
 }

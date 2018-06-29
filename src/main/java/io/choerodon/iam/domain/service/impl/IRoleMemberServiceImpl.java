@@ -77,7 +77,9 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     serviceName, userMemberEventPayloads, (String uuid) -> {
                         List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
                                 isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
-                        userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
+                        if (!ownRoleIds.isEmpty()) {
+                            userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
+                        }
                         userMemberEventPayloads.add(userMemberEventMsg);
                     });
             if (exception != null) {
@@ -232,8 +234,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 existingMemberRoleEList.stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
         List<Long> newRoleIds = memberRoleEList.stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
         //交集，传入的roleId与数据库里存在的roleId相交
-        List<Long> intersection = existingRoleIds.stream().filter(item ->
-                newRoleIds.contains(item)).collect(Collectors.toList());
+        List<Long> intersection = existingRoleIds.stream().filter(newRoleIds::contains).collect(Collectors.toList());
         //传入的roleId与交集的差集为要插入的roleId
         List<Long> insertList = newRoleIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());

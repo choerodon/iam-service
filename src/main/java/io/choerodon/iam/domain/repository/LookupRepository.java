@@ -11,13 +11,14 @@ import java.util.List;
  * @author superlee
  */
 public interface LookupRepository {
+
     LookupE insert(LookupE lookupE);
 
     Page<LookupDO> pagingQuery(PageRequest pageRequest, LookupDO lookupDO, String param);
 
     void delete(LookupE lookupE);
 
-    LookupE update(LookupE lookupE);
+    LookupE update(LookupE lookupE, Long id);
 
     LookupE selectById(Long id);
 

@@ -9,6 +9,7 @@ import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,15 +28,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public List<Long> queryRolesByPermission(String code, String level) {
-        return permissionMapper.queryRolesByPermission(code, level);
-    }
-
-    @Override
-    public List<PermissionE> selectByServiceName(String serviceName) {
-        PermissionDO permissionDO = new PermissionDO();
-        permissionDO.setServiceName(serviceName);
-        return ConvertHelper.convertList(permissionMapper.select(permissionDO), PermissionE.class);
+    public boolean existByCode(String code) {
+        return permissionMapper.selectOne(new PermissionDO(code)) != null;
     }
 
     @Override
@@ -88,7 +82,17 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Set<String> checkPermission(Long memberId, String source_type, Long sourceId, Set<String> codes) {
-        return permissionMapper.checkPermission(memberId, source_type, sourceId, codes);
+    public Set<String> checkPermission(Long memberId, String sourceType, Long sourceId, Set<String> codes) {
+        return permissionMapper.checkPermission(memberId, sourceType, sourceId, codes);
+    }
+
+    @Override
+    public List<PermissionE> query(String level, String serviceName, String code) {
+        PermissionDO permissionDO = new PermissionDO();
+        permissionDO.setLevel(level);
+        permissionDO.setServiceName(serviceName);
+        permissionDO.setCode(code);
+        Sort sort = PageHelper.getLocalSort();
+        return ConvertHelper.convertList(PageHelper.doSort(sort, () -> permissionMapper.select(permissionDO)), PermissionE.class);
     }
 }

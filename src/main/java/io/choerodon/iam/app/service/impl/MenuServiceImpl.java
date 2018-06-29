@@ -14,6 +14,7 @@ import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,8 +121,42 @@ public class MenuServiceImpl implements MenuService {
         } else {
             menus = queryMenusWithPermissions(level, null);
         }
-//        List<MenuDTO> menus = queryMenusWithPermissions(level, null);
         return MenuTreeUtil.formatMenu(menus);
+    }
+
+    @Override
+    public void check(MenuDTO menu) {
+        if (StringUtils.isEmpty(menu.getCode())) {
+            throw new CommonException("error.menu.code.empty");
+        }
+        if (StringUtils.isEmpty(menu.getLevel())) {
+            throw new CommonException("error.menu.level.empty");
+        }
+        if (StringUtils.isEmpty(menu.getType())) {
+            throw new CommonException("error.menu.type.empty");
+        }
+        checkCode(menu);
+    }
+
+    private void checkCode(MenuDTO menu) {
+        boolean createCheck = menu.getId() == null;
+        MenuDO menuDO = new MenuDO();
+        menuDO.setCode(menu.getCode());
+        menuDO.setLevel(menu.getLevel());
+        menuDO.setType(menu.getType());
+        if (createCheck) {
+            Boolean existed = menuRepository.selectOne(menuDO) != null;
+            if (existed) {
+                throw new CommonException("error.menu.code-level-type.exist");
+            }
+        } else {
+            Long id = menu.getId();
+            MenuDO menuDO1 = menuRepository.selectOne(menuDO);
+            Boolean existed = menuDO1 != null && !id.equals(menuDO1.getId());
+            if (existed) {
+                throw new CommonException("error.menu.code-level-type.exist");
+            }
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -154,8 +189,7 @@ public class MenuServiceImpl implements MenuService {
         List<MenuDTO> existMenus = list(level);
         List<Long> existMenuIds = existMenus.stream().map(MenuDTO::getId).collect(Collectors.toList());
         //交集，传入的menuId与数据库里存在的menuId相交,需要更新的菜单
-        List<Long> intersection = existMenuIds.stream().filter(item ->
-                newMenuIds.contains(item)).collect(Collectors.toList());
+        List<Long> intersection = existMenuIds.stream().filter(newMenuIds::contains).collect(Collectors.toList());
         //数据库存在的roleId与交集的差集为要删除的roleId
         List<Long> deleteList = existMenuIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());

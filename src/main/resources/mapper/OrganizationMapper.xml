@@ -89,4 +89,47 @@
         WHERE
         fd_project.is_enabled = TRUE
     </select>
+
+    <select id="listOrganizationAndRoleById" resultType="io.choerodon.iam.api.dto.OrganizationWithRoleDTO">
+        SELECT
+        fo.name AS organizationName,
+        fo.code AS organizationCode,
+        ir.name AS roleName,
+        ir.code AS roleCode
+        FROM
+        iam_member_role imr
+        INNER JOIN
+        fd_organization fo
+        ON
+        imr.source_id = fo.id
+        INNER JOIN
+        iam_role ir
+        ON
+        imr.role_id = ir.id
+        WHERE imr.member_id = #{memberId} AND imr.source_type = "organization"
+    </select>
+
+    <select id="listProjectAndRoleById" resultType="io.choerodon.iam.api.dto.ProjectWithRoleDTO">
+        SELECT
+        fo.name AS organizationName,
+        fp.name AS projectName,
+        fp.code AS projectCode,
+        ir.name AS roleName,
+        ir.code AS roleCode
+        FROM
+        iam_member_role imr
+        INNER JOIN
+        fd_project fp
+        ON
+        imr.source_id = fp.id
+        INNER JOIN
+        iam_role ir
+        ON
+        imr.role_id = ir.id
+        INNER join
+        fd_organization fo
+        ON
+        fp.organization_id = fo.id
+        WHERE imr.member_id = #{memberId} AND imr.source_type = "project"
+    </select>
 </mapper>

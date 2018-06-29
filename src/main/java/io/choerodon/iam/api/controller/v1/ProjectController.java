@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.api.dto.UserDTO;
@@ -37,7 +38,7 @@ public class ProjectController extends BaseController {
      * @param id 要查询的项目ID
      * @return 查询到的项目
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "通过id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
@@ -52,7 +53,7 @@ public class ProjectController extends BaseController {
      * @param param
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页模糊查询项目下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
@@ -60,8 +61,9 @@ public class ProjectController extends BaseController {
                                               @ApiIgnore
                                               @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                       PageRequest pageRequest,
+                                              @RequestParam(required = false, name = "id") Long userId,
                                               @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, pageRequest, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, pageRequest, param), HttpStatus.OK);
     }
 
     /**
@@ -71,7 +73,7 @@ public class ProjectController extends BaseController {
      * @param projectDTO
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
@@ -85,7 +87,7 @@ public class ProjectController extends BaseController {
         return new ResponseEntity<>(projectService.update(projectDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "project_id") Long id) {

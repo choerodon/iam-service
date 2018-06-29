@@ -148,4 +148,11 @@
         WHERE il.name = #{name}
         AND il.type = #{type}
     </select>
+
+    <select id="selectInitRolesByPermissionId" resultMap="RoleDO">
+        SELECT * FROM iam_role ir
+        LEFT JOIN iam_role_permission irp ON ir.id = irp.role_id
+        WHERE irp.permission_id = #{permissionId}
+        AND ir.is_built_in = 1
+    </select>
 </mapper>

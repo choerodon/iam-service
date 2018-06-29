@@ -129,4 +129,12 @@ public class MenuController {
                                                       @RequestBody @Valid ValidList<MenuDTO> menuDTOList) {
         return new ResponseEntity<>(menuService.saveListTree(level, menuDTOList), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "菜单code重名校验")
+    @PostMapping(value = "/check")
+    public ResponseEntity check(@RequestBody MenuDTO menu) {
+        menuService.check(menu);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }

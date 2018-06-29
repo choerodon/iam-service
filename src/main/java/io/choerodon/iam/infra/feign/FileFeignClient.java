@@ -1,7 +1,9 @@
 package io.choerodon.iam.infra.feign;
 
+import io.choerodon.iam.api.dto.FileDTO;
 import io.choerodon.iam.infra.config.MultipartSupportConfig;
 import io.choerodon.iam.infra.feign.fallback.FileFeignClientFallback;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,4 +29,20 @@ public interface FileFeignClient {
                                       @PathVariable("backetName") String backetName,
                                       @RequestParam("fileName") String fileName,
                                       @RequestPart("file") MultipartFile multipartFile);
+
+    @PostMapping(
+            value = "/v1/files",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<String> uploadPhoto(@RequestParam("bucket_name") String bucketName,
+                                       @RequestParam("file_name") String fileName,
+                                       @RequestPart("file") MultipartFile multipartFile);
+
+    @PostMapping(
+            value = "/v1/documents",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<FileDTO> upload(@RequestParam("bucket_name") String bucketName,
+                                   @RequestParam("file_name") String fileName,
+                                   @RequestPart("file") MultipartFile multipartFile);
 }

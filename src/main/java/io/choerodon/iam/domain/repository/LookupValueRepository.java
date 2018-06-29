@@ -9,13 +9,14 @@ import java.util.List;
  * @author superlee
  */
 public interface LookupValueRepository {
+
     LookupValueE insert(LookupValueE lookupValueE);
 
-    List<LookupValueE> selectByLookupId(Long id);
+    List<LookupValueDO> selectByLookupId(Long id);
 
     void deleteById(Long id);
 
-    LookupValueE update(LookupValueE lve);
+    LookupValueE updateById(LookupValueDO lookupValueDO, Long id);
 
     void delete(LookupValueDO lookupValue);
 }

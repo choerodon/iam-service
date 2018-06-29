@@ -27,7 +27,7 @@
     <select id="selectByRoleId" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
         SELECT iam_permission.*
         FROM iam_role_permission
-        LEFT JOIN iam_permission
+        INNER JOIN iam_permission
         ON iam_role_permission.permission_id = iam_permission.id
         WHERE iam_role_permission.role_id = #{roleId}
     </select>
@@ -41,12 +41,13 @@
         left JOIN iam_role r ON r.id = rp.role_id
         left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
-        p.login_access=1 OR p.public_access=1
-        or p.LEVEL = #{source_type}
+        (p.login_access=1 OR p.public_access=1 OR (
+        p.LEVEL = #{source_type}
         AND member_type = 'user'
         AND member_id = #{member_id}
         AND source_type = #{source_type}
         AND source_id = #{source_id}
+        ))
         AND r.is_enabled = 1
         <if test="codes != null and !codes.isEmpty()">
             AND p.CODE IN

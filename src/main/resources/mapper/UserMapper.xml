@@ -218,6 +218,9 @@
         AND member_type = 'user') t
         ON iam_user.id = t.member_id
         WHERE 1=1
+        <if test="userId != null">
+            AND iam_user.id = #{userId}
+        </if>
         <if test="param != null">
             AND (
             iam_user.login_name LIKE concat('%',#{param},'%') OR
@@ -242,9 +245,10 @@
             AND is_locked = #{userDO.locked}
         </if>
         <if test="params != null">
-            AND
-            login_name LIKE concat('%',#{params},'%') OR
-            real_name LIKE concat('%',#{params},'%')
+            AND (
+                login_name LIKE concat('%',#{params},'%') OR
+                real_name LIKE concat('%',#{params},'%')
+            )
         </if>
     </select>
 

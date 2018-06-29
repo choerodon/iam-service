@@ -10,6 +10,7 @@ import java.util.List;
  * @author superlee
  */
 public interface LookupMapper extends BaseMapper<LookupDO> {
+
     List<LookupDO> fulltextSearch(@Param("lookupDO") LookupDO lookupDO,
                                   @Param("param") String param);
 

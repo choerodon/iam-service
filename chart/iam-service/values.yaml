@@ -9,6 +9,7 @@ image:
   pullPolicy: Always
 
 preJob:
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.2
   preConfig:
     configFile: application.yml
     mysql:
@@ -24,6 +25,7 @@ preJob:
       database: iam_service
       username: username
       password: password
+      exclusion: iam_user.password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled
 
 metrics:
   path: /prometheus

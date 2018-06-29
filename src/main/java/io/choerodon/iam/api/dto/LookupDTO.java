@@ -1,6 +1,8 @@
 package io.choerodon.iam.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Size;
@@ -9,8 +11,10 @@ import java.util.List;
 /**
  * @author superlee
  */
+@ApiModel(value="lookup",description="快码对象")
 public class LookupDTO {
 
+    @ApiModelProperty(value="快码id", hidden=true)
     private Long id;
 
     @NotEmpty(message = "error.code.empty")

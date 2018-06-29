@@ -4,7 +4,6 @@ import io.choerodon.iam.api.dto.MenuDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -13,6 +12,9 @@ import java.util.List;
  * @author wuguokai
  */
 public class MenuTreeUtil {
+
+    private MenuTreeUtil() {
+    }
 
     //将菜单格式化成树形
     public static List<MenuDTO> formatMenu(List<MenuDTO> entryList) {
@@ -24,7 +26,7 @@ public class MenuTreeUtil {
                 displayMenus.add(menuDTO);
             }
         }
-        if (displayMenus != null) {
+        if (!displayMenus.isEmpty()) {
             return sortMenu(displayMenus);
         }
         return displayMenus;
@@ -49,26 +51,17 @@ public class MenuTreeUtil {
     }
 
     private static List<MenuDTO> sortMenu(List<MenuDTO> entryList) {
-        Collections.sort(entryList, new Comparator<MenuDTO>() {
-
-            /*
-             * int compare(Student o1, Student o2) 返回一个基本类型的整型，
-             * 返回负数表示：o1 小于o2，
-             * 返回0 表示：o1和o2相等，
-             * 返回正数表示：o1大于o2。
-             */
-            public int compare(MenuDTO m1, MenuDTO m2) {
-                if (m1.getSort() == null) {
-                    return -1;
-                }
-                if (m2.getSort() == null || m1.getSort() > m2.getSort()) {
-                    return 1;
-                }
-                if (m1.getSort() == m2.getSort()) {
-                    return 0;
-                }
+        Collections.sort(entryList, (MenuDTO m1, MenuDTO m2) -> {
+            if (m1.getSort() == null) {
                 return -1;
             }
+            if (m2.getSort() == null || m1.getSort() > m2.getSort()) {
+                return 1;
+            }
+            if (m1.getSort().equals(m2.getSort())) {
+                return 0;
+            }
+            return -1;
         });
         return entryList;
     }

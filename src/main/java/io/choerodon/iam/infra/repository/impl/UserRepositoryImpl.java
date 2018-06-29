@@ -48,14 +48,21 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param) {
-        //TODO
-        //language code 转描述
         return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, param));
     }
 
     @Override
     public UserE selectByPrimaryKey(Long id) {
         return ConvertHelper.convert(mapper.selectByPrimaryKey(id), UserE.class);
+    }
+
+    @Override
+    public void updatePhoto(Long userId, String photoUrl) {
+        UserDO userDO = mapper.selectByPrimaryKey(userId);
+        userDO.setImageUrl(photoUrl);
+        if (mapper.updateByPrimaryKeySelective(userDO) != 1) {
+            throw new CommonException("error.user.update");
+        }
     }
 
     @Override
@@ -160,9 +167,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, PageRequest pageRequest, String param) {
+    public Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, Long userId, PageRequest pageRequest, String param) {
         return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectTheUsersOfProjectByParamAndProjectId(projectId, param));
+                () -> mapper.selectTheUsersOfProjectByParamAndProjectId(projectId, userId, param));
     }
 
     @Override

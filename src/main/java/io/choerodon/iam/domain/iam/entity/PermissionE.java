@@ -90,45 +90,37 @@ public class PermissionE {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         PermissionE that = (PermissionE) o;
 
-        if (code != null ? !code.equals(that.code) : that.code != null) {
-            return false;
-        }
-        if (path != null ? !path.equals(that.path) : that.path != null) {
-            return false;
-        }
-        if (method != null ? !method.equals(that.method) : that.method != null) {
-            return false;
-        }
-        if (level != null ? !level.equals(that.level) : that.level != null) {
-            return false;
-        }
-        if (description != null ? !description.equals(that.description) : that.description != null) {
-            return false;
-        }
-        if (publicAccess != null ? !publicAccess.equals(that.publicAccess) : that.publicAccess != null) {
-            return false;
-        }
-        return loginAccess != null ? loginAccess.equals(that.loginAccess) : that.loginAccess == null;
+        if (!code.equals(that.code)) return false;
+        if (!path.equals(that.path)) return false;
+        if (!method.equals(that.method)) return false;
+        if (!level.equals(that.level)) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (!action.equals(that.action)) return false;
+        if (!resource.equals(that.resource)) return false;
+        if (!publicAccess.equals(that.publicAccess)) return false;
+        if (!loginAccess.equals(that.loginAccess)) return false;
+        if (!serviceName.equals(that.serviceName)) return false;
+        return objectVersionNumber != null ? objectVersionNumber.equals(that.objectVersionNumber) : that.objectVersionNumber == null;
     }
 
     @Override
     public int hashCode() {
-        int result = code != null ? code.hashCode() : 0;
-        result = 31 * result + (path != null ? path.hashCode() : 0);
-        result = 31 * result + (method != null ? method.hashCode() : 0);
-        result = 31 * result + (level != null ? level.hashCode() : 0);
+        int result = code.hashCode();
+        result = 31 * result + path.hashCode();
+        result = 31 * result + method.hashCode();
+        result = 31 * result + level.hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (publicAccess != null ? publicAccess.hashCode() : 0);
-        result = 31 * result + (loginAccess != null ? loginAccess.hashCode() : 0);
+        result = 31 * result + action.hashCode();
+        result = 31 * result + resource.hashCode();
+        result = 31 * result + publicAccess.hashCode();
+        result = 31 * result + loginAccess.hashCode();
+        result = 31 * result + serviceName.hashCode();
+        result = 31 * result + (objectVersionNumber != null ? objectVersionNumber.hashCode() : 0);
         return result;
     }
 }

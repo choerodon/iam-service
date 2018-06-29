@@ -30,7 +30,7 @@ public class PasswordPolicyController {
      *
      * @return 目标组织密码策略
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询组织的密码策略")
     @GetMapping
     public ResponseEntity<PasswordPolicyDTO> queryByOrganizationId(@PathVariable("organization_id") Long organizationId) {
@@ -49,7 +49,7 @@ public class PasswordPolicyController {
      * @param passwordPolicyDTO 要更新的密码策略
      * @return 更新后的密码策略
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {"organizationAdmin"})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改组织的密码策略")
     @PostMapping("/{id}")
     public ResponseEntity<PasswordPolicyDTO> update(@PathVariable("organization_id") Long organizationId,

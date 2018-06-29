@@ -8,6 +8,9 @@ import io.choerodon.core.iam.ResourceLevel;
  */
 public class ResourceLevelValidator {
 
+    private ResourceLevelValidator() {
+    }
+
     public static void validate(String level) {
 
         boolean rightLevel = false;

@@ -95,7 +95,7 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public boolean judgeRolesSameLevel(List<Long> roleIds) {
-        if (roleIds.size() < 1) {
+        if (roleIds.isEmpty()) {
             throw new CommonException("error.roleIds.null");
         }
         int levelCount = mapper.rolesLevelCount(roleIds);
@@ -105,5 +105,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<RoleDO> selectRolesByLabelNameAndType(String name, String type) {
         return mapper.selectRolesByLabelNameAndType(name, type);
+    }
+
+    @Override
+    public List<RoleDO> selectInitRolesByPermissionId(Long permissionId) {
+        return mapper.selectInitRolesByPermissionId(permissionId);
     }
 }

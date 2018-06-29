@@ -1,15 +1,19 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 
 /**
  * @author superlee
  */
+@ApiModel(value = "lookupValue", description = "快码值对象")
 public class LookupValueDTO {
 
     private Long id;
 
+    @ApiModelProperty(value = "所属快码id", hidden = true)
     private Long lookupId;
 
     @NotEmpty(message = "error.code.empty")
@@ -17,6 +21,7 @@ public class LookupValueDTO {
 
     private String description;
 
+    @ApiModelProperty(value = "objectVersionNumber", hidden = true)
     private Long objectVersionNumber;
 
     public String getCode() {
