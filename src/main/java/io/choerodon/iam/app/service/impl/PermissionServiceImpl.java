@@ -292,4 +292,9 @@ public class PermissionServiceImpl implements PermissionService {
         }
         return response.getBody();
     }
+
+    @Override
+    public List<PermissionDTO> listPermissionsByRoleId(Long id) {
+        return ConvertHelper.convertList(permissionRepository.selectByRoleId(id), PermissionDTO.class);
+    }
 }
