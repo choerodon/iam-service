@@ -21,6 +21,7 @@ import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -73,6 +74,7 @@ public class UserServiceImpl implements UserService {
     private PasswordPolicyManager passwordPolicyManager;
     private EventProducerTemplate eventProducerTemplate;
     private OrganizationMapper organizationMapper;
+    private PermissionMapper permissionMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -83,7 +85,8 @@ public class UserServiceImpl implements UserService {
                            EventProducerTemplate eventProducerTemplate,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
                            PasswordPolicyManager passwordPolicyManager,
-                           OrganizationMapper organizationMapper) {
+                           OrganizationMapper organizationMapper,
+                           PermissionMapper permissionMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -453,5 +456,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
         return organizationMapper.listProjectAndRoleById(id);
+    }
+
+    @Override
+    public List<PermissionDTO> listPermissionById(Long id) {
+        return ConvertHelper.convertList(permissionMapper.selectByRoleId(id), PermissionDTO.class);
     }
 }

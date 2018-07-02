@@ -79,4 +79,6 @@ public interface UserService {
 
     List<ProjectWithRoleDTO> listProjectAndRoleById(Long id);
 
+    List<PermissionDTO> listPermissionById(Long id);
+
 }
