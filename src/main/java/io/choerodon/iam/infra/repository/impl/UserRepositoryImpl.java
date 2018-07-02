@@ -167,9 +167,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, Long userId, PageRequest pageRequest, String param) {
+    public Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param) {
         return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectTheUsersOfProjectByParamAndProjectId(projectId, userId, param));
+                () -> mapper.selectUsersByProjectIdAndOptions(projectId, userId, email, param));
     }
 
     @Override

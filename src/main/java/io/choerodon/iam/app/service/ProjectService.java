@@ -13,7 +13,7 @@ public interface ProjectService {
 
     ProjectDTO queryProjectById(Long projectId);
 
-    Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, PageRequest pageRequest, String param);
+    Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param);
 
     ProjectDTO update(ProjectDTO projectDTO);
 
