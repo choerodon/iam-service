@@ -62,8 +62,9 @@ public class ProjectController extends BaseController {
                                               @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                       PageRequest pageRequest,
                                               @RequestParam(required = false, name = "id") Long userId,
+                                              @RequestParam(required = false) String email,
                                               @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, pageRequest, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, pageRequest, param), HttpStatus.OK);
     }
 
     /**

@@ -64,9 +64,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, PageRequest pageRequest, String param) {
+    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
         return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryWhoBelongsToTheProject(id, userId, pageRequest, param), UserDTO.class);
+                userRepository.pagingQueryUsersByProjectId(id, userId, email, pageRequest, param), UserDTO.class);
     }
 
     @Transactional(rollbackFor = CommonException.class)
