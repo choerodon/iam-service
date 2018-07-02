@@ -3,8 +3,10 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.RoleSearchDTO;
+import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -30,9 +32,11 @@ import java.util.List;
 public class RoleController extends BaseController {
 
     private RoleService roleService;
+    private PermissionService permissionService;
 
-    public RoleController(RoleService roleService) {
+    public RoleController(RoleService roleService, PermissionService permissionService) {
         this.roleService = roleService;
+        this.permissionService = permissionService;
     }
 
     /**
@@ -125,5 +129,11 @@ public class RoleController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据角色id查看角色对应的权限")
+    @GetMapping("/{id}/permissions")
+    public ResponseEntity<List<PermissionDTO>> listPermissionById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(permissionService.listPermissionsByRoleId(id), HttpStatus.OK);
+    }
 
 }

@@ -235,11 +235,4 @@ public class UserController extends BaseController {
     public ResponseEntity<List<ProjectWithRoleDTO>> listProjectAndRoleById(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userService.listProjectAndRoleById(id), HttpStatus.OK);
     }
-
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation("根据角色id查看角色对应的权限")
-    @GetMapping("/{id}/roles")
-    public ResponseEntity<List<PermissionDTO>> listPermissionById(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(userService.listPermissionById(id), HttpStatus.OK);
-    }
 }

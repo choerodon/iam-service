@@ -22,4 +22,6 @@ public interface PermissionService {
     List<PermissionDTO> query(String level, String serviceName, String code);
 
     void deleteByCode(String code);
+
+    List<PermissionDTO> listPermissionsByRoleId(Long id);
 }

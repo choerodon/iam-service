@@ -457,9 +457,4 @@ public class UserServiceImpl implements UserService {
     public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
         return organizationMapper.listProjectAndRoleById(id);
     }
-
-    @Override
-    public List<PermissionDTO> listPermissionById(Long id) {
-        return ConvertHelper.convertList(permissionMapper.selectByRoleId(id), PermissionDTO.class);
-    }
 }
