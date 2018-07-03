@@ -132,8 +132,11 @@ public class RoleController extends BaseController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation("根据角色id查看角色对应的权限")
     @GetMapping("/{id}/permissions")
-    public ResponseEntity<List<PermissionDTO>> listPermissionById(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(permissionService.listPermissionsByRoleId(id), HttpStatus.OK);
+    public ResponseEntity<Page<PermissionDTO>> listPermissionById(@ApiIgnore
+                                                                  @SortDefault(value = "code", direction = Sort.Direction.ASC)
+                                                                          PageRequest pageRequest,
+                                                                  @PathVariable("id") Long id) {
+        return new ResponseEntity<>(permissionService.listPermissionsByRoleId(pageRequest, id), HttpStatus.OK);
     }
 
 }

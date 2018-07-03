@@ -23,5 +23,5 @@ public interface PermissionService {
 
     void deleteByCode(String code);
 
-    List<PermissionDTO> listPermissionsByRoleId(Long id);
+    Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id);
 }

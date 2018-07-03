@@ -262,7 +262,7 @@ public class PermissionServiceImpl implements PermissionService {
     private String fetchLatestSwaggerJson(String serviceName) {
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceName);
         List<InstanceInfo> instanceInfos = new ArrayList<>();
-        serviceInstances.forEach( serviceInstance -> {
+        serviceInstances.forEach(serviceInstance -> {
             EurekaDiscoveryClient.EurekaServiceInstance eurekaServiceInstance =
                     (EurekaDiscoveryClient.EurekaServiceInstance) serviceInstance;
             instanceInfos.add(eurekaServiceInstance.getInstanceInfo());
@@ -278,7 +278,7 @@ public class PermissionServiceImpl implements PermissionService {
         int port = instanceInfo.getPort();
         String instanceId = instanceInfo.getInstanceId();
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://" + ip+ ":"+ port + "/v2/choerodon/api-docs";
+        String url = "http://" + ip + ":" + port + "/v2/choerodon/api-docs";
         ResponseEntity<String> response;
         try {
             response = restTemplate.getForEntity(url, String.class);
@@ -294,7 +294,8 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public List<PermissionDTO> listPermissionsByRoleId(Long id) {
-        return ConvertHelper.convertList(permissionRepository.selectByRoleId(id), PermissionDTO.class);
+    public Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id) {
+        return ConvertPageHelper.convertPage(permissionRepository.pagingQuery(pageRequest, id), PermissionDTO.class);
     }
+
 }
