@@ -95,4 +95,10 @@ public class PermissionRepositoryImpl implements PermissionRepository {
         Sort sort = PageHelper.getLocalSort();
         return ConvertHelper.convertList(PageHelper.doSort(sort, () -> permissionMapper.select(permissionDO)), PermissionE.class);
     }
+
+    @Override
+    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id) {
+        return PageHelper.doPageAndSort(pageRequest,
+                () -> permissionMapper.selectByRoleId(id));
+    }
 }
