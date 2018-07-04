@@ -223,16 +223,25 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation("根据id获取组织列表和角色")
+    @ApiOperation("根据id分页获取组织列表和角色")
     @GetMapping("/{id}/organization_roles")
-    public ResponseEntity<List<OrganizationWithRoleDTO>> listOrganizationAndRoleById(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(userService.listOrganizationAndRoleById(id), HttpStatus.OK);
+    public ResponseEntity<Page<OrganizationWithRoleDTO>> pagingQueryOrganizationAndRolesById(
+            @ApiIgnore
+            @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable(value = "id") Long id,
+            @RequestParam(value = "params", required = false) String[] params) {
+        return new ResponseEntity<>(userService.pagingQueryOrganizationAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
-    @ApiOperation("根据id获取项目列表和角色")
+    @ApiOperation("根据id分页获取项目列表和角色")
     @GetMapping("/{id}/project_roles")
-    public ResponseEntity<List<ProjectWithRoleDTO>> listProjectAndRoleById(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(userService.listProjectAndRoleById(id), HttpStatus.OK);
+    public ResponseEntity<Page<ProjectWithRoleDTO>> pagingQueryProjectAndRolesById(
+            @ApiIgnore
+            @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable("id") Long id,
+            @RequestParam(value = "params", required = false) String[] params) {
+
+        return new ResponseEntity<>(userService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 }

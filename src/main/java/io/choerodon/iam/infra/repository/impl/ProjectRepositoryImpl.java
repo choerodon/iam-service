@@ -2,10 +2,13 @@ package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -25,10 +28,14 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     private OrganizationMapper organizationMapper;
 
+    private MemberRoleMapper memberRoleMapper;
 
-    public ProjectRepositoryImpl(ProjectMapper projectMapper, OrganizationMapper organizationMapper) {
+
+    public ProjectRepositoryImpl(ProjectMapper projectMapper, OrganizationMapper organizationMapper,
+                                 MemberRoleMapper memberRoleMapper) {
         this.projectMapper = projectMapper;
         this.organizationMapper = organizationMapper;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
     @Override
@@ -111,5 +118,20 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public ProjectDO selectOne(ProjectDO projectDO) {
         return projectMapper.selectOne(projectDO);
+    }
+
+    @Override
+    public Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        int start = page * size;
+        PageInfo pageInfo = new PageInfo(page, size);
+        MemberRoleDO memberRoleDO = new MemberRoleDO();
+        memberRoleDO.setMemberId(id);
+        memberRoleDO.setSourceType("project");
+        int count = memberRoleMapper.selectCount(memberRoleDO);
+        count = 2;
+        List<ProjectDO> projectList = projectMapper.pagingQueryProjectAndRolesById(id, start, size, params);
+        return new Page<>(projectList, pageInfo, count);
     }
 }

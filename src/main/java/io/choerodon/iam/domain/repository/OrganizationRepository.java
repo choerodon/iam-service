@@ -33,4 +33,6 @@ public interface OrganizationRepository {
     List<OrganizationDO> select(OrganizationDO organizationDO);
 
     OrganizationDO selectOne(OrganizationDO organizationDO);
+
+    Page<OrganizationDO> pagingQueryOrganizationAndRoleById(PageRequest pageRequest, Long id, String params);
 }

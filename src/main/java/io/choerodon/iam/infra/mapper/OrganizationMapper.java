@@ -24,7 +24,9 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
 
     List selectAllOrganizationsWithEnabledProjects();
 
-    List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long memberId);
-
-    List<ProjectWithRoleDTO> listProjectAndRoleById(Long memberId);
+    List<OrganizationDO> listOrganizationAndRoleById(
+            @Param("id") Long id,
+            @Param("start") Integer start,
+            @Param("size") Integer size,
+            @Param("params") String params);
 }

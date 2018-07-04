@@ -34,4 +34,6 @@ public interface ProjectRepository {
     List<ProjectDO> selectAll();
 
     ProjectDO selectOne(ProjectDO projectDO);
+
+    Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params);
 }

@@ -4,10 +4,8 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * @author wuguokai
@@ -27,8 +25,14 @@ public class ProjectDO extends AuditDomain {
 
     private Long organizationId;
 
+    @Transient
+    private String organizationName;
+
     @Column(name = "is_enabled")
     private Boolean enabled;
+
+    @Transient
+    private List<RoleDO> roles;
 
     public ProjectDO() {
     }
@@ -43,6 +47,14 @@ public class ProjectDO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
     }
 
     public String getName() {
@@ -77,13 +89,23 @@ public class ProjectDO extends AuditDomain {
         this.enabled = enabled;
     }
 
+    public List<RoleDO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleDO> roles) {
+        this.roles = roles;
+    }
+
     @Override
     public String toString() {
-        return "ProjectDO{" + "id=" + id
-                + ", name='" + name + '\''
-                + ", code='" + code + '\''
-                + ", organizationId=" + organizationId
-                + ", enabled=" + enabled
-                + '}';
+        return "ProjectDO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", organizationId=" + organizationId +
+                ", enabled=" + enabled +
+                ", roles=" + roles +
+                '}';
     }
 }
