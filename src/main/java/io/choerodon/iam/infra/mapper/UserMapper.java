@@ -40,14 +40,16 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                                    @Param("sourceId") Long sourceId,
                                                    @Param("sourceType") String sourceType,
                                                    @Param("roleAssignmentSearchDTO")
-                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   @Param("param") String param);
 
     List selectUsersFromMemberRoleByOptions(@Param("roleId") Long roleId,
                                             @Param("memberType") String memberType,
                                             @Param("sourceId") Long sourceId,
                                             @Param("sourceType") String sourceType,
                                             @Param("roleAssignmentSearchDTO")
-                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                            @Param("param") String param);
 
 
     List<UserDO> listUsersByIds(@Param("ids") Long[] ids);
