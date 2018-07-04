@@ -18,7 +18,7 @@ public class PasswordPolicyDTO {
     private String originalPassword;
     private Integer minLength;
     private Integer maxLength;
-    @Value("${max.error.time:5}")
+    @Value("${max.errorTime:5}")
     private Integer maxErrorTime;
     private Integer digitsCount;
     private Integer lowercaseCount;
@@ -32,8 +32,8 @@ public class PasswordPolicyDTO {
     private Boolean enableLock;
     @Value("${lock.expireTime:3600}")
     private Integer lockedExpireTime;
-    @Value("${max.check.captcha:3}")
     private Boolean enableCaptcha;
+    @Value("${max.checkCaptcha:3}")
     private Integer maxCheckCaptcha;
     private Long objectVersionNumber;
 

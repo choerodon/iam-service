@@ -294,8 +294,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id) {
-        return ConvertPageHelper.convertPage(permissionRepository.pagingQuery(pageRequest, id), PermissionDTO.class);
+    public Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id, String params) {
+        return ConvertPageHelper.convertPage(permissionRepository.pagingQuery(pageRequest, id, params), PermissionDTO.class);
     }
-
 }
