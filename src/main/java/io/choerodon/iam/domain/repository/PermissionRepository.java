@@ -34,5 +34,5 @@ public interface PermissionRepository {
 
     List<PermissionE> query(String level, String serviceName, String code);
 
-    Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id);
+    Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id, String params);
 }
