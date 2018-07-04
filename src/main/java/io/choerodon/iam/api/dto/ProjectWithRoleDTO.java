@@ -1,16 +1,12 @@
 package io.choerodon.iam.api.dto;
 
-public class ProjectWithRoleDTO {
+import java.util.List;
+
+public class ProjectWithRoleDTO extends ProjectDTO {
 
     private String organizationName;
 
-    private String projectName;
-
-    private String projectCode;
-
-    private String roleName;
-
-    private String roleCode;
+    private List<RoleDTO> roles;
 
     public String getOrganizationName() {
         return organizationName;
@@ -20,35 +16,11 @@ public class ProjectWithRoleDTO {
         this.organizationName = organizationName;
     }
 
-    public String getProjectName() {
-        return projectName;
+    public List<RoleDTO> getRoles() {
+        return roles;
     }
 
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public String getProjectCode() {
-        return projectCode;
-    }
-
-    public void setProjectCode(String projectCode) {
-        this.projectCode = projectCode;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
+    public void setRoles(List<RoleDTO> roles) {
+        this.roles = roles;
     }
 }

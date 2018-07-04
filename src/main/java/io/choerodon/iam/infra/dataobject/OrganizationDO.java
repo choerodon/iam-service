@@ -29,6 +29,9 @@ public class OrganizationDO extends AuditDomain {
     @Transient
     private List<ProjectDO> projects;
 
+    @Transient
+    private List<RoleDO> roles;
+
     public OrganizationDO() {
     }
 
@@ -74,5 +77,13 @@ public class OrganizationDO extends AuditDomain {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public List<RoleDO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleDO> roles) {
+        this.roles = roles;
     }
 }

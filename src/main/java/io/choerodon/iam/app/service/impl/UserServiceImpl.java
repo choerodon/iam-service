@@ -73,8 +73,6 @@ public class UserServiceImpl implements UserService {
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
     private EventProducerTemplate eventProducerTemplate;
-    private OrganizationMapper organizationMapper;
-    private PermissionMapper permissionMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -84,9 +82,7 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            EventProducerTemplate eventProducerTemplate,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
-                           PasswordPolicyManager passwordPolicyManager,
-                           OrganizationMapper organizationMapper,
-                           PermissionMapper permissionMapper) {
+                           PasswordPolicyManager passwordPolicyManager) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -96,7 +92,6 @@ public class UserServiceImpl implements UserService {
         this.eventProducerTemplate = eventProducerTemplate;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
-        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -449,12 +444,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<OrganizationWithRoleDTO> listOrganizationAndRoleById(Long id) {
-        return organizationMapper.listOrganizationAndRoleById(id);
+    public Page<OrganizationWithRoleDTO> pagingQueryOrganizationAndRolesById(PageRequest pageRequest, Long id, String params) {
+        return ConvertPageHelper.convertPage(organizationRepository.pagingQueryOrganizationAndRoleById(
+                pageRequest, id, params), OrganizationWithRoleDTO.class);
     }
 
     @Override
-    public List<ProjectWithRoleDTO> listProjectAndRoleById(Long id) {
-        return organizationMapper.listProjectAndRoleById(id);
+    public Page<ProjectWithRoleDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
+        return ConvertPageHelper.convertPage(projectRepository.pagingQueryProjectAndRolesById(
+                pageRequest, id, params), ProjectWithRoleDTO.class);
     }
+
 }
