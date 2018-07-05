@@ -156,8 +156,7 @@ public class RoleServiceImpl implements RoleService {
                     r.getId(), "user", 0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
-        Integer i = 0;
-        return roles.stream().filter(r -> !i.equals(r.getUserCount())).collect(Collectors.toList());
+        return roles;
     }
 
     @Override
@@ -172,8 +171,7 @@ public class RoleServiceImpl implements RoleService {
                     r.getId(), "user", sourceId, ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
-        Integer i = 0;
-        return roles.stream().filter(r -> !i.equals(r.getUserCount())).collect(Collectors.toList());
+        return roles;
     }
 
     @Override
@@ -188,8 +186,7 @@ public class RoleServiceImpl implements RoleService {
                     r.getId(), "user", sourceId, ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
-        Integer i = 0;
-        return roles.stream().filter(r -> !i.equals(r.getUserCount())).collect(Collectors.toList());
+        return roles;
     }
 
     @Override
