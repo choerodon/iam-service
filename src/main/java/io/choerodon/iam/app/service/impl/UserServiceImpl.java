@@ -268,7 +268,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword) {
-        checkLoginUser(userId);
+//        checkLoginUser(userId);
         UserE user = userRepository.selectByPrimaryKey(userId);
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");

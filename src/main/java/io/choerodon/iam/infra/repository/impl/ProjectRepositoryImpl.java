@@ -126,10 +126,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         int size = pageRequest.getSize();
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
-        MemberRoleDO memberRoleDO = new MemberRoleDO();
-        memberRoleDO.setMemberId(id);
-        memberRoleDO.setSourceType("project");
-        int count = memberRoleMapper.selectCount(memberRoleDO);
+        int count = memberRoleMapper.selectCountBySourceId(id, "project");
         List<ProjectDO> projectList = projectMapper.pagingQueryProjectAndRolesById(id, start, size, params);
         return new Page<>(projectList, pageInfo, count);
     }

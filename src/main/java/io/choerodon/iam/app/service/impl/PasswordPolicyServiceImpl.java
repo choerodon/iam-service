@@ -53,7 +53,7 @@ public class PasswordPolicyServiceImpl implements PasswordPolicyService {
             throw new CommonException("error.organization.not.exist");
         }
         PasswordPolicyDTO old = query(id);
-        if (orgId != old.getOrganizationId()) {
+        if (!orgId.equals(old.getOrganizationId())) {
             throw new CommonException("error.passwordPolicy.organizationId.not.same");
         }
         PasswordPolicyE passwordPolicyE =
