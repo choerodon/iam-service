@@ -14,4 +14,11 @@
         </foreach>
     </select>
 
+    <select id="selectCountBySourceId" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT source_id)
+        FROM iam_member_role
+        WHERE iam_member_role.member_id = #{id}
+        AND iam_member_role.source_type = #{type}
+    </select>
+
 </mapper>
