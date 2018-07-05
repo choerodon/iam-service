@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.dto;
 
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.constraints.NotNull;
 
@@ -18,7 +17,6 @@ public class PasswordPolicyDTO {
     private String originalPassword;
     private Integer minLength;
     private Integer maxLength;
-    @Value("${max.errorTime:5}")
     private Integer maxErrorTime;
     private Integer digitsCount;
     private Integer lowercaseCount;
@@ -30,10 +28,8 @@ public class PasswordPolicyDTO {
     private Boolean enablePassword;
     private Boolean enableSecurity;
     private Boolean enableLock;
-    @Value("${lock.expireTime:3600}")
     private Integer lockedExpireTime;
     private Boolean enableCaptcha;
-    @Value("${max.checkCaptcha:3}")
     private Integer maxCheckCaptcha;
     private Long objectVersionNumber;
 

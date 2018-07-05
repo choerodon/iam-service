@@ -130,7 +130,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         memberRoleDO.setMemberId(id);
         memberRoleDO.setSourceType("project");
         int count = memberRoleMapper.selectCount(memberRoleDO);
-        count = 2;
         List<ProjectDO> projectList = projectMapper.pagingQueryProjectAndRolesById(id, start, size, params);
         return new Page<>(projectList, pageInfo, count);
     }
