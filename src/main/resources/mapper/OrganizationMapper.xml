@@ -34,7 +34,12 @@
     </resultMap>
 
     <select id="fulltextSearch" resultMap="OrganizationDO">
-        SELECT * FROM fd_organization
+        SELECT
+          o.*,
+          COUNT(p.id) AS project_count
+        FROM fd_organization o
+        LEFT JOIN fd_project p
+        ON o.id = p.organization_id
         WHERE 1=1
         <if test="organization.name != null">
             AND name LIKE concat('%',#{organization.name},'%')
@@ -51,6 +56,7 @@
             code LIKE concat('%',#{param},'%')
             )
         </if>
+        GROUP BY o.id
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
