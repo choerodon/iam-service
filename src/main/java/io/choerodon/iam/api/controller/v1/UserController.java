@@ -223,6 +223,7 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @CustomPageRequest
     @ApiOperation("根据id分页获取组织列表和角色")
     @GetMapping("/{id}/organization_roles")
     public ResponseEntity<Page<OrganizationWithRoleDTO>> pagingQueryOrganizationAndRolesById(
@@ -234,6 +235,7 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @CustomPageRequest
     @ApiOperation("根据id分页获取项目列表和角色")
     @GetMapping("/{id}/project_roles")
     public ResponseEntity<Page<ProjectWithRoleDTO>> pagingQueryProjectAndRolesById(

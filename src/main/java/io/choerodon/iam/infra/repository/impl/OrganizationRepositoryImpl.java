@@ -112,10 +112,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
         int size = pageRequest.getSize();
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
-        MemberRoleDO memberRoleDO = new MemberRoleDO();
-        memberRoleDO.setMemberId(id);
-        memberRoleDO.setSourceType("organization");
-        int count = memberRoleMapper.selectCount(memberRoleDO);
+        int count = memberRoleMapper.selectCountBySourceId(id, "organization");
         List<OrganizationDO> organizationList = organizationMapper.listOrganizationAndRoleById(id, start, size, params);
         return new Page<>(organizationList, pageInfo, count);
     }

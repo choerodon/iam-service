@@ -15,4 +15,6 @@ public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
     List<Long> selectDeleteList(@Param("mi") long memberId, @Param("si") long sourceId,
                                 @Param("st") String sourceType, @Param("list") List<Long> deleteList);
 
+    int selectCountBySourceId(@Param("id") Long id, @Param("type") String type);
+
 }
