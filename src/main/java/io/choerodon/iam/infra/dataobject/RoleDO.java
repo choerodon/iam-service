@@ -42,6 +42,12 @@ public class RoleDO extends AuditDomain {
     @Transient
     private List<LabelDO> labels;
 
+    @Transient
+    private String organizationName;
+
+    @Transient
+    private String projectName;
+
     public List<LabelDO> getLabels() {
         return labels;
     }
@@ -136,5 +142,21 @@ public class RoleDO extends AuditDomain {
 
     public void setAssignable(Boolean assignable) {
         this.assignable = assignable;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

@@ -41,6 +41,10 @@ public class RoleDTO {
 
     private List<UserDTO> users;
 
+    private String organizationName;
+
+    private String projectName;
+
     @JsonIgnore
     private String param;
 
@@ -190,6 +194,21 @@ public class RoleDTO {
         this.labels = labels;
     }
 
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
 
     public void updateCheck() {
         checkName();
