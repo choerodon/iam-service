@@ -19,11 +19,8 @@ public class ProjectWithRolesConvert implements ConvertorI<Object, ProjectDO, Pr
     public ProjectWithRoleDTO doToDto(ProjectDO dataObject) {
         ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO();
         BeanUtils.copyProperties(dataObject, projectWithRoleDTO);
-        List<RoleDO> roles = dataObject.getRoles();
-        for (RoleDO roleDO : roles) {
-            roleDO.setProjectName(dataObject.getName());
-        }
-        projectWithRoleDTO.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
+        dataObject.getRoles().forEach(roleDO -> roleDO.setProjectName(dataObject.getName()));
+        projectWithRoleDTO.setRoles(ConvertHelper.convertList(dataObject.getRoles(), RoleDTO.class));
         return projectWithRoleDTO;
     }
 }
