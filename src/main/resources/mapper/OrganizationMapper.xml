@@ -42,18 +42,18 @@
         ON o.id = p.organization_id
         WHERE 1=1
         <if test="organization.name != null">
-            AND name LIKE concat('%',#{organization.name},'%')
+            AND o.name LIKE concat('%',#{organization.name},'%')
         </if>
         <if test="organization.code != null">
-            AND code LIKE concat('%',#{organization.code},'%')
+            AND o.code LIKE concat('%',#{organization.code},'%')
         </if>
         <if test="organization.enabled != null">
-            AND is_enabled = #{organization.enabled}
+            AND o.is_enabled = #{organization.enabled}
         </if>
         <if test="param != null">
             AND(
-            name LIKE concat('%',#{param},'%') OR
-            code LIKE concat('%',#{param},'%')
+            o.name LIKE concat('%',#{param},'%') OR
+            o.code LIKE concat('%',#{param},'%')
             )
         </if>
         GROUP BY o.id
