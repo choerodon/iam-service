@@ -30,6 +30,9 @@ public class OrganizationDO extends AuditDomain {
     private List<ProjectDO> projects;
 
     @Transient
+    private Integer projectCount;
+
+    @Transient
     private List<RoleDO> roles;
 
     public OrganizationDO() {
@@ -85,5 +88,13 @@ public class OrganizationDO extends AuditDomain {
 
     public void setRoles(List<RoleDO> roles) {
         this.roles = roles;
+    }
+
+    public Integer getProjectCount() {
+        return projectCount;
+    }
+
+    public void setProjectCount(Integer projectCount) {
+        this.projectCount = projectCount;
     }
 }

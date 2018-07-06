@@ -28,6 +28,8 @@ public class OrganizationDTO {
 
     private Boolean enabled;
 
+    private Integer projectCount;
+
     private Boolean isInto = true;
 
     private List<ProjectDTO> projects;
@@ -86,5 +88,13 @@ public class OrganizationDTO {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getProjectCount() {
+        return projectCount;
+    }
+
+    public void setProjectCount(Integer projectCount) {
+        this.projectCount = projectCount;
     }
 }
