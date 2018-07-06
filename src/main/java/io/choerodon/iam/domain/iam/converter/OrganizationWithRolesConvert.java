@@ -18,10 +18,7 @@ public class OrganizationWithRolesConvert implements ConvertorI<Object, Organiza
     public OrganizationWithRoleDTO doToDto(OrganizationDO dataObject) {
         OrganizationWithRoleDTO organizationWithRoleDTO = new OrganizationWithRoleDTO();
         BeanUtils.copyProperties(dataObject, organizationWithRoleDTO);
-        List<RoleDO> roles = dataObject.getRoles();
-        for (RoleDO roleDO : roles) {
-            roleDO.setOrganizationName(dataObject.getName());
-        }
+        dataObject.getRoles().forEach(roleDO -> roleDO.setOrganizationName(dataObject.getName()));
         organizationWithRoleDTO.setRoles(ConvertHelper.convertList(dataObject.getRoles(), RoleDTO.class));
         return organizationWithRoleDTO;
     }
