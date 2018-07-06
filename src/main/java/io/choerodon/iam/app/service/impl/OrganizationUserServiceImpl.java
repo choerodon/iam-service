@@ -126,7 +126,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
         Page<UserDO> userDOPage =
                 userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class),
-                        ParamUtils.arrToStr(user.getParams()));
+                        ParamUtils.arrToStr(user.getParam()));
         return ConvertPageHelper.convertPage(userDOPage, UserDTO.class);
     }
 
