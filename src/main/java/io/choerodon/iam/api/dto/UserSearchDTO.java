@@ -12,15 +12,15 @@ public class UserSearchDTO {
     private String language;
     private Boolean enabled;
     private Boolean locked;
-    private String[] params;
+    private String[] param;
     private String email;
 
-    public String[] getParams() {
-        return params;
+    public String[] getParam() {
+        return param;
     }
 
-    public void setParams(String[] params) {
-        this.params = params;
+    public void setParam(String[] param) {
+        this.param = param;
     }
 
     public String getEmail() {
