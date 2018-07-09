@@ -64,6 +64,10 @@ public class MenuServiceImpl implements MenuService {
         if (menuE.getDefault()) {
             throw new CommonException("error.menu.default");
         }
+        //菜单已经被更新
+        if (!menuE.getObjectVersionNumber().equals(menuDTO.getObjectVersionNumber())) {
+            throw new CommonException("error.objectNumber.update");
+        }
         if (menuDTO.getName() != null) {
             menuE.editName(menuDTO.getName());
         }
