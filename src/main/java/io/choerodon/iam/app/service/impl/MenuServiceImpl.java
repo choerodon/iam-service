@@ -194,8 +194,19 @@ public class MenuServiceImpl implements MenuService {
         List<Long> existMenuIds = existMenus.stream().map(MenuDTO::getId).collect(Collectors.toList());
         //交集，传入的menuId与数据库里存在的menuId相交,需要更新的菜单
         List<Long> intersection = existMenuIds.stream().filter(newMenuIds::contains).collect(Collectors.toList());
+        List<Long> menuIds = new ArrayList<>();
+        for (MenuDTO dto : existMenus) {
+            Long id = dto.getId();
+            MenuDO menuDO = new MenuDO();
+            menuDO.setParentId(id);
+            //非默认菜单或者没有子菜单情况下才能删除
+            if (menuRepository.select(menuDO).isEmpty()
+                    && !dto.getDefault()) {
+                menuIds.add(dto.getId());
+            }
+        }
         //数据库存在的roleId与交集的差集为要删除的roleId
-        List<Long> deleteList = existMenuIds.stream().filter(item ->
+        List<Long> deleteList = menuIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
         //删除多余的菜单
         if (!deleteList.isEmpty()) {
