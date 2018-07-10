@@ -75,4 +75,6 @@ public interface UserRepository {
     List<UserDO> listUsersByIds(Long[] ids);
 
     Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
+
+    List<UserDO> insertList(List<UserDO> insertUsers);
 }

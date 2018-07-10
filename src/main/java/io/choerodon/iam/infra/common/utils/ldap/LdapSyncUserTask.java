@@ -20,7 +20,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.util.Date;
+import java.util.*;
 
 
 /**
@@ -80,6 +80,83 @@ public class LdapSyncUserTask {
             UserDTO oldUser =
                     ConvertHelper.convert(userRepository.selectByLoginName(user.getLoginName()), UserDTO.class);
             insertOrUpdateUser(ldapSyncReport, user, oldUser);
+        }
+        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
+        logger.info("async finished : {}", ldapSyncReport);
+        try {
+            ldapContext.close();
+        } catch (NamingException e) {
+            logger.warn("error.close.ldap.connect");
+        }
+        fallback.callback(ldapSyncReport, ldapHistoryDO);
+    }
+
+    /**
+     * 同步用户批量插入用户
+     * @param ldapContext
+     * @param ldap
+     * @param fallback
+     */
+    public void syncUser(LdapContext ldapContext, LdapDO ldap, FinishFallback fallback) {
+        Long organizationId = ldap.getOrganizationId();
+        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
+        ldapSyncReport.setLdapId(ldap.getId());
+        SearchControls constraints = new SearchControls();
+        // 设置搜索范围
+        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration namingEnumeration = null;
+        try {
+            namingEnumeration = ldapContext.search("",
+                    "objectClass=*", constraints);
+        } catch (NamingException e) {
+            logger.info("ldap search fail: {}", e);
+        }
+        logger.info("@@@ start async user");
+        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
+        LdapHistoryDO ldapHistory = new LdapHistoryDO();
+        ldapHistory.setLdapId(ldap.getId());
+        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
+        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
+        List<UserDO> insertUsers = new ArrayList<>();
+        List<UserDO> errorUsers = new ArrayList<>();
+        Set<String> emailSet = new HashSet<>();
+        //读用户
+        while (namingEnumeration != null
+                && namingEnumeration.hasMoreElements()) {
+            SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
+            Attributes attributes = searchResult.getAttributes();
+            UserDO user = extractUser(attributes, organizationId, ldap);
+            if (user == null) {
+                continue;
+            }
+            user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
+            ldapSyncReport.incrementCount();
+            String loginName = user.getLoginName();
+            String email = user.getEmail();
+            //根据loginName判断是否插入
+            if (userRepository.selectByLoginName(loginName) == null) {
+                UserDO userDO = new UserDO();
+                userDO.setEmail(email);
+                if (userRepository.selectOne(userDO) == null) {
+                    if (emailSet.contains(email)) {
+                        logger.info("user has the same email: {}", email);
+                        errorUsers.add(user);
+                        ldapSyncReport.incrementError();
+                    } else {
+                        insertUsers.add(user);
+                        ldapSyncReport.incrementNewInsert();
+                    }
+                    emailSet.add(user.getEmail());
+                } else {
+                    //邮箱是唯一，如果有重复不同步
+                    errorUsers.add(user);
+                    ldapSyncReport.incrementError();
+                    logger.info("email is duplicate, loginName: {}, email {}", user.getLoginName(), user.getEmail());
+                }
+            }
+        }
+        if (!insertUsers.isEmpty()) {
+            organizationUserService.batchCreateUsers(insertUsers);
         }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
