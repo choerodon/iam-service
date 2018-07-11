@@ -4,12 +4,16 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -21,8 +25,18 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private OrganizationRepository organizationRepository;
 
-    public OrganizationServiceImpl(OrganizationRepository organizationRepository) {
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
+
+    @Value("${spring.application.name:default}")
+    private String serviceName;
+
+    private EventProducerTemplate eventProducerTemplate;
+
+    public OrganizationServiceImpl(OrganizationRepository organizationRepository,
+                                   EventProducerTemplate eventProducerTemplate) {
         this.organizationRepository = organizationRepository;
+        this.eventProducerTemplate = eventProducerTemplate;
     }
 
     @Override
@@ -57,7 +71,8 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new CommonException("error.organization.not.exist");
         }
         organization.enable();
-        return ConvertHelper.convert(organizationRepository.update(organization), OrganizationDTO.class);
+        OrganizationE organizationE = updateAndSendEvent(organization, "enableOrganization");
+        return ConvertHelper.convert(organizationE, OrganizationDTO.class);
     }
 
     @Override
@@ -68,7 +83,28 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new CommonException("error.organization.not.exist");
         }
         organization.disable();
-        return ConvertHelper.convert(organizationRepository.update(organization), OrganizationDTO.class);
+        OrganizationE organizationE = updateAndSendEvent(organization, "disableOrganization");
+        return ConvertHelper.convert(organizationE, OrganizationDTO.class);
+    }
+
+    private OrganizationE updateAndSendEvent(OrganizationE organization, String consumerType) {
+        OrganizationE organizationE;
+        if (devopsMessage) {
+            organizationE = new OrganizationE();
+            OrganizationEventPayload payload = new OrganizationEventPayload();
+            payload.setOrganizationId(organization.getId());
+            Exception exception = eventProducerTemplate.execute("organization", consumerType,
+                    serviceName, payload,
+                    (String uuid) ->
+                        BeanUtils.copyProperties(organizationRepository.update(organization), organizationE)
+                    );
+            if (exception != null) {
+                throw new CommonException(exception.getMessage());
+            }
+        } else {
+            organizationE = organizationRepository.update(organization);
+        }
+        return organizationE;
     }
 
     @Override
