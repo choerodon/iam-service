@@ -208,12 +208,14 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, "enableProject");
+        ProjectE project = updateAndSendEvent(projectId, "enableProject", true);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
-    private ProjectE updateAndSendEvent(Long projectId, String consumerType) {
+    private ProjectE updateAndSendEvent(Long projectId, String consumerType, boolean enabled) {
         ProjectE project;
+        ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
+        projectDO.setEnabled(enabled);
         if (devopsMessage) {
             project = new ProjectE();
             ProjectEventPayload payload = new ProjectEventPayload();
@@ -221,12 +223,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             Exception exception = eventProducerTemplate.execute("project", consumerType,
                     serviceName, payload,
                     (String uuid) ->
-                            BeanUtils.copyProperties(iProjectService.updateProjectEnabled(projectId), project)
+                            BeanUtils.copyProperties(projectRepository.updateSelective(projectDO), project)
             );
             if (exception != null) {
                 throw new CommonException(exception.getMessage());
             }
         } else {
+            projectRepository.updateSelective(projectDO);
             project = iProjectService.updateProjectEnabled(projectId);
         }
         return project;
@@ -238,7 +241,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, "disableProject");
+        ProjectE project = updateAndSendEvent(projectId, "disableProject", false);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
