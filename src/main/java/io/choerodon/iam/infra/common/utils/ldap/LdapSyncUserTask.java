@@ -155,9 +155,12 @@ public class LdapSyncUserTask {
                 }
             }
         }
-        if (!insertUsers.isEmpty()) {
-            organizationUserService.batchCreateUsers(insertUsers);
-        }
+        List<List<UserDO>> list = subUserList(insertUsers);
+        list.forEach(l -> {
+            if (!l.isEmpty()) {
+                organizationUserService.batchCreateUsers(l);
+            }
+        });
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
         try {
@@ -166,6 +169,26 @@ public class LdapSyncUserTask {
             logger.warn("error.close.ldap.connect");
         }
         fallback.callback(ldapSyncReport, ldapHistoryDO);
+    }
+
+    private List<List<UserDO>> subUserList(List<UserDO> insertUsers) {
+        List<List<UserDO>> list = new ArrayList<>();
+        int size = insertUsers.size();
+        int volume = 1000;
+        //从ldap服务器读取的用户每1000个分一组
+        int count = size/volume + 1;
+        int start = 0;
+        int end = 999;
+        if (size != 0) {
+            for (int i = 0; i < count; i++) {
+                end = end > size - 1 ? size - 1 : end;
+                List<UserDO> users = insertUsers.subList(start, end);
+                start = start + volume;
+                end = end + volume;
+                list.add(users);
+            }
+        }
+        return list;
     }
 
     private void insertOrUpdateUser(LdapSyncReport ldapSyncReport, UserDO user, UserDTO oldUser) {
