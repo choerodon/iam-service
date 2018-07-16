@@ -37,6 +37,8 @@ public class OrganizationE {
         this.passwordRecord = passwordRecord;
     }
 
+    public OrganizationE() {}
+
     public OrganizationE created() {
         return null;
     }
