@@ -10,9 +10,11 @@ import io.choerodon.iam.api.dto.BatchImportResultDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
+import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.common.utils.ListUtils;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,6 +44,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private UserRepository userRepository;
 
+    private OrganizationUserService organizationUserService;
+
     private final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
@@ -56,10 +60,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
                                    EventProducerTemplate eventProducerTemplate,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository,
+                                   OrganizationUserService organizationUserService) {
         this.organizationRepository = organizationRepository;
         this.eventProducerTemplate = eventProducerTemplate;
         this.userRepository = userRepository;
+        this.organizationUserService = organizationUserService;
     }
 
     @Override
@@ -164,9 +170,12 @@ public class OrganizationServiceImpl implements OrganizationService {
             logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.read");
         }
-        if (!insertUsers.isEmpty()) {
-            userRepository.insertList(insertUsers);
-        }
+        List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
+        list.forEach(l -> {
+            if (!l.isEmpty()) {
+                organizationUserService.batchCreateUsers(l);
+            }
+        });
         return batchImportResult;
     }
 
