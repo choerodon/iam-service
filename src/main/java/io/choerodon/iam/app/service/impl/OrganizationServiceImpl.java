@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.BatchImportResultDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.OrganizationUserService;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -152,16 +152,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         batchImportResult.setSuccess(0);
         batchImportResult.setFailed(0);
         batchImportResult.setFailedUsers(new ArrayList<>());
-        File file = new File(multipartFile.getOriginalFilename());
-        try {
-            multipartFile.transferTo(file);
-        } catch (IOException e) {
-            logger.info("multipartFile transfer to file filed, exception: {}", e.getMessage());
-            throw new CommonException("error.multipartFile.transfer");
-        }
         List<UserDO> insertUsers = new ArrayList<>();
         try {
-            List<UserDO> users = ExcelReadHelper.read(file, UserDO.class, null);
+            List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, null);
             users.forEach(u -> {
                 u.setOrganizationId(id);
                 processUsers(u, batchImportResult, insertUsers);
@@ -184,8 +177,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         String email = user.getEmail();
         if (loginNameIsExisted(loginName)) {
             batchImportResult.failedIncrement();
+            batchImportResult.getFailedUsers().add(ConvertHelper.convert(user, UserDTO.class));
         } else if (emailIsExisted(email)) {
             batchImportResult.failedIncrement();
+            batchImportResult.getFailedUsers().add(ConvertHelper.convert(user, UserDTO.class));
         } else {
             batchImportResult.successIncrement();
             insertUsers.add(user);

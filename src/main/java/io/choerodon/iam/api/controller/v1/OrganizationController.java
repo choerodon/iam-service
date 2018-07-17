@@ -108,7 +108,7 @@ public class OrganizationController extends BaseController {
     @PostMapping("/{organization_id}/batch_import")
     public ResponseEntity<BatchImportResultDTO> importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
                                                                      @RequestPart MultipartFile file) {
-        return new ResponseEntity<BatchImportResultDTO>(organizationService.importUsersFromExcel(id, file), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.importUsersFromExcel(id, file), HttpStatus.OK);
     }
 
 }
