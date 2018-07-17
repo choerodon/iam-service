@@ -28,6 +28,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static io.choerodon.iam.api.dto.payload.UserEventPayload.*;
@@ -107,6 +109,31 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                     throw new CommonException(e.getMessage());
                 });
         return dto;
+    }
+
+    @Override
+    public void batchCreateUsers(List<UserDO> insertUsers) {
+        if (devopsMessage) {
+            List<UserEventPayload> payloads = new ArrayList<>();
+            Exception exception = eventProducerTemplate.execute("user", "batchCreateUsers",
+                    serviceName, payloads, (String uuid) -> {
+                        List<UserDO> users = userRepository.insertList(insertUsers);
+                        users.forEach(user -> {
+                            UserEventPayload payload = new UserEventPayload();
+                            payload.setEmail(user.getEmail());
+                            payload.setId(user.getId().toString());
+                            payload.setName(user.getRealName());
+                            payload.setUsername(user.getLoginName());
+                            payloads.add(payload);
+                        });
+                    });
+            Optional.ofNullable(exception)
+                    .map(e -> {
+                        throw new CommonException(e.getMessage());
+                    });
+        } else {
+            userRepository.insertList(insertUsers);
+        }
     }
 
     private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {

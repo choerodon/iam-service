@@ -3,7 +3,10 @@ package io.choerodon.iam.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
+import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -26,4 +29,10 @@ public interface OrganizationUserService {
     UserDTO enableUser(Long organizationId, Long userId);
 
     UserDTO disableUser(Long organizationId, Long userId);
+
+    /**
+     * ldap 批量同步用户，发送事件
+     * @param insertUsers
+     */
+    void batchCreateUsers(List<UserDO> insertUsers);
 }

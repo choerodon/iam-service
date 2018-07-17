@@ -235,6 +235,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<UserDO> insertList(List<UserDO> insertUsers) {
+        if (mapper.insertList(insertUsers) == 0) {
+            throw new CommonException("error.batch.insert.user");
+        }
+        return insertUsers;
+    }
+
+    @Override
     public List<UserDO> listUsersByIds(Long[] ids) {
         return mapper.listUsersByIds(ids);
     }
