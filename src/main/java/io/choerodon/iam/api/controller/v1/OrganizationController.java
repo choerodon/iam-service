@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.BatchImportResultDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -15,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -99,6 +101,14 @@ public class OrganizationController extends BaseController {
     public ResponseEntity check(@RequestBody OrganizationDTO organization) {
         organizationService.check(organization);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("从excel里面批量导入用户")
+    @PostMapping("/{organization_id}/batch_import")
+    public ResponseEntity<BatchImportResultDTO> importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
+                                                                     @RequestPart MultipartFile file) {
+        return new ResponseEntity<BatchImportResultDTO>(organizationService.importUsersFromExcel(id, file), HttpStatus.OK);
     }
 
 }
