@@ -208,7 +208,10 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     //找不到code，说明没有初始化进去角色或者角色code拼错了
                     LOGGER.info("can not find the role, role code is : {}", roleCode);
                 } else {
-                    rolePermissionRepository.insert(new RolePermissionE(null, roleE.getId(), permissionId));
+                    RolePermissionE rp = new RolePermissionE(null, roleE.getId(), permissionId);
+                    if (rolePermissionRepository.selectOne(rp) == null) {
+                        rolePermissionRepository.insert(rp);
+                    }
                 }
             }
         }
