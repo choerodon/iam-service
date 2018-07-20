@@ -30,6 +30,12 @@
         INNER JOIN iam_permission
         ON iam_role_permission.permission_id = iam_permission.id
         WHERE iam_role_permission.role_id = #{roleId}
+        <if test="params != null">
+          AND (
+            iam_permission.code LIKE concat('%', #{params}, '%') OR
+            iam_permission.description LIKE concat('%', #{params}, '%')
+            )
+        </if>
     </select>
 
     <select id="checkPermission" resultType="String">

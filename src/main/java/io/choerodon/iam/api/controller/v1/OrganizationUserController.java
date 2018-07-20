@@ -54,18 +54,6 @@ public class OrganizationUserController extends BaseController {
     }
 
     /**
-     * 删除组织下的用户
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "删除用户")
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity delete(@PathVariable(name = "organization_id") Long organizationId,
-                                 @PathVariable Long id) {
-        organizationUserService.delete(organizationId, id);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * 更新用户
      */
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -12,6 +12,7 @@ import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -27,6 +28,13 @@ public class OrganizationListener {
     private LdapService ldapService;
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
+
+    @Value("${max.errorTime:5}")
+    private Integer maxErrorTime;
+    @Value("${lock.expireTime:3600}")
+    private Integer lockedExpireTime;
+    @Value("${max.checkCaptcha:3}")
+    private Integer maxCheckCaptcha;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
                                 OrganizationService organizationService) {
@@ -63,6 +71,9 @@ public class OrganizationListener {
             passwordPolicyDTO.setOrganizationId(orgId);
             passwordPolicyDTO.setCode(organizationDTO.getCode());
             passwordPolicyDTO.setName(organizationDTO.getName());
+            passwordPolicyDTO.setMaxCheckCaptcha(maxCheckCaptcha);
+            passwordPolicyDTO.setMaxErrorTime(maxErrorTime);
+            passwordPolicyDTO.setLockedExpireTime(lockedExpireTime);
             passwordPolicyService.create(orgId, passwordPolicyDTO);
         } catch (Exception e) {
             LOGGER.error("create password policy error of organization {}", orgId);

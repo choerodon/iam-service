@@ -16,6 +16,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author superlee
@@ -167,60 +168,63 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, Long userId, PageRequest pageRequest, String param) {
+    public Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param) {
         return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectTheUsersOfProjectByParamAndProjectId(projectId, userId, param));
+                () -> mapper.selectUsersByProjectIdAndOptions(projectId, userId, email, param));
     }
 
     @Override
     public Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId, String sourceType,
-                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO, String param) {
         return mapper.selectUserCountFromMemberRoleByOptions(roleId,
-                memberType, sourceId, sourceType, roleAssignmentSearchDTO);
-    }
-
-    @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
-                        0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO));
+                memberType, sourceId, sourceType, roleAssignmentSearchDTO, param);
     }
 
     @Override
     public List<UserDO> listUsersByRoleIdOnSiteLevel(Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user", 0L,
-                ResourceLevel.SITE.value(), null);
+                ResourceLevel.SITE.value(), null, null);
     }
 
     @Override
     public List<UserDO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
-                orgId, ResourceLevel.ORGANIZATION.value(), null);
+                orgId, ResourceLevel.ORGANIZATION.value(), null, null);
     }
 
     @Override
     public List<UserDO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
-                proId, ResourceLevel.PROJECT.value(), null);
+                proId, ResourceLevel.PROJECT.value(), null, null);
+    }
+
+    @Override
+    public Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return PageHelper.doPageAndSort(pageRequest,
+                () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
+                        0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param));
     }
 
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-                        ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO));
+                        ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param));
     }
 
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-                        ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO));
+                        ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param));
     }
 
     @Override
     public List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType) {
-        return mapper.selectUsersFromMemberRoleByOptions(roleId, memberType, null, sourceType, null);
+        return mapper.selectUsersFromMemberRoleByOptions(roleId, memberType, null, sourceType, null, null);
     }
 
     @Override

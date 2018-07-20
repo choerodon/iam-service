@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.dto;
 
+
 import javax.validation.constraints.NotNull;
 
 /**

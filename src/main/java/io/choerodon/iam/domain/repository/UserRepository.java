@@ -43,10 +43,11 @@ public interface UserRepository {
 
     UserDO selectOne(UserDO user);
 
-    Page<UserDO> pagingQueryWhoBelongsToTheProject(Long projectId, Long userId, PageRequest pageRequest, String param);
+    Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
 
     Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId,
-                                                   String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                   String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   String param);
 
     Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId);

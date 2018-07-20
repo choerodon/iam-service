@@ -20,24 +20,43 @@
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
+    <resultMap id="OrganizationWithRoleDTO" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+        <id property="id" column="id"></id>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="enabled" column="is_enabled"/>
+        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
+            <id property="id" column="role_id"/>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+            <result property="enabled" column="role_is_enabled"/>
+        </collection>
+    </resultMap>
+
     <select id="fulltextSearch" resultMap="OrganizationDO">
-        SELECT * FROM fd_organization
+        SELECT
+          o.*,
+          COUNT(p.id) AS project_count
+        FROM fd_organization o
+        LEFT JOIN fd_project p
+        ON o.id = p.organization_id
         WHERE 1=1
         <if test="organization.name != null">
-            AND name LIKE concat('%',#{organization.name},'%')
+            AND o.name LIKE concat('%',#{organization.name},'%')
         </if>
         <if test="organization.code != null">
-            AND code LIKE concat('%',#{organization.code},'%')
+            AND o.code LIKE concat('%',#{organization.code},'%')
         </if>
         <if test="organization.enabled != null">
-            AND is_enabled = #{organization.enabled}
+            AND o.is_enabled = #{organization.enabled}
         </if>
         <if test="param != null">
             AND(
-            name LIKE concat('%',#{param},'%') OR
-            code LIKE concat('%',#{param},'%')
+            o.name LIKE concat('%',#{param},'%') OR
+            o.code LIKE concat('%',#{param},'%')
             )
         </if>
+        GROUP BY o.id
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
@@ -90,46 +109,34 @@
         fd_project.is_enabled = TRUE
     </select>
 
-    <select id="listOrganizationAndRoleById" resultType="io.choerodon.iam.api.dto.OrganizationWithRoleDTO">
+    <select id="listOrganizationAndRoleById" resultMap="OrganizationWithRoleDTO">
         SELECT
-        fo.name AS organizationName,
-        fo.code AS organizationCode,
-        ir.name AS roleName,
-        ir.code AS roleCode
+        fo.id,
+        fo.name,
+        fo.code,
+        fo.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
         FROM
-        iam_member_role imr
-        INNER JOIN
-        fd_organization fo
-        ON
-        imr.source_id = fo.id
-        INNER JOIN
-        iam_role ir
-        ON
-        imr.role_id = ir.id
-        WHERE imr.member_id = #{memberId} AND imr.source_type = "organization"
-    </select>
-
-    <select id="listProjectAndRoleById" resultType="io.choerodon.iam.api.dto.ProjectWithRoleDTO">
-        SELECT
-        fo.name AS organizationName,
-        fp.name AS projectName,
-        fp.code AS projectCode,
-        ir.name AS roleName,
-        ir.code AS roleCode
-        FROM
-        iam_member_role imr
-        INNER JOIN
-        fd_project fp
-        ON
-        imr.source_id = fp.id
-        INNER JOIN
-        iam_role ir
-        ON
-        imr.role_id = ir.id
-        INNER join
-        fd_organization fo
-        ON
-        fp.organization_id = fo.id
-        WHERE imr.member_id = #{memberId} AND imr.source_type = "project"
+        (
+        SELECT fd_organization.* FROM fd_organization
+        INNER JOIN iam_member_role imr ON imr.source_id = fd_organization.id
+        WHERE imr.source_type = "organization" AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fd_organization.name LIKE concat('%', #{params}, '%') OR
+            fd_organization.code LIKE concat('%', #{params}, '%')
+            )
+        </if>
+        GROUP BY fd_organization.id
+        ORDER BY max(imr.member_id) ASC
+        LIMIT #{start}, #{size}
+        ) fo
+        INNER JOIN iam_member_role imr ON imr.source_id = fo.id
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.source_type = "organization"
+        AND imr.member_id = #{id}
     </select>
 </mapper>

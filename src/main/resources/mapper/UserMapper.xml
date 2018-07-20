@@ -178,6 +178,12 @@
                 AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
             </if>
         </if>
+        <if test="param != null">
+            AND (
+              iu.login_name LIKE concat('%',#{param},'%') OR
+              iu.real_name LIKE concat('%',#{param},'%')
+            )
+        </if>
         ) t
     </select>
 
@@ -202,9 +208,15 @@
                 AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
             </if>
         </if>
+        <if test="param != null">
+            AND (
+                iu.login_name LIKE concat('%',#{param},'%') OR
+                iu.real_name LIKE concat('%',#{param},'%')
+            )
+        </if>
     </select>
 
-    <select id="selectTheUsersOfProjectByParamAndProjectId" resultMap="userDO">
+    <select id="selectUsersByProjectIdAndOptions" resultMap="userDO">
         SELECT iam_user.*
         FROM iam_user
         RIGHT JOIN
@@ -220,6 +232,9 @@
         WHERE 1=1
         <if test="userId != null">
             AND iam_user.id = #{userId}
+        </if>
+        <if test="email != null">
+            AND iam_user.email LIKE concat('%',#{email},'%')
         </if>
         <if test="param != null">
             AND (

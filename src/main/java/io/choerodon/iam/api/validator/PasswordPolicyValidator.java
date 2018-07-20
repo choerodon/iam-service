@@ -33,7 +33,7 @@ public class PasswordPolicyValidator {
         if (passwordPolicyDO == null) {
             throw new CommonException("error.passwordPolicy.not.exist");
         }
-        if (orgId != passwordPolicyDO.getOrganizationId()) {
+        if (!orgId.equals(passwordPolicyDO.getOrganizationId())) {
             throw new CommonException("error.passwordPolicy.organizationId.not.same");
         }
         passwordPolicyDTO.setCode(null);

@@ -30,23 +30,26 @@ public interface UserMapper extends BaseMapper<UserDO> {
                          @Param("sourceType") String sourceType,
                          @Param("param") String param);
 
-    List<UserDO> selectTheUsersOfProjectByParamAndProjectId(@Param("projectId") Long projectId,
-                                                            @Param("userId") Long userId,
-                                                            @Param("param") String param);
+    List<UserDO> selectUsersByProjectIdAndOptions(@Param("projectId") Long projectId,
+                                                  @Param("userId") Long userId,
+                                                  @Param("email") String email,
+                                                  @Param("param") String param);
 
     Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
                                                    @Param("memberType") String memberType,
                                                    @Param("sourceId") Long sourceId,
                                                    @Param("sourceType") String sourceType,
                                                    @Param("roleAssignmentSearchDTO")
-                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                   @Param("param") String param);
 
     List selectUsersFromMemberRoleByOptions(@Param("roleId") Long roleId,
                                             @Param("memberType") String memberType,
                                             @Param("sourceId") Long sourceId,
                                             @Param("sourceType") String sourceType,
                                             @Param("roleAssignmentSearchDTO")
-                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                            @Param("param") String param);
 
 
     List<UserDO> listUsersByIds(@Param("ids") Long[] ids);

@@ -16,4 +16,10 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
 
     List selectProjectsFromMemberRoleByOption(@Param("userId") Long userId,
                                               @Param("projectDO") ProjectDO projectDO);
+
+    List<ProjectDO> pagingQueryProjectAndRolesById(
+            @Param("id") Long id,
+            @Param("start") Integer start,
+            @Param("size") Integer size,
+            @Param("params") String params);
 }

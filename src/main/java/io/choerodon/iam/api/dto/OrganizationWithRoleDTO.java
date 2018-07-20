@@ -1,44 +1,16 @@
 package io.choerodon.iam.api.dto;
 
-public class OrganizationWithRoleDTO {
+import java.util.List;
 
-    private String organizationName;
+public class OrganizationWithRoleDTO extends OrganizationDTO {
 
-    private String organizationCode;
+    private List<RoleDTO> roles;
 
-    private String roleName;
-
-    private String roleCode;
-
-    public String getOrganizationName() {
-        return organizationName;
+    public List<RoleDTO> getRoles() {
+        return roles;
     }
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
-
-    public String getOrganizationCode() {
-        return organizationCode;
-    }
-
-    public void setOrganizationCode(String organizationCode) {
-        this.organizationCode = organizationCode;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
+    public void setRoles(List<RoleDTO> roles) {
+        this.roles = roles;
     }
 }

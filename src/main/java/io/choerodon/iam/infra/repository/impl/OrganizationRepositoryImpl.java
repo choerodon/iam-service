@@ -2,10 +2,13 @@ package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -20,9 +23,12 @@ import java.util.List;
 public class OrganizationRepositoryImpl implements OrganizationRepository {
 
     private OrganizationMapper organizationMapper;
+    private MemberRoleMapper memberRoleMapper;
 
-    public OrganizationRepositoryImpl(OrganizationMapper organizationMapper) {
+    public OrganizationRepositoryImpl(OrganizationMapper organizationMapper,
+                                      MemberRoleMapper memberRoleMapper) {
         this.organizationMapper = organizationMapper;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
     @Override
@@ -98,5 +104,16 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override
     public OrganizationDO selectOne(OrganizationDO organizationDO) {
         return organizationMapper.selectOne(organizationDO);
+    }
+
+    @Override
+    public Page<OrganizationDO> pagingQueryOrganizationAndRoleById(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        int start = page * size;
+        PageInfo pageInfo = new PageInfo(page, size);
+        int count = memberRoleMapper.selectCountBySourceId(id, "organization");
+        List<OrganizationDO> organizationList = organizationMapper.listOrganizationAndRoleById(id, start, size, params);
+        return new Page<>(organizationList, pageInfo, count);
     }
 }

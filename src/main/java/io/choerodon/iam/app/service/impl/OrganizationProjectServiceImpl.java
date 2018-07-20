@@ -208,7 +208,31 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return ConvertHelper.convert(iProjectService.updateProjectEnabled(projectId), ProjectDTO.class);
+        ProjectE project = updateAndSendEvent(projectId, "enableProject", true);
+        return ConvertHelper.convert(project, ProjectDTO.class);
+    }
+
+    private ProjectE updateAndSendEvent(Long projectId, String consumerType, boolean enabled) {
+        ProjectE project;
+        ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
+        projectDO.setEnabled(enabled);
+        if (devopsMessage) {
+            project = new ProjectE();
+            ProjectEventPayload payload = new ProjectEventPayload();
+            payload.setProjectId(projectId);
+            Exception exception = eventProducerTemplate.execute("project", consumerType,
+                    serviceName, payload,
+                    (String uuid) ->
+                            BeanUtils.copyProperties(projectRepository.updateSelective(projectDO), project)
+            );
+            if (exception != null) {
+                throw new CommonException(exception.getMessage());
+            }
+        } else {
+            projectRepository.updateSelective(projectDO);
+            project = iProjectService.updateProjectEnabled(projectId);
+        }
+        return project;
     }
 
     @Override
@@ -217,7 +241,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return ConvertHelper.convert(iProjectService.updateProjectDisabled(projectId), ProjectDTO.class);
+        ProjectE project = updateAndSendEvent(projectId, "disableProject", false);
+        return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
     @Override

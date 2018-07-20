@@ -46,7 +46,7 @@ public class PermissionRepositoryImpl implements PermissionRepository {
 
     @Override
     public List<PermissionDO> selectByRoleId(Long roleId) {
-        return permissionMapper.selectByRoleId(roleId);
+        return permissionMapper.selectByRoleId(roleId, null);
     }
 
     @Override
@@ -94,5 +94,11 @@ public class PermissionRepositoryImpl implements PermissionRepository {
         permissionDO.setCode(code);
         Sort sort = PageHelper.getLocalSort();
         return ConvertHelper.convertList(PageHelper.doSort(sort, () -> permissionMapper.select(permissionDO)), PermissionE.class);
+    }
+
+    @Override
+    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id, String params) {
+        return PageHelper.doPageAndSort(pageRequest,
+                () -> permissionMapper.selectByRoleId(id, params));
     }
 }

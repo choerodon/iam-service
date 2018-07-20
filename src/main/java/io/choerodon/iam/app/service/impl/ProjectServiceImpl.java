@@ -64,9 +64,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, PageRequest pageRequest, String param) {
+    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
         return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryWhoBelongsToTheProject(id, userId, pageRequest, param), UserDTO.class);
+                userRepository.pagingQueryUsersByProjectId(id, userId, email, pageRequest, param), UserDTO.class);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -108,6 +108,27 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO disableProject(Long id) {
         ProjectDO project = projectRepository.selectByPrimaryKey(id);
         project.setEnabled(false);
-        return ConvertHelper.convert(projectRepository.updateSelective(project), ProjectDTO.class);
+        ProjectE projectE = disableAndSendEvent(project);
+        return ConvertHelper.convert(projectE, ProjectDTO.class);
+    }
+
+    private ProjectE disableAndSendEvent(ProjectDO project) {
+        ProjectE projectE;
+        if (devopsMessage) {
+            projectE = new ProjectE();
+            ProjectEventPayload payload = new ProjectEventPayload();
+            payload.setProjectId(project.getId());
+            Exception exception = eventProducerTemplate.execute("project", "disableProject",
+                    serviceName, payload,
+                    (String uuid) ->
+                            BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE)
+            );
+            if (exception != null) {
+                throw new CommonException(exception.getMessage());
+            }
+        } else {
+            projectE = projectRepository.updateSelective(project);
+        }
+        return projectE;
     }
 }
