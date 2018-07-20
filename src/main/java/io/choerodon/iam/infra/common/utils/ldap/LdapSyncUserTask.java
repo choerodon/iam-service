@@ -80,10 +80,9 @@ public class LdapSyncUserTask {
                 continue;
             }
             ldapSyncReport.incrementCount();
-            if (userRepository.selectByLoginName(user.getLoginName()) == null) {
-                users.add(user);
-            }
+            users.add(user);
         }
+        logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
         users.forEach(u -> insertUser(ldapSyncReport, u));
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
@@ -97,12 +96,14 @@ public class LdapSyncUserTask {
     }
 
     private void insertUser(LdapSyncReport ldapSyncReport, UserDO user) {
-        try {
-            organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
-            ldapSyncReport.incrementNewInsert();
-        } catch (Exception e) {
-            logger.info("insert error, login_name = {}, exception : {}", user.getLoginName(), e);
-            ldapSyncReport.incrementError();
+        if (userRepository.selectByLoginName(user.getLoginName()) == null) {
+            try {
+                organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
+                ldapSyncReport.incrementNewInsert();
+            } catch (Exception e) {
+                logger.info("insert error, login_name = {}, exception : {}", user.getLoginName(), e);
+                ldapSyncReport.incrementError();
+            }
         }
 //        if (oldUser == null) {
             //插入操作
