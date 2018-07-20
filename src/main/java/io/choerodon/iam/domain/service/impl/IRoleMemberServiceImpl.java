@@ -165,17 +165,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
         UserMemberEventPayload userMemberEventMsg = null;
         //查询移除的role所包含的所有Label
         if (doSendEvent) {
-            List<LabelDO> labels = labelRepository.selectByRoleId(mr.getRoleId());
-            boolean containGitlabLabel = false;
-            for (LabelDO label : labels) {
-                //移除的角色label包含gitlab.owner标签或gitlab.developer标签
-                if (RoleLabel.GITLAB_OWMER.value().equals(label.getName())
-                        || RoleLabel.GITLAB_DEVELOPER.value().equals(label.getName())) {
-                    containGitlabLabel = true;
-                    break;
-                }
-            }
-            if (containGitlabLabel) {
                 userMemberEventMsg = new UserMemberEventPayload();
                 userMemberEventMsg.setResourceId(sourceId);
                 userMemberEventMsg.setResourceType(sourceType);
@@ -185,7 +174,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 }
                 userMemberEventMsg.setUsername(user.getLoginName());
                 userMemberEventMsg.setUserId(memberId);
-            }
         }
         return userMemberEventMsg;
     }
