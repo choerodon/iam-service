@@ -25,6 +25,10 @@ public class LabelDO extends AuditDomain {
 
     private String type;
 
+    private String level;
+
+    private String description;
+
     public Long getId() {
         return id;
     }
@@ -47,5 +51,21 @@ public class LabelDO extends AuditDomain {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
