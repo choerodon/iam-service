@@ -16,27 +16,28 @@ public class LabelE {
 
     private Long objectVersionNumber;
 
-    public LabelE(Long id, String name, String type, Long objectVersionNumber) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getType() {
         return type;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getLevel() {
@@ -53,5 +54,13 @@ public class LabelE {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
