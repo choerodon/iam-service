@@ -26,4 +26,13 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
         }
         addUniqueConstraint(tableName: 'iam_label', columnNames: 'name, type')
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-07-23-iam-label-add-column') {
+        addColumn(tableName: 'iam_label') {
+            column(name: 'level', type: "VARCHAR(32)", remarks: '层级', afterColumn: 'type') {
+                constraints(nullable: false)
+            }
+            column(name: 'description', type: "VARCHAR(128)", remarks: '描述', afterColumn: 'level')
+        }
+    }
 }
