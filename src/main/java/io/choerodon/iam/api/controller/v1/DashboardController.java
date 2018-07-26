@@ -10,6 +10,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.service.DashboardService;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -76,6 +77,8 @@ public class DashboardController {
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "level", required = false) String level,
             @RequestParam(required = false) String[] params) {
+        ResourceLevelValidator.validate(level);
+
         DashboardDTO dashboardDTO = new DashboardDTO();
         dashboardDTO.setName(name);
         dashboardDTO.setCode(code);

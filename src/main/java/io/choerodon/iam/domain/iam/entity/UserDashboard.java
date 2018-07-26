@@ -30,6 +30,25 @@ public class UserDashboard extends AuditDomain {
     public UserDashboard() {
     }
 
+    public UserDashboard(Long userId, String level, Long sourceId) {
+        this.userId = userId;
+        this.level = level;
+        this.sourceId = sourceId;
+    }
+
+    public UserDashboard(
+            Long dashboardId,
+            Long userId,
+            String level,
+            Long sourceId,
+            Integer sort) {
+        this.dashboardId = dashboardId;
+        this.userId = userId;
+        this.level = level;
+        this.sourceId = sourceId;
+        this.sort = sort;
+    }
+
     public Long getId() {
         return id;
     }
