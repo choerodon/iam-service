@@ -1,5 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.SagaClient;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -7,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.saga.Saga;
 import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
@@ -43,10 +48,15 @@ import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UP
  */
 @Service
 @RefreshScope
+@Saga(code = "iam-create-project", description = "iam服务的创建项目", inputSchema = "")
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
+
+    @Value("${choerodon.devops.asgard.message:false}")
+    private boolean asgardMessage;
 
     @Value("${spring.application.name:default}")
     private String serviceName;
@@ -67,6 +77,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private LabelRepository labelRepository;
 
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
                                           UserRepository userRepository,
@@ -75,7 +88,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           RoleRepository roleRepository,
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
-                                          EventProducerTemplate eventProducerTemplate) {
+                                          EventProducerTemplate eventProducerTemplate,
+                                          SagaClient sagaClient) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -84,17 +98,21 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
         this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional
     @Override
     public ProjectDTO createProject(ProjectDTO projectDTO) {
+
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
         final ProjectE projectE = ConvertHelper.convert(projectDTO, ProjectE.class);
         ProjectDTO dto;
-        if (devopsMessage) {
+        if (asgardMessage){
+           dto = createProjectBySaga(projectE);
+        }else if (devopsMessage) {
             dto = new ProjectDTO();
             CustomUserDetails details = DetailsHelper.getUserDetails();
             UserE user = userRepository.selectByLoginName(details.getUsername());
@@ -124,6 +142,30 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         return dto;
     }
+
+    private ProjectDTO createProjectBySaga(final ProjectE projectE) {
+        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        projectEventMsg.setUserName(details.getUsername());
+        projectEventMsg.setUserId(details.getUserId());
+        ProjectE newProjectE = projectRepository.create(projectE);
+        projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
+        projectEventMsg.setProjectId(newProjectE.getId());
+        projectEventMsg.setProjectCode(newProjectE.getCode());
+        projectEventMsg.setProjectName(newProjectE.getName());
+        OrganizationDO organizationDO =
+                organizationRepository.selectByPrimaryKey(newProjectE.getOrganizationId());
+        projectEventMsg.setOrganizationCode(organizationDO.getCode());
+        projectEventMsg.setOrganizationName(organizationDO.getName());
+        try {
+            String input = mapper.writeValueAsString(projectEventMsg);
+            sagaClient.startSaga("iam-create-project", new StartInstanceDTO(input, details.getUserId(), "project",newProjectE.getId() + ""));
+        } catch (JsonProcessingException e) {
+            throw new CommonException("error.createProjectBySaga.json");
+        }
+        return ConvertHelper.convert(newProjectE, ProjectDTO.class);
+    }
+
 
     private Set<String> initMemberRole(ProjectE project) {
         List<RoleDO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role");
