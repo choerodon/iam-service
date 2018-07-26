@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author dongfan117@gmail.com
  */
 @RestController
-@RequestMapping(value = "/v1/dashboards/")
+@RequestMapping(value = "/v1/dashboards")
 public class DashboardController {
     private DashboardService dashboardService;
 
@@ -32,15 +32,15 @@ public class DashboardController {
     /**
      * 根据dashboardId更新Dashboard
      *
-     * @param dashboardId   Dashboard Id
-     * @param dashboardDto  Dashboard对象
+     * @param dashboardId  Dashboard Id
+     * @param dashboardDto Dashboard对象
      * @return 更新成功的Dashboard对象
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "修改dashboard")
     @PostMapping(value = "/{dashboard_id}")
     public ResponseEntity<DashboardDTO> update(@PathVariable("dashboard_id") Long dashboardId,
-                                            @RequestBody DashboardDTO dashboardDto) {
+                                               @RequestBody DashboardDTO dashboardDto) {
         return new ResponseEntity<>(dashboardService.update(dashboardId, dashboardDto), HttpStatus.OK);
     }
 
@@ -60,9 +60,9 @@ public class DashboardController {
     /**
      * 分页模糊查询Dashboard
      *
-     * @param pageRequest    分页对象
-     * @param name           Dashboard名称
-     * @param params         模糊查询参数
+     * @param pageRequest 分页对象
+     * @param name        Dashboard名称
+     * @param params      模糊查询参数
      * @return 查询到的Dashboard分页对象
      */
     @Permission(level = ResourceLevel.SITE)
@@ -70,13 +70,16 @@ public class DashboardController {
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<DashboardDTO>> list(
-                                                @ApiIgnore
-                                                @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                        PageRequest pageRequest,
-                                                @RequestParam(required = false) String name,
-                                                @RequestParam(required = false) String[] params) {
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "level", required = false) String level,
+            @RequestParam(required = false) String[] params) {
         DashboardDTO dashboardDTO = new DashboardDTO();
         dashboardDTO.setName(name);
+        dashboardDTO.setCode(code);
+        dashboardDTO.setLevel(level);
 
         return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }

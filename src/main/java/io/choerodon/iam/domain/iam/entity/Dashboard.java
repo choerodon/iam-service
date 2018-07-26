@@ -8,6 +8,7 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author dongfan117@gmail.com
@@ -16,7 +17,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @MultiLanguage
 @Table(name = "iam_dashboard")
-public class Dashboard {
+public class Dashboard extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -31,6 +32,21 @@ public class Dashboard {
     private Integer sort;
 
     public Dashboard() {
+    }
+
+    public Dashboard(
+            Long id,
+            String name,
+            String title,
+            String description,
+            String icon,
+            Long objectVersionNumber) {
+        this.id = id;
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.icon = icon;
+        this.setObjectVersionNumber(objectVersionNumber);
     }
 
     public Long getId() {
