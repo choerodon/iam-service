@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import io.choerodon.iam.api.dto.UserDashboardDTO;
 import io.choerodon.iam.api.service.UserDashboardService;
 import io.choerodon.iam.domain.iam.entity.UserDashboard;
 import io.choerodon.iam.infra.mapper.UserDashboardMapper;
@@ -20,12 +21,13 @@ public class UserDashboardServiceImpl implements UserDashboardService {
     }
 
     @Override
-    public List<UserDashboard> list(String level, Long source_id) {
+    public List<UserDashboardDTO> list(String level, Long source_id) {
+
         return null;
     }
 
     @Override
-    public List<UserDashboard> update(String level, Long source_Id, List<UserDashboard> dashboardList) {
+    public List<UserDashboardDTO> update(String level, Long source_Id, List<UserDashboard> dashboardList) {
         return null;
     }
 }
