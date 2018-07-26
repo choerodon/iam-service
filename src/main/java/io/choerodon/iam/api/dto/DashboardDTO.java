@@ -18,19 +18,6 @@ public class DashboardDTO {
     public DashboardDTO() {
     }
 
-    public DashboardDTO(Long id, String code, String name, String title, String namespace, String level, String description, String icon, Integer sort, Long objectVersionNumber) {
-        this.id = id;
-        this.code = code;
-        this.name = name;
-        this.title = title;
-        this.namespace = namespace;
-        this.level = level;
-        this.description = description;
-        this.icon = icon;
-        this.sort = sort;
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
     public Long getId() {
         return id;
     }

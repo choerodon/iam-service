@@ -49,6 +49,10 @@ public class Dashboard extends AuditDomain {
         this.setObjectVersionNumber(objectVersionNumber);
     }
 
+    public Dashboard(String level) {
+        this.level = level;
+    }
+
     public Long getId() {
         return id;
     }
