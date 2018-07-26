@@ -2,7 +2,6 @@ package io.choerodon.iam.domain.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
@@ -71,7 +70,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             }
         } catch (IOException e) {
             logger.info("read message failed: {}", e);
-            throw new CommonException("error.permission.parse");
+//            throw new CommonException("error.permission.parse");
         }
     }
 
@@ -238,7 +237,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         for (String code : codes) {
             RoleE role = roleRepository.selectByCode(code);
             if (role == null) {
-                throw new CommonException("error.init.role.not.exist", code);
+                logger.info("init roles do not exist, code: {}", code);
+//                throw new CommonException("error.init.role.not.exist", code);
             }
             map.put(code, role);
         }
