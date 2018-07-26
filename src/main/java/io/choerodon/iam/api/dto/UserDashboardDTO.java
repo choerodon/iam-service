@@ -1,17 +1,29 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @author dongfan117@gmail.com
  */
 public class UserDashboardDTO {
     private Long id;
     private Long userId;
-    private Long dashboardId;
     private String visible;
+    @NotNull(message = "error.dashboard.sort.null")
     private Integer sort;
     private String level;
     private Long sourceId;
     private Long objectVersionNumber;
+
+    // Dashboard
+    @NotNull(message = "error.dashboardId.null")
+    private Long dashboardId;
+    private String dashboardCode;
+    private String dashboardName;
+    private String dashboardTitle;
+    private String dashboardNamespace;
+    private String dashboardDescription;
+    private String dashboardIcon;
 
     public UserDashboardDTO() {
     }
@@ -94,5 +106,53 @@ public class UserDashboardDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getDashboardCode() {
+        return dashboardCode;
+    }
+
+    public void setDashboardCode(String dashboardCode) {
+        this.dashboardCode = dashboardCode;
+    }
+
+    public String getDashboardName() {
+        return dashboardName;
+    }
+
+    public void setDashboardName(String dashboardName) {
+        this.dashboardName = dashboardName;
+    }
+
+    public String getDashboardTitle() {
+        return dashboardTitle;
+    }
+
+    public void setDashboardTitle(String dashboardTitle) {
+        this.dashboardTitle = dashboardTitle;
+    }
+
+    public String getDashboardNamespace() {
+        return dashboardNamespace;
+    }
+
+    public void setDashboardNamespace(String dashboardNamespace) {
+        this.dashboardNamespace = dashboardNamespace;
+    }
+
+    public String getDashboardDescription() {
+        return dashboardDescription;
+    }
+
+    public void setDashboardDescription(String dashboardDescription) {
+        this.dashboardDescription = dashboardDescription;
+    }
+
+    public String getDashboardIcon() {
+        return dashboardIcon;
+    }
+
+    public void setDashboardIcon(String dashboardIcon) {
+        this.dashboardIcon = dashboardIcon;
     }
 }

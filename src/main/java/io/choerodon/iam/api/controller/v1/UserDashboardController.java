@@ -12,7 +12,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.UserDashboardDTO;
 import io.choerodon.iam.api.service.UserDashboardService;
-import io.choerodon.iam.domain.iam.entity.UserDashboard;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -41,6 +41,7 @@ public class UserDashboardController {
     public ResponseEntity<List<UserDashboardDTO>> list(
             @RequestParam(name = "level") String level,
             @RequestParam(name = "source_id", defaultValue = "0") Long sourceId) {
+        ResourceLevelValidator.validate(level);
         return new ResponseEntity<>(userDashboardService.list(level, sourceId), HttpStatus.OK);
     }
 
@@ -56,8 +57,9 @@ public class UserDashboardController {
     @PostMapping("/dashboard")
     public ResponseEntity<List<UserDashboardDTO>> update(
             @RequestParam(name = "level") String level,
-            @RequestParam(name = "source_id") Long sourceId,
-            @RequestBody @Valid ValidList<UserDashboard> dashboardList) {
+            @RequestParam(name = "source_id", defaultValue = "0") Long sourceId,
+            @RequestBody @Valid ValidList<UserDashboardDTO> dashboardList) {
+        ResourceLevelValidator.validate(level);
         return new ResponseEntity<>(userDashboardService.update(level, sourceId, dashboardList), HttpStatus.OK);
     }
 }
