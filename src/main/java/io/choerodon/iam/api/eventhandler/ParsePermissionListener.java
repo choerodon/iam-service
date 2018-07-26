@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 /**
  * 根据接口解析权限
@@ -25,7 +27,12 @@ public class ParsePermissionListener {
     @KafkaListener(topics = SWAGGER_TOPIC_NAME)
     public void parse(byte[] bytes) {
         LOGGER.info("### begin to parse message");
-        String message = new String(bytes);
-        parsePermissionService.parser(message);
+        try {
+            Observable.just(new String(bytes))
+                    .subscribeOn(Schedulers.computation())
+                    .subscribe(parsePermissionService::parser);
+        } catch (Exception e) {
+            LOGGER.info("rx.java observable exception: {}", e.getMessage());
+        }
     }
 }
