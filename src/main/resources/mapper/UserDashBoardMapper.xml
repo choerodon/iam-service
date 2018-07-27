@@ -22,12 +22,10 @@
 			`iam_user_dashboard` ud
 			RIGHT JOIN `iam_dashboard` d ON d.level = ud.level
 		WHERE
-			ud.user_id = #{userDashboard.userId}
-			AND (
-			( d.LEVEL IN ( 'site', #{userDashboard.level} ) )
+			d.LEVEL IN ( 'site', #{userDashboard.level} )
 			OR ( ud.LEVEL IN ( 'site', #{userDashboard.level} )
-				AND ud.source_id = #{userDashboard.sourceId} AND d.id = ud.dashboard_id )
-			)
+				AND ud.source_id = #{userDashboard.sourceId} AND d.id = ud.dashboard_id
+				AND ud.user_id = #{userDashboard.userId})
 		GROUP BY d.id
     </select>
 
