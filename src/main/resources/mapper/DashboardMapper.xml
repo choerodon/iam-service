@@ -5,7 +5,6 @@
     <select id="fulltextSearch" resultType="io.choerodon.iam.domain.iam.entity.Dashboard">
         SELECT * FROM iam_dashboard
         WHERE 1=1
-          AND level = 'site'
         <if test="dashboard.name != null">
             AND name LIKE concat('%',#{dashboard.name},'%')
         </if>
@@ -13,7 +12,7 @@
             AND code LIKE concat('%',#{dashboard.code},'%')
         </if>
         <if test="dashboard.level != null">
-            OR level = #{dashboard.level}
+            AND level = #{dashboard.level}
         </if>
         <if test="param != null">
             AND
