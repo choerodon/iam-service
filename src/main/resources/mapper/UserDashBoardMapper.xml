@@ -9,9 +9,9 @@
 			IFNULL(ud.is_visible, true) visible,
 			IFNULL(ud.source_id, #{userDashboard.sourceId}) source_id,
 			IFNULL(ud.object_version_number, 0) object_version_number,
-			IFNULL( ud.dashboard_id, d.id ) dashboard_id,
-			IFNULL( ud.sort, d.sort ) sort,
-			IFNULL( ud.LEVEL, d.LEVEL ) level,
+			IFNULL(d.id, ud.dashboard_id) dashboard_id,
+			IFNULL(ud.sort, d.sort) sort,
+			IFNULL(ud.level, d.level) level,
 			d.CODE dashboard_code,
 			d.NAME dashboard_name,
 			d.title dashboard_title,
@@ -22,13 +22,28 @@
 			`iam_user_dashboard` ud
 			RIGHT JOIN `iam_dashboard` d ON d.level = ud.level
 		WHERE
-			d.level = #{userDashboard.level}
+			ud.user_id = #{userDashboard.userId}
 			AND (
-			( NOT EXISTS (
-				SELECT iud.id FROM iam_user_dashboard iud WHERE iud.source_id = #{userDashboard.sourceId} LIMIT 1 ) )
-			OR ( ud.source_id = #{userDashboard.sourceId} AND ud.user_id = #{userDashboard.userId} )
+			( d.LEVEL IN ( 'site', #{userDashboard.level} ) )
+			OR ( ud.LEVEL IN ( 'site', #{userDashboard.level} )
+				AND ud.source_id = #{userDashboard.sourceId} AND d.id = ud.dashboard_id )
 			)
+		GROUP BY d.id
     </select>
+
+
+	<select id="dashboardExist" resultType="java.lang.Long">
+		SELECT
+		count( ud.id )
+		FROM
+		iam_user_dashboard ud
+		WHERE
+		ud.LEVEL IN ( 'site', #{userDashboard.level} )
+		AND ud.user_id = #{userDashboard.userId}
+		AND ud.source_id = #{userDashboard.sourceId}
+		AND ud.dashboard_id NOT IN (
+		 SELECT id FROM iam_dashboard d WHERE d.LEVEL IN ( 'site', #{userDashboard.level} ) )
+	</select>
 </mapper>
 
 
