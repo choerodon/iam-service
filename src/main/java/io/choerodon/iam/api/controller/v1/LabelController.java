@@ -32,7 +32,7 @@ public class LabelController extends BaseController {
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<LabelDTO>> listByType(LabelDTO label) {
-        LabelValidator.validate(label);
+//        LabelValidator.validate(label);
         return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
     }
 
