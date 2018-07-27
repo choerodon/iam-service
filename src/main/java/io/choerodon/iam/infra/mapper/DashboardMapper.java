@@ -22,4 +22,6 @@ public interface DashboardMapper extends BaseMapper<Dashboard> {
     List<Dashboard> fulltextSearch(
             @Param("dashboard") Dashboard dashboard,
             @Param("param") String param);
+
+    List<Dashboard> selectByLevel(@Param("level") String level);
 }
