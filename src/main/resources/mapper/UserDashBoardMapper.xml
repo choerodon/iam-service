@@ -7,7 +7,7 @@
 			ud.id,
 			IFNULL(ud.user_id, #{userDashboard.userId}) user_id,
 			IFNULL(ud.is_visible, true) visible,
-			IFNULL(ud.source_id, #{userDashboard.sourceId}) source_id,
+			IFNULL(#{userDashboard.sourceId}, ud.source_id) source_id,
 			IFNULL(ud.object_version_number, 0) object_version_number,
 			IFNULL(d.id, ud.dashboard_id) dashboard_id,
 			IFNULL(ud.sort, d.sort) sort,
@@ -20,11 +20,11 @@
 			d.icon dashboard_icon
 		FROM
 			`iam_user_dashboard` ud
-			RIGHT JOIN `iam_dashboard` d ON d.level = ud.level
+			RIGHT JOIN `iam_dashboard` d ON d.id = ud.dashboard_id
 		WHERE
 			d.LEVEL IN ( 'site', #{userDashboard.level} )
 			OR ( ud.LEVEL IN ( 'site', #{userDashboard.level} )
-				AND ud.source_id = #{userDashboard.sourceId} AND d.id = ud.dashboard_id
+				AND ud.source_id = #{userDashboard.sourceId}
 				AND ud.user_id = #{userDashboard.userId})
 		GROUP BY d.id
     </select>
