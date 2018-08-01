@@ -23,4 +23,3 @@ data:
 eureka:
   client:
     enabled: false
-logging.level.org.hibernate: debug
