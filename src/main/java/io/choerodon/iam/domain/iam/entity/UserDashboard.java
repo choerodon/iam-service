@@ -22,7 +22,7 @@ public class UserDashboard extends AuditDomain {
     private Long userId;
     private Long dashboardId;
     @Column(name = "is_visible")
-    private String visible;
+    private Boolean visible;
     private Integer sort;
     private String level;
     private Long sourceId;
@@ -73,11 +73,11 @@ public class UserDashboard extends AuditDomain {
         this.dashboardId = dashboardId;
     }
 
-    public String getVisible() {
+    public Boolean getVisible() {
         return visible;
     }
 
-    public void setVisible(String visible) {
+    public void setVisible(Boolean visible) {
         this.visible = visible;
     }
 
