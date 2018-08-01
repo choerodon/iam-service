@@ -52,7 +52,7 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (null == userDetails) {
             return new ArrayList<>();
         }
-        if (0L == userDashboardMapper.dashboardExist(new UserDashboard(userDetails.getUserId(), level, sourceId))) {
+        if (userDashboardMapper.selectCount(new UserDashboard(userDetails.getUserId(), sourceId)) != dashboardMapper.selectByLevel(level).size()) {
             List<Dashboard> dashboardList = dashboardMapper.selectByLevel(level);
 
             for (Dashboard dashboard : dashboardList) {
