@@ -39,11 +39,11 @@ public class UserDashboardServiceImpl implements UserDashboardService {
     @Override
     public List<UserDashboardDTO> list(String level, Long sourceId) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        if (null == userDetails) {
-            return new ArrayList<>();
-        }
-        memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
-        return userDashboardMapper.selectWithDashboard(new UserDashboard(userDetails.getUserId(), level, sourceId));
+//        if (null == userDetails) {
+//            return new ArrayList<>();
+//        }
+//        memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
+        return userDashboardMapper.selectWithDashboard(new UserDashboard(1L, level, sourceId));
     }
 
     @Override
@@ -69,11 +69,11 @@ public class UserDashboardServiceImpl implements UserDashboardService {
                 if (ResourceLevel.SITE.equals(level)) {
                     userDashboard.setSourceId(0L);
                 }
-                Long id = Long.valueOf(userDashboardMapper.insertSelective(userDashboard));
+                userDashboardMapper.insertSelective(userDashboard);
 
                 for (UserDashboardDTO userDashboardDTO : userDashboardList) {
                     if (dashboard.getId() == userDashboardDTO.getDashboardId()) {
-                        userDashboardDTO.setId(id);
+                        userDashboardDTO.setId(userDashboard.getId());
                         break;
                     }
                 }
