@@ -110,9 +110,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         final ProjectE projectE = ConvertHelper.convert(projectDTO, ProjectE.class);
         ProjectDTO dto;
-        if (asgardMessage){
-           dto = createProjectBySaga(projectE);
-        }else if (devopsMessage) {
+        if (asgardMessage) {
+            dto = createProjectBySaga(projectE);
+        } else if (devopsMessage) {
             dto = new ProjectDTO();
             CustomUserDetails details = DetailsHelper.getUserDetails();
             UserE user = userRepository.selectByLoginName(details.getUsername());
@@ -159,7 +159,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setOrganizationName(organizationDO.getName());
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
-            sagaClient.startSaga("iam-create-project", new StartInstanceDTO(input, details.getUserId(), "project",newProjectE.getId() + ""));
+            sagaClient.startSaga("iam-create-project", new StartInstanceDTO(input, "project", newProjectE.getId() + ""));
         } catch (JsonProcessingException e) {
             throw new CommonException("error.createProjectBySaga.json");
         }
