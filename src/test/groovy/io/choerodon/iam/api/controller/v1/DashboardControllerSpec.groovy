@@ -2,7 +2,6 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.Sum
 import io.choerodon.iam.domain.iam.entity.Dashboard
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,6 +12,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
  * @author dongfan117@gmail.com
  */
@@ -23,7 +23,6 @@ class DashboardControllerSpec extends Specification {
     private DashboardMapper dashboardMapper
     @Autowired
     private TestRestTemplate restTemplate
-    def sum = new Sum();
     @Shared
     List<Dashboard> dashboardList = new ArrayList<>()
 
@@ -78,8 +77,6 @@ class DashboardControllerSpec extends Specification {
     }
 
     def "Update"() {
-        expect:
-        sum.sum(1, 1) == 2
     }
 
     def "Query"() {
