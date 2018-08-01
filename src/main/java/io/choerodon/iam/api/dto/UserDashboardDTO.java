@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 public class UserDashboardDTO {
     private Long id;
     private Long userId;
-    private String visible;
+    private Boolean visible;
     @NotNull(message = "error.dashboard.sort.null")
     private Integer sort;
     private String level;
@@ -31,7 +31,7 @@ public class UserDashboardDTO {
     public UserDashboardDTO(Long id,
                             Long userId,
                             Long dashboardId,
-                            String visible,
+                            Boolean visible,
                             Integer sort,
                             String level,
                             Long objectVersionNumber) {
@@ -68,11 +68,11 @@ public class UserDashboardDTO {
         this.dashboardId = dashboardId;
     }
 
-    public String getVisible() {
+    public Boolean getVisible() {
         return visible;
     }
 
-    public void setVisible(String visible) {
+    public void setVisible(Boolean visible) {
         this.visible = visible;
     }
 
