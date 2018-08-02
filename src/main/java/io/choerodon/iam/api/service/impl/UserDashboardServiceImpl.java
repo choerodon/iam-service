@@ -81,6 +81,9 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         }
 
         for (UserDashboardDTO userDashboardDTO : userDashboardList) {
+            userDashboardDTO.setUserId(userDetails.getUserId());
+            userDashboardDTO.setLevel(level);
+            userDashboardDTO.setSourceId(sourceId);
             userDashboardMapper.updateByPrimaryKeySelective(modelMapper.map(userDashboardDTO, UserDashboard.class));
         }
         return list(level, sourceId);
