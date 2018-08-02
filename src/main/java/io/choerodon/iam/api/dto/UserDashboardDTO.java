@@ -16,7 +16,7 @@ public class UserDashboardDTO {
     private Long objectVersionNumber;
 
     // Dashboard
-    @NotNull(message = "error.dashboardId.null")
+    @NotNull(message = "error.dashboard.id.null")
     private Long dashboardId;
     private String dashboardCode;
     private String dashboardName;
