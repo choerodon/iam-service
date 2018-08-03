@@ -42,6 +42,9 @@ public class UserDashboardController {
             @RequestParam(name = "level") String level,
             @RequestParam(name = "source_id", defaultValue = "0") Long sourceId) {
         ResourceLevelValidator.validate(level);
+        if (ResourceLevel.SITE.value().equals(level)) {
+            sourceId = 0L;
+        }
         return new ResponseEntity<>(userDashboardService.list(level, sourceId), HttpStatus.OK);
     }
 
@@ -60,6 +63,9 @@ public class UserDashboardController {
             @RequestParam(name = "source_id", defaultValue = "0") Long sourceId,
             @RequestBody @Valid ValidList<UserDashboardDTO> dashboardList) {
         ResourceLevelValidator.validate(level);
+        if (ResourceLevel.SITE.value().equals(level)) {
+            sourceId = 0L;
+        }
         return new ResponseEntity<>(userDashboardService.update(level, sourceId, dashboardList), HttpStatus.OK);
     }
 }
