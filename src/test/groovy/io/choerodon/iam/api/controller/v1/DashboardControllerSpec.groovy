@@ -14,6 +14,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
  * @author dongfan117@gmail.com
  */
@@ -21,75 +22,81 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Import(IntegrationTestConfiguration)
 class DashboardControllerSpec extends Specification {
     private static String path = "/v1/dashboards"
-
+    @Shared
+    boolean sharedSetupDone = false;
     @Autowired
     private DashboardMapper dashboardMapper
+
     @Autowired
     private TestRestTemplate restTemplate
     @Shared
     List<Dashboard> dashboardList = new ArrayList<>()
 
     void setup() {
-        given: '初始化dashboard'
+        if (!sharedSetupDone) {
+            given: '初始化dashboard'
 
-        for (int i = 0; i < 3; i++) {
-            Dashboard dashboard = new Dashboard();
-            dashboard.setCode("site-test-" + i);
-            dashboard.setDescription("site-test-desc-" + i);
-            dashboard.setName("site-test-name-" + i)
-            dashboard.setNamespace("iam")
-            dashboard.setIcon("IAM")
-            dashboard.setLevel("site")
-            dashboard.setSort(i + 1)
-            dashboard.setTitle("site-test-title-" + i)
-            dashboardList.add(dashboard)
-        }
-        for (int i = 0; i < 4; i++) {
-            Dashboard dashboard = new Dashboard();
-            dashboard.setCode("project-test-" + i);
-            dashboard.setDescription("project-test-desc-" + i);
-            dashboard.setName("project-test-name-" + i)
-            dashboard.setNamespace("iam")
-            dashboard.setIcon("IAM")
-            dashboard.setLevel("project")
-            dashboard.setSort(i + 1)
-            dashboard.setTitle("project-test-title-" + i)
-            dashboardList.add(dashboard)
-        }
-        for (int i = 0; i < 5; i++) {
-            Dashboard dashboard = new Dashboard();
-            dashboard.setCode("org-test-" + i);
-            dashboard.setDescription("org-test-desc-" + i);
-            dashboard.setName("org-test-name-" + i)
-            dashboard.setNamespace("iam")
-            dashboard.setIcon("IAM")
-            dashboard.setLevel("organization")
-            dashboard.setSort(i + 1)
-            dashboard.setTitle("org-test-title-" + i)
-            dashboardList.add(dashboard)
-        }
+            for (int i = 0; i < 3; i++) {
+                Dashboard dashboard = new Dashboard();
+                dashboard.setCode("site-test-" + i);
+                dashboard.setDescription("site-test-desc-" + i);
+                dashboard.setName("site-test-name-" + i)
+                dashboard.setNamespace("iam")
+                dashboard.setIcon("IAM")
+                dashboard.setLevel("site")
+                dashboard.setSort(i + 1)
+                dashboard.setTitle("site-test-title-" + i)
+                dashboardList.add(dashboard)
+            }
+            for (int i = 0; i < 4; i++) {
+                Dashboard dashboard = new Dashboard();
+                dashboard.setCode("project-test-" + i);
+                dashboard.setDescription("project-test-desc-" + i);
+                dashboard.setName("project-test-name-" + i)
+                dashboard.setNamespace("iam")
+                dashboard.setIcon("IAM")
+                dashboard.setLevel("project")
+                dashboard.setSort(i + 1)
+                dashboard.setTitle("project-test-title-" + i)
+                dashboardList.add(dashboard)
+            }
+            for (int i = 0; i < 5; i++) {
+                Dashboard dashboard = new Dashboard();
+                dashboard.setCode("org-test-" + i);
+                dashboard.setDescription("org-test-desc-" + i);
+                dashboard.setName("org-test-name-" + i)
+                dashboard.setNamespace("iam")
+                dashboard.setIcon("IAM")
+                dashboard.setLevel("organization")
+                dashboard.setSort(i + 1)
+                dashboard.setTitle("org-test-title-" + i)
+                dashboardList.add(dashboard)
+            }
 
-        when: '批量插入dashboard'
-        def count = 0;
-        for (Dashboard dashboard : dashboardList) {
-            count = count + dashboardMapper.insert(dashboard)
-        }
+            when: '批量插入dashboard'
+            def count = 0;
+            for (Dashboard dashboard : dashboardList) {
+                count = count + dashboardMapper.insert(dashboard)
+            }
 
-        then: '批量插入成功'
-        count == 12
+            then: '批量插入成功'
+            count == 12
+
+            sharedSetupDone = true
+        }
     }
 
 
     def "List"() {
         given: "单页查询dashboard list"
-        Map<String, Object> parmMap = new HashMap();
-        parmMap.put("page", 0)
-        parmMap.put("size", 10)
+        Map<String, Object> paramMap = new HashMap();
+        paramMap.put("page", 0)
+        paramMap.put("size", 10)
 
         when: "默认查询"
 
         def entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}', Page.class, parmMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}', Page.class, paramMap)
         then: '默认查询成功'
         entity.statusCode.is2xxSuccessful() == true
         entity.body.getTotalPages() == 2
@@ -97,9 +104,9 @@ class DashboardControllerSpec extends Specification {
         entity.getBody().size() == 10
 
         when: "根据level 查询"
-        parmMap.put("level", "project")
+        paramMap.put("level", "project")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}', Page.class, parmMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}', Page.class, paramMap)
         then: '根据level 查询成功'
         entity.statusCode.is2xxSuccessful() == true
         entity.body.getTotalPages() == 1
@@ -107,9 +114,9 @@ class DashboardControllerSpec extends Specification {
         entity.getBody().size() == 4
 
         when: "根据name 查询"
-        parmMap.put("name", "org-test-name")
+        paramMap.put("name", "org-test-name")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&name={name}', Page.class, parmMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&name={name}', Page.class, paramMap)
         then: '根据name 查询成功'
         entity.statusCode.is2xxSuccessful() == true
         entity.body.getTotalPages() == 1
@@ -117,9 +124,9 @@ class DashboardControllerSpec extends Specification {
         entity.getBody().size() == 5
 
         when: "根据code 查询"
-        parmMap.put("code", "test")
+        paramMap.put("code", "test")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&code={code}', Page.class, parmMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&code={code}', Page.class, paramMap)
         then: '根据code 查询成功'
         entity.statusCode.is2xxSuccessful() == true
         entity.body.getTotalPages() == 2
@@ -127,14 +134,14 @@ class DashboardControllerSpec extends Specification {
         entity.getBody().size() == 10
 
         when: "根据所有条件查询"
-        Map<String, Object> allParmMap = new HashMap();
-        allParmMap.put("page", 0)
-        allParmMap.put("size", 5)
-        allParmMap.put("code", "test")
-        allParmMap.put("level", "project")
-        allParmMap.put("name", "name-2")
+        Map<String, Object> allParamMap = new HashMap();
+        allParamMap.put("page", 0)
+        allParamMap.put("size", 5)
+        allParamMap.put("code", "test")
+        allParamMap.put("level", "project")
+        allParamMap.put("name", "name-2")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}&name={name}&code={code}', Page.class, allParmMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}&name={name}&code={code}', Page.class, allParamMap)
         then: '根据所有条件查询成功'
         entity.statusCode.is2xxSuccessful() == true
         entity.body.getTotalPages() == 1
@@ -213,5 +220,4 @@ class DashboardControllerSpec extends Specification {
         entity.getBody().getTitle().equals(dashboardDTO.getTitle())
         entity.getBody().getObjectVersionNumber() == 2
     }
-
 }
