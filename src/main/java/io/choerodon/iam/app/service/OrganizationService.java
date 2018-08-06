@@ -1,8 +1,10 @@
 package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.BatchImportResultDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author wuguokai
@@ -20,4 +22,6 @@ public interface OrganizationService {
     OrganizationDTO disableOrganization(Long organizationId);
 
     void check(OrganizationDTO organization);
+
+    BatchImportResultDTO importUsersFromExcel(Long id, MultipartFile multipartFile);
 }

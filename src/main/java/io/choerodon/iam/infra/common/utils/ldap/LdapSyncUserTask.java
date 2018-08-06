@@ -5,6 +5,7 @@ import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.common.utils.ListUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
