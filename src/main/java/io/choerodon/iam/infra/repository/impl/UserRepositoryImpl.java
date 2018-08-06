@@ -16,6 +16,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author superlee
@@ -199,7 +200,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
-        String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
                         0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param));
@@ -207,7 +208,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
-        String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                         ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param));
@@ -215,7 +216,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
-        String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                         ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param));

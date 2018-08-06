@@ -69,6 +69,7 @@ public class LdapSyncUserTask {
         ldapHistory.setLdapId(ldap.getId());
         ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
+        List<UserDO> users = new ArrayList<>();
         while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
             //maybe more than one element
             SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
@@ -78,10 +79,11 @@ public class LdapSyncUserTask {
                 continue;
             }
             ldapSyncReport.incrementCount();
-            UserDTO oldUser =
-                    ConvertHelper.convert(userRepository.selectByLoginName(user.getLoginName()), UserDTO.class);
-            insertOrUpdateUser(ldapSyncReport, user, oldUser);
+            users.add(user);
         }
+        logger.info("###total user count : {}", ldapSyncReport.getCount());
+        //写入
+        users.forEach(u -> insertUser(ldapSyncReport, u));
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
         try {
@@ -91,7 +93,6 @@ public class LdapSyncUserTask {
         }
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
-
     /**
      * 同步用户批量插入用户
      * @param ldapContext
@@ -156,7 +157,7 @@ public class LdapSyncUserTask {
                 }
             }
         }
-        List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
+        List<List<UserDO>> list = subUserList(insertUsers);
         list.forEach(l -> {
             if (!l.isEmpty()) {
                 organizationUserService.batchCreateUsers(l);
@@ -172,9 +173,27 @@ public class LdapSyncUserTask {
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    private void insertOrUpdateUser(LdapSyncReport ldapSyncReport, UserDO user, UserDTO oldUser) {
-        if (oldUser == null) {
-            //插入操作
+    private List<List<UserDO>> subUserList(List<UserDO> insertUsers) {
+        List<List<UserDO>> list = new ArrayList<>();
+        int size = insertUsers.size();
+        int volume = 1000;
+        //从ldap服务器读取的用户每1000个分一组
+        int count = size/volume + 1;
+        int start = 0;
+        int end = 999;
+        if (size != 0) {
+            for (int i = 0; i < count; i++) {
+                end = end > size - 1 ? size - 1 : end;
+                List<UserDO> users = insertUsers.subList(start, end);
+                start = start + volume;
+                end = end + volume;
+                list.add(users);
+            }
+        }
+        return list;
+    }
+    private void insertUser(LdapSyncReport ldapSyncReport, UserDO user) {
+        if (userRepository.selectByLoginName(user.getLoginName()) == null) {
             try {
                 organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
                 ldapSyncReport.incrementNewInsert();
@@ -182,7 +201,10 @@ public class LdapSyncUserTask {
                 logger.info("insert error, login_name = {}, exception : {}", user.getLoginName(), e);
                 ldapSyncReport.incrementError();
             }
-        } else {
+        }
+//        if (oldUser == null) {
+            //插入操作
+//        } else {
             //更新操作，只更新realName和phone字段
             //更新策略：数据库存在的用户和ldap拿到的用户，根据loginName判断是不是同一个用户，
             //同一个用户的话，以phone为例：
@@ -211,7 +233,7 @@ public class LdapSyncUserTask {
                 }
             }
             */
-        }
+//        }
     }
 
     private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {

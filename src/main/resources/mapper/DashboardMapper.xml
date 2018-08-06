@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.DashboardMapper">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.domain.iam.entity.Dashboard">
+        SELECT * FROM iam_dashboard
+        WHERE 1=1
+        <if test="dashboard.name != null">
+            AND name LIKE concat('%',#{dashboard.name},'%')
+        </if>
+        <if test="dashboard.code != null">
+            AND code LIKE concat('%',#{dashboard.code},'%')
+        </if>
+        <if test="dashboard.level != null">
+            AND level = #{dashboard.level}
+        </if>
+        <if test="param != null">
+            AND
+            name LIKE concat('%',#{param},'%') OR
+            code LIKE concat('%',#{param},'%') OR
+            level = #{param}
+        </if>
+    </select>
+
+    <select id="selectByLevel" resultType="io.choerodon.iam.domain.iam.entity.Dashboard">
+        SELECT * FROM iam_dashboard d
+        WHERE d.level IN ('site', #{level})
+    </select>
+</mapper>

@@ -15,8 +15,9 @@ public class LabelConverter implements ConvertorI<LabelE, LabelDO, LabelDTO> {
 
     @Override
     public LabelE dtoToEntity(LabelDTO dto) {
-        return new LabelE(dto.getId(), dto.getName(), dto.getType(),
-                dto.getObjectVersionNumber());
+        LabelE entity = new LabelE();
+        BeanUtils.copyProperties(dto, entity);
+        return entity;
     }
 
     @Override
@@ -28,8 +29,9 @@ public class LabelConverter implements ConvertorI<LabelE, LabelDO, LabelDTO> {
 
     @Override
     public LabelE doToEntity(LabelDO dataObject) {
-        return new LabelE(dataObject.getId(), dataObject.getName(), dataObject.getType(),
-                dataObject.getObjectVersionNumber());
+        LabelE entity = new LabelE();
+        BeanUtils.copyProperties(dataObject, entity);
+        return entity;
     }
 
     @Override

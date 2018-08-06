@@ -10,6 +10,23 @@
         WHERE iam_role_label.role_id = #{roleId}
     </select>
 
+    <select id="listByOption" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
+        SELECT * FROM iam_label l
+        WHERE 1=1
+        <if test="label.type != null">
+            AND l.type LIKE concat('%',#{label.type},'%')
+        </if>
+        <if test="label.name != null">
+            AND l.name LIKE concat('%',#{label.name},'%')
+        </if>
+        <if test="label.level != null">
+            AND l.level LIKE concat('%',#{label.level},'%')
+        </if>
+        <if test="label.description != null">
+            AND l.description LIKE concat('%',#{label.description},'%')
+        </if>
+    </select>
+
     <select id="selectByUserId" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
         SELECT DISTINCT il.*
         FROM iam_user iu
@@ -22,7 +39,6 @@
         WHERE imr.member_type = 'user'
         AND iu.id = #{id}
     </select>
-
 
     <select id="selectLabelNamesInRoleIds" resultType="java.lang.String">
         SELECT DISTINCT iam_label.name

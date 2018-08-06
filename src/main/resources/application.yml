@@ -32,6 +32,8 @@ event:
 choerodon:
   devops:
     message: true
+    asgard:
+      message: true
   event:
     consumer:
       enabled: true # 是否开启，不设置默认开启
@@ -42,6 +44,9 @@ choerodon:
         enabled: true # 是否开启重试功能
       kafka:
         bootstrap-servers: localhost:9092
+  saga:
+    consumer:
+      enabled: false # 关闭saga消费线程
 eureka:
   instance:
     preferIpAddress: true

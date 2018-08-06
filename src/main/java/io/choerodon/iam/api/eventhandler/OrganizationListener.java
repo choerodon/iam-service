@@ -74,6 +74,13 @@ public class OrganizationListener {
             passwordPolicyDTO.setMaxCheckCaptcha(maxCheckCaptcha);
             passwordPolicyDTO.setMaxErrorTime(maxErrorTime);
             passwordPolicyDTO.setLockedExpireTime(lockedExpireTime);
+            //默认开启登陆安全策略，设置为
+            passwordPolicyDTO.setEnableSecurity(true);
+            passwordPolicyDTO.setEnableCaptcha(true);
+            passwordPolicyDTO.setMaxCheckCaptcha(3);
+            passwordPolicyDTO.setEnableLock(true);
+            passwordPolicyDTO.setMaxErrorTime(5);
+            passwordPolicyDTO.setLockedExpireTime(600);
             passwordPolicyService.create(orgId, passwordPolicyDTO);
         } catch (Exception e) {
             LOGGER.error("create password policy error of organization {}", orgId);

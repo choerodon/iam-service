@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public interface LabelRepository {
 
-    List<LabelDO> listByType(String type);
+    List<LabelDO> listByOption(LabelDO labelDO);
 
     LabelDO selectByPrimaryKey(Long labelId);
 

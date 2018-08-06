@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.UserDashboardMapper">
+    <select id="selectWithDashboard" resultType="io.choerodon.iam.api.dto.UserDashboardDTO">
+		SELECT
+			ud.id,
+			IFNULL(ud.user_id, #{userDashboard.userId}) user_id,
+			IFNULL(ud.is_visible, true) visible,
+			IFNULL(#{userDashboard.sourceId}, ud.source_id) source_id,
+			IFNULL(ud.object_version_number, 0) object_version_number,
+			IFNULL(d.id, ud.dashboard_id) dashboard_id,
+			IFNULL(ud.sort, d.sort) sort,
+			IFNULL(ud.level, d.level) level,
+			d.CODE dashboard_code,
+			d.NAME dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon
+		FROM
+			`iam_user_dashboard` ud
+			RIGHT JOIN `iam_dashboard` d ON d.id = ud.dashboard_id
+		WHERE
+			d.LEVEL IN ( 'site', #{userDashboard.level} )
+			OR ( ud.LEVEL IN ( 'site', #{userDashboard.level} )
+				AND ud.source_id = #{userDashboard.sourceId}
+				AND ud.user_id = #{userDashboard.userId})
+		GROUP BY d.id
+    </select>
+
+
+	<select id="dashboardExist" resultType="java.lang.Long">
+		SELECT
+		count( ud.id )
+		FROM
+		iam_user_dashboard ud
+		WHERE
+		ud.LEVEL IN ( 'site', #{userDashboard.level} )
+		AND ud.user_id = #{userDashboard.userId}
+		AND ud.source_id = #{userDashboard.sourceId}
+		AND ud.dashboard_id NOT IN (
+		 SELECT id FROM iam_dashboard d WHERE d.LEVEL IN ( 'site', #{userDashboard.level} ) )
+	</select>
+</mapper>
+
+

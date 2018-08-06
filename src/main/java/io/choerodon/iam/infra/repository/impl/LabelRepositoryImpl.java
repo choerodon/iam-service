@@ -21,10 +21,8 @@ public class LabelRepositoryImpl implements LabelRepository {
     }
 
     @Override
-    public List<LabelDO> listByType(String type) {
-        LabelDO labelDO = new LabelDO();
-        labelDO.setType(type);
-        return labelMapper.select(labelDO);
+    public List<LabelDO> listByOption(LabelDO label) {
+        return labelMapper.listByOption(label);
     }
 
     @Override
