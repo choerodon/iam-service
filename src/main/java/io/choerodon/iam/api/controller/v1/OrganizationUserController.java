@@ -3,9 +3,11 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.BatchImportResultDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.validator.UserValidator;
+import io.choerodon.iam.app.service.ExcelService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -14,10 +16,14 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -33,10 +39,14 @@ public class OrganizationUserController extends BaseController {
 
     private UserService userService;
 
+    private ExcelService excelService;
+
     public OrganizationUserController(OrganizationUserService organizationUserService,
-                                      UserService userService) {
+                                      UserService userService,
+                                      ExcelService excelService) {
         this.organizationUserService = organizationUserService;
         this.userService = userService;
+        this.excelService = excelService;
     }
 
     /**
@@ -131,4 +141,20 @@ public class OrganizationUserController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("从excel里面批量导入用户")
+    @PostMapping("/batch_import")
+    public ResponseEntity<BatchImportResultDTO> importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
+                                                                     @RequestPart MultipartFile file) {
+        return new ResponseEntity<>(excelService.importUsers(id, file), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("下载导入用户的模板文件")
+    @GetMapping("/download_templates")
+    public ResponseEntity<Resource> downloadTemplates(@PathVariable(name = "organization_id") Long id) {
+        HttpHeaders headers = excelService.getHttpHeaders();
+        Resource resource = excelService.getUserTemplates();
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/x-msdownload")).body(resource);
+    }
 }
