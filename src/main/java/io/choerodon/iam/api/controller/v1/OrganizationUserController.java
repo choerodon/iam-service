@@ -152,7 +152,7 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("下载导入用户的模板文件")
     @GetMapping("/download_templates")
-    public ResponseEntity<Resource> downloadTemplates() {
+    public ResponseEntity<Resource> downloadTemplates(@PathVariable(name = "organization_id") Long id) {
         HttpHeaders headers = excelService.getHttpHeaders();
         Resource resource = excelService.getUserTemplates();
         return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/x-msdownload")).body(resource);
