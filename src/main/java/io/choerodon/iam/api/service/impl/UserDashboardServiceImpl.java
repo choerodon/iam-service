@@ -2,6 +2,7 @@ package io.choerodon.iam.api.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,16 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (!ResourceLevel.SITE.value().equals(level)) {
             memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
         }
-        return userDashboardMapper.selectWithDashboard(new UserDashboard(1L, level, sourceId));
+        List<UserDashboardDTO> userDashboards = userDashboardMapper.selectWithDashboard(new UserDashboard(1L, level, sourceId));
+        if (!isEquals(1L, sourceId, level)) {
+            List<UserDashboardDTO> userDashboards1 = userDashboardMapper.selectWithDashboardNotExist(
+                    new UserDashboard(1L, level, sourceId));
+            List<UserDashboardDTO> userDashboardsAdd = userDashboards1.stream().filter(
+                    userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
+                    .collect(Collectors.toList());
+            userDashboards.addAll(userDashboardsAdd);
+        }
+        return userDashboards;
     }
 
     @Override
@@ -54,7 +64,7 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (null == userDetails) {
             return new ArrayList<>();
         }
-        if (userDashboardMapper.selectCount(new UserDashboard(userDetails.getUserId(), sourceId)) != dashboardMapper.selectByLevel(level).size()) {
+        if (!isEquals(userDetails.getUserId(), sourceId, level)) {
             List<Dashboard> dashboardList = dashboardMapper.selectByLevel(level);
 
             for (Dashboard dashboard : dashboardList) {
@@ -89,5 +99,22 @@ public class UserDashboardServiceImpl implements UserDashboardService {
             userDashboardMapper.updateByPrimaryKeySelective(modelMapper.map(userDashboardDTO, UserDashboard.class));
         }
         return list(level, sourceId);
+    }
+
+    private boolean isEquals(Long userId, Long sourceId, String level) {
+        return userDashboardMapper.selectCount(
+                new UserDashboard(userId, sourceId)) == dashboardMapper.selectByLevel(level).size();
+    }
+
+    private boolean dashboardExist(List<UserDashboardDTO> userDashboardList, UserDashboardDTO userDashboard) {
+        Boolean isExist = false;
+
+        for (UserDashboardDTO userDashboard1 : userDashboardList) {
+            if (userDashboard.getDashboardId() == userDashboard1.getDashboardId()) {
+                isExist = true;
+                break;
+            }
+        }
+        return isExist;
     }
 }
