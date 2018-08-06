@@ -15,6 +15,4 @@ public interface UserDashboardMapper extends BaseMapper<UserDashboard> {
     List<UserDashboardDTO> selectWithDashboard(@Param("userDashboard") UserDashboard userDashboard);
 
     List<UserDashboardDTO> selectWithDashboardNotExist(@Param("userDashboard") UserDashboard userDashboard);
-
-    Long dashboardExist(@Param("userDashboard") UserDashboard userDashboard);
 }
