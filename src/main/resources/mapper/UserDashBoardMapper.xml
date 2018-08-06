@@ -8,7 +8,7 @@
 			IFNULL(ud.user_id, #{userDashboard.userId}) user_id,
 			IFNULL(ud.is_visible, true) visible,
 			IFNULL(#{userDashboard.sourceId}, ud.source_id) source_id,
-			IFNULL(ud.object_version_number, 0) object_version_number,
+			IFNULL(ud.object_version_number, 1) object_version_number,
 			IFNULL(d.id, ud.dashboard_id) dashboard_id,
 			IFNULL(ud.sort, d.sort) sort,
 			IFNULL(ud.level, d.level) level,
