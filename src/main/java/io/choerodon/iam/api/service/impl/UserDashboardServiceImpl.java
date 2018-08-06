@@ -46,10 +46,10 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (!ResourceLevel.SITE.value().equals(level)) {
             memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
         }
-        List<UserDashboardDTO> userDashboards = userDashboardMapper.selectWithDashboard(new UserDashboard(1L, level, sourceId));
-        if (!isEquals(1L, sourceId, level)) {
+        List<UserDashboardDTO> userDashboards = userDashboardMapper.selectWithDashboard(new UserDashboard(userDetails.getUserId(), level, sourceId));
+        if (!isEquals(userDetails.getUserId(), sourceId, level)) {
             List<UserDashboardDTO> userDashboards1 = userDashboardMapper.selectWithDashboardNotExist(
-                    new UserDashboard(1L, level, sourceId));
+                    new UserDashboard(userDetails.getUserId(), level, sourceId));
             List<UserDashboardDTO> userDashboardsAdd = userDashboards1.stream().filter(
                     userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
                     .collect(Collectors.toList());
