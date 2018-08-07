@@ -155,6 +155,13 @@ public class OrganizationUserController extends BaseController {
     public ResponseEntity<Resource> downloadTemplates(@PathVariable(name = "organization_id") Long id) {
         HttpHeaders headers = excelService.getHttpHeaders();
         Resource resource = excelService.getUserTemplates();
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/x-msdownload")).body(resource);
+        //excel2007
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
     }
+
+//    public ResponseEntity<Resource> testExport(@PathVariable(name = "organization_id") Long id) {
+//        HttpHeaders headers = excelService.getHttpHeaders();
+//        Resource resource = excelService.getUserTemplates();
+//        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
+//    }
 }
