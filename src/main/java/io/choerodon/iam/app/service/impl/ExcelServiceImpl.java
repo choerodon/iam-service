@@ -10,7 +10,6 @@ import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.common.utils.ListUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -21,12 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,17 +78,8 @@ public class ExcelServiceImpl implements ExcelService {
 
     @Override
     public Resource getUserTemplates() {
-        try {
-            File file = new File(this.getClass().getResource("/templates/userTemplates.xlsx").toURI());
-            Resource resource = new InputStreamResource(new ByteArrayInputStream(FileUtils.readFileToByteArray(file)));
-            return resource;
-        } catch (URISyntaxException e) {
-            logger.info("something wrong with uri syntax, exception: {}", e.getMessage());
-            throw new CommonException("error.uri.syntax");
-        } catch (IOException e) {
-            logger.info("something wrong with reading file to byte array, exception: {}", e.getMessage());
-            throw new CommonException("error.file.read2ByteArray");
-        }
+        InputStream inputStream = this.getClass().getResourceAsStream("/templates/userTemplates.xlsx");
+        return new InputStreamResource(inputStream);
     }
 
     @Override

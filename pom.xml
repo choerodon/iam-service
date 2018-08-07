@@ -141,12 +141,6 @@
             <artifactId>modelmapper</artifactId>
             <version>2.1.0</version>
         </dependency>
-        <!-- commons-io -->
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-        </dependency>
 
         <!--监控相关依赖 -->
         <dependency><!-- 如果服务需要监控功能则需要此依赖 -->
