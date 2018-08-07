@@ -5,42 +5,48 @@
     <select id="selectWithDashboard" resultType="io.choerodon.iam.api.dto.UserDashboardDTO">
 		SELECT
 			ud.id,
-			IFNULL(ud.user_id, #{userDashboard.userId}) user_id,
-			IFNULL(ud.is_visible, true) visible,
-			IFNULL(#{userDashboard.sourceId}, ud.source_id) source_id,
-			IFNULL(ud.object_version_number, 0) object_version_number,
-			IFNULL(d.id, ud.dashboard_id) dashboard_id,
-			IFNULL(ud.sort, d.sort) sort,
-			IFNULL(ud.level, d.level) level,
-			d.CODE dashboard_code,
-			d.NAME dashboard_name,
+			ud.user_id,
+			IFNULL(ud.is_visible, 1) visible,
+			ud.source_id,
+			ud.object_version_number,
+			ud.dashboard_id dashboard_id,
+			ud.sort sort,
+			ud.level,
+			d.code dashboard_code,
+			d.name dashboard_name,
 			d.title dashboard_title,
 			d.namespace dashboard_namespace,
 			d.description dashboard_description,
 			d.icon dashboard_icon
 		FROM
+			`iam_dashboard` d,
 			`iam_user_dashboard` ud
-			RIGHT JOIN `iam_dashboard` d ON d.id = ud.dashboard_id
 		WHERE
-			d.LEVEL IN ( 'site', #{userDashboard.level} )
-			OR ( ud.LEVEL IN ( 'site', #{userDashboard.level} )
-				AND ud.source_id = #{userDashboard.sourceId}
-				AND ud.user_id = #{userDashboard.userId})
-		GROUP BY d.id
+			d.id = ud.dashboard_id
+			AND ud.LEVEL IN ( 'site', #{userDashboard.level} )
+			AND ud.user_id = #{userDashboard.userId}
+			and source_id = #{userDashboard.sourceId}
     </select>
 
-
-	<select id="dashboardExist" resultType="java.lang.Long">
+	<select id="selectWithDashboardNotExist" resultType="io.choerodon.iam.api.dto.UserDashboardDTO">
 		SELECT
-		count( ud.id )
+			#{userDashboard.userId} user_id,
+			#{userDashboard.sourceId} source_id,
+			1 visible,
+			1 object_version_number,
+			d.id dashboard_id,
+			d.sort,
+			d.level,
+			d.code dashboard_code,
+			d.name dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon
 		FROM
-		iam_user_dashboard ud
+			`iam_dashboard` d
 		WHERE
-		ud.LEVEL IN ( 'site', #{userDashboard.level} )
-		AND ud.user_id = #{userDashboard.userId}
-		AND ud.source_id = #{userDashboard.sourceId}
-		AND ud.dashboard_id NOT IN (
-		 SELECT id FROM iam_dashboard d WHERE d.LEVEL IN ( 'site', #{userDashboard.level} ) )
+			d.LEVEL IN ( 'site', #{userDashboard.level} )
 	</select>
 </mapper>
 
