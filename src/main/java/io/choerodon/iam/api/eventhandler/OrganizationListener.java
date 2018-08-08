@@ -1,8 +1,8 @@
 package io.choerodon.iam.api.eventhandler;
 
-import io.choerodon.core.event.EventPayload;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.event.consumer.annotation.EventListener;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.io.IOException;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_CREATE;
 
 
 /**
@@ -24,10 +27,11 @@ import java.util.Optional;
 @Component
 public class OrganizationListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationListener.class);
-    private static final String ORGANIZATION_SERVICE_TOPIC = "organization-service";
     private LdapService ldapService;
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Value("${max.errorTime:5}")
     private Integer maxErrorTime;
@@ -43,14 +47,14 @@ public class OrganizationListener {
         this.organizationService = organizationService;
     }
 
-    @EventListener(topic = ORGANIZATION_SERVICE_TOPIC, businessType = OrganizationEventPayload.CREATE_ORGANIZATION)
-    public void create(EventPayload<OrganizationEventPayload> payload) {
-        OrganizationEventPayload organizationEventPayload = payload.getData();
+    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
+    public OrganizationEventPayload create(String message) throws IOException {
+        OrganizationEventPayload organizationEventPayload = mapper.readValue(message, OrganizationEventPayload.class);
         Long orgId = organizationEventPayload.getOrganizationId();
         OrganizationDTO organizationDTO = organizationService.queryOrganizationById(orgId);
-        Optional
-                .ofNullable(organizationDTO)
-                .orElseThrow(() -> new CommonException("error.organization.not exist"));
+        if (organizationDTO == null) {
+            throw new CommonException("error.organization.not exist");
+        }
         try {
             LOGGER.info("### begin create ldap of organization {} ", orgId);
             LdapDTO ldapDTO = new LdapDTO();
@@ -85,5 +89,6 @@ public class OrganizationListener {
         } catch (Exception e) {
             LOGGER.error("create password policy error of organization {}", orgId);
         }
+        return organizationEventPayload;
     }
 }
