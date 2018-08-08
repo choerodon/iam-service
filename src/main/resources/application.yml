@@ -32,21 +32,12 @@ event:
 choerodon:
   devops:
     message: true
-    asgard:
-      message: true
-  event:
-    consumer:
-      enabled: true # 是否开启，不设置默认开启
-      queue-type: kafka # 消息队列类型,目前仅支持kafka
-      enable-duplicate-remove: true # 是否开启去重功能
-      failed-strategy: nothing # 消息失败策略
-      retry:
-        enabled: true # 是否开启重试功能
-      kafka:
-        bootstrap-servers: localhost:9092
   saga:
     consumer:
-      enabled: false # 关闭saga消费线程
+      enabled: true # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
 eureka:
   instance:
     preferIpAddress: true
