@@ -72,8 +72,8 @@ public class ExcelImportUserTask {
             url = exportAndUpload(errorUsers);
         }
         //插入uploadHistory
-        uploadHistoryDO.setSuccessCount(successCount);
-        uploadHistoryDO.setFailCount(failCount);
+        uploadHistoryDO.setSuccessfulCount(successCount);
+        uploadHistoryDO.setFailedCount(failCount);
         uploadHistoryDO.setUrl(url);
         fallback.callback(uploadHistoryDO);
     }
@@ -184,8 +184,8 @@ public class ExcelImportUserTask {
         public void callback(UploadHistoryDO uploadHistoryDO) {
             UploadHistoryDO history = uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDO.getId());
             history.setEndTime(new Date((System.currentTimeMillis())));
-            history.setSuccessCount(uploadHistoryDO.getSuccessCount());
-            history.setFailCount(uploadHistoryDO.getFailCount());
+            history.setSuccessfulCount(uploadHistoryDO.getSuccessfulCount());
+            history.setFailedCount(uploadHistoryDO.getFailedCount());
             history.setUrl(uploadHistoryDO.getUrl());
             uploadHistoryMapper.updateByPrimaryKeySelective(history);
         }
