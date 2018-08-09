@@ -1,12 +1,15 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
@@ -25,7 +28,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UPDATE_PROJECT;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -46,16 +50,18 @@ public class ProjectServiceImpl implements ProjectService {
     @Value("${spring.application.name:default}")
     private String serviceName;
 
-    private EventProducerTemplate eventProducerTemplate;
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public ProjectServiceImpl(ProjectRepository projectRepository,
                               UserRepository userRepository,
                               OrganizationRepository organizationRepository,
-                              EventProducerTemplate eventProducerTemplate) {
+                              SagaClient sagaClient) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
     }
 
     @Override
@@ -71,6 +77,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
         ProjectDO project = ConvertHelper.convert(projectDTO, ProjectDO.class);
         if (devopsMessage) {
@@ -88,14 +95,14 @@ public class ProjectServiceImpl implements ProjectService {
             }
             projectEventMsg.setProjectId(projectDO.getId());
             projectEventMsg.setProjectCode(projectDO.getCode());
-            Exception exception = eventProducerTemplate.execute("project", EVENT_TYPE_UPDATE_PROJECT,
-                    serviceName, projectEventMsg, (String uuid) -> {
-                        ProjectE projectE = projectRepository.updateSelective(project);
-                        projectEventMsg.setProjectName(project.getName());
-                        BeanUtils.copyProperties(projectE, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            ProjectE projectE = projectRepository.updateSelective(project);
+            projectEventMsg.setProjectName(project.getName());
+            BeanUtils.copyProperties(projectE, dto);
+            try {
+                String input = mapper.writeValueAsString(projectEventMsg);
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.projectService.update.event", e);
             }
             return dto;
         } else {
@@ -105,6 +112,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
+    @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO disableProject(Long id) {
         ProjectDO project = projectRepository.selectByPrimaryKey(id);
         project.setEnabled(false);
@@ -118,13 +127,12 @@ public class ProjectServiceImpl implements ProjectService {
             projectE = new ProjectE();
             ProjectEventPayload payload = new ProjectEventPayload();
             payload.setProjectId(project.getId());
-            Exception exception = eventProducerTemplate.execute("project", "disableProject",
-                    serviceName, payload,
-                    (String uuid) ->
-                            BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE)
-            );
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE);
+            try {
+                String input = mapper.writeValueAsString(payload);
+                sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId()));
+            } catch (Exception e) {
+                throw new CommonException("error.projectService.disableProject.event", e);
             }
         } else {
             projectE = projectRepository.updateSelective(project);

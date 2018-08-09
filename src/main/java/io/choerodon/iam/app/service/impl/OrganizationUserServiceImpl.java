@@ -1,10 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
@@ -31,12 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static io.choerodon.iam.api.dto.payload.UserEventPayload.*;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
- * @date 2018/3/26
  */
 @Component
 @RefreshScope
@@ -49,7 +52,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private OrganizationRepository organizationRepository;
     private UserRepository userRepository;
     private IUserService iUserService;
-    private EventProducerTemplate eventProducerTemplate;
+    private SagaClient sagaClient;
+    private final ObjectMapper mapper = new ObjectMapper();
     private PasswordPolicyManager passwordPolicyManager;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
 
@@ -58,17 +62,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
                                        IUserService iUserService,
-                                       EventProducerTemplate eventProducerTemplate) {
+                                       SagaClient sagaClient) {
         this.organizationRepository = organizationRepository;
         this.userRepository = userRepository;
         this.iUserService = iUserService;
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = USER_CREATE, description = "iam创建用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO create(UserDTO userDTO, boolean checkPassword) {
         String password =
                 Optional.ofNullable(userDTO.getPassword())
@@ -81,56 +86,47 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (checkPassword) {
             validatePasswordPolicy(userDTO, password, organizationId);
         }
-        UserDTO dto;
+        UserDTO dto = new UserDTO();
+        UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
+        BeanUtils.copyProperties(user, dto);
         if (devopsMessage) {
-            dto = createUserAndSendEvent(userDTO, organizationE);
-        } else {
-            UserE userE = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
-            dto = ConvertHelper.convert(userE, UserDTO.class);
+            try {
+                UserEventPayload userEventPayload = new UserEventPayload();
+                userEventPayload.setEmail(user.getEmail());
+                userEventPayload.setId(user.getId().toString());
+                userEventPayload.setName(user.getRealName());
+                userEventPayload.setUsername(user.getLoginName());
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.createUser.event", e);
+            }
         }
         return dto;
     }
 
-    private UserDTO createUserAndSendEvent(UserDTO userDTO, OrganizationE organizationE) {
-        UserDTO dto;
-        dto = new UserDTO();
-        UserEventPayload userEventPayload = new UserEventPayload();
-        Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_CREATE_USER,
-                serviceName, userEventPayload, (String uuid) -> {
-                    UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
-                    userEventPayload.setEmail(user.getEmail());
-                    userEventPayload.setId(user.getId().toString());
-                    userEventPayload.setName(user.getRealName());
-                    userEventPayload.setUsername(user.getLoginName());
-                    BeanUtils.copyProperties(user, dto);
-                });
-        Optional.ofNullable(exception)
-                .map(e -> {
-                    throw new CommonException(e.getMessage());
-                });
-        return dto;
-    }
-
     @Override
+    @Transactional
+    @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
     public void batchCreateUsers(List<UserDO> insertUsers) {
         if (devopsMessage) {
             List<UserEventPayload> payloads = new ArrayList<>();
-            Exception exception = eventProducerTemplate.execute("user", "batchCreateUsers",
-                    serviceName, payloads, (String uuid) -> {
-                        List<UserDO> users = userRepository.insertList(insertUsers);
-                        users.forEach(user -> {
-                            UserEventPayload payload = new UserEventPayload();
-                            payload.setEmail(user.getEmail());
-                            payload.setId(user.getId().toString());
-                            payload.setName(user.getRealName());
-                            payload.setUsername(user.getLoginName());
-                            payloads.add(payload);
-                        });
-                    });
-            Optional.ofNullable(exception)
-                    .map(e -> {
-                        throw new CommonException(e.getMessage());
-                    });
+            List<UserDO> users = userRepository.insertList(insertUsers);
+            users.forEach(user -> {
+                UserEventPayload payload = new UserEventPayload();
+                payload.setEmail(user.getEmail());
+                payload.setId(user.getId().toString());
+                payload.setName(user.getRealName());
+                payload.setUsername(user.getLoginName());
+                payloads.add(payload);
+            });
+            try {
+                String input = mapper.writeValueAsString(payloads);
+                String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
+                sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
+            }
         } else {
             userRepository.insertList(insertUsers);
         }
@@ -142,7 +138,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.findByOrgId(organizationId);
         Optional.ofNullable(basePasswordPolicyDO)
                 .map(passwordPolicy -> {
-                    if(!password.equals(passwordPolicy.getOriginalPassword())) {
+                    if (!password.equals(passwordPolicy.getOriginalPassword())) {
                         passwordPolicyManager.passwordValidate(password, baseUserDO, passwordPolicy);
                     }
                     return null;
@@ -159,6 +155,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO update(UserDTO userDTO) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
         if (organizationDO == null) {
@@ -170,17 +167,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (devopsMessage) {
             dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_UPDATE_USER,
-                    serviceName, userEventPayload, (String uuid) -> {
-                        UserE user = organizationE.updateUser(userE);
-                        userEventPayload.setEmail(user.getEmail());
-                        userEventPayload.setId(user.getId().toString());
-                        userEventPayload.setName(user.getRealName());
-                        userEventPayload.setUsername(user.getLoginName());
-                        BeanUtils.copyProperties(user, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            UserE user = organizationE.updateUser(userE);
+            userEventPayload.setEmail(user.getEmail());
+            userEventPayload.setId(user.getId().toString());
+            userEventPayload.setName(user.getRealName());
+            userEventPayload.setUsername(user.getLoginName());
+            BeanUtils.copyProperties(user, dto);
+            try {
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
         } else {
             dto = ConvertHelper.convert(organizationE.updateUser(userE), UserDTO.class);
@@ -190,24 +187,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = USER_DELETE, description = "iam删除用户", inputSchemaClass = UserEventPayload.class)
     public void delete(Long organizationId, Long id) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
+        UserE user = userRepository.selectByPrimaryKey(id);
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setUsername(user.getLoginName());
+        organizationE.removeUserById(id);
         if (devopsMessage) {
-            UserE user = userRepository.selectByPrimaryKey(id);
-            UserEventPayload userEventPayload = new UserEventPayload();
-            userEventPayload.setUsername(user.getLoginName());
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_DELETE_USER,
-                    serviceName, userEventPayload,
-                    (String uuid) -> organizationE.removeUserById(id));
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            try {
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_DELETE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.deleteUser.event", e);
             }
-        } else {
-            organizationE.removeUserById(id);
+
         }
     }
 
@@ -233,6 +231,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO enableUser(Long organizationId, Long userId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
@@ -245,14 +244,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_ENABLE_USER,
-                    serviceName, userEventPayload,
-                    (String uuid) -> {
-                        UserDTO dto = ConvertHelper.convert(iUserService.updateUserEnabled(userId), UserDTO.class);
-                        BeanUtils.copyProperties(dto, userDTO);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            UserDTO dto = ConvertHelper.convert(iUserService.updateUserEnabled(userId), UserDTO.class);
+            BeanUtils.copyProperties(dto, userDTO);
+            try {
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.enableUser.event", e);
             }
         } else {
             userDTO = ConvertHelper.convert(iUserService.updateUserEnabled(userId), UserDTO.class);
@@ -262,6 +260,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
+    @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO disableUser(Long organizationId, Long userId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
@@ -274,14 +273,13 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_DISABLE_USER,
-                    serviceName, userEventPayload,
-                    (String uuid) -> {
-                        UserDTO dto = ConvertHelper.convert(iUserService.updateUserDisabled(userId), UserDTO.class);
-                        BeanUtils.copyProperties(dto, userDTO);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            UserDTO dto = ConvertHelper.convert(iUserService.updateUserDisabled(userId), UserDTO.class);
+            BeanUtils.copyProperties(dto, userDTO);
+            try {
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         } else {
             userDTO = ConvertHelper.convert(iUserService.updateUserDisabled(userId), UserDTO.class);

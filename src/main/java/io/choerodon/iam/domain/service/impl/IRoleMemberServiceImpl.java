@@ -1,8 +1,11 @@
 package io.choerodon.iam.domain.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
@@ -12,18 +15,20 @@ import io.choerodon.iam.domain.repository.LabelRepository;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
-import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
 
 /**
  * @author superlee
@@ -41,26 +46,32 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
 
     private LabelRepository labelRepository;
 
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
 
     @Value("${spring.application.name:default}")
     private String serviceName;
 
-    private EventProducerTemplate eventProducerTemplate;
-
     public IRoleMemberServiceImpl(UserRepository userRepository,
                                   MemberRoleRepository memberRoleRepository,
-                                  EventProducerTemplate eventProducerTemplate,
-                                  LabelRepository labelRepository) {
+                                  LabelRepository labelRepository,
+                                  SagaClient sagaClient) {
         this.userRepository = userRepository;
         this.memberRoleRepository = memberRoleRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
         this.labelRepository = labelRepository;
+        this.sagaClient = sagaClient;
     }
 
     @Override
-    public List<MemberRoleE> insertOrUpdateRolesByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType) {
+    @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
+    @Transactional
+    public List<MemberRoleE> insertOrUpdateRolesByMemberId(Boolean isEdit, Long sourceId,
+                                                           Long memberId, List<MemberRoleE> memberRoleEList,
+                                                           String sourceType) {
         UserE userE = userRepository.selectByPrimaryKey(memberId);
         if (userE == null) {
             throw new CommonException("error.user.not.exist");
@@ -73,18 +84,22 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             userMemberEventMsg.setUserId(memberId);
             userMemberEventMsg.setResourceType(sourceType);
             userMemberEventMsg.setUsername(userE.getLoginName());
-            Exception exception = eventProducerTemplate.execute("memberRole", "updateMemberRole",
-                    serviceName, userMemberEventPayloads, (String uuid) -> {
-                        List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
-                                isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
-                        if (!ownRoleIds.isEmpty()) {
-                            userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
-                        }
-                        userMemberEventPayloads.add(userMemberEventMsg);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+
+            List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
+                    isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
+            if (!ownRoleIds.isEmpty()) {
+                userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
             }
+            userMemberEventPayloads.add(userMemberEventMsg);
+
+            try {
+                String input = mapper.writeValueAsString(userMemberEventPayloads);
+                String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
+                sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds));
+            } catch (Exception e) {
+                throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event", e);
+            }
+
             return returnList;
         } else {
             insertOrUpdateRolesByMemberIdExecute(isEdit,
@@ -98,15 +113,18 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     }
 
     @Override
+    @Saga(code = MEMBER_ROLE_DELETE, description = "iam删除用户角色")
+    @Transactional
     public void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
         if (devopsMessage) {
             List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-            Exception exception = eventProducerTemplate.execute("memberRole", "deleteMemberRole",
-                    serviceName, userMemberEventPayloads, (String uuid) ->
-                            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads)
-            );
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            deleteByView(roleAssignmentDeleteDTO, sourceType, userMemberEventPayloads);
+            try {
+                String input = mapper.writeValueAsString(userMemberEventPayloads);
+                String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
+                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds));
+            } catch (Exception e) {
+                throw new CommonException("error.iRoleMemberServiceImpl.deleteMemberRole.event", e);
             }
         } else {
             deleteByView(roleAssignmentDeleteDTO, sourceType, null);
@@ -165,15 +183,15 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
         UserMemberEventPayload userMemberEventMsg = null;
         //查询移除的role所包含的所有Label
         if (doSendEvent) {
-                userMemberEventMsg = new UserMemberEventPayload();
-                userMemberEventMsg.setResourceId(sourceId);
-                userMemberEventMsg.setResourceType(sourceType);
-                UserE user = userRepository.selectByPrimaryKey(memberId);
-                if (user == null) {
-                    throw new CommonException("error.user.not.exist", memberId);
-                }
-                userMemberEventMsg.setUsername(user.getLoginName());
-                userMemberEventMsg.setUserId(memberId);
+            userMemberEventMsg = new UserMemberEventPayload();
+            userMemberEventMsg.setResourceId(sourceId);
+            userMemberEventMsg.setResourceType(sourceType);
+            UserE user = userRepository.selectByPrimaryKey(memberId);
+            if (user == null) {
+                throw new CommonException("error.user.not.exist", memberId);
+            }
+            userMemberEventMsg.setUsername(user.getLoginName());
+            userMemberEventMsg.setUserId(memberId);
         }
         return userMemberEventMsg;
     }

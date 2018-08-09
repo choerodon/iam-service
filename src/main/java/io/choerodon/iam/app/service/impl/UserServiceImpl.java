@@ -1,12 +1,14 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.UserService;
@@ -45,7 +47,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.choerodon.iam.api.dto.payload.UserEventPayload.EVENT_TYPE_UPDATE_USER;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author superlee
@@ -70,7 +72,8 @@ public class UserServiceImpl implements UserService {
     private FileFeignClient fileFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
-    private EventProducerTemplate eventProducerTemplate;
+    private SagaClient sagaClient;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -78,7 +81,7 @@ public class UserServiceImpl implements UserService {
                            IUserService iUserService,
                            PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
-                           EventProducerTemplate eventProducerTemplate,
+                           SagaClient sagaClient,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
                            PasswordPolicyManager passwordPolicyManager) {
         this.userRepository = userRepository;
@@ -87,7 +90,7 @@ public class UserServiceImpl implements UserService {
         this.iUserService = iUserService;
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
     }
@@ -301,6 +304,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updateInfo(UserDTO userDTO) {
         checkLoginUser(userDTO.getId());
         UserE userE = ConvertHelper.convert(userDTO, UserE.class);
@@ -308,17 +312,17 @@ public class UserServiceImpl implements UserService {
         if (devopsMessage) {
             dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
-            Exception exception = eventProducerTemplate.execute("user", EVENT_TYPE_UPDATE_USER,
-                    serviceName, userEventPayload, (String uuid) -> {
-                        UserE user = iUserService.updateUserInfo(userE);
-                        userEventPayload.setEmail(user.getEmail());
-                        userEventPayload.setId(user.getId().toString());
-                        userEventPayload.setName(user.getRealName());
-                        userEventPayload.setUsername(user.getLoginName());
-                        BeanUtils.copyProperties(user, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            UserE user = iUserService.updateUserInfo(userE);
+            userEventPayload.setEmail(user.getEmail());
+            userEventPayload.setId(user.getId().toString());
+            userEventPayload.setName(user.getRealName());
+            userEventPayload.setUsername(user.getLoginName());
+            BeanUtils.copyProperties(user, dto);
+            try {
+                String input = mapper.writeValueAsString(userEventPayload);
+                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", "" + user.getId()));
+            } catch (Exception e) {
+                throw new CommonException("error.UserService.updateInfo.event", e);
             }
         } else {
             dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserDTO.class);

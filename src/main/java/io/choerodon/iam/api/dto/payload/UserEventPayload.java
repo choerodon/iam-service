@@ -6,16 +6,6 @@ package io.choerodon.iam.api.dto.payload;
  */
 public class UserEventPayload {
 
-    public static final String EVENT_TYPE_CREATE_USER = "createUser";
-
-    public static final String EVENT_TYPE_UPDATE_USER = "updateUser";
-
-    public static final String EVENT_TYPE_DELETE_USER = "deleteUser";
-
-    public static final String EVENT_TYPE_ENABLE_USER = "enableUser";
-
-    public static final String EVENT_TYPE_DISABLE_USER = "disableUser";
-
     private String id;
 
     private String name;
