@@ -15,6 +15,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_upload_history.groovy') {
             }
             column(name: 'success_count', type: "INTEGER UNSIGNED", remarks: '导入成功的数量')
             column(name: 'fail_count', type: "INTEGER UNSIGNED", remarks: '导入失败的数量')
+            column(name: "begin_time", type: "DATETIME", remarks: '导入开始时间')
+            column(name: "end_time", type: "DATETIME", remarks: '导入结束时间')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)

@@ -3,7 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.BatchImportResultDTO;
+import io.choerodon.iam.api.dto.UploadHistoryDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.validator.UserValidator;
@@ -144,8 +144,8 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("从excel里面批量导入用户")
     @PostMapping("/batch_import")
-    public ResponseEntity<BatchImportResultDTO> importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
-                                                                     @RequestPart MultipartFile file) {
+    public ResponseEntity<UploadHistoryDTO> importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
+                                                                 @RequestPart MultipartFile file) {
         return new ResponseEntity<>(excelService.importUsers(id, file), HttpStatus.OK);
     }
 
@@ -159,9 +159,9 @@ public class OrganizationUserController extends BaseController {
         return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
     }
 
+//    @GetMapping("/export")
 //    public ResponseEntity<Resource> testExport(@PathVariable(name = "organization_id") Long id) {
-//        HttpHeaders headers = excelService.getHttpHeaders();
-//        Resource resource = excelService.getUserTemplates();
-//        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(resource);
+//        excelService.export();
+//        return new ResponseEntity(HttpStatus.OK);
 //    }
 }

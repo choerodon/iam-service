@@ -20,8 +20,6 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -205,7 +203,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String uploadPhoto(Long id, MultipartFile file) {
         checkLoginUser(id);
-        return fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
+        return fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
 
@@ -230,7 +228,7 @@ public class UserServiceImpl implements UserService {
                 file = new MockMultipartFile(file.getName(), file.getOriginalFilename(),
                         file.getContentType(), outputStream.toByteArray());
             }
-            String photoUrl = fileFeignClient.uploadPhoto("iam-service", file.getOriginalFilename(), file).getBody();
+            String photoUrl = fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
             userRepository.updatePhoto(id, photoUrl);
             return photoUrl;
         } catch (Exception e) {

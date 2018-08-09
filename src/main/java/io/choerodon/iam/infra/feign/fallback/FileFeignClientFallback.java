@@ -16,12 +16,7 @@ public class FileFeignClientFallback implements FileFeignClient {
     private static final String MSG_ERROR_UPLOAD = "error.file.upload";
 
     @Override
-    public ResponseEntity<String> uploadFile(Long organizationId, String backetName, String fileName, MultipartFile multipartFile) {
-        throw new CommonException(MSG_ERROR_UPLOAD);
-    }
-
-    @Override
-    public ResponseEntity<String> uploadPhoto(String bucketName, String fileName, MultipartFile multipartFile) {
+    public ResponseEntity<String> uploadFile(String bucketName, String fileName, MultipartFile multipartFile) {
         throw new CommonException(MSG_ERROR_UPLOAD);
     }
 
