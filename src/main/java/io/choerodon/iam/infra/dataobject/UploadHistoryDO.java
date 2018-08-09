@@ -25,15 +25,15 @@ public class UploadHistoryDO extends AuditDomain {
     private String type;
     private Integer successCount;
     private Integer failCount;
-    private Date benigTime;
+    private Date beginTime;
     private Date endTime;
 
-    public Date getBenigTime() {
-        return benigTime;
+    public Date getBeginTime() {
+        return beginTime;
     }
 
-    public void setBenigTime(Date benigTime) {
-        this.benigTime = benigTime;
+    public void setBeginTime(Date beginTime) {
+        this.beginTime = beginTime;
     }
 
     public Date getEndTime() {
