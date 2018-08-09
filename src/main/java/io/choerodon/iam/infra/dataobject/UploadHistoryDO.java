@@ -23,8 +23,8 @@ public class UploadHistoryDO extends AuditDomain {
     private Long userId;
     private String url;
     private String type;
-    private Integer successCount;
-    private Integer failCount;
+    private Integer successfulCount;
+    private Integer failedCount;
     private Date beginTime;
     private Date endTime;
 
@@ -76,19 +76,19 @@ public class UploadHistoryDO extends AuditDomain {
         this.type = type;
     }
 
-    public Integer getSuccessCount() {
-        return successCount;
+    public Integer getSuccessfulCount() {
+        return successfulCount;
     }
 
-    public void setSuccessCount(Integer successCount) {
-        this.successCount = successCount;
+    public void setSuccessfulCount(Integer successfulCount) {
+        this.successfulCount = successfulCount;
     }
 
-    public Integer getFailCount() {
-        return failCount;
+    public Integer getFailedCount() {
+        return failedCount;
     }
 
-    public void setFailCount(Integer failCount) {
-        this.failCount = failCount;
+    public void setFailedCount(Integer failedCount) {
+        this.failedCount = failedCount;
     }
 }
