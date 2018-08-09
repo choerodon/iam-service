@@ -25,6 +25,10 @@ spring:
         binder:
           brokers: 127.0.0.1:9092
           zkNodes: 127.0.0.1:2181
+  http: #设置上传文件最大为10M
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 event:
   store:
     service:
