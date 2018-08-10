@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -56,8 +57,10 @@ public class ExcelImportUserTask {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         List<UserDO> insertUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
+        //根据loginName和emai去重，返回
+        List<UserDO> distinctUsers = distinct(users, errorUsers);
         long begin = System.currentTimeMillis();
-        users.forEach(u -> {
+        distinctUsers.forEach(u -> {
             u.setOrganizationId(organizationId);
             processUsers(u, errorUsers, insertUsers);
         });
@@ -97,6 +100,107 @@ public class ExcelImportUserTask {
             uploadHistoryDO.setFinished(true);
             fallback.callback(uploadHistoryDO);
         }
+    }
+
+    private List<UserDO> distinct(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
+        List<UserDO> distinctNameAndEmail = distinctNameAndEmail(users, errorUsers);
+        Map<String, List<UserDO>> loginNameMap =
+                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDO::getLoginName));
+        Map<String, List<UserDO>> emailMap =
+                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDO::getEmail));
+        List<UserDO> distinct = new ArrayList<>();
+        //去除loginName和email与其他对象相同的情况
+        for (Map.Entry<String, List<UserDO>> entry : loginNameMap.entrySet()) {
+            List<UserDO> list = entry.getValue();
+            if (list.size() > 1) {
+                for (UserDO user : list) {
+                    String email = user.getEmail();
+                    if (emailMap.get(email).size() > 1) {
+                        ErrorUserDTO dto = new ErrorUserDTO();
+                        BeanUtils.copyProperties(user, dto);
+                        dto.setCause("Excel中存在重复的用户名和密码");
+                        errorUsers.add(dto);
+                    } else {
+                        distinct.add(user);
+                    }
+
+                }
+            } else {
+                distinct.add(list.get(0));
+            }
+        }
+        //loginName去重
+        List<UserDO> distinctNameList = distinctLoginName(errorUsers, distinct);
+        //email去重
+        List<UserDO> returnList = distinctEmail(errorUsers, distinctNameList);
+        return returnList;
+    }
+
+    private List<UserDO> distinctLoginName(List<ErrorUserDTO> errorUsers, List<UserDO> distinct) {
+        List<UserDO> distinctNameList = new ArrayList<>();
+        Map<String, List<UserDO>> loginNameMap = distinct.stream().collect(Collectors.groupingBy(UserDO::getLoginName));
+        for (Map.Entry<String, List<UserDO>> entry : loginNameMap.entrySet()) {
+            List<UserDO> list = entry.getValue();
+            distinctNameList.add(list.get(0));
+            if (list.size() > 1) {
+                for (int i = 1; i < list.size(); i++) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(list.get(i), dto);
+                    dto.setCause("Excel中存在重复的用户名");
+                    errorUsers.add(dto);
+                }
+            }
+        }
+        return distinctNameList;
+    }
+
+    private List<UserDO> distinctEmail(List<ErrorUserDTO> errorUsers, List<UserDO> distinctNameList) {
+        List<UserDO> returnList = new ArrayList<>();
+        Map<String, List<UserDO>> emailMap
+                = distinctNameList.stream().collect(Collectors.groupingBy(UserDO::getEmail));
+        for (Map.Entry<String, List<UserDO>> entry : emailMap.entrySet()) {
+            List<UserDO> list = entry.getValue();
+            returnList.add(list.get(0));
+            if (list.size() > 1) {
+                for (int i = 1; i < list.size(); i++) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(list.get(i), dto);
+                    dto.setCause("Excel中存在重复的邮箱");
+                    errorUsers.add(dto);
+                }
+            }
+        }
+        return returnList;
+    }
+
+    /**
+     * 去除loginName和email完全相同的对象
+     * @param users
+     * @param errorUsers
+     * @return
+     */
+    private List<UserDO> distinctNameAndEmail(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
+        List<UserDO> distinctNameAndEmail = new ArrayList<>();
+        Map<Map<String, String>, List<UserDO>> nameAndEmailMap =
+                users.stream().collect(Collectors.groupingBy(u -> {
+                    Map<String, String> map = new HashMap<>();
+                    map.put(u.getLoginName(), u.getEmail());
+                    return map;
+                }));
+        //去掉两个字段全重复的对象
+        for (Map.Entry<Map<String, String>, List<UserDO>> entry : nameAndEmailMap.entrySet()) {
+            List<UserDO> list = entry.getValue();
+            distinctNameAndEmail.add(list.get(0));
+            if (list.size() > 1) {
+                for (int i = 1; i < list.size(); i++) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(list.get(i), dto);
+                    dto.setCause("Excel中存在重复的用户名和邮箱");
+                    errorUsers.add(dto);
+                }
+            }
+        }
+        return distinctNameAndEmail;
     }
 
     private String exportAndUpload(List<ErrorUserDTO> errorUsers) {

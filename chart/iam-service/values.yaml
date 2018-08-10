@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
 
 preJob:
-  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.4
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.0
   preConfig:
     configFile: application.yml
     mysql:
