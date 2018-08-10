@@ -53,12 +53,16 @@ public class ExcelImportUserTask {
 
     @Async("excel-executor")
     public void importUsers(List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistoryDO, FinishFallback fallback) {
+        logger.info("### begin to import users from excel, total size : {}", users.size());
         List<UserDO> insertUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
+        long begin = System.currentTimeMillis();
         users.forEach(u -> {
             u.setOrganizationId(organizationId);
             processUsers(u, errorUsers, insertUsers);
         });
+        long end = System.currentTimeMillis();
+        logger.info("process user for {} seconds", (end - begin) / 1000);
         List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
         list.forEach(l -> {
             if (!l.isEmpty()) {
@@ -71,7 +75,10 @@ public class ExcelImportUserTask {
         if (failCount > 0) {
             //失败的用户导出到excel
             try {
+                long begin1 = System.currentTimeMillis();
                 url = exportAndUpload(errorUsers);
+                long end1 = System.currentTimeMillis();
+                logger.info("export and upload file for {} seconds", (end1 - begin1) / 1000);
                 uploadHistoryDO.setFinished(true);
             } catch (CommonException e) {
                 uploadHistoryDO.setFinished(false);
