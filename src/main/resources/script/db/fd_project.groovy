@@ -33,8 +33,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-05-24-drop-unique') {
-        if (!helper.isH2Base()) {
+//        if (!helper.isH2Base()) {
             dropUniqueConstraint(constraintName: "code", tableName: "fd_project")
-        }
+//        }
     }
 }
