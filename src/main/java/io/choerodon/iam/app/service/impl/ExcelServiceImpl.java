@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -58,12 +57,6 @@ public class ExcelServiceImpl implements ExcelService {
         long begin = System.currentTimeMillis();
         try {
             List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
-            //根据loginName去重
-            users =
-                    users.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(UserDO::getLoginName))), ArrayList::new));
-            //根据email去重
-            users =
-                    users.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(UserDO::getEmail))), ArrayList::new));
             long end = System.currentTimeMillis();
             logger.info("read excel for {} seconds", (end - begin) / 1000);
             excelImportUserTask.importUsers(users, organizationId, uploadHistory, finishFallback);
