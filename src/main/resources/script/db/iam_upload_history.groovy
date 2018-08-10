@@ -31,4 +31,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_upload_history.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-08-iam-upload-history-add-column') {
+        addColumn(tableName: 'iam_upload_history') {
+            column(name: 'finished', type: "TINYINT UNSIGNED", remarks: '生成和上传是否结束', afterColumn: 'type')
+        }
+    }
 }

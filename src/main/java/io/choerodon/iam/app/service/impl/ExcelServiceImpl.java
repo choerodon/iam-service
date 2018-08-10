@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -54,9 +55,17 @@ public class ExcelServiceImpl implements ExcelService {
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
         uploadHistoryMapper.insertSelective(uploadHistory);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
+        long begin = System.currentTimeMillis();
         try {
-            //todo 读取到的用户根据loginName和email去重
             List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
+            //根据loginName去重
+            users =
+                    users.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(UserDO::getLoginName))), ArrayList::new));
+            //根据email去重
+            users =
+                    users.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(UserDO::getEmail))), ArrayList::new));
+            long end = System.currentTimeMillis();
+            logger.info("read excel for {} seconds", (end - begin) / 1000);
             excelImportUserTask.importUsers(users, organizationId, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());

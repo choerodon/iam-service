@@ -15,6 +15,15 @@ public class UploadHistoryDTO {
     private Integer failedCount;
     private Date beginTime;
     private Date endTime;
+    private Boolean finished;
+
+    public Boolean getFinished() {
+        return finished;
+    }
+
+    public void setFinished(Boolean finished) {
+        this.finished = finished;
+    }
 
     public Date getBeginTime() {
         return beginTime;
