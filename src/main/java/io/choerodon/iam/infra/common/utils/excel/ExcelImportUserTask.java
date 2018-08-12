@@ -65,7 +65,6 @@ public class ExcelImportUserTask {
         distinctUsers.parallelStream().forEach(u -> {
                     u.setOrganizationId(organizationId);
                     processUsers(u, errorUsers, validateUsers);
-                    logger.info("^^^ errorUsers:  {}, validateUsers: {}", errorUsers.size(), validateUsers.size());
                 }
         );
         List<UserDO> insertUsers = compareWithDb(validateUsers, errorUsers);
@@ -114,28 +113,35 @@ public class ExcelImportUserTask {
             List<String> existedNames = userRepository.matchLoginName(nameList);
             List<String> emailList = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toList());
             List<String> existedEmails = userRepository.matchEmail(emailList);
-            //对象的loginName和email在数据库里都不重复
-            boolean ok = true;
             for (UserDO user : validateUsers) {
+                boolean loginNameExisted = false;
+                boolean emailExisted = false;
                 for (String name : existedNames) {
                     if (name.equals(user.getLoginName())) {
-                        ok = false;
-                        ErrorUserDTO dto = new ErrorUserDTO();
-                        BeanUtils.copyProperties(user, dto);
-                        dto.setCause("用户名已存在");
-                        errorUsers.add(dto);
+                        loginNameExisted = true;
                     }
                 }
                 for (String email : existedEmails) {
                     if (email.equals(user.getEmail())) {
-                        ok = false;
-                        ErrorUserDTO dto = new ErrorUserDTO();
-                        BeanUtils.copyProperties(user, dto);
-                        dto.setCause("邮箱已存在");
-                        errorUsers.add(dto);
+                        emailExisted = true;
                     }
                 }
-                if (ok) {
+                if (loginNameExisted && emailExisted) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(user, dto);
+                    dto.setCause("邮箱和登录名都已存在");
+                    errorUsers.add(dto);
+                } else if (!loginNameExisted && emailExisted) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(user, dto);
+                    dto.setCause("邮箱已存在");
+                    errorUsers.add(dto);
+                } else if (loginNameExisted && !emailExisted) {
+                    ErrorUserDTO dto = new ErrorUserDTO();
+                    BeanUtils.copyProperties(user, dto);
+                    dto.setCause("登录名已存在");
+                    errorUsers.add(dto);
+                } else {
                     insertList.add(user);
                 }
             }
