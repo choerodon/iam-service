@@ -1,4 +1,4 @@
-package io.choerodon.iam.infra.common.utils.ldap;
+package io.choerodon.iam.infra.common.utils.excel;
 
 import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
@@ -26,12 +26,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 /**
- * @author wuguokai
+ * @author superlee
  */
 @RefreshScope
 @Component
@@ -55,15 +56,19 @@ public class ExcelImportUserTask {
     @Async("excel-executor")
     public void importUsers(List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistoryDO, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
-        List<UserDO> insertUsers = new ArrayList<>();
-        List<ErrorUserDTO> errorUsers = new ArrayList<>();
-        //根据loginName和emai去重，返回
+        //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
+        List<UserDO> validateUsers = new CopyOnWriteArrayList<>();
+        List<ErrorUserDTO> errorUsers = new CopyOnWriteArrayList<>();
+        //根据loginName和email去重，返回
         List<UserDO> distinctUsers = distinct(users, errorUsers);
         long begin = System.currentTimeMillis();
-        distinctUsers.forEach(u -> {
-            u.setOrganizationId(organizationId);
-            processUsers(u, errorUsers, insertUsers);
-        });
+        distinctUsers.parallelStream().forEach(u -> {
+                    u.setOrganizationId(organizationId);
+                    processUsers(u, errorUsers, validateUsers);
+                    logger.info("^^^ errorUsers:  {}, validateUsers: {}", errorUsers.size(), validateUsers.size());
+                }
+        );
+        List<UserDO> insertUsers = compareWithDb(validateUsers, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} seconds", (end - begin) / 1000);
         List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
@@ -100,6 +105,42 @@ public class ExcelImportUserTask {
             uploadHistoryDO.setFinished(true);
             fallback.callback(uploadHistoryDO);
         }
+    }
+
+    private List<UserDO> compareWithDb(List<UserDO> validateUsers, List<ErrorUserDTO> errorUsers) {
+        List<UserDO> insertList = new ArrayList<>();
+        if (!validateUsers.isEmpty()) {
+            List<String> nameList = validateUsers.stream().map(UserDO::getLoginName).collect(Collectors.toList());
+            List<String> existedNames = userRepository.matchLoginName(nameList);
+            List<String> emailList = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toList());
+            List<String> existedEmails = userRepository.matchEmail(emailList);
+            //对象的loginName和email在数据库里都不重复
+            boolean ok = true;
+            for (UserDO user : validateUsers) {
+                for (String name : existedNames) {
+                    if (name.equals(user.getLoginName())) {
+                        ok = false;
+                        ErrorUserDTO dto = new ErrorUserDTO();
+                        BeanUtils.copyProperties(user, dto);
+                        dto.setCause("用户名已存在");
+                        errorUsers.add(dto);
+                    }
+                }
+                for (String email : existedEmails) {
+                    if (email.equals(user.getEmail())) {
+                        ok = false;
+                        ErrorUserDTO dto = new ErrorUserDTO();
+                        BeanUtils.copyProperties(user, dto);
+                        dto.setCause("邮箱已存在");
+                        errorUsers.add(dto);
+                    }
+                }
+                if (ok) {
+                    insertList.add(user);
+                }
+            }
+        }
+        return insertList;
     }
 
     private List<UserDO> distinct(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
@@ -284,29 +325,10 @@ public class ExcelImportUserTask {
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REGULAR_EXPRESSION, phone)) {
             errorUser.setCause("手机号格式不正确");
             errorUsers.add(errorUser);
-        } else if (loginNameIsExisted(loginName)) {
-            errorUser.setCause("登录名已存在");
-            errorUsers.add(errorUser);
-        } else if (emailIsExisted(email)) {
-            errorUser.setCause("邮箱已存在");
-            errorUsers.add(errorUser);
         } else {
             insertUsers.add(user);
         }
     }
-
-    private boolean emailIsExisted(String email) {
-        UserDO userDO = new UserDO();
-        userDO.setEmail(email);
-        return userRepository.selectOne(userDO) != null;
-    }
-
-    private boolean loginNameIsExisted(String loginName) {
-        UserDO userDO = new UserDO();
-        userDO.setLoginName(loginName);
-        return userRepository.selectOne(userDO) != null;
-    }
-
 
     public interface FinishFallback {
         /**

@@ -267,4 +267,25 @@
         </if>
     </select>
 
+    <select id="matchLoginName" resultType="java.lang.String">
+        SELECT login_name
+        FROM iam_user
+        WHERE login_name
+        IN
+        <foreach item="item" index="index" collection="nameList"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="matchEmail" resultType="java.lang.String">
+        SELECT email
+        FROM iam_user
+        WHERE email
+        IN
+        <foreach item="item" index="index" collection="emailList"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

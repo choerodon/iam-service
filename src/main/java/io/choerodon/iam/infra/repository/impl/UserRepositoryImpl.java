@@ -244,6 +244,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<String> matchLoginName(List<String> nameList) {
+        return mapper.matchLoginName(nameList);
+    }
+
+    @Override
+    public List<String> matchEmail(List<String> emailList) {
+        return mapper.matchEmail(emailList);
+    }
+
+    @Override
     public List<UserDO> listUsersByIds(Long[] ids) {
         return mapper.listUsersByIds(ids);
     }
