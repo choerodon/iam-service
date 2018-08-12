@@ -68,8 +68,8 @@ ribbon:
   ConnectTimeout: 5000
 file-service:
   ribbon:
-    ReadTimeout: 15000
-    ConnectTimeout: 15000
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration: # 数据库下划线转驼峰配置

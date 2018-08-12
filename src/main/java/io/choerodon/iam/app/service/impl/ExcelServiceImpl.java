@@ -5,7 +5,7 @@ import io.choerodon.core.excel.ExcelReadHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ExcelService;
-import io.choerodon.iam.infra.common.utils.ldap.ExcelImportUserTask;
+import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
@@ -22,7 +22,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author superlee

@@ -77,4 +77,8 @@ public interface UserRepository {
     Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 
     List<UserDO> insertList(List<UserDO> insertUsers);
+
+    List<String> matchLoginName(List<String> nameList);
+
+    List<String> matchEmail(List<String> emailList);
 }
