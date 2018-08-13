@@ -6,7 +6,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
+import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
@@ -48,9 +48,9 @@ public class OrganizationListener {
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
-    public OrganizationEventPayload create(String message) throws IOException {
-        OrganizationEventPayload organizationEventPayload = mapper.readValue(message, OrganizationEventPayload.class);
-        Long orgId = organizationEventPayload.getOrganizationId();
+    public OrganizationCreateEventPayload create(String message) throws IOException {
+        OrganizationCreateEventPayload organizationEventPayload = mapper.readValue(message, OrganizationCreateEventPayload.class);
+        Long orgId = organizationEventPayload.getId();
         OrganizationDTO organizationDTO = organizationService.queryOrganizationById(orgId);
         if (organizationDTO == null) {
             throw new CommonException("error.organization.not exist");
