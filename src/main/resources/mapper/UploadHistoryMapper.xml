@@ -6,6 +6,12 @@
         FROM iam_upload_history
         WHERE user_id = #{userId}
         AND type = #{type}
+        <if test="sourceId != null">
+            AND source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND source_type = #{sourceType}
+        </if>
         ORDER BY id DESC limit 1
     </select>
 </mapper>

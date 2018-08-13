@@ -10,6 +10,7 @@ import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.RoleService;
+import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -42,16 +43,19 @@ public class RoleMemberController extends BaseController {
     private UserService userService;
 
     private RoleService roleService;
+    private UploadHistoryService uploadHistoryService;
 
     @Autowired
     private MemberRoleValidator memberRoleValidator;
 
     public RoleMemberController(RoleMemberService roleMemberService,
                                 UserService userService,
-                                RoleService roleService) {
+                                RoleService roleService,
+                                UploadHistoryService uploadHistoryService) {
         this.roleMemberService = roleMemberService;
         this.userService = userService;
         this.roleService = roleService;
+        this.uploadHistoryService = uploadHistoryService;
     }
 
     /**
@@ -341,13 +345,36 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation("site层从excel里面批量导入用户角色关系")
     @PostMapping("/projects/{project_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
                                                      @RequestPart MultipartFile file) {
         roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(),file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("查site层的历史")
+    @GetMapping("/site/member_role/upload/history")
+    public ResponseEntity latestHistoryOnSite(@RequestParam(value = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", 0L,ResourceLevel.SITE.value()), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("查组织层的历史")
+    @GetMapping("/organizations/{organization_id}/member_role/upload/history")
+    public ResponseEntity latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
+                                                      @RequestParam(value = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation("查项目层的历史")
+    @GetMapping("/projects/{project_id}/member_role/upload/history")
+    public ResponseEntity latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
+                                                 @RequestParam(value = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
 }
