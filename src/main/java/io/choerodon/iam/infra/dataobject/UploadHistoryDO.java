@@ -28,6 +28,24 @@ public class UploadHistoryDO extends AuditDomain {
     private Date beginTime;
     private Date endTime;
     private Boolean finished;
+    private Long sourceId;
+    private String sourceType;
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
+    }
 
     public Boolean getFinished() {
         return finished;

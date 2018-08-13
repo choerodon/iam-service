@@ -9,5 +9,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface UploadHistoryMapper extends BaseMapper<UploadHistoryDO> {
     UploadHistoryDO latestHistory(@Param("userId") Long userId,
-                                  @Param("type") String type);
+                                  @Param("type") String type,
+                                  @Param("sourceId") Long sourceId,
+                                  @Param("sourceType")String sourceType);
 }

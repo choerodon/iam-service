@@ -36,4 +36,11 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_upload_history.groovy') {
             column(name: 'finished', type: "TINYINT UNSIGNED", remarks: '生成和上传是否结束', afterColumn: 'type')
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-13-iam-upload-history-add-column') {
+        addColumn(tableName: 'iam_upload_history') {
+            column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '创建该记录的源id，可以是projectId,也可以是organizarionId等', afterColumn: 'finished')
+            column(name: 'source_type', type: 'VARCHAR(32)', remarks: '创建该记录的源类型，sit/organization/project', afterColumn: 'source_id')
+        }
+    }
 }

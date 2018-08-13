@@ -17,7 +17,7 @@ public class UploadHistoryServiceImpl implements UploadHistoryService {
     }
 
     @Override
-    public UploadHistoryDTO latestHistory(Long userId, String type) {
-        return ConvertHelper.convert(uploadHistoryMapper.latestHistory(userId,type), UploadHistoryDTO.class);
+    public UploadHistoryDTO latestHistory(Long userId, String type, Long sourceId, String sourceType) {
+        return ConvertHelper.convert(uploadHistoryMapper.latestHistory(userId, type, sourceId, sourceType), UploadHistoryDTO.class);
     }
 }

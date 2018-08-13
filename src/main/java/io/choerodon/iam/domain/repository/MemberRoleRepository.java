@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public interface MemberRoleRepository {
 
     MemberRoleE selectByPrimaryKey(Long id);
 
-    MemberRoleE selectOne(MemberRoleE memberRole);
+    MemberRoleDO selectOne(MemberRoleDO memberRole);
 
     List<Long> selectDeleteList(List<Long> deleteList, long memberId,
                                 long sourceId, String sourceType);
