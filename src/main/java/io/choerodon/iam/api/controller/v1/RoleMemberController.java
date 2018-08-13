@@ -11,6 +11,7 @@ import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -18,9 +19,11 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
@@ -282,4 +285,69 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
                 pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
     }
+
+    /**
+     * 全局层下载模板
+     *
+     * @return
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层下载excel导入模板")
+    @GetMapping(value = "/site/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnSite() {
+        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+    }
+
+    /**
+     * 组织层下载模板
+     *
+     * @param organizationId
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层下载excel导入模板")
+    @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
+        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+    }
+
+    /**
+     * 组织层下载模板
+     *
+     * @param projectId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目层下载excel导入模板")
+    @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
+    public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
+        return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("site层从excel里面批量导入用户角色关系")
+    @PostMapping("/site/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnSite(@RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(0L, ResourceLevel.SITE.value(),file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("site层从excel里面批量导入用户角色关系")
+    @PostMapping("/organizations/{organization_id}/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(),file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("site层从excel里面批量导入用户角色关系")
+    @PostMapping("/projects/{project_id}/role_members/batch_import")
+    public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
+                                                     @RequestPart MultipartFile file) {
+        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(),file);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }

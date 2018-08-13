@@ -61,7 +61,7 @@ public class ExcelServiceImpl implements ExcelService {
         try {
             List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
             long end = System.currentTimeMillis();
-            logger.info("read excel for {} seconds", (end - begin) / 1000);
+            logger.info("read excel for {} millisecond", (end - begin));
             excelImportUserTask.importUsers(users, organizationId, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());

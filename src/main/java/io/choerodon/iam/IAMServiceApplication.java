@@ -42,8 +42,8 @@ public class IAMServiceApplication {
     public AsyncTaskExecutor excelImportUserExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("excel-executor");
-        executor.setMaxPoolSize(3);
-        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setCorePoolSize(4);
         return executor;
     }
 }
