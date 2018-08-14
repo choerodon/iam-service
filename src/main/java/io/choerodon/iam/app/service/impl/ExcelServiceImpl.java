@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import io.choerodon.core.excel.ExcelReadConfig;
 import io.choerodon.core.excel.ExcelReadHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ExcelService;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
@@ -55,6 +56,8 @@ public class ExcelServiceImpl implements ExcelService {
         uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
         uploadHistory.setType("user");
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
+        uploadHistory.setSourceId(organizationId);
+        uploadHistory.setSourceType(ResourceLevel.ORGANIZATION.value());
         uploadHistoryMapper.insertSelective(uploadHistory);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
