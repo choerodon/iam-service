@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -22,6 +20,8 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 
 /**
@@ -83,7 +83,9 @@ public class LdapSyncUserTask {
         }
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
-        users.forEach(u -> insertUser(ldapSyncReport, u));
+        if (!users.isEmpty()) {
+            compareWithDbAndInsert(users, ldapSyncReport);
+        }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
         try {
@@ -93,147 +95,35 @@ public class LdapSyncUserTask {
         }
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
-    /**
-     * 同步用户批量插入用户
-     * @param ldapContext
-     * @param ldap
-     * @param fallback
-     */
-    public void syncUser(LdapContext ldapContext, LdapDO ldap, FinishFallback fallback) {
-        Long organizationId = ldap.getOrganizationId();
-        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
-        ldapSyncReport.setLdapId(ldap.getId());
-        SearchControls constraints = new SearchControls();
-        // 设置搜索范围
-        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration namingEnumeration = null;
-        try {
-            namingEnumeration = ldapContext.search("",
-                    "objectClass=*", constraints);
-        } catch (NamingException e) {
-            logger.info("ldap search fail: {}", e);
-        }
-        logger.info("@@@ start async user");
-        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
-        LdapHistoryDO ldapHistory = new LdapHistoryDO();
-        ldapHistory.setLdapId(ldap.getId());
-        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
-        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
-        List<UserDO> insertUsers = new ArrayList<>();
-        List<UserDO> errorUsers = new ArrayList<>();
-        Set<String> emailSet = new HashSet<>();
-        //读用户
-        while (namingEnumeration != null
-                && namingEnumeration.hasMoreElements()) {
-            SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
-            Attributes attributes = searchResult.getAttributes();
-            UserDO user = extractUser(attributes, organizationId, ldap);
-            if (user == null) {
-                continue;
-            }
-            user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
-            ldapSyncReport.incrementCount();
-            String loginName = user.getLoginName();
-            String email = user.getEmail();
-            //根据loginName判断是否插入
-            if (userRepository.selectByLoginName(loginName) == null) {
-                UserDO userDO = new UserDO();
-                userDO.setEmail(email);
-                if (userRepository.selectOne(userDO) == null) {
-                    if (emailSet.contains(email)) {
-                        logger.info("user has the same email: {}", email);
-                        errorUsers.add(user);
-                        ldapSyncReport.incrementError();
-                    } else {
-                        insertUsers.add(user);
-                        ldapSyncReport.incrementNewInsert();
-                    }
-                    emailSet.add(user.getEmail());
-                } else {
-                    //邮箱是唯一，如果有重复不同步
-                    errorUsers.add(user);
+
+    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport) {
+        List<UserDO> insertUsers = new CopyOnWriteArrayList<>();
+        List<String> nameList = users.stream().map(UserDO::getLoginName).collect(Collectors.toList());
+        List<String> emailList = users.stream().map(UserDO::getEmail).collect(Collectors.toList());
+        List<String> existedNames = userRepository.matchLoginName(nameList);
+        List<String> existedEmails = userRepository.matchEmail(emailList);
+        users.parallelStream().forEach(u -> {
+            if (!existedNames.contains(u.getLoginName())) {
+                //插入
+                if (existedEmails.contains(u.getEmail())) {
+                    //邮箱重复，报错
                     ldapSyncReport.incrementError();
-                    logger.info("email is duplicate, loginName: {}, email {}", user.getLoginName(), user.getEmail());
+                    logger.info("duplicate email, email : {}", u.getEmail());
+                } else {
+                    //可以插入
+                    insertUsers.add(u);
+                    ldapSyncReport.incrementNewInsert();
                 }
+            } else {
+                //更新,目前不做更新操作
             }
-        }
-        List<List<UserDO>> list = subUserList(insertUsers);
+        });
+        List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
         list.forEach(l -> {
             if (!l.isEmpty()) {
                 organizationUserService.batchCreateUsers(l);
             }
         });
-        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
-        logger.info("async finished : {}", ldapSyncReport);
-        try {
-            ldapContext.close();
-        } catch (NamingException e) {
-            logger.warn("error.close.ldap.connect");
-        }
-        fallback.callback(ldapSyncReport, ldapHistoryDO);
-    }
-
-    private List<List<UserDO>> subUserList(List<UserDO> insertUsers) {
-        List<List<UserDO>> list = new ArrayList<>();
-        int size = insertUsers.size();
-        int volume = 1000;
-        //从ldap服务器读取的用户每1000个分一组
-        int count = size/volume + 1;
-        int start = 0;
-        int end = 999;
-        if (size != 0) {
-            for (int i = 0; i < count; i++) {
-                end = end > size - 1 ? size - 1 : end;
-                List<UserDO> users = insertUsers.subList(start, end);
-                start = start + volume;
-                end = end + volume;
-                list.add(users);
-            }
-        }
-        return list;
-    }
-    private void insertUser(LdapSyncReport ldapSyncReport, UserDO user) {
-        if (userRepository.selectByLoginName(user.getLoginName()) == null) {
-            try {
-                organizationUserService.create(ConvertHelper.convert(user, UserDTO.class), false);
-                ldapSyncReport.incrementNewInsert();
-            } catch (Exception e) {
-                logger.info("insert error, login_name = {}, exception : {}", user.getLoginName(), e);
-                ldapSyncReport.incrementError();
-            }
-        }
-//        if (oldUser == null) {
-            //插入操作
-//        } else {
-            //更新操作，只更新realName和phone字段
-            //更新策略：数据库存在的用户和ldap拿到的用户，根据loginName判断是不是同一个用户，
-            //同一个用户的话，以phone为例：
-            //新用户phone和旧用户phone都为空，不更新
-            //新用户phone为空，旧用户phone不为空，不更新
-            //新用户phone不为空，旧用户phone为空，更新
-            //新用户和旧用户phone字段都不为空，且新用户phone与旧用户phone不相等，更新，否则不更新
-
-            /*
-            boolean doUpdate = false;
-            if (user.getPhone() != null && !user.getPhone().equals(oldUser.getPhone())) {
-                oldUser.setPhone(user.getPhone());
-                doUpdate = true;
-            }
-            if (user.getRealName() != null && !user.getRealName().equals(oldUser.getRealName())) {
-                oldUser.setRealName(user.getRealName());
-                doUpdate = true;
-            }
-            if (doUpdate) {
-                try {
-                    organizationUserService.update(oldUser);
-                    ldapSyncReport.incrementUpdate();
-                } catch (Exception e) {
-                    logger.info("update error, login_name = {}, exception : {}", user.getLoginName(), e);
-                    ldapSyncReport.incrementError();
-                }
-            }
-            */
-//        }
     }
 
     private UserDO extractUser(Attributes attributes, Long organizationId, LdapDO ldap) {
@@ -273,6 +163,7 @@ public class LdapSyncUserTask {
         user.setPassword("unknown password");
         user.setLocked(false);
         user.setLdap(true);
+        user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
         return user;
     }
 

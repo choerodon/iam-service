@@ -96,7 +96,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 userEventPayload.setId(user.getId().toString());
                 userEventPayload.setName(user.getRealName());
                 userEventPayload.setUsername(user.getLoginName());
-                String input = mapper.writeValueAsString(userEventPayload);
+                //devop处理接受的是list
+                List<UserEventPayload> payloads = new ArrayList<>();
+                payloads.add(userEventPayload);
+                String input = mapper.writeValueAsString(payloads);
                 sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.createUser.event", e);
