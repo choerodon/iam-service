@@ -167,8 +167,9 @@ public class OrganizationUserController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查询最新的导入历史")
     @GetMapping("/upload/history")
-    public ResponseEntity<UploadHistoryDTO> latestHistory(@RequestParam(value = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", null, null), HttpStatus.OK);
+    public ResponseEntity<UploadHistoryDTO> latestHistory(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestParam(value = "user_id") Long userId) {
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "user", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
 }
