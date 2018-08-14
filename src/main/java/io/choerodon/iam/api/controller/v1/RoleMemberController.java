@@ -337,7 +337,7 @@ public class RoleMemberController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation("site层从excel里面批量导入用户角色关系")
+    @ApiOperation("组织层从excel里面批量导入用户角色关系")
     @PostMapping("/organizations/{organization_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestPart MultipartFile file) {
@@ -346,7 +346,7 @@ public class RoleMemberController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation("site层从excel里面批量导入用户角色关系")
+    @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/projects/{project_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
                                                      @RequestPart MultipartFile file) {
