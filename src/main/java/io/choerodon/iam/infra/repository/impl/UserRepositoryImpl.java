@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -244,13 +245,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<String> matchLoginName(List<String> nameList) {
-        return mapper.matchLoginName(nameList);
+    public Set<String> matchLoginName(Set<String> nameSet) {
+        return mapper.matchLoginName(nameSet);
     }
 
     @Override
-    public List<String> matchEmail(List<String> emailList) {
-        return mapper.matchEmail(emailList);
+    public Set<String> matchEmail(Set<String> emailSet) {
+        return mapper.matchEmail(emailSet);
     }
 
     @Override

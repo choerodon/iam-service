@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -28,4 +29,6 @@ public interface RoleMapper extends BaseMapper<RoleDO> {
     List<RoleDO> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type);
 
     List<RoleDO> selectInitRolesByPermissionId(Long permissionId);
+
+    Set<String> matchCode(@Param("codeSet") Set<String> codeSet);
 }

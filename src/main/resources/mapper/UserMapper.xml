@@ -272,7 +272,7 @@
         FROM iam_user
         WHERE login_name
         IN
-        <foreach item="item" index="index" collection="nameList"
+        <foreach item="item" index="index" collection="nameSet"
                  open="(" separator="," close=")">
             #{item}
         </foreach>
@@ -283,7 +283,7 @@
         FROM iam_user
         WHERE email
         IN
-        <foreach item="item" index="index" collection="emailList"
+        <foreach item="item" index="index" collection="emailSet"
                  open="(" separator="," close=")">
             #{item}
         </foreach>
