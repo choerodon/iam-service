@@ -269,16 +269,19 @@ public class ExcelImportUserTask {
                 if (loginNameExisted && emailExisted) {
                     ErrorUserDTO dto = new ErrorUserDTO();
                     BeanUtils.copyProperties(user, dto);
+                    dto.setPassword(user.getOriginalPassword());
                     dto.setCause("邮箱和登录名都已存在");
                     errorUsers.add(dto);
                 } else if (!loginNameExisted && emailExisted) {
                     ErrorUserDTO dto = new ErrorUserDTO();
                     BeanUtils.copyProperties(user, dto);
+                    dto.setPassword(user.getOriginalPassword());
                     dto.setCause("邮箱已存在");
                     errorUsers.add(dto);
                 } else if (loginNameExisted && !emailExisted) {
                     ErrorUserDTO dto = new ErrorUserDTO();
                     BeanUtils.copyProperties(user, dto);
+                    dto.setPassword(user.getOriginalPassword());
                     dto.setCause("登录名已存在");
                     errorUsers.add(dto);
                 } else {
@@ -451,6 +454,7 @@ public class ExcelImportUserTask {
         //只有校验通过的用户才进行其他字段设置
         if (validateUsers(user, errorUsers, validateUsers)) {
             //excel中用户密码为空，设置默认密码为abcd1234
+            user.setOriginalPassword(user.getPassword());
             if (StringUtils.isEmpty(user.getPassword())) {
                 user.setPassword("abcd1234");
             }

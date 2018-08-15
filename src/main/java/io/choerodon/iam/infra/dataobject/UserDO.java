@@ -23,6 +23,8 @@ public class UserDO extends AuditDomain {
     private String loginName;
     private String email;
     private Long organizationId;
+    @Transient
+    private String originalPassword;
     private String password;
     private String realName;
     private String phone;
@@ -220,5 +222,13 @@ public class UserDO extends AuditDomain {
 
     public void setRoles(List<RoleDO> roles) {
         this.roles = roles;
+    }
+
+    public String getOriginalPassword() {
+        return originalPassword;
+    }
+
+    public void setOriginalPassword(String originalPassword) {
+        this.originalPassword = originalPassword;
     }
 }
