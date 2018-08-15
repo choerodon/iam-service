@@ -52,13 +52,7 @@ public class ExcelServiceImpl implements ExcelService {
 
     @Override
     public void importUsers(Long organizationId, MultipartFile multipartFile) {
-        UploadHistoryDO uploadHistory = new UploadHistoryDO();
-        uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
-        uploadHistory.setType("user");
-        uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
-        uploadHistory.setSourceId(organizationId);
-        uploadHistory.setSourceType(ResourceLevel.ORGANIZATION.value());
-        uploadHistoryMapper.insertSelective(uploadHistory);
+        UploadHistoryDO uploadHistory = initUploadHistory(organizationId);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
         try {
@@ -70,6 +64,17 @@ public class ExcelServiceImpl implements ExcelService {
             logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.read");
         }
+    }
+
+    private UploadHistoryDO initUploadHistory(Long organizationId) {
+        UploadHistoryDO uploadHistory = new UploadHistoryDO();
+        uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
+        uploadHistory.setType("user");
+        uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
+        uploadHistory.setSourceId(organizationId);
+        uploadHistory.setSourceType(ResourceLevel.ORGANIZATION.value());
+        uploadHistoryMapper.insertSelective(uploadHistory);
+        return uploadHistory;
     }
 
     private ExcelReadConfig initExcelReadConfig() {
