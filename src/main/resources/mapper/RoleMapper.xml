@@ -155,4 +155,15 @@
         WHERE irp.permission_id = #{permissionId}
         AND ir.is_built_in = 1
     </select>
+
+    <select id="matchCode" resultType="java.lang.String">
+        SELECT code
+        FROM iam_role
+        WHERE code
+        IN
+        <foreach item="item" index="index" collection="codeSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

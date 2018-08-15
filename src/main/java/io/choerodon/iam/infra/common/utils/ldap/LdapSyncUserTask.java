@@ -98,10 +98,10 @@ public class LdapSyncUserTask {
 
     private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport) {
         List<UserDO> insertUsers = new CopyOnWriteArrayList<>();
-        List<String> nameList = users.stream().map(UserDO::getLoginName).collect(Collectors.toList());
-        List<String> emailList = users.stream().map(UserDO::getEmail).collect(Collectors.toList());
-        List<String> existedNames = userRepository.matchLoginName(nameList);
-        List<String> existedEmails = userRepository.matchEmail(emailList);
+        Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
+        Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
+        Set<String> existedNames = userRepository.matchLoginName(nameSet);
+        Set<String> existedEmails = userRepository.matchEmail(emailSet);
         users.parallelStream().forEach(u -> {
             if (!existedNames.contains(u.getLoginName())) {
                 //插入

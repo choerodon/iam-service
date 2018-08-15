@@ -6,6 +6,7 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -40,4 +41,6 @@ public interface RoleRepository {
     List<RoleDO> selectRolesByLabelNameAndType(String name, String type);
 
     List<RoleDO> selectInitRolesByPermissionId(Long permissionId);
+
+    Set<String> matchCode(Set<String> codeSet);
 }

@@ -74,15 +74,15 @@ public class ExcelImportUserTask {
         //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
         List<UserDO> validateUsers = new CopyOnWriteArrayList<>();
         List<ErrorUserDTO> errorUsers = new CopyOnWriteArrayList<>();
-        //根据loginName和email去重，返回
-        List<UserDO> distinctUsers = distinct(users, errorUsers);
         long begin = System.currentTimeMillis();
-        distinctUsers.parallelStream().forEach(u -> {
+        users.parallelStream().forEach(u -> {
                     u.setOrganizationId(organizationId);
                     processUsers(u, errorUsers, validateUsers);
                 }
         );
-        List<UserDO> insertUsers = compareWithDb(validateUsers, errorUsers);
+        //根据loginName和email去重，返回
+        List<UserDO> distinctUsers = distinct(validateUsers, errorUsers);
+        List<UserDO> insertUsers = compareWithDb(distinctUsers, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
         List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
@@ -129,8 +129,21 @@ public class ExcelImportUserTask {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
         List<ExcelMemberRoleDTO> errorMemberRoles = new CopyOnWriteArrayList<>();
-        List<ExcelMemberRoleDTO> distinctList = new CopyOnWriteArrayList<>();
-        distinctExcel(memberRoles, errorMemberRoles, distinctList);
+        List<ExcelMemberRoleDTO> validateMemberRoles = new CopyOnWriteArrayList<>();
+        memberRoles.parallelStream().forEach(mr -> {
+            if (StringUtils.isEmpty(mr.getLoginName())) {
+                mr.setCause("用户名为空");
+                errorMemberRoles.add(mr);
+            } else if (StringUtils.isEmpty(mr.getRoleCode())) {
+                mr.setCause("角色编码为空");
+                errorMemberRoles.add(mr);
+            } else {
+                validateMemberRoles.add(mr);
+            }
+        });
+        //去重
+        List<ExcelMemberRoleDTO> distinctList = distinctExcel(validateMemberRoles, errorMemberRoles);
+        //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName();
             String code = emr.getRoleCode();
@@ -175,8 +188,6 @@ public class ExcelImportUserTask {
         }
     }
 
-
-
     private MemberRoleDO getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
         MemberRoleDO memberRole = new MemberRoleDO();
         memberRole.setSourceType(sourceType);
@@ -216,10 +227,11 @@ public class ExcelImportUserTask {
         return userDO;
     }
 
-    private void distinctExcel(List<ExcelMemberRoleDTO> memberRoles, List<ExcelMemberRoleDTO> errorMemberRoles, List<ExcelMemberRoleDTO> distinctList) {
+    private List<ExcelMemberRoleDTO> distinctExcel(List<ExcelMemberRoleDTO> validateMemberRoles, List<ExcelMemberRoleDTO> errorMemberRoles) {
+        List<ExcelMemberRoleDTO> distinctList = new ArrayList<>();
         //excel内去重
         Map<Map<String, String>, List<ExcelMemberRoleDTO>> distinctMap =
-                memberRoles.stream().collect(Collectors.groupingBy(m -> {
+                validateMemberRoles.stream().collect(Collectors.groupingBy(m -> {
                     Map<String, String> map = new HashMap<>();
                     map.put(m.getLoginName(), m.getRoleCode());
                     return map;
@@ -235,27 +247,24 @@ public class ExcelImportUserTask {
                 }
             }
         }
+        return distinctList;
     }
 
     private List<UserDO> compareWithDb(List<UserDO> validateUsers, List<ErrorUserDTO> errorUsers) {
         List<UserDO> insertList = new ArrayList<>();
         if (!validateUsers.isEmpty()) {
-            List<String> nameList = validateUsers.stream().map(UserDO::getLoginName).collect(Collectors.toList());
-            List<String> existedNames = userRepository.matchLoginName(nameList);
-            List<String> emailList = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toList());
-            List<String> existedEmails = userRepository.matchEmail(emailList);
+            Set<String> nameSet = validateUsers.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
+            Set<String> existedNames = userRepository.matchLoginName(nameSet);
+            Set<String> emailSet = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toSet());
+            Set<String> existedEmails = userRepository.matchEmail(emailSet);
             for (UserDO user : validateUsers) {
                 boolean loginNameExisted = false;
                 boolean emailExisted = false;
-                for (String name : existedNames) {
-                    if (name.equals(user.getLoginName())) {
-                        loginNameExisted = true;
-                    }
+                if (existedNames.contains(user.getLoginName())) {
+                    loginNameExisted = true;
                 }
-                for (String email : existedEmails) {
-                    if (email.equals(user.getEmail())) {
-                        emailExisted = true;
-                    }
+                if (existedEmails.contains(user.getEmail())) {
+                    emailExisted = true;
                 }
                 if (loginNameExisted && emailExisted) {
                     ErrorUserDTO dto = new ErrorUserDTO();
@@ -438,52 +447,66 @@ public class ExcelImportUserTask {
         return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
     }
 
-    private void processUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> insertUsers) {
-        validateUsers(user, errorUsers, insertUsers);
-        //excel中用户密码为空，设置默认密码为abcd1234
-        if (StringUtils.isEmpty(user.getPassword())) {
-            user.setPassword("abcd1234");
+    private void processUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> validateUsers) {
+        //只有校验通过的用户才进行其他字段设置
+        if (validateUsers(user, errorUsers, validateUsers)) {
+            //excel中用户密码为空，设置默认密码为abcd1234
+            if (StringUtils.isEmpty(user.getPassword())) {
+                user.setPassword("abcd1234");
+            }
+            //加密
+            user.setPassword(ENCODER.encode(user.getPassword()));
+            if (StringUtils.isEmpty(user.getLanguage())) {
+                user.setLanguage("zh_CN");
+            }
+            if (StringUtils.isEmpty(user.getTimeZone())) {
+                user.setTimeZone("CTT");
+            }
+            user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
+            user.setEnabled(true);
+            user.setLocked(false);
+            user.setLdap(false);
+            user.setAdmin(false);
         }
-        //加密
-        user.setPassword(ENCODER.encode(user.getPassword()));
-        if (StringUtils.isEmpty(user.getLanguage())) {
-            user.setLanguage("zh_CN");
-        }
-        if (StringUtils.isEmpty(user.getTimeZone())) {
-            user.setTimeZone("CTT");
-        }
-        user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
-        user.setEnabled(true);
-        user.setLocked(false);
-        user.setLdap(false);
-        user.setAdmin(false);
     }
 
-    private void validateUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> insertUsers) {
+    private Boolean validateUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> insertUsers) {
         String loginName = user.getLoginName();
         String email = user.getEmail();
-        ErrorUserDTO errorUser = new ErrorUserDTO();
-        BeanUtils.copyProperties(user, errorUser);
         String realName = user.getRealName();
         String phone = user.getPhone();
+        Boolean ok = false;
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
+            //乐观认为大多数是正确的，所以new 对象放到了if 里面
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("登录名或邮箱为空");
             errorUsers.add(errorUser);
         } else if (loginName.length() > 128) {
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("登陆名长度超过128位");
             errorUsers.add(errorUser);
         } else if (!Pattern.matches(UserDTO.EMAIL_REGULAR_EXPRESSION, email)) {
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("非法的邮箱格式");
             errorUsers.add(errorUser);
         } else if (!StringUtils.isEmpty(realName) && realName.length() > 32) {
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("用户名超过32位");
             errorUsers.add(errorUser);
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REGULAR_EXPRESSION, phone)) {
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("手机号格式不正确");
             errorUsers.add(errorUser);
         } else {
+            ok = true;
             insertUsers.add(user);
         }
+        return ok;
     }
 
 

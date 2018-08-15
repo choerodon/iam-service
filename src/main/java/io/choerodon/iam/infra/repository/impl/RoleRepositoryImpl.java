@@ -12,6 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -110,5 +111,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<RoleDO> selectInitRolesByPermissionId(Long permissionId) {
         return mapper.selectInitRolesByPermissionId(permissionId);
+    }
+
+    @Override
+    public Set<String> matchCode(Set<String> codeSet) {
+        return mapper.matchCode(codeSet);
     }
 }
