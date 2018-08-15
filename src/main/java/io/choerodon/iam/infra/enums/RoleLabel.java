@@ -5,9 +5,7 @@ package io.choerodon.iam.infra.enums;
  */
 public enum RoleLabel {
 
-    GITLAB_OWMER("gitlab.owner"),
-
-    GITLAB_DEVELOPER("gitlab.developer"),
+    PROJECT_DEPLOY_ADMIN("project.deploy.admin"),
 
     PROJECT_OWNER("project.owner"),
 
