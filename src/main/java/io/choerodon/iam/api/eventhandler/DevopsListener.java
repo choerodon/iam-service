@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.eventhandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -41,9 +40,8 @@ public class DevopsListener {
         this.sagaClient = sagaClient;
     }
 
-    @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
-    @SagaTask(code = MEMBER_ROLE_UPDATE, sagaCode = "devops-upgrade-0.8-0.9", seq = 1, description = "iam接收devops平滑升级事件")
-    public void assignRolesOnProject(String messgae) {
+    @SagaTask(code = MEMBER_ROLE_UPDATE, sagaCode = "devops-upgrade-0.9", seq = 1, description = "iam接收devops平滑升级事件")
+    public String assignRolesOnProject(String messgae) {
         MemberRoleDO memberRole = new MemberRoleDO();
         memberRole.setSourceType(ResourceLevel.PROJECT.value());
         memberRole.setMemberType("user");
@@ -84,5 +82,6 @@ public class DevopsListener {
                 throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event");
             }
         });
+        return "";
     }
 }
