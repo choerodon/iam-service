@@ -1,5 +1,8 @@
 部署文件的渲染模板，我们下文将定义一些变量，helm执行时会将变量渲染进模板文件中。
 
+## readinessProbe探针
+设置curl 访问/health端口和/v2/choerodon/api-docs端口，在两个都通的情况下pod才为ready
+
 ## _helpers.tpl
 
 这个文件我们用来进行标签模板的定义，以便在上文提到的位置进行标签渲染。
