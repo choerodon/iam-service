@@ -41,9 +41,8 @@ spec:
           readinessProbe:
             exec:
               command: ["/bin/sh","-c"]
-              args: ["curl localhost:{{ .Values.deployment.managementPort }}/health && curl localhost:{{ .Values.service.port }}/v2/choerodon/api-docs"]
-#              - curl
-#              - localhost:{{ .Values.deployment.managementPort }}/health
+              args:
+              - "curl localhost:{{ .Values.deployment.managementPort }}/health && curl localhost:{{ .Values.service.port }}/v2/choerodon/api-docs;"
             failureThreshold: 3
             initialDelaySeconds: 60
             periodSeconds: 10
