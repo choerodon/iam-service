@@ -1,5 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -7,7 +11,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.app.service.OrganizationProjectService;
@@ -34,8 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_CREATE_PROJECT;
-import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UPDATE_PROJECT;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -45,6 +47,7 @@ import static io.choerodon.iam.api.dto.payload.ProjectEventPayload.EVENT_TYPE_UP
 @RefreshScope
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
 
@@ -54,8 +57,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectRepository projectRepository;
 
     private UserRepository userRepository;
-
-    private EventProducerTemplate eventProducerTemplate;
 
     private OrganizationRepository organizationRepository;
 
@@ -67,6 +68,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private LabelRepository labelRepository;
 
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
                                           UserRepository userRepository,
@@ -75,7 +79,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           RoleRepository roleRepository,
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
-                                          EventProducerTemplate eventProducerTemplate) {
+                                          SagaClient sagaClient) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -83,40 +87,21 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.roleRepository = roleRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional
     @Override
+    @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO createProject(ProjectDTO projectDTO) {
+
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
         final ProjectE projectE = ConvertHelper.convert(projectDTO, ProjectE.class);
         ProjectDTO dto;
         if (devopsMessage) {
-            dto = new ProjectDTO();
-            CustomUserDetails details = DetailsHelper.getUserDetails();
-            UserE user = userRepository.selectByLoginName(details.getUsername());
-            ProjectEventPayload projectEventMsg = new ProjectEventPayload();
-            projectEventMsg.setUserName(details.getUsername());
-            projectEventMsg.setUserId(user.getId());
-            Exception exception = eventProducerTemplate.execute("project", EVENT_TYPE_CREATE_PROJECT,
-                    serviceName, projectEventMsg, (String uuid) -> {
-                        ProjectE newProjectE = projectRepository.create(projectE);
-                        projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
-                        projectEventMsg.setProjectId(newProjectE.getId());
-                        projectEventMsg.setProjectCode(newProjectE.getCode());
-                        projectEventMsg.setProjectName(newProjectE.getName());
-                        OrganizationDO organizationDO =
-                                organizationRepository.selectByPrimaryKey(newProjectE.getOrganizationId());
-                        projectEventMsg.setOrganizationCode(organizationDO.getCode());
-                        projectEventMsg.setOrganizationName(organizationDO.getName());
-                        BeanUtils.copyProperties(newProjectE, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
-            }
+            dto = createProjectBySaga(projectE);
         } else {
             ProjectE newProjectE = projectRepository.create(projectE);
             initMemberRole(newProjectE);
@@ -124,6 +109,30 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         return dto;
     }
+
+    private ProjectDTO createProjectBySaga(final ProjectE projectE) {
+        ProjectEventPayload projectEventMsg = new ProjectEventPayload();
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        projectEventMsg.setUserName(details.getUsername());
+        projectEventMsg.setUserId(details.getUserId());
+        ProjectE newProjectE = projectRepository.create(projectE);
+        projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
+        projectEventMsg.setProjectId(newProjectE.getId());
+        projectEventMsg.setProjectCode(newProjectE.getCode());
+        projectEventMsg.setProjectName(newProjectE.getName());
+        OrganizationDO organizationDO =
+                organizationRepository.selectByPrimaryKey(newProjectE.getOrganizationId());
+        projectEventMsg.setOrganizationCode(organizationDO.getCode());
+        projectEventMsg.setOrganizationName(organizationDO.getName());
+        try {
+            String input = mapper.writeValueAsString(projectEventMsg);
+            sagaClient.startSaga(PROJECT_CREATE, new StartInstanceDTO(input, "project", newProjectE.getId() + ""));
+        } catch (Exception e) {
+            throw new CommonException("error.organizationProjectService.createProject.event", e);
+        }
+        return ConvertHelper.convert(newProjectE, ProjectDTO.class);
+    }
+
 
     private Set<String> initMemberRole(ProjectE project) {
         List<RoleDO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role");
@@ -185,16 +194,16 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             projectEventMsg.setUserId(user.getId());
             projectEventMsg.setOrganizationCode(organizationDO.getCode());
             projectEventMsg.setOrganizationName(organizationDO.getName());
-            Exception exception = eventProducerTemplate.execute("project", EVENT_TYPE_UPDATE_PROJECT,
-                    serviceName, projectEventMsg, (String uuid) -> {
-                        ProjectE newProjectE = projectRepository.updateSelective(projectDO);
-                        projectEventMsg.setProjectId(newProjectE.getId());
-                        projectEventMsg.setProjectCode(newProjectE.getCode());
-                        projectEventMsg.setProjectName(newProjectE.getName());
-                        BeanUtils.copyProperties(newProjectE, dto);
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            ProjectE newProjectE = projectRepository.updateSelective(projectDO);
+            projectEventMsg.setProjectId(newProjectE.getId());
+            projectEventMsg.setProjectCode(newProjectE.getCode());
+            projectEventMsg.setProjectName(newProjectE.getName());
+            BeanUtils.copyProperties(newProjectE, dto);
+            try {
+                String input = mapper.writeValueAsString(projectEventMsg);
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", newProjectE.getId() + ""));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationProjectService.updateProject.event", e);
             }
         } else {
             dto = ConvertHelper.convert(projectRepository.updateSelective(projectDO), ProjectDTO.class);
@@ -203,12 +212,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
+    @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO enableProject(Long organizationId, Long projectId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, "enableProject", true);
+        ProjectE project = updateAndSendEvent(projectId, PROJECT_ENABLE, true);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
@@ -220,13 +230,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             project = new ProjectE();
             ProjectEventPayload payload = new ProjectEventPayload();
             payload.setProjectId(projectId);
-            Exception exception = eventProducerTemplate.execute("project", consumerType,
-                    serviceName, payload,
-                    (String uuid) ->
-                            BeanUtils.copyProperties(projectRepository.updateSelective(projectDO), project)
-            );
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            BeanUtils.copyProperties(projectRepository.updateSelective(projectDO), project);
+            try {
+                String input = mapper.writeValueAsString(payload);
+                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, "project", "" + payload.getProjectId()));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }
         } else {
             projectRepository.updateSelective(projectDO);
@@ -241,7 +250,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, "disableProject", false);
+        ProjectE project = updateAndSendEvent(projectId, PROJECT_DISABLE, false);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 

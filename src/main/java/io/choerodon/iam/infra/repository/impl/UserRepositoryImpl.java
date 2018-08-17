@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -233,6 +234,24 @@ public class UserRepositoryImpl implements UserRepository {
             userDO.setAdmin(true);
             return mapper.selectAdminUserPage(userDO, params);
         });
+    }
+
+    @Override
+    public List<UserDO> insertList(List<UserDO> insertUsers) {
+        if (mapper.insertList(insertUsers) == 0) {
+            throw new CommonException("error.batch.insert.user");
+        }
+        return insertUsers;
+    }
+
+    @Override
+    public Set<String> matchLoginName(Set<String> nameSet) {
+        return mapper.matchLoginName(nameSet);
+    }
+
+    @Override
+    public Set<String> matchEmail(Set<String> emailSet) {
+        return mapper.matchEmail(emailSet);
     }
 
     @Override

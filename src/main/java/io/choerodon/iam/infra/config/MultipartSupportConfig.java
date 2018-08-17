@@ -24,4 +24,5 @@ public class MultipartSupportConfig {
     public Encoder feignFormEncoder() {
         return new SpringFormEncoder(new SpringEncoder(messageConverters));
     }
+
 }

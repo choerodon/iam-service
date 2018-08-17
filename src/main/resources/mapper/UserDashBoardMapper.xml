@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.UserDashboardMapper">
+    <select id="selectWithDashboard" resultType="io.choerodon.iam.api.dto.UserDashboardDTO">
+		SELECT
+			ud.id,
+			ud.user_id,
+			IFNULL(ud.is_visible, 1) visible,
+			ud.source_id,
+			ud.object_version_number,
+			ud.dashboard_id dashboard_id,
+			ud.sort sort,
+			ud.level,
+			d.code dashboard_code,
+			d.name dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon
+		FROM
+			`iam_dashboard` d,
+			`iam_user_dashboard` ud
+		WHERE
+			d.id = ud.dashboard_id
+			AND ud.LEVEL IN ( 'site', #{userDashboard.level} )
+			AND ud.user_id = #{userDashboard.userId}
+			and source_id = #{userDashboard.sourceId}
+    </select>
+
+	<select id="selectWithDashboardNotExist" resultType="io.choerodon.iam.api.dto.UserDashboardDTO">
+		SELECT
+			#{userDashboard.userId} user_id,
+			#{userDashboard.sourceId} source_id,
+			1 visible,
+			1 object_version_number,
+			d.id dashboard_id,
+			d.sort,
+			d.level,
+			d.code dashboard_code,
+			d.name dashboard_name,
+			d.title dashboard_title,
+			d.namespace dashboard_namespace,
+			d.description dashboard_description,
+			d.icon dashboard_icon
+		FROM
+			`iam_dashboard` d
+		WHERE
+			d.LEVEL IN ( 'site', #{userDashboard.level} )
+	</select>
+</mapper>
+
+

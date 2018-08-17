@@ -20,4 +20,5 @@ public interface OrganizationService {
     OrganizationDTO disableOrganization(Long organizationId);
 
     void check(OrganizationDTO organization);
+
 }

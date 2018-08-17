@@ -8,10 +8,6 @@ import java.util.Set;
  */
 public class ProjectEventPayload {
 
-    public static final String EVENT_TYPE_CREATE_PROJECT = "createProject";
-
-    public static final String EVENT_TYPE_UPDATE_PROJECT = "updateProject";
-
     private Long projectId;
     private String projectCode;
     private String projectName;

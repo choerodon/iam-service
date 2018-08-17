@@ -1,10 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
@@ -16,6 +19,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author wuguokai
@@ -31,12 +37,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Value("${spring.application.name:default}")
     private String serviceName;
 
-    private EventProducerTemplate eventProducerTemplate;
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
-                                   EventProducerTemplate eventProducerTemplate) {
+                                   SagaClient sagaClient) {
         this.organizationRepository = organizationRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
     }
 
     @Override
@@ -64,6 +72,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO enableOrganization(Long organizationId) {
         OrganizationE organization =
                 ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
@@ -71,11 +80,12 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new CommonException("error.organization.not.exist");
         }
         organization.enable();
-        OrganizationE organizationE = updateAndSendEvent(organization, "enableOrganization");
+        OrganizationE organizationE = updateAndSendEvent(organization, ORG_ENABLE);
         return ConvertHelper.convert(organizationE, OrganizationDTO.class);
     }
 
     @Override
+    @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO disableOrganization(Long organizationId) {
         OrganizationE organization =
                 ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
@@ -83,7 +93,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new CommonException("error.organization.not.exist");
         }
         organization.disable();
-        OrganizationE organizationE = updateAndSendEvent(organization, "disableOrganization");
+        OrganizationE organizationE = updateAndSendEvent(organization, ORG_DISABLE);
         return ConvertHelper.convert(organizationE, OrganizationDTO.class);
     }
 
@@ -93,13 +103,12 @@ public class OrganizationServiceImpl implements OrganizationService {
             organizationE = new OrganizationE();
             OrganizationEventPayload payload = new OrganizationEventPayload();
             payload.setOrganizationId(organization.getId());
-            Exception exception = eventProducerTemplate.execute("organization", consumerType,
-                    serviceName, payload,
-                    (String uuid) ->
-                        BeanUtils.copyProperties(organizationRepository.update(organization), organizationE)
-                    );
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            BeanUtils.copyProperties(organizationRepository.update(organization), organizationE);
+            try {
+                String input = mapper.writeValueAsString(payload);
+                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, "organization", payload.getOrganizationId() + ""));
+            } catch (Exception e) {
+                throw new CommonException("error.organizationService.enableOrDisable.event", e);
             }
         } else {
             organizationE = organizationRepository.update(organization);

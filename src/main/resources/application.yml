@@ -25,6 +25,10 @@ spring:
         binder:
           brokers: 127.0.0.1:9092
           zkNodes: 127.0.0.1:2181
+  http: #设置上传文件最大为10M
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 event:
   store:
     service:
@@ -32,16 +36,12 @@ event:
 choerodon:
   devops:
     message: true
-  event:
+  saga:
     consumer:
-      enabled: true # 是否开启，不设置默认开启
-      queue-type: kafka # 消息队列类型,目前仅支持kafka
-      enable-duplicate-remove: true # 是否开启去重功能
-      failed-strategy: nothing # 消息失败策略
-      retry:
-        enabled: true # 是否开启重试功能
-      kafka:
-        bootstrap-servers: localhost:9092
+      enabled: true # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
 eureka:
   instance:
     preferIpAddress: true
@@ -68,8 +68,8 @@ ribbon:
   ConnectTimeout: 5000
 file-service:
   ribbon:
-    ReadTimeout: 15000
-    ConnectTimeout: 15000
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration: # 数据库下划线转驼峰配置

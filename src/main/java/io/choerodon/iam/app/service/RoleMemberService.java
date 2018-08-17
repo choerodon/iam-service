@@ -2,6 +2,9 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.iam.api.dto.MemberRoleDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,4 +29,7 @@ public interface RoleMemberService {
 
     void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 
+    ResponseEntity<Resource> downloadTemplates(String suffix);
+
+    void import2MemberRole(Long sourceId, String sourceType, MultipartFile file);
 }

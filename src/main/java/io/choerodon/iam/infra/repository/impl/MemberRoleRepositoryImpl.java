@@ -83,10 +83,8 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public MemberRoleE selectOne(MemberRoleE memberRole) {
-        return ConvertHelper.convert(
-                memberRoleMapper.selectOne(
-                        ConvertHelper.convert(memberRole, MemberRoleDO.class)), MemberRoleE.class);
+    public MemberRoleDO selectOne(MemberRoleDO memberRole) {
+        return memberRoleMapper.selectOne(memberRole);
     }
 
     @Override

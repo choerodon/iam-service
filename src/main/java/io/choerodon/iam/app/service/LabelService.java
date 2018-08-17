@@ -8,5 +8,5 @@ import java.util.List;
  * @author superlee
  */
 public interface LabelService {
-    List<LabelDTO> listByType(String type);
+    List<LabelDTO> listByOption(LabelDTO label);
 }

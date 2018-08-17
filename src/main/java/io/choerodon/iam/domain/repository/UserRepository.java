@@ -7,6 +7,7 @@ import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author dongfan117@gmail.com
@@ -75,4 +76,10 @@ public interface UserRepository {
     List<UserDO> listUsersByIds(Long[] ids);
 
     Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
+
+    List<UserDO> insertList(List<UserDO> insertUsers);
+
+    Set<String> matchLoginName(Set<String> nameSet);
+
+    Set<String> matchEmail(Set<String> emailSet);
 }

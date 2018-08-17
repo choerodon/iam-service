@@ -6,6 +6,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -56,4 +57,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
 
     List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO, @Param("params") String params);
 
+    Set<String> matchLoginName(@Param("nameSet") Set<String> nameSet);
+
+    Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
 }

@@ -1,6 +1,5 @@
 package io.choerodon.iam;
 
-import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
 /**
  * @author huiyuchen
@@ -33,6 +34,16 @@ public class IAMServiceApplication {
         executor.setThreadNamePrefix("ldap-executor");
         executor.setMaxPoolSize(3);
         executor.setCorePoolSize(2);
+        return executor;
+    }
+
+    @Bean
+    @Qualifier("excel-executor")
+    public AsyncTaskExecutor excelImportUserExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("excel-executor");
+        executor.setMaxPoolSize(5);
+        executor.setCorePoolSize(4);
         return executor;
     }
 }

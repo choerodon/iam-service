@@ -1,8 +1,10 @@
 package io.choerodon.iam.domain.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.domain.iam.entity.LabelE;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
@@ -25,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
+
 /**
  * @author superlee
  * @data 2018/3/27
@@ -39,7 +43,6 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
     @Value("${spring.application.name:default}")
     private String serviceName;
 
-    private EventProducerTemplate eventProducerTemplate;
 
     private RoleRepository roleRepository;
 
@@ -53,6 +56,10 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     private UserRepository userRepository;
 
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
     private static final String ROLE_NOT_EXIST_EXCEPTION = "error.role.not.exist";
 
     public IRoleServiceImpl(RoleRepository roleRepository,
@@ -61,14 +68,15 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                             LabelRepository labelRepository,
                             RoleLabelRepository roleLabelRepository,
                             UserRepository userRepository,
-                            EventProducerTemplate eventProducerTemplate) {
+                            SagaClient sagaClient) {
         this.roleRepository = roleRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.permissionRepository = permissionRepository;
         this.labelRepository = labelRepository;
         this.roleLabelRepository = roleLabelRepository;
         this.userRepository = userRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
+        this.sagaClient = sagaClient;
+
     }
 
     @Override
@@ -159,23 +167,23 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         List<UserDO> users = userRepository.listUsersByRoleId(roleE.getId(), "user", ResourceLevel.PROJECT.value());
         if (devopsMessage) {
-            Exception exception = eventProducerTemplate.execute("memberRole", "updateMemberRole",
-                    serviceName, userMemberEventPayloads, (String uuid) -> {
-                        doUpdateAndDelete(roleE, insertList, deleteList);
-                        users.forEach(user -> {
-                            List<LabelDO> labels1 = labelRepository.selectByUserId(user.getId());
-                            UserMemberEventPayload payload = new UserMemberEventPayload();
-                            payload.setResourceId(user.getSourceId());
-                            payload.setResourceType(ResourceLevel.PROJECT.value());
-                            payload.setUsername(user.getLoginName());
-                            Set<String> nameSet = new HashSet<>();
-                            nameSet.addAll(labels1.stream().map(LabelDO::getName).collect(Collectors.toList()));
-                            payload.setRoleLabels(nameSet);
-                            userMemberEventPayloads.add(payload);
-                        });
-                    });
-            if (exception != null) {
-                throw new CommonException(exception.getMessage());
+            doUpdateAndDelete(roleE, insertList, deleteList);
+            users.forEach(user -> {
+                List<LabelDO> labels1 = labelRepository.selectByUserId(user.getId());
+                UserMemberEventPayload payload = new UserMemberEventPayload();
+                payload.setResourceId(user.getSourceId());
+                payload.setResourceType(ResourceLevel.PROJECT.value());
+                payload.setUsername(user.getLoginName());
+                Set<String> nameSet = new HashSet<>(labels1.stream().map(LabelDO::getName).collect(Collectors.toSet()));
+                payload.setRoleLabels(nameSet);
+                userMemberEventPayloads.add(payload);
+            });
+            try {
+                String input = mapper.writeValueAsString(userMemberEventPayloads);
+                String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
+                sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "members", refIds));
+            } catch (Exception e) {
+                throw new CommonException("error.IRoleServiceImpl.update.event", e);
             }
         } else {
             doUpdateAndDelete(roleE, insertList, deleteList);
