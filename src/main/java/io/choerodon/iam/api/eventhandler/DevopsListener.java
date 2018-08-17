@@ -41,7 +41,7 @@ public class DevopsListener {
     }
 
     @SagaTask(code = MEMBER_ROLE_UPDATE, sagaCode = "devops-upgrade-0.9", seq = 1, description = "iam接收devops平滑升级事件")
-    public String assignRolesOnProject(String messgae) {
+    public void assignRolesOnProject(String messgae) {
         MemberRoleDO memberRole = new MemberRoleDO();
         memberRole.setSourceType(ResourceLevel.PROJECT.value());
         memberRole.setMemberType("user");
@@ -82,6 +82,5 @@ public class DevopsListener {
                 throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event");
             }
         });
-        return "";
     }
 }
