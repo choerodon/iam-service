@@ -24,13 +24,13 @@ public class PasswordPolicyDTO {
     @NotNull(message = "error.passwordPolicy.organizationId.null")
     private Long organizationId;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "新用户默认密码/非必填")
     private String originalPassword;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最小密码长度/非必填")
     private Integer minLength;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最大密码长度/非必填")
     private Integer maxLength;
 
     @ApiModelProperty(value = "输错多少次后开启锁定/非必填")
@@ -39,34 +39,34 @@ public class PasswordPolicyDTO {
     @ApiModelProperty(value = "最少数字数/非必填")
     private Integer digitsCount;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最少小写字母数/非必填")
     private Integer lowercaseCount;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最少大写字母数/非必填")
     private Integer uppercaseCount;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最少特殊字符数/非必填")
     private Integer specialCharCount;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "是否允许与登录名相同/非必填")
     private Boolean notUsername;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "密码正则/非必填")
     private String regularExpression;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "最大近期密码数/非必填")
     private Integer notRecentCount;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "是否开启密码安全策略/非必填")
     private Boolean enablePassword;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "是否开启登录安全策略/非必填")
     private Boolean enableSecurity;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "是否开启锁定/非必填")
     private Boolean enableLock;
 
-    @ApiModelProperty(value = "/非必填")
+    @ApiModelProperty(value = "锁定时长/非必填")
     private Integer lockedExpireTime;
 
     @ApiModelProperty(value = "是否开启验证码/非必填")
