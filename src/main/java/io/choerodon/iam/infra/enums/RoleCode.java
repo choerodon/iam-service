@@ -40,15 +40,21 @@ public class RoleCode {
      */
     public static final String ORGANIZATION_MEMBER = "role/organization/default/organization-member";
 
-    public static String[] values () {
-        return new String[] {
+    /**
+     * 平台开发者
+     */
+    public static final String SITE_DEVELOPER = "role/site/default/developer";
+
+    public static String[] values() {
+        return new String[]{
                 SITE_ADMINISTRATOR,
                 ORGANIZATION_ADMINISTRATOR,
                 PROJECT_ADMINISTRATOR,
                 DEPLOY_ADMINISTRATOR,
                 PROJECT_MEMBER,
                 PROJECT_OWNER,
-                ORGANIZATION_MEMBER
+                ORGANIZATION_MEMBER,
+                SITE_DEVELOPER
         };
     }
 }
