@@ -1,30 +1,44 @@
 package io.choerodon.iam.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author wuguokai
  */
 public class ClientDTO {
+    @ApiModelProperty(value = "客户端ID/非必填")
     private Long id;
+    @ApiModelProperty(value = "客户端名称/必填")
     @Size(min = 1, max = 32, message = "error.name.size")
     @NotNull(message = "error.clientName.null")
     private String name;
+    @ApiModelProperty(value = "客户端ID/必填")
     private Long organizationId;
+    @ApiModelProperty(value = "客户端资源/非必填/默认：default")
     private String resourceIds;
+    @ApiModelProperty(value = "客户端秘钥/必填")
     @NotNull(message = "error.secret.null")
     private String secret;
+    @ApiModelProperty(value = "作用域/非必填")
     private String scope;
+    @ApiModelProperty(value = "授权类型/必填")
     @NotNull(message = "error.authorizedGrantTypes.null")
     private String authorizedGrantTypes;
+    @ApiModelProperty(value = "重定向地址/非必填")
     private String webServerRedirectUri;
+    @ApiModelProperty(value = "访问授权超时时间/必填")
     private Long accessTokenValidity;
+    @ApiModelProperty(value = "授权超时时间/必填")
     private Long refreshTokenValidity;
+    @ApiModelProperty(value = "附加信息/非必填")
     private String additionalInformation;
+    @ApiModelProperty(value = "自动授权域/非必填")
     private String autoApprove;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     @JsonIgnore

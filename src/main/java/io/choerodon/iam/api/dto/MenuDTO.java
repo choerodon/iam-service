@@ -1,9 +1,11 @@
 package io.choerodon.iam.api.dto;
 
+import java.util.List;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author wuguokai
@@ -12,24 +14,43 @@ public class MenuDTO {
     private static final String CODE_REGULAR_EXPRESSION
             = "^[a-z]([-.a-z0-9]*[a-z0-9])$";
 
+    @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
+    @ApiModelProperty(value = "菜单编码/必填")
     @NotNull(message = "error.menuCode.null")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.menu.code.illegal")
     private String code;
+
+    @ApiModelProperty(value = "菜单名/必填")
     @NotNull(message = "error.menuName.null")
     private String name;
+
+    @ApiModelProperty(value = "菜单层级/必填")
     @NotNull(message = "error.menuLevel.null")
     private String level;
+
+    @ApiModelProperty(value = "菜单父节点ID/必填")
     @NotNull(message = "error.parentId.null")
     private Long parentId;
+
+    @ApiModelProperty(value = "菜单类型（root/dir/menu）/必填")
     //1、root 根目录 2、dir 目录 3、menu 菜单)
     @NotNull(message = "error.menuType.null")
     private String type;
+
+    @ApiModelProperty(value = "菜单顺序/非必填")
     private Integer sort;
+
+    @ApiModelProperty(value = "是否为默认菜单/非必填")
     private Boolean isDefault;
+
+    @ApiModelProperty(value = "菜单图标/非必填")
     @NotNull(message = "error.menuIcon.null")
     private String icon;
+
+    @ApiModelProperty(value = "菜单路由/非必填")
     private String route;
+    @ApiModelProperty(value = "objectVersionNumber")
     private Long objectVersionNumber;
 
     private List<PermissionDTO> permissions;

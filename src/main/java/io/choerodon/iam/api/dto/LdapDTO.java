@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.dto;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author wuguokai
@@ -14,29 +15,62 @@ public class LdapDTO {
     public static final String GET_EMAIL_FIELD = "getEmailField";
     public static final String GET_PHONE_FIELD = "getPhoneField";
 
+    @ApiModelProperty(value = "主键/非必填")
     private Long id;
+
+    @ApiModelProperty(value = "名称/必填")
     @NotEmpty(message = "error.ldap.name.empty")
     private String name;
+
+    @ApiModelProperty(value = "组织ID/必填")
     @NotNull(message = "error.ldap.organizationId.null")
     private Long organizationId;
+
+    @ApiModelProperty(value = "主机名/必填")
     @NotEmpty(message = "error.ldap.serverAddress.empty")
     private String serverAddress;
+
+    @ApiModelProperty(value = "LDAP端口/必填")
     @NotEmpty(message = "error.ldap.port.empty")
     private String port;
+
+    @ApiModelProperty(value = "管理员登录名/必填")
     @NotEmpty(message = "error.ldap.account.empty")
     private String account;
+
+    @ApiModelProperty(value = "管理员密码/必填")
     @NotEmpty(message = "error.ldap.password.empty")
     private String password;
+
+    @ApiModelProperty(value = "是否使用SSL/必填/默认：false")
     private Boolean useSSL;
+
+    @ApiModelProperty(value = "是否启用/非必填")
     private Boolean enabled;
+
+    @ApiModelProperty(value = "基准DN/非必填")
     private String baseDn;
+
+    @ApiModelProperty(value = "目录类型/非必填")
     private String directoryType;
+
+    @ApiModelProperty(value = "用户对象类/非必填")
     @NotEmpty(message = "error.ldap.objectClass.empty")
     private String objectClass;
+
+    @ApiModelProperty(value = "登录名属性/非必填")
     private String loginNameField;
+
+    @ApiModelProperty(value = "用户名属性/非必填")
     private String realNameField;
+
+    @ApiModelProperty(value = "邮箱属性/非必填")
     private String emailField;
+
+    @ApiModelProperty(value = "手机号属性/非必填")
     private String phoneField;
+
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

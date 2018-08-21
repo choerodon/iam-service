@@ -3,34 +3,79 @@ package io.choerodon.iam.api.dto;
 
 import javax.validation.constraints.NotNull;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author wuguokai
  */
 public class PasswordPolicyDTO {
+    @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
+
+    @ApiModelProperty(value = "密码策略编码/必填")
     @NotNull(message = "error.passwordPolicy.code.null")
     private String code;
+
+    @ApiModelProperty(value = "密码策略名称/必填")
     @NotNull(message = "error.passwordPolicy.name.null")
     private String name;
+
+    @ApiModelProperty(value = "组织ID/必填")
     @NotNull(message = "error.passwordPolicy.organizationId.null")
     private Long organizationId;
+
+    @ApiModelProperty(value = "/非必填")
     private String originalPassword;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer minLength;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer maxLength;
+
+    @ApiModelProperty(value = "输错多少次后开启锁定/非必填")
     private Integer maxErrorTime;
+
+    @ApiModelProperty(value = "最少数字数/非必填")
     private Integer digitsCount;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer lowercaseCount;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer uppercaseCount;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer specialCharCount;
+
+    @ApiModelProperty(value = "/非必填")
     private Boolean notUsername;
+
+    @ApiModelProperty(value = "/非必填")
     private String regularExpression;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer notRecentCount;
+
+    @ApiModelProperty(value = "/非必填")
     private Boolean enablePassword;
+
+    @ApiModelProperty(value = "/非必填")
     private Boolean enableSecurity;
+
+    @ApiModelProperty(value = "/非必填")
     private Boolean enableLock;
+
+    @ApiModelProperty(value = "/非必填")
     private Integer lockedExpireTime;
+
+    @ApiModelProperty(value = "是否开启验证码/非必填")
     private Boolean enableCaptcha;
+
+    @ApiModelProperty(value = "输错多少次后开启验证码/非必填")
     private Integer maxCheckCaptcha;
+
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

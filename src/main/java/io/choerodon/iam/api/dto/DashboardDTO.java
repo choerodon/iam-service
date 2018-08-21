@@ -1,18 +1,36 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author dongfan117@gmail.com
  */
 public class DashboardDTO {
+    @ApiModelProperty(value = "Dashboard ID/非必填")
     private Long id;
+    @ApiModelProperty(value = "Dashboard编码/必填")
+    @NotNull(message = "error.dashboard.code.null")
     private String code;
+    @NotNull(message = "error.dashboard.name.null")
+    @ApiModelProperty(value = "Dashboard名称/必填")
     private String name;
-    private String title;
+    @ApiModelProperty(value = "命名空间/非必填")
     private String namespace;
+    @NotNull(message = "error.dashboard.title.null")
+    @ApiModelProperty(value = "Dashboard标题/必填")
+    private String title;
+    @ApiModelProperty(value = "层级/非必填")
     private String level;
+    @ApiModelProperty(value = "描述/非必填")
     private String description;
+    @ApiModelProperty(value = "图标/必填")
+    @NotNull(message = "error.dashboard.icon.null")
     private String icon;
+    @ApiModelProperty(value = "顺序/非必填")
     private Integer sort;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public DashboardDTO() {
