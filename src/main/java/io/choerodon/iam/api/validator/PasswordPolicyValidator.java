@@ -4,6 +4,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.infra.dataobject.PasswordPolicyDO;
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,20 @@ public class PasswordPolicyValidator {
         if (!orgId.equals(passwordPolicyDO.getOrganizationId())) {
             throw new CommonException("error.passwordPolicy.organizationId.not.same");
         }
+
+        // the sum of all the fields with least length requirement is greater than maxLength
+        int allLeastRequiredLength = passwordPolicyDTO.getDigitsCount() +
+                passwordPolicyDTO.getSpecialCharCount() +
+                passwordPolicyDTO.getLowercaseCount() +
+                passwordPolicyDTO.getUppercaseCount();
+        if (allLeastRequiredLength > passwordPolicyDTO.getMaxLength()) {
+            throw new CommonException("error.allLeastRequiredLength.greaterThan.maxLength");
+        }
+
+        if (passwordPolicyDTO.getMinLength() > passwordPolicyDTO.getMaxLength()) {
+            throw new CommonException("error.maxLength.lessThan.minLength");
+        }
+
         passwordPolicyDTO.setCode(null);
         passwordPolicyDTO.setOrganizationId(null);
     }
