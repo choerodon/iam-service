@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 public class LanguageDTO {
 
-    @ApiModelProperty(value = value = "主键")
+    @ApiModelProperty(value = "主键")
     private Long id;
     @ApiModelProperty(value = "编码/必填")
     @Size(max = 32, min = 1, message = "error.code.length")
