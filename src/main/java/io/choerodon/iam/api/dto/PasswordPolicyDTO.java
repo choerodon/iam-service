@@ -1,6 +1,8 @@
 package io.choerodon.iam.api.dto;
 
 
+import org.hibernate.validator.constraints.Range;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -15,15 +17,22 @@ public class PasswordPolicyDTO {
     @NotNull(message = "error.passwordPolicy.organizationId.null")
     private Long organizationId;
     private String originalPassword;
+    @Range(min = 0, message = "error.minLength")
     private Integer minLength;
+    @Range(min = 0, message = "error.maxLength")
     private Integer maxLength;
     private Integer maxErrorTime;
+    @Range(min = 0, message = "error.digitsCount")
     private Integer digitsCount;
+    @Range(min = 0, message = "error.lowercaseCount")
     private Integer lowercaseCount;
+    @Range(min = 0, message = "error.uppercaseCount")
     private Integer uppercaseCount;
+    @Range(min = 0, message = "error.specialCharCount")
     private Integer specialCharCount;
     private Boolean notUsername;
     private String regularExpression;
+    @Range(min = 0, message = "error.notRecentCount")
     private Integer notRecentCount;
     private Boolean enablePassword;
     private Boolean enableSecurity;
