@@ -15,7 +15,6 @@ maven-test-branches:
   except:
     - master
     - tags
-    - develop
     - /^release-.*$/
     - /^hotfix-.*$/
 
@@ -30,7 +29,6 @@ maven-test-build:
   only:
     - tags
     - master
-    - develop
     - /^release-.*$/
     - /^hotfix-.*$/
 
@@ -41,7 +39,6 @@ docker-build:
     - chart_build
   only:
     - tags
-    - develop
     - master
     - /^release-.*$/
     - /^hotfix-.*$/
