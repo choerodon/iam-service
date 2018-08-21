@@ -9,7 +9,6 @@ maven-test-branches:
   script:
     - git_merge master
     - mvn package -U -DskipTests=false -Dmaven.test.skip=true
-    - mvn --batch-mode verify sonar:sonar -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.analysis.mode=preview -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
   only:
     - branches
   except:
