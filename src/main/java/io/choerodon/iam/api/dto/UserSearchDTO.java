@@ -1,18 +1,37 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  */
 public class UserSearchDTO {
 
+    @ApiModelProperty(value = "组织ID")
     private Long organizationId;
+
+    @ApiModelProperty(value = "登录名/必填")
     private String loginName;
+
+    @ApiModelProperty(value = "用户名")
     private String realName;
+
+    @ApiModelProperty(value = "是否是LDAP用户")
     private Boolean ldap;
+
+    @ApiModelProperty(value = "语言")
     private String language;
+
+    @ApiModelProperty(value = "是否启用")
     private Boolean enabled;
+
+    @ApiModelProperty(value = "是否被锁定")
     private Boolean locked;
+
+    @ApiModelProperty(value = "其他参数")
     private String[] param;
+
+    @ApiModelProperty(value = "邮箱")
     private String email;
 
     public String[] getParam() {

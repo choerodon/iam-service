@@ -2,21 +2,33 @@ package io.choerodon.iam.api.dto;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  */
 public class UploadHistoryDTO {
-
+    @ApiModelProperty(value = "主键ID")
     private Long id;
+    @ApiModelProperty(value = "用户ID")
     private Long userId;
+    @ApiModelProperty(value = "连接地址")
     private String url;
+    @ApiModelProperty(value = "类型")
     private String type;
+    @ApiModelProperty(value = "成功数量")
     private Integer successfulCount;
+    @ApiModelProperty(value = "失败数量")
     private Integer failedCount;
+    @ApiModelProperty(value = "开始时间")
     private Date beginTime;
+    @ApiModelProperty(value = "结束时间")
     private Date endTime;
+    @ApiModelProperty(value = "是否结束")
     private Boolean finished;
+    @ApiModelProperty(value = "来源ID")
     private Long sourceId;
+    @ApiModelProperty(value = "来源类型（project/organization）")
     private String sourceType;
 
     public Long getSourceId() {

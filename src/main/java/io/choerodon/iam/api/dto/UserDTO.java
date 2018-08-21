@@ -1,13 +1,15 @@
 package io.choerodon.iam.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.validator.UserValidator;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.UserValidator;
 
 /**
  * @author superlee
@@ -19,44 +21,58 @@ public class UserDTO {
 
     public static final String PHONE_REGULAR_EXPRESSION = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
 
+    @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 
+    @ApiModelProperty(value = "组织ID/非必填")
     private Long organizationId;
 
+    @ApiModelProperty(value = "登录名/必填")
     @NotEmpty(message = "error.user.login_name.empty", groups = UserValidator.UserGroup.class)
     @Size(min = 1, max = 128, message = "error.user.login_name.size", groups = UserValidator.UserGroup.class)
     private String loginName;
 
+    @ApiModelProperty(value = "邮箱/必填")
     @Pattern(regexp = EMAIL_REGULAR_EXPRESSION, message = "error.user.email.illegal",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     @NotEmpty(message = "error.user.email.empty",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     private String email;
 
+    @ApiModelProperty(value = "用户名/必填")
     @NotEmpty(groups = UserValidator.UserGroup.class)
     private String realName;
 
+    @ApiModelProperty(value = "手机号/非必填")
     @Pattern(regexp = PHONE_REGULAR_EXPRESSION, message = "error.phone.illegal",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     private String phone;
 
+    @ApiModelProperty(value = "头像/非必填")
     private String imageUrl;
 
+    @ApiModelProperty(value = "语言/非必填")
     private String language;
 
+    @ApiModelProperty(value = "时区/非必填")
     private String timeZone;
 
+    @ApiModelProperty(value = "是否被锁定/非必填")
     private Boolean locked;
 
+    @ApiModelProperty(value = "是否是LDAP用户/非必填")
     private Boolean ldap;
 
+    @ApiModelProperty(value = "是否启用/非必填")
     private Boolean enabled;
 
+    @ApiModelProperty(value = "密码")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @ApiModelProperty(value = "是否是ROOT用户/非必填")
     private Boolean admin;
-
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     @JsonIgnore

@@ -1,11 +1,13 @@
 package io.choerodon.iam.api.dto;
 
-import io.choerodon.core.exception.CommonException;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import io.choerodon.core.exception.CommonException;
 
 /**
  * @author flyleft
@@ -16,21 +18,27 @@ public class ProjectDTO {
     private static final String CODE_REGULAR_EXPRESSION =
             "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
 
+    @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 
+    @ApiModelProperty(value = "项目名/必填")
     @NotEmpty(message = "error.project.name.empty")
     @Size(min = 1, max = 32, message = "error.project.code.size")
     private String name;
 
+    @ApiModelProperty(value = "组织ID/非必填")
     private Long organizationId;
 
+    @ApiModelProperty(value = "项目编码/必填")
     @NotEmpty(message = "error.project.code.empty")
     @Size(min = 1, max = 14, message = "error.project.code.size")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
     private String code;
 
+    @ApiModelProperty(value = "是否启用/非必填")
     private Boolean enabled;
 
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {
