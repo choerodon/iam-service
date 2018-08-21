@@ -1,9 +1,14 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class FileDTO {
 
+    @ApiModelProperty(value = "文件服务器地址")
     private String endPoint;
+    @ApiModelProperty(value = "原始文件名")
     private String originFileName;
+    @ApiModelProperty(value = "新文件名")
     private String fileName;
 
     public String getEndPoint() {

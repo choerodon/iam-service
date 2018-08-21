@@ -1,17 +1,27 @@
 package io.choerodon.iam.api.dto;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  */
 public class LdapConnectionDTO {
+    @ApiModelProperty(value = "基础连接是否成功")
     private Boolean canConnectServer;
+    @ApiModelProperty(value = "LDAP登录是否成功")
     private Boolean canLogin;
+    @ApiModelProperty(value = "用户属性校验是否成功")
     private Boolean matchAttribute;
+    @ApiModelProperty(value = "登录名属性是否成功")
     private String loginNameField;
+    @ApiModelProperty(value = "用户名属性是否成功")
     private String realNameField;
+    @ApiModelProperty(value = "密码字段是否成功")
     private String passwordField;
+    @ApiModelProperty(value = "手机号属性是否成功")
     private String phoneField;
+    @ApiModelProperty(value = "邮箱属性是否成功")
     private String emailField;
 
     public Boolean getCanConnectServer() {

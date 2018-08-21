@@ -1,13 +1,20 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author wuguokai
  */
 public class CheckPermissionDTO {
+    @ApiModelProperty(value = "权限code/必填")
     private String code;
+    @ApiModelProperty(value = "来源类型（project/organization）/必填")
     private String resourceType;
+    @ApiModelProperty(value = "是否通过/非必填")
     private Boolean approve;
+    @ApiModelProperty(value = "组织ID/非必填")
     private Long organizationId;
+    @ApiModelProperty(value = "项目ID/非必填")
     private Long projectId;
 
     public String getCode() {

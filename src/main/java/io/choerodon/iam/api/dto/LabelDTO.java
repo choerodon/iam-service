@@ -1,20 +1,23 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  */
 public class LabelDTO {
 
+    @ApiModelProperty(value = "主键")
     private Long id;
-
+    @ApiModelProperty(value = "名称")
     private String name;
-
+    @ApiModelProperty(value = "类型")
     private String type;
-
+    @ApiModelProperty(value = "层级")
     private String level;
-
+    @ApiModelProperty(value = "描述")
     private String description;
-
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

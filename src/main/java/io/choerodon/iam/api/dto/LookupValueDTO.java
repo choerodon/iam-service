@@ -10,15 +10,17 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @ApiModel(value = "lookupValue", description = "快码值对象")
 public class LookupValueDTO {
-
+    @ApiModelProperty(value = "主键")
     private Long id;
 
     @ApiModelProperty(value = "所属快码id", hidden = true)
     private Long lookupId;
 
+    @ApiModelProperty(value = "快码值code")
     @NotEmpty(message = "error.code.empty")
     private String code;
 
+    @ApiModelProperty(value = "快码值描述")
     private String description;
 
     @ApiModelProperty(value = "objectVersionNumber", hidden = true)

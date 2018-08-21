@@ -1,30 +1,34 @@
 package io.choerodon.iam.api.dto;
 
+import java.util.List;
+import javax.validation.constraints.Size;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.Size;
-import java.util.List;
-
 /**
  * @author superlee
  */
-@ApiModel(value="lookup",description="快码对象")
+@ApiModel(value = "lookup", description = "快码对象")
 public class LookupDTO {
 
-    @ApiModelProperty(value="快码id", hidden=true)
+    @ApiModelProperty(value = "快码id", hidden = true)
     private Long id;
 
+    @ApiModelProperty(value = "快码code")
     @NotEmpty(message = "error.code.empty")
     @Size(max = 32, min = 1, message = "error.code.length")
     private String code;
 
+    @ApiModelProperty(value = "描述")
     private String description;
 
+    @ApiModelProperty(value = "快码值")
     private List<LookupValueDTO> lookupValues;
 
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     @JsonIgnore

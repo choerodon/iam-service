@@ -2,17 +2,27 @@ package io.choerodon.iam.api.dto;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  */
 public class LdapHistoryDTO {
+    @ApiModelProperty(value = "主键")
     private Long id;
+    @ApiModelProperty(value = "LDAP 主键")
     private Long ldapId;
+    @ApiModelProperty(value = "上次同步新增用户个数")
     private Long newUserCount;
+    @ApiModelProperty(value = "同步成功用户个数")
     private Long updateUserCount;
+    @ApiModelProperty(value = "同步失败用户个数")
     private Long errorUserCount;
+    @ApiModelProperty(value = "上次同步开始时间")
     private Date syncBeginTime;
+    @ApiModelProperty(value = "上次同步结束时间")
     private Date syncEndTime;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

@@ -1,10 +1,11 @@
 package io.choerodon.iam.api.dto;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import java.util.List;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author wuguokai
@@ -12,22 +13,27 @@ import java.util.List;
 public class OrganizationDTO {
     private static final String CODE_REGULAR_EXPRESSION
             = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
-
+    @ApiModelProperty(value = "主键/非必填")
     private Long id;
-
+    
+    @ApiModelProperty(value = "组织名/必填")
     @NotEmpty(message = "error.organization.name.empty")
     @Size(min = 1, max = 32, message = "error.organization.name.size")
     private String name;
-
+    
+    @ApiModelProperty(value = "组织编码/必填")
     @NotEmpty(message = "error.code.empty")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.code.illegal")
     @Size(min = 1, max = 15, message = "error.organization.code.size")
     private String code;
-
+    
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
-
+    
+    @ApiModelProperty(value = "是否启用/非必填/默认：true")
     private Boolean enabled;
 
+    @ApiModelProperty(value = "项目数量")
     private Integer projectCount;
 
     private Boolean isInto = true;
