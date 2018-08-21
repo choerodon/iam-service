@@ -2,6 +2,9 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/oauth_client.groovy') {
     changeSet(author: 'guokai.wu.work@gmail.com', id: '2018-03-23-oauth_client') {
+        if(helper.dbType().isSupportSequence()){
+            createSequence(sequenceName: 'oauth_client_s', startValue:"1")
+        }
         createTable(tableName: "oauth_client") {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '客户端ID', autoIncrement: true) {
                 constraints(primaryKey: true)

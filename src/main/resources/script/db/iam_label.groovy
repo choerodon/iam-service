@@ -2,6 +2,9 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
     changeSet(author: 'jcalaz@163.com', id: '2018-04-13-iam-label') {
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'iam_label_s', startValue: "1")
+        }
         createTable(tableName: "iam_label") {
             column(name: 'id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
@@ -35,4 +38,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
             column(name: 'description', type: "VARCHAR(128)", remarks: '描述', afterColumn: 'level')
         }
     }
+//
+//    changeSet(author: 'superleader8@gmail.com', id: '2018-08-21-iam-label-rename-column') {
+//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: 'label_type', oldColumnName: 'type', remarks="类型")
+//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: 'label_level', oldColumnName: 'level', remarks="层级")
+//    }
 }

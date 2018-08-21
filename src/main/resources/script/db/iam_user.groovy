@@ -2,6 +2,9 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
     changeSet(author: 'jcalaz@163.com', id: '2018-03-21-iam-iam') {
+        if(helper.dbType().isSupportSequence()){
+            createSequence(sequenceName: 'iam_user_s', startValue:"1")
+        }
         createTable(tableName: "iam_user") {
             column(name: 'id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
@@ -23,7 +26,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
             }
             column(name: 'real_name', type: 'VARCHAR(32)', remarks: '用户真实姓名')
             column(name: 'phone', type: 'VARCHAR(32)', remarks: '手机号')
-            column(name: 'image_url', type: 'VARCHAR(128)', remarks: '用户头像地址')
+            column(name: 'image_url', type: 'VARCHAR(255)', remarks: '用户头像地址')
             column(name: 'profile_photo', type: 'MEDIUMTEXT', remarks: '用户二进制头像')
             column(name: 'language', type: 'VARCHAR(16)', defaultValue: "zh_CN", remarks: '语言') {
                 constraints(nullable: false)
@@ -69,9 +72,5 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
         addColumn(tableName: 'iam_user') {
             column(name: 'is_admin', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为管理员用户。1表示是，0表示不是', afterColumn: 'is_ldap')
         }
-    }
-
-    changeSet(author: 'jcalaz@163.com', id: '2018-06-29-update_image_url') {
-        renameColumn(tableName: 'iam_user', oldColumnName: 'image_url', newColumnName: 'image_url', columnDataType: 'VARCHAR(255)')
     }
 }

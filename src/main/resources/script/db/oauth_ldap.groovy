@@ -2,6 +2,9 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
     changeSet(author: 'guokai.wu.work@gmail.com', id: '2018-04-17-oauth-ldap') {
+        if(helper.dbType().isSupportSequence()){
+            createSequence(sequenceName: 'oauth_ldap_s', startValue:"1")
+        }
         createTable(tableName: "oauth_ldap") {
             column(name: 'id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
