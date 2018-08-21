@@ -1,15 +1,17 @@
 package io.choerodon.iam.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.util.StringUtils;
-
-import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.util.StringUtils;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 
 /**
  * @author superlee
@@ -18,31 +20,51 @@ public class RoleDTO {
     private static final String CODE_REGULAR_EXPRESSION
             = "^[a-z]([-a-z0-9]*[a-z0-9])$";
 
+    @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
+
+    @ApiModelProperty(value = "角色名/必填")
     @NotEmpty(message = "error.role.name.empty")
     @Size(min = 1, max = 64)
     private String name;
+
+    @ApiModelProperty(value = "角色编码/必填")
     @NotEmpty(message = "error.role.code.empty")
     @Size(min = 1, max = 128)
     private String code;
+
+    @ApiModelProperty(value = "角色描述/非必填")
     private String description;
+
+    @ApiModelProperty(value = "角色层级/必填")
     @NotEmpty(message = "error.role.level.empty")
     private String level;
+
+    @ApiModelProperty(value = "是否启用/非必填")
     private Boolean enabled;
+    @ApiModelProperty(value = "是否允许修改/非必填")
     private Boolean modified;
+    @ApiModelProperty(value = "是否允许禁用/非必填")
     private Boolean enableForbidden;
+    @ApiModelProperty(value = "是否内置角色/非必填")
     private Boolean builtIn;
+    @ApiModelProperty(value = "是否匀巡被分配/非必填")
     private Boolean assignable;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty(value = "已分配用户数量/非必填")
     private Integer userCount;
+    @ApiModelProperty(value = "权限列表/非必填")
     private List<PermissionDTO> permissions;
+    @ApiModelProperty(value = "角色权限列表/非必填")
     private List<RolePermissionDTO> rolePermissions;
+    @ApiModelProperty(value = "角色标签列表/非必填")
     private List<LabelDTO> labels;
-
+    @ApiModelProperty(value = "分配用户列表/非必填")
     private List<UserDTO> users;
-
+    @ApiModelProperty(value = "组织名/非必填")
     private String organizationName;
-
+    @ApiModelProperty(value = "项目名/非必填")
     private String projectName;
 
     @JsonIgnore

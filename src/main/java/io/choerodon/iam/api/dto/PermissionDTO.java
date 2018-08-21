@@ -1,20 +1,34 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author wuguokai
  */
 public class PermissionDTO {
+    @ApiModelProperty(value = "主键ID")
     private Long id;
+    @ApiModelProperty(value = "权限编码")
     private String code;
+    @ApiModelProperty(value = "权限路径")
     private String path;
+    @ApiModelProperty(value = "接口方法")
     private String method;
+    @ApiModelProperty(value = "权限层级")
     private String level;
+    @ApiModelProperty(value = "权限描述")
     private String description;
+    @ApiModelProperty(value = "方法action")
     private String action;
+    @ApiModelProperty(value = "权限资源")
     private String resource;
+    @ApiModelProperty(value = "是否公开权限")
     private Boolean publicAccess;
+    @ApiModelProperty(value = "是否登录可访问")
     private Boolean loginAccess;
+    @ApiModelProperty(value = "服务名")
     private String serviceName;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

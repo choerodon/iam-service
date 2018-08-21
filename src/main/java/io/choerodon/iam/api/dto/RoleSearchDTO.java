@@ -1,16 +1,23 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author superlee
  * @data 2018/4/17
  */
 public class RoleSearchDTO {
-
+    @ApiModelProperty(value = "角色名")
     private String name;
+    @ApiModelProperty(value = "角色编码")
     private String code;
+    @ApiModelProperty(value = "角色层级")
     private String level;
+    @ApiModelProperty(value = "是否启用")
     private Boolean enabled;
+    @ApiModelProperty(value = "是否内置")
     private Boolean builtIn;
+    @ApiModelProperty(value = "其他参数")
     private String[] params;
 
     public Boolean getBuiltIn() {

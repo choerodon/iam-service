@@ -2,17 +2,26 @@ package io.choerodon.iam.api.dto;
 
 import javax.validation.constraints.NotNull;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author dongfan117@gmail.com
  */
 public class UserDashboardDTO {
+    @ApiModelProperty(value = "主键ID")
     private Long id;
+    @ApiModelProperty(value = "用户ID")
     private Long userId;
+    @ApiModelProperty(value = "是否可见")
     private Boolean visible;
+    @ApiModelProperty(value = "排序/必填")
     @NotNull(message = "error.dashboard.sort.null")
     private Integer sort;
+    @ApiModelProperty(value = "层级")
     private String level;
+    @ApiModelProperty(value = "来源ID，与层级对应")
     private Long sourceId;
+    @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
     // Dashboard
