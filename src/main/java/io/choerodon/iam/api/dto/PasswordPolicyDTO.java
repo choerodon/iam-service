@@ -1,9 +1,10 @@
 package io.choerodon.iam.api.dto;
 
 
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Range;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author wuguokai
@@ -28,24 +29,30 @@ public class PasswordPolicyDTO {
     private String originalPassword;
 
     @ApiModelProperty(value = "最小密码长度/非必填")
+    @Range(min = 0, message = "error.minLength")
     private Integer minLength;
 
     @ApiModelProperty(value = "最大密码长度/非必填")
+    @Range(min = 0, message = "error.maxLength")
     private Integer maxLength;
 
     @ApiModelProperty(value = "输错多少次后开启锁定/非必填")
     private Integer maxErrorTime;
 
     @ApiModelProperty(value = "最少数字数/非必填")
+    @Range(min = 0, message = "error.digitsCount")
     private Integer digitsCount;
 
     @ApiModelProperty(value = "最少小写字母数/非必填")
+    @Range(min = 0, message = "error.lowercaseCount")
     private Integer lowercaseCount;
 
     @ApiModelProperty(value = "最少大写字母数/非必填")
+    @Range(min = 0, message = "error.uppercaseCount")
     private Integer uppercaseCount;
 
     @ApiModelProperty(value = "最少特殊字符数/非必填")
+    @Range(min = 0, message = "error.specialCharCount")
     private Integer specialCharCount;
 
     @ApiModelProperty(value = "是否允许与登录名相同/非必填")
@@ -55,6 +62,7 @@ public class PasswordPolicyDTO {
     private String regularExpression;
 
     @ApiModelProperty(value = "最大近期密码数/非必填")
+    @Range(min = 0, message = "error.notRecentCount")
     private Integer notRecentCount;
 
     @ApiModelProperty(value = "是否开启密码安全策略/非必填")

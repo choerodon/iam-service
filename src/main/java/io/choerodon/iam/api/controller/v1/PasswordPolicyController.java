@@ -1,14 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.validator.PasswordPolicyValidator;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * @author wuguokai
@@ -54,7 +56,7 @@ public class PasswordPolicyController {
     @PostMapping("/{id}")
     public ResponseEntity<PasswordPolicyDTO> update(@PathVariable("organization_id") Long organizationId,
                                                     @PathVariable("id") Long id,
-                                                    @RequestBody PasswordPolicyDTO passwordPolicyDTO) {
+                                                    @RequestBody @Validated PasswordPolicyDTO passwordPolicyDTO) {
         passwordPolicyValidator.update(organizationId, id, passwordPolicyDTO);
         return new ResponseEntity<>(passwordPolicyService.update(organizationId, id, passwordPolicyDTO), HttpStatus.OK);
     }
