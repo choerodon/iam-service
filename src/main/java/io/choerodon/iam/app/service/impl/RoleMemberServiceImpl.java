@@ -11,13 +11,13 @@ import io.choerodon.iam.api.dto.MemberRoleDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -46,20 +46,20 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     private final Logger logger = LoggerFactory.getLogger(RoleMemberServiceImpl.class);
 
     private IRoleMemberService iRoleMemberService;
-    private UploadHistoryMapper uploadHistoryMapper;
+    private UploadHistoryRepository uploadHistoryRepository;
     private ExcelImportUserTask excelImportUserTask;
     private OrganizationMapper organizationMapper;
     private ProjectMapper projectMapper;
     private ExcelImportUserTask.FinishFallback finishFallback;
 
     public RoleMemberServiceImpl(IRoleMemberService iRoleMemberService,
-                                 UploadHistoryMapper uploadHistoryMapper,
+                                 UploadHistoryRepository uploadHistoryRepository,
                                  ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  OrganizationMapper organizationMapper,
                                  ProjectMapper projectMapper) {
         this.iRoleMemberService = iRoleMemberService;
-        this.uploadHistoryMapper = uploadHistoryMapper;
+        this.uploadHistoryRepository = uploadHistoryRepository;
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
         this.organizationMapper = organizationMapper;
@@ -170,24 +170,33 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public void import2MemberRole(Long sourceId, String sourceType, MultipartFile file) {
         validateSourceId(sourceId, sourceType);
+        ExcelReadConfig excelReadConfig = initExcelReadConfig();
+        long begin = System.currentTimeMillis();
+        try {
+            List<ExcelMemberRoleDTO> memberRoles = ExcelReadHelper.read(file, ExcelMemberRoleDTO.class, excelReadConfig);
+            if(memberRoles.isEmpty()) {
+                throw new CommonException("error.excel.memberRole.empty");
+            }
+            UploadHistoryDO uploadHistory = initUploadHistory(sourceId, sourceType);
+            long end = System.currentTimeMillis();
+            logger.info("read excel for {} millisecond", (end - begin));
+            excelImportUserTask.importMemberRole(memberRoles, uploadHistory, finishFallback);
+        } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new CommonException("error.excel.read", e);
+        } catch (IllegalArgumentException e) {
+            throw new CommonException("error.excel.illegal.column", e);
+        }
+    }
+
+    private UploadHistoryDO initUploadHistory(Long sourceId, String sourceType) {
         UploadHistoryDO uploadHistory = new UploadHistoryDO();
         uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
         uploadHistory.setType("member-role");
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
         uploadHistory.setSourceId(sourceId);
         uploadHistory.setSourceType(sourceType);
-        uploadHistoryMapper.insertSelective(uploadHistory);
-        ExcelReadConfig excelReadConfig = initExcelReadConfig();
-        long begin = System.currentTimeMillis();
-        try {
-            List<ExcelMemberRoleDTO> memberRoles = ExcelReadHelper.read(file, ExcelMemberRoleDTO.class, excelReadConfig);
-            long end = System.currentTimeMillis();
-            logger.info("read excel for {} millisecond", (end - begin));
-            excelImportUserTask.importMemberRole(memberRoles, uploadHistory, finishFallback);
-        } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());
-            throw new CommonException("error.excel.read");
-        }
+        uploadHistoryRepository.insertSelective(uploadHistory);
+        return uploadHistory;
     }
 
     private void validateSourceId(Long sourceId, String sourceType) {
