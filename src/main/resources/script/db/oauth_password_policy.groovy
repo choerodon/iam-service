@@ -5,7 +5,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_policy.groovy') {
         if(helper.dbType().isSupportSequence()){
             createSequence(sequenceName: 'oauth_password_policy_s', startValue:"1")
         }
-        createTable(tableName: "oauth_password_policy") {
+        createTable(tableName: "OAUTH_PASSWORD_POLICY") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
             }

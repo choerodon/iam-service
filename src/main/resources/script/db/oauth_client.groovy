@@ -5,7 +5,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_client.groovy') {
         if(helper.dbType().isSupportSequence()){
             createSequence(sequenceName: 'OAUTH_CLIENT_S', startValue:"1")
         }
-        createTable(tableName: "oauth_client") {
+        createTable(tableName: "OAUTH_CLIENT") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', remarks: '客户端ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
