@@ -2,37 +2,45 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
     changeSet(author: 'jcalaz@163.com', id: '2018-04-13-iam-label') {
-        createTable(tableName: "iam_label") {
-            column(name: 'id', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'IAM_LABEL_S', startValue: "1")
+        }
+        createTable(tableName: "IAM_LABEL") {
+            column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(64)', remarks: '名称') {
+            column(name: 'NAME', type: 'VARCHAR(64)', remarks: '名称') {
                 constraints(nullable: false)
             }
-            column(name: 'type', type: 'VARCHAR(32)', remarks: '类型') {
+            column(name: 'TYPE', type: 'VARCHAR(32)', remarks: '类型') {
                 constraints(nullable: false)
             }
-            column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1") {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)
             }
-            column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0") {
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
                 constraints(nullable: true)
             }
-            column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
-            column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0") {
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
                 constraints(nullable: true)
             }
-            column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'iam_label', columnNames: 'name, type')
+        addUniqueConstraint(tableName: 'IAM_LABEL', columnNames: 'NAME, TYPE')
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-07-23-iam-label-add-column') {
-        addColumn(tableName: 'iam_label') {
-            column(name: 'level', type: "VARCHAR(32)", remarks: '层级', afterColumn: 'type') {
+        addColumn(tableName: 'IAM_LABEL') {
+            column(name: 'LEVEL', type: "VARCHAR(32)", remarks: '层级', afterColumn: 'TYPE') {
                 constraints(nullable: false)
             }
-            column(name: 'description', type: "VARCHAR(128)", remarks: '描述', afterColumn: 'level')
+            column(name: 'DESCRIPTION', type: "VARCHAR(128)", remarks: '描述', afterColumn: 'LEVEL')
         }
     }
+
+//    changeSet(author: 'superleader8@gmail.com', id: '2018-08-22-rename') {
+//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "label_type", oldColumnName: "type", remarks: '类型', tableName: 'iam_label')
+//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "label_level", oldColumnName: "level", remarks: '层级', tableName: 'iam_label')
+//    }
 }
