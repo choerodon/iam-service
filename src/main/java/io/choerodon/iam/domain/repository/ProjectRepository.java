@@ -1,11 +1,11 @@
 package io.choerodon.iam.domain.repository;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * @author flyleft
@@ -34,6 +34,8 @@ public interface ProjectRepository {
     List<ProjectDO> selectAll();
 
     ProjectDO selectOne(ProjectDO projectDO);
+
+    List<ProjectDO> selectByOrgId(Long organizationId);
 
     Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params);
 }
