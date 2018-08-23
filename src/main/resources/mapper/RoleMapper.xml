@@ -149,6 +149,22 @@
         AND il.type = #{type}
     </select>
 
+
+    <select id="queryRolesInfoByUser" resultMap="RoleDO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT role.*
+        FROM
+        iam_role role
+        LEFT JOIN iam_member_role imr ON role.id = imr.role_id
+        LEFT JOIN iam_role_tl irt ON role.id = irt.id
+        WHERE
+        imr.member_id = #{userId}
+        AND irt.lang = #{lang}
+        AND imr.member_type = 'user'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+    </select>
+
     <select id="selectInitRolesByPermissionId" resultMap="RoleDO">
         SELECT * FROM iam_role ir
         LEFT JOIN iam_role_permission irp ON ir.id = irp.role_id

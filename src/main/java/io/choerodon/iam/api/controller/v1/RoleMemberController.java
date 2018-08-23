@@ -1,5 +1,17 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -18,17 +30,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
 
 /**
  * @author superlee
@@ -290,6 +291,30 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
     }
 
+
+    /**
+     * 在 organization 层根据 用户Id 及 组织Id 查询用户及该用户在此组织下拥有的角色
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层根据用户Id及组织Id查询用户及该用户拥有的角色")
+    @GetMapping(value = "/organization/{organization_id}/role_members/users/{user_id}")
+    public ResponseEntity<List<RoleDTO>> getUserWithOrgLevelRolesByUserId(@PathVariable(name = "organization_id") Long organizationId,
+                                                                          @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(roleService.listRolesBySourceIdAndTypeAndUserId(ResourceLevel.ORGANIZATION.value(), organizationId, userId), HttpStatus.OK);
+    }
+
+    /**
+     * 在 project 层根据 用户Id 及 项目Id 查询用户及该用户在此项目下拥有的角色
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目层根据用户Id及项目Id查询用户及该用户拥有的角色")
+    @GetMapping(value = "/project/{project_id}/role_members/users/{user_id}")
+    public ResponseEntity<List<RoleDTO>> getUserWithProjLevelRolesByUserId(@PathVariable(name = "project_id") Long projectId,
+                                                                           @PathVariable(name = "user_id") Long userId) {
+        return new ResponseEntity<>(roleService.listRolesBySourceIdAndTypeAndUserId(ResourceLevel.PROJECT.value(), projectId, userId), HttpStatus.OK);
+    }
+
+
     /**
      * 全局层下载模板
      *
@@ -332,7 +357,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation("site层从excel里面批量导入用户角色关系")
     @PostMapping("/site/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnSite(@RequestPart MultipartFile file) {
-        roleMemberService.import2MemberRole(0L, ResourceLevel.SITE.value(),file);
+        roleMemberService.import2MemberRole(0L, ResourceLevel.SITE.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -341,7 +366,7 @@ public class RoleMemberController extends BaseController {
     @PostMapping("/organizations/{organization_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestPart MultipartFile file) {
-        roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(),file);
+        roleMemberService.import2MemberRole(organizationId, ResourceLevel.ORGANIZATION.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -350,7 +375,7 @@ public class RoleMemberController extends BaseController {
     @PostMapping("/projects/{project_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
                                                      @RequestPart MultipartFile file) {
-        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(),file);
+        roleMemberService.import2MemberRole(projectId, ResourceLevel.PROJECT.value(), file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -358,7 +383,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation("查site层的历史")
     @GetMapping("/site/member_role/upload/history")
     public ResponseEntity latestHistoryOnSite(@RequestParam(value = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", 0L,ResourceLevel.SITE.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", 0L, ResourceLevel.SITE.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -1,12 +1,12 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.RoleSearchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * @author superlee
@@ -41,4 +41,6 @@ public interface RoleService {
     void check(RoleDTO role);
 
     List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
+
+    List<RoleDTO> listRolesBySourceIdAndTypeAndUserId(String sourceType, Long sourceId, Long userId);
 }
