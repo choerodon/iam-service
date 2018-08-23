@@ -1,6 +1,16 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
+
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -13,15 +23,10 @@ import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
+import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
 
 /**
  * @author wuguokai
@@ -30,6 +35,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 public class OrganizationServiceImpl implements OrganizationService {
 
     private OrganizationRepository organizationRepository;
+    private ProjectRepository projectRepository;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -42,9 +48,11 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
-                                   SagaClient sagaClient) {
+                                   SagaClient sagaClient,
+                                   ProjectRepository projectRepository) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -60,6 +68,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
+            throw new CommonException("error.organization.not.exist", organizationId);
+        }
+        List<ProjectDO> projects = projectRepository.selectByOrgId(organizationId);
+        organizationDO.setProjects(projects);
+        organizationDO.setProjectCount(projects.size());
         return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
