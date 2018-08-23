@@ -8,6 +8,7 @@ import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.common.utils.ListUtils;
@@ -17,7 +18,6 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -527,15 +527,15 @@ public class ExcelImportUserTask {
     @Component
     public class FinishFallbackImpl implements FinishFallback {
 
-        private UploadHistoryMapper uploadHistoryMapper;
+        private UploadHistoryRepository uploadHistoryRepository;
 
-        public FinishFallbackImpl(UploadHistoryMapper uploadHistoryMapper) {
-            this.uploadHistoryMapper = uploadHistoryMapper;
+        public FinishFallbackImpl(UploadHistoryRepository uploadHistoryRepository) {
+            this.uploadHistoryRepository = uploadHistoryRepository;
         }
 
         @Override
         public void callback(UploadHistoryDO uploadHistoryDO) {
-            UploadHistoryDO history = uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDO.getId());
+            UploadHistoryDO history = uploadHistoryRepository.selectByPrimaryKey(uploadHistoryDO.getId());
             history.setEndTime(new Date((System.currentTimeMillis())));
             history.setSuccessfulCount(uploadHistoryDO.getSuccessfulCount());
             history.setFailedCount(uploadHistoryDO.getFailedCount());
@@ -543,7 +543,7 @@ public class ExcelImportUserTask {
             history.setFinished(uploadHistoryDO.getFinished());
             history.setSourceId(uploadHistoryDO.getSourceId());
             history.setSourceType(uploadHistoryDO.getSourceType());
-            uploadHistoryMapper.updateByPrimaryKeySelective(history);
+            uploadHistoryRepository.updateByPrimaryKeySelective(history);
         }
     }
 }

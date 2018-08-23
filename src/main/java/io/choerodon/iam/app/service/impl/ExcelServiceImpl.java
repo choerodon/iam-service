@@ -6,10 +6,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ExcelService;
+import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -36,33 +36,36 @@ public class ExcelServiceImpl implements ExcelService {
 
     private final Logger logger = LoggerFactory.getLogger(ExcelServiceImpl.class);
 
-    private UploadHistoryMapper uploadHistoryMapper;
-
+    private UploadHistoryRepository uploadHistoryRepository;
 
     private ExcelImportUserTask excelImportUserTask;
     private ExcelImportUserTask.FinishFallback finishFallback;
 
-    public ExcelServiceImpl(UploadHistoryMapper uploadHistoryMapper,
+    public ExcelServiceImpl(UploadHistoryRepository uploadHistoryRepository,
                             ExcelImportUserTask excelImportUserTask,
                             ExcelImportUserTask.FinishFallback finishFallback) {
-        this.uploadHistoryMapper = uploadHistoryMapper;
+        this.uploadHistoryRepository = uploadHistoryRepository;
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
     }
 
     @Override
     public void importUsers(Long organizationId, MultipartFile multipartFile) {
-        UploadHistoryDO uploadHistory = initUploadHistory(organizationId);
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
         try {
             List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
+            if(users.isEmpty()) {
+                throw new CommonException("error.excel.user.empty");
+            }
+            UploadHistoryDO uploadHistory = initUploadHistory(organizationId);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
             excelImportUserTask.importUsers(users, organizationId, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            logger.info("something wrong was happened when reading the excel, exception : {}", e.getMessage());
-            throw new CommonException("error.excel.read");
+            throw new CommonException("error.excel.read", e.getCause());
+        } catch (IllegalArgumentException e) {
+            throw new CommonException("error.excel.illegal.column", e);
         }
     }
 
@@ -73,7 +76,7 @@ public class ExcelServiceImpl implements ExcelService {
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
         uploadHistory.setSourceId(organizationId);
         uploadHistory.setSourceType(ResourceLevel.ORGANIZATION.value());
-        uploadHistoryMapper.insertSelective(uploadHistory);
+        uploadHistoryRepository.insertSelective(uploadHistory);
         return uploadHistory;
     }
 
