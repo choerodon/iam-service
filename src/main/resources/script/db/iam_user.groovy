@@ -7,15 +7,15 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
         }
         createTable(tableName: "IAM_USER") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_USER')
             }
             column(name: 'LOGIN_NAME', type: 'VARCHAR(128)', remarks: '用户名') {
                 constraints(nullable: false)
-                constraints(unique: true)
+                constraints(unique: true, uniqueConstraintName: 'UK_IAM_USER_U1')
             }
             column(name: 'EMAIL', type: 'VARCHAR(128)', remarks: '电子邮箱地址') {
                 constraints(nullable: false)
-                constraints(unique: true)
+                constraints(unique: true, uniqueConstraintName: 'UK_IAM_USER_U2')
             }
 
             column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织ID') {

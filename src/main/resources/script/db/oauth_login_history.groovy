@@ -7,10 +7,10 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_login_history.groovy') {
         }
         createTable(tableName: "OAUTH_LOGIN_HISTORY") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_LOGIN_HISTORY')
             }
             column(name: 'USER_ID', type: 'BIGINT UNSIGNED', remarks: '用户id') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_OAUTH_LOGIN_HISTORY_U1')
             }
 
             column(name: 'LAST_LOGIN_AT', type: 'DATETIME', remarks: '用户最后一次登录的时间') {

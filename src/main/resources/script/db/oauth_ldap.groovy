@@ -7,13 +7,13 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         }
         createTable(tableName: "OAUTH_LDAP") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_LDAP')
             }
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: 'ldap的名称') {
                 constraints(nullable: false)
             }
             column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织id') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_OAUTH_LDAP_U1')
             }
             column(name: 'SERVER_ADDRESS', type: 'VARCHAR(64)', remarks: 'ldap服务器地址') {
                 constraints(nullable: false)

@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
         }
         createTable(tableName: "IAM_LABEL") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_LABEL')
             }
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: '名称') {
                 constraints(nullable: false)
@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'IAM_LABEL', columnNames: 'NAME, TYPE')
+        addUniqueConstraint(tableName: 'IAM_LABEL', columnNames: 'NAME, TYPE', constraintName: 'UK_IAM_LABEL_U1')
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-07-23-iam-label-add-column') {

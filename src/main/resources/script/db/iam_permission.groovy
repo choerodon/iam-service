@@ -7,10 +7,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
         }
         createTable(tableName: "IAM_PERMISSION") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_PERMISSION')
             }
             column(name: 'CODE', type: 'VARCHAR(128)', remarks: '权限的标识') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_IAM_PERMISSION_U1')
             }
 
             column(name: 'PATH', type: 'VARCHAR(128)', remarks: '权限对应的api路径') {
@@ -59,7 +59,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'ACTION,RESOURCE,SERVICE_NAME')
-        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'PATH,LEVEL,SERVICE_NAME,METHOD,CODE')
+        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'ACTION,RESOURCE,SERVICE_NAME', constraintName: 'UK_IAM_PERMISSION_U2')
+        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'PATH,LEVEL,SERVICE_NAME,METHOD,CODE', constraintName: 'UK_IAM_PERMISSION_U3')
     }
 }

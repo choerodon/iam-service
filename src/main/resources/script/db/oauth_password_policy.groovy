@@ -7,17 +7,17 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_policy.groovy') {
         }
         createTable(tableName: "OAUTH_PASSWORD_POLICY") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_PASS_POLICY')
             }
             column(name: 'CODE', type: 'VARCHAR(64)', remarks: '密码策略标识') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_OAUTH_PASS_POLICY_U1')
             }
 
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: '密码策略名') {
                 constraints(nullable: false)
             }
             column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '所属的组织id') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_OAUTH_PASS_POLICY_U2')
             }
             column(name: 'ORIGINAL_PASSWORD', type: 'VARCHAR(64)', remarks: '新建用户初始密码')
             column(name: 'MIN_LENGTH', type: 'INT', remarks: '密码最小长度')

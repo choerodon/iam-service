@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user_dashboard.groovy') {
         }
         createTable(tableName: "IAM_USER_DASHBOARD") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_USER_DASHBOARD')
             }
             column(name: 'USER_ID', type: 'BIGINT UNSIGNED', remarks: 'user id') {
                 constraints(nullable: true)

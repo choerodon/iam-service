@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
         }
         createTable(tableName: 'FD_LOOKUP_VALUE') {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_FD_LOOKUP_VALUE')
             }
             column(name: 'LOOKUP_ID', type: 'BIGINT UNSIGNED', remarks: '值名称') {
                 constraints(nullable: false)
@@ -33,7 +33,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
             }
             column(name: 'DESCRIPTION', type: 'VARCHAR(255)', remarks: '描述')
         }
-        addUniqueConstraint(tableName: 'FD_LOOKUP_VALUE', columnNames: 'CODE,LOOKUP_ID')
-        addPrimaryKey(tableName: 'FD_LOOKUP_VALUE_TL', columnNames: 'ID, LANG')
+        addUniqueConstraint(tableName: 'FD_LOOKUP_VALUE', columnNames: 'CODE,LOOKUP_ID', constraintName: 'UK_FD_LOOKUP_VALUE_U1')
+        addPrimaryKey(tableName: 'FD_LOOKUP_VALUE_TL', columnNames: 'ID, LANG', constraintName: 'PK_FD_LOOKUP_VALUE_TL')
     }
 }

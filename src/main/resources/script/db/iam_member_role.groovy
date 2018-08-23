@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_member_role.groovy') {
         }
         createTable(tableName: "IAM_MEMBER_ROLE") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_MEMBER_ROLE')
             }
             column(name: 'ROLE_ID', type: 'BIGINT UNSIGNED', remarks: '角色id') {
                 constraints(nullable: false)
@@ -36,6 +36,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_member_role.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'IAM_MEMBER_ROLE', columnNames: 'ROLE_ID, MEMBER_ID, MEMBER_TYPE, SOURCE_ID, SOURCE_TYPE')
+        addUniqueConstraint(tableName: 'IAM_MEMBER_ROLE', columnNames: 'ROLE_ID, MEMBER_ID, MEMBER_TYPE, SOURCE_ID, SOURCE_TYPE', constraintName: 'UK_IAM_MEMBER_ROLE_U1')
     }
 }

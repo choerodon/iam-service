@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
         }
         createTable(tableName: "IAM_MENU") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_MENU')
             }
             column(name: 'CODE', type: 'VARCHAR(128)', remarks: '菜单的标识') {
                 constraints(nullable: false)
@@ -45,16 +45,16 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'IAM_MENU', columnNames: 'CODE, TYPE, LEVEL')
+        addUniqueConstraint(tableName: 'IAM_MENU', columnNames: 'CODE, TYPE, LEVEL', constraintName: 'UK_IAM_MENU_U1')
     }
 
     changeSet(author: 'guokai.wu.work@gmail.com', id: '2018-03-29-iam-menu-tl') {
         createTable(tableName: "IAM_MENU_TL") {
             column(name: 'LANG', type: 'VARCHAR(16)', remarks: '语言名称') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_MENU_TL_P1')
             }
             column(name: 'ID', type: 'BIGINT UNSIGNED', remarks: '资源ID') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_MENU_TL_P2')
             }
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: '菜单名')
         }

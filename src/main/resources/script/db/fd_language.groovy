@@ -7,14 +7,14 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_language.groovy') {
         }
         createTable(tableName: 'FD_LANGUAGE') {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_FD_LANGUAGE')
             }
             column(name: "CODE", type: 'VARCHAR(32)', remarks: '语言Code') {
-                constraints(unique: true)
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_LANGUAGE_U1')
                 constraints(nullable: false)
             }
             column(name: 'NAME', type: 'VARCHAR(32)', remarks: '语言名称') {
-                constraints(unique: true)
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_LANGUAGE_U2')
                 constraints(nullable: false)
             }
             column(name: "DESCRIPTION", type: 'VARCHAR(128)', remarks: '描述')
@@ -36,6 +36,6 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_language.groovy') {
             column(name: "DESCRIPTION", type: 'VARCHAR(255)', remarks: '描述')
 
         }
-        addPrimaryKey(tableName: 'FD_LANGUAGE_TL', columnNames: 'id, lang')
+        addPrimaryKey(tableName: 'FD_LANGUAGE_TL', columnNames: 'id, lang', constraintName: 'PK_FD_LANGUAGE_TL')
     }
 }
