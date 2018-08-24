@@ -7,13 +7,13 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
         }
         createTable(tableName: "FD_ORGANIZATION") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_FD_ORGANIZATION')
             }
             column(name: 'NAME', type: 'VARCHAR(32)', remarks: '组织名') {
                 constraints(nullable: false)
             }
             column(name: 'CODE', type: 'VARCHAR(15)', remarks: '组织code') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_FD_ORGANIZATION_U1')
             }
             column(name: 'IS_ENABLED', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '是否启用。1启用，0未启用') {
                 constraints(nullable: false)

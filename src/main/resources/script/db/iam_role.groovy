@@ -7,13 +7,13 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
         }
         createTable(tableName: "IAM_ROLE") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_ROLE')
             }
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: '角色名') {
                 constraints(nullable: false)
             }
             column(name: 'CODE', type: 'VARCHAR(128)', remarks: '角色编码') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_IAM_ROLE_U1')
             }
             column(name: 'DESCRIPTION', type: 'VARCHAR(255)', remarks: '角色描述full description')
             column(name: 'LEVEL', type: 'VARCHAR(32)', remarks: '角色级别') {
@@ -59,6 +59,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
                 constraints(nullable: false)
             }
         }
-        addPrimaryKey(tableName: 'IAM_ROLE_TL', columnNames: 'ID, LANG')
+        addPrimaryKey(tableName: 'IAM_ROLE_TL', columnNames: 'ID, LANG', constraintName: 'PK_IAM_ROLE_TL')
     }
 }

@@ -7,13 +7,13 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_group.groovy') {
         }
         createTable(tableName: "IAM_GROUP") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_GROUP')
             }
             column(name: 'NAME', type: 'VARCHAR(32)', remarks: '组名称') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_IAM_GROUP_U1')
             }
             column(name: 'CODE', type: 'VARCHAR(32)', remarks: '组code') {
-                constraints(nullable: false, unique: true)
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_IAM_GROUP_U2')
             }
             column(name: 'DESCRIPTION', type: 'VARCHAR(128)', remarks: '组描述') {
                 constraints(nullable: false)

@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_history.groovy') {
         }
         createTable(tableName: "OAUTH_PASSWORD_HISTORY") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_PASS_HIST')
             }
             column(name: 'USER_ID', type: 'BIGINT UNSIGNED', remarks: '用户id') {
                 constraints(nullable: false)

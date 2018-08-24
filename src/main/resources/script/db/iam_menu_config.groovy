@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_config.groovy') {
         }
         createTable(tableName: "IAM_MENU_CONFIG") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_MENU_CONFIG')
             }
             column(name: 'MENU_ID', type: 'BIGINT UNSIGNED', remarks: '菜单id') {
                 constraints(nullable: true)

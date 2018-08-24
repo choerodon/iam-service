@@ -4,7 +4,7 @@ databaseChangeLog(logicalFilePath: 'oauth_access_token.groovy') {
     changeSet(author: 'guokai.wu.work@gmail.com', id: '2018-03-26-oauth_access_token') {
         createTable(tableName: "OAUTH_ACCESS_TOKEN") {
             column(name: 'TOKEN_ID', type: 'VARCHAR(128)', remarks: 'Access Token ID') {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_ACCESS_TOKEN')
             }
             column(name: 'TOKEN', type: 'BLOB', remarks: 'Token对象')
             column(name: 'AUTHENTICATION_ID', type: 'VARCHAR(255)', remarks: '授权ID，用于索引授权对象')

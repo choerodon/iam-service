@@ -7,11 +7,11 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_client.groovy') {
         }
         createTable(tableName: "OAUTH_CLIENT") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', remarks: '客户端ID', autoIncrement: true) {
-                constraints(primaryKey: true)
+                constraints(primaryKey: true, primaryKeyName: 'PK_OAUTH_CLIENT')
             }
             column(name: 'NAME', type: 'VARCHAR(32)', remarks: '客户端名称') {
                 constraints(nullable: false)
-                constraints(unique: true)
+                constraints(unique: true, uniqueConstraintName: 'UK_OAUTH_CLIENT_U1')
             }
             column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织ID') {
                 constraints(nullable: false)
