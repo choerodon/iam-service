@@ -39,8 +39,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
         }
     }
 
-//    changeSet(author: 'superleader8@gmail.com', id: '2018-08-22-rename') {
-//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "label_type", oldColumnName: "type", remarks: '类型', tableName: 'iam_label')
-//        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "label_level", oldColumnName: "level", remarks: '层级', tableName: 'iam_label')
-//    }
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-22-rename') {
+        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '层级', tableName: 'IAM_LABEL')
+    }
 }
