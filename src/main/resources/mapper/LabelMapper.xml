@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LabelMapper">
-    <select id="selectByRoleId" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
+
+    <resultMap id="labelDO" type="io.choerodon.iam.infra.dataobject.LabelDO">
+        <id property="id" column="id"/>
+        <result property="level" column="FD_LEVEL"/>
+    </resultMap>
+
+    <select id="selectByRoleId" resultMap="labelDO">
         SELECT iam_label.*
         FROM iam_role_label
         LEFT JOIN iam_label
@@ -10,24 +16,24 @@
         WHERE iam_role_label.role_id = #{roleId}
     </select>
 
-    <select id="listByOption" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
+    <select id="listByOption" resultMap="labelDO">
         SELECT * FROM iam_label l
         WHERE 1=1
         <if test="label.type != null">
-            AND l.type LIKE concat('%',#{label.type},'%')
+            AND l.type LIKE concat('%',#{label.type})
         </if>
         <if test="label.name != null">
-            AND l.name LIKE concat('%',#{label.name},'%')
+            AND l.name LIKE concat('%',#{label.name})
         </if>
         <if test="label.level != null">
-            AND l.level LIKE concat('%',#{label.level},'%')
+            AND l.FD_LEVEL LIKE concat('%',#{label.level})
         </if>
         <if test="label.description != null">
-            AND l.description LIKE concat('%',#{label.description},'%')
+            AND l.description LIKE concat('%',#{label.description})
         </if>
     </select>
 
-    <select id="selectByUserId" resultType="io.choerodon.iam.infra.dataobject.LabelDO">
+    <select id="selectByUserId" resultMap="labelDO">
         SELECT DISTINCT il.*
         FROM iam_user iu
         JOIN iam_member_role imr
