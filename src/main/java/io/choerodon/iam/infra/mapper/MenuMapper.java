@@ -11,7 +11,6 @@ import java.util.List;
  * @author superlee
  */
 public interface MenuMapper extends BaseMapper<MenuDO> {
-    List<MenuDO> queryIncludeTl();
 
     List<MenuDO> queryMenusWithPermissions(@Param("level") String level, @Param("type") String type);
 
