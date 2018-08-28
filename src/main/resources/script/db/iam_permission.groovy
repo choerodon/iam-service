@@ -62,4 +62,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
         addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'ACTION,RESOURCE,SERVICE_NAME', constraintName: 'UK_IAM_PERMISSION_U2')
         addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'PATH,LEVEL,SERVICE_NAME,METHOD,CODE', constraintName: 'UK_IAM_PERMISSION_U3')
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
+        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "FD_RESOURCE", oldColumnName: "RESOURCE", remarks: '权限资源类型', tableName: 'IAM_PERMISSION')
+    }
 }

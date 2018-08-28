@@ -61,4 +61,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
         }
         addPrimaryKey(tableName: 'IAM_ROLE_TL', columnNames: 'ID, LANG', constraintName: 'PK_IAM_ROLE_TL')
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
+        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '角色级别', tableName: 'IAM_ROLE')
+    }
 }
