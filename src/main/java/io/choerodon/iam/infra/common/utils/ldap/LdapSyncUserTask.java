@@ -21,7 +21,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
@@ -100,12 +99,12 @@ public class LdapSyncUserTask {
     }
 
     private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport) {
-        List<UserDO> insertUsers = new CopyOnWriteArrayList<>();
+        List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
         Set<String> existedNames = userRepository.matchLoginName(nameSet);
         Set<String> existedEmails = userRepository.matchEmail(emailSet);
-        users.parallelStream().forEach(u -> {
+        users.forEach(u -> {
             if (!existedNames.contains(u.getLoginName())) {
                 //插入
                 if (existedEmails.contains(u.getEmail())) {
@@ -114,6 +113,14 @@ public class LdapSyncUserTask {
                     logger.info("duplicate email, email : {}", u.getEmail());
                 } else {
                     //可以插入
+                    u.setEnabled(true);
+                    u.setLanguage("zh_CN");
+                    u.setTimeZone("CTT");
+                    u.setPassword(ENCODER.encode("unknown password"));
+                    u.setLocked(false);
+                    u.setLdap(true);
+                    u.setAdmin(false);
+                    u.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
                     insertUsers.add(u);
                     ldapSyncReport.incrementNewInsert();
                 }
@@ -160,14 +167,6 @@ public class LdapSyncUserTask {
         } catch (NamingException e) {
             logger.info("user extract fail: {}", e);
         }
-        user.setEnabled(true);
-        user.setLanguage("zh_CN");
-        user.setTimeZone("CTT");
-        user.setPassword(ENCODER.encode("unknown password"));
-        user.setLocked(false);
-        user.setLdap(true);
-        user.setAdmin(false);
-        user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
         return user;
     }
 
