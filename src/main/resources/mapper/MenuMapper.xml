@@ -5,7 +5,7 @@
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
-        <result column="level" property="level" jdbcType="VARCHAR"/>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
         <result column="parent_id" property="parentId" jdbcType="DECIMAL"/>
         <result column="type" property="type" jdbcType="VARCHAR"/>
         <result column="sort" property="sort" jdbcType="BIGINT"/>
@@ -20,24 +20,17 @@
             <result column="method" property="method" jdbcType="VARCHAR"/>
             <result column="permission_level" property="level" jdbcType="VARCHAR"/>
             <result column="action" property="action" jdbcType="VARCHAR"/>
-            <result column="resource" property="resource" jdbcType="VARCHAR"/>
+            <result column="fd_resource" property="resource" jdbcType="VARCHAR"/>
             <result column="public_access" property="publicAccess" jdbcType="BOOLEAN"/>
             <result column="login_access" property="loginAccess" jdbcType="BOOLEAN"/>
             <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
 
-
-    <select id="queryIncludeTl" resultType="io.choerodon.iam.infra.dataobject.MenuDO">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT
-        *,
-        tl1.name as zh_name,
-        tl2.name as en_name
-        FROM iam_menu m
-        LEFT JOIN iam_menu_tl tl1 ON m.id = tl1.id AND tl1.lang = 'zh_CN'
-        LEFT JOIN iam_menu_tl tl2 ON m.id = tl2.id AND tl2.lang = 'en_US'
-    </select>
+    <resultMap id="MenuDO" type="io.choerodon.iam.infra.dataobject.MenuDO">
+        <id column="id" property="id"></id>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
+    </resultMap>
 
     <select id="queryMenusWithPermissions" resultMap="menusWithPermissions">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
@@ -47,9 +40,9 @@
         ip.code permission_code,
         ip.path,
         ip.method,
-        ip.level permission_level,
+        ip.fd_level permission_level,
         ip.action,
-        ip.resource,
+        ip.fd_resource,
         ip.public_access,
         ip.login_access,
         ip.service_name
@@ -58,7 +51,7 @@
         LEFT JOIN iam_permission ip on imp.permission_code = ip.code
         WHERE 1=1
         <if test="level != null">
-            AND im.level = #{level}
+            AND im.fd_level = #{level}
         </if>
         <if test="type != null">
             AND im.type = #{type}
@@ -100,13 +93,13 @@
         )
         )
         <if test="level != null">
-            AND im.level = #{level}
+            AND im.fd_level = #{level}
         </if>
         UNION
         SELECT DISTINCT * FROM iam_menu
         WHERE
         <if test="level != null">
-            level = #{level} AND
+            fd_level = #{level} AND
         </if>
         (type = "root" OR type = "dir")
     </select>
