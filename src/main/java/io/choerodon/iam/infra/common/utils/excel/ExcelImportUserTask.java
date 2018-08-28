@@ -145,8 +145,8 @@ public class ExcelImportUserTask {
         List<ExcelMemberRoleDTO> distinctList = distinctExcel(validateMemberRoles, errorMemberRoles);
         //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
-            String loginName = emr.getLoginName();
-            String code = emr.getRoleCode();
+            String loginName = emr.getLoginName().trim();
+            String code = emr.getRoleCode().trim();
             //检查loginName是否存在
             UserDO userDO = getUser(errorMemberRoles, emr, loginName);
             if (userDO == null) return;
@@ -508,6 +508,15 @@ public class ExcelImportUserTask {
             errorUsers.add(errorUser);
         } else {
             ok = true;
+            user.setLoginName(user.getLoginName().trim());
+            user.setRealName(user.getRealName().trim());
+            user.setEmail(user.getEmail().trim());
+            if (!StringUtils.isEmpty(user.getPhone())) {
+                user.setPhone(user.getPhone().trim());
+            }
+            if (!StringUtils.isEmpty(user.getPassword())) {
+                user.setPassword(user.getPassword().trim());
+            }
             insertUsers.add(user);
         }
         return ok;
