@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.naming.NamingEnumeration;
@@ -33,6 +34,8 @@ public class LdapSyncUserTask {
     private static final Logger logger = LoggerFactory.getLogger(LdapSyncUserTask.class);
 
     private static final String DIMISSION_VALUE = "1";
+
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private UserRepository userRepository;
 
@@ -160,9 +163,10 @@ public class LdapSyncUserTask {
         user.setEnabled(true);
         user.setLanguage("zh_CN");
         user.setTimeZone("CTT");
-        user.setPassword("unknown password");
+        user.setPassword(ENCODER.encode("unknown password"));
         user.setLocked(false);
         user.setLdap(true);
+        user.setAdmin(false);
         user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
         return user;
     }
