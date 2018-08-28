@@ -6,7 +6,7 @@
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
-        <result column="level" property="level" jdbcType="VARCHAR"/>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
@@ -20,7 +20,7 @@
             <result column="method" property="method" jdbcType="VARCHAR"/>
             <result column="permission_level" property="level" jdbcType="VARCHAR"/>
             <result column="action" property="action" jdbcType="VARCHAR"/>
-            <result column="resource" property="resource" jdbcType="VARCHAR"/>
+            <result column="fd_resource" property="resource" jdbcType="VARCHAR"/>
             <result column="public_access" property="publicAccess" jdbcType="BOOLEAN"/>
             <result column="login_access" property="loginAccess" jdbcType="BOOLEAN"/>
             <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
@@ -41,6 +41,7 @@
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
         <result column="is_assignable" property="assignable" jdbcType="BOOLEAN"/>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="selectRole">
@@ -48,7 +49,7 @@
         r.id,
         iam_role_tl.name AS name,
         r.code,
-        r.level,
+        r.fd_level,
         r.description,
         r.is_enabled,
         r.is_modified,
@@ -67,13 +68,13 @@
         <include refid="selectRole"/>
         WHERE 1=1
         <if test="roleDO.name != null">
-            AND r.name LIKE concat('%',#{roleDO.name},'%')
+            AND r.name LIKE concat(concat('%',#{roleDO.name}), '%')
         </if>
         <if test="roleDO.code != null">
-            AND r.code LIKE concat('%',#{roleDO.code},'%')
+            AND r.code LIKE concat(concat('%',#{roleDO.code}), '%')
         </if>
         <if test="roleDO.level != null">
-            AND r.level LIKE concat('%',#{roleDO.level},'%')
+            AND r.fd_level LIKE concat(concat('%',#{roleDO.level}), '%')
         </if>
         <if test="roleDO.enabled != null">
             AND r.is_enabled = #{roleDO.enabled}
@@ -83,9 +84,9 @@
         </if>
         <if test="param != null">
             AND (
-            r.name LIKE concat('%',#{param},'%') OR
-            r.code LIKE concat('%',#{param},'%') OR
-            r.level LIKE concat('%',#{param},'%')
+            r.name LIKE concat(concat('%',#{param}), '%') OR
+            r.code LIKE concat(concat('%',#{param}), '%') OR
+            r.fd_level LIKE concat(concat('%',#{param}), '%')
             )
         </if>
     </select>
@@ -98,7 +99,7 @@
         irt.name AS name,
         ir.code,
         ir.description,
-        ir.level,
+        ir.fd_level,
         ir.is_enabled,
         ir.is_modified,
         ir.is_enable_forbidden,
@@ -109,9 +110,9 @@
         ip.code permission_code,
         ip.path,
         ip.method,
-        ip.level AS permission_level,
+        ip.fd_level AS permission_level,
         ip.action,
-        ip.resource,
+        ip.fd_resource,
         ip.public_access,
         ip.login_access,
         ip.service_name,
@@ -130,14 +131,27 @@
         AND il.type = 'role'
         WHERE ir.id = #{id}
     </select>
+
     <select id="rolesLevelCount" resultType="int">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT COUNT(DISTINCT `level`)
+        SELECT COUNT(DISTINCT fd_level)
         from iam_role
         where id in
         <foreach collection="roleIds" item="item" index="index" open="(" separator="," close=")">
             #{item}
         </foreach>
+    </select>
+
+    <select id="queryRoleByUser" resultType="long">
+        SELECT role_id
+        FROM iam_member_role m
+        LEFT JOIN iam_role r
+        ON m.role_id=r.id
+        WHERE member_type='user'
+        AND member_id = #{userId}
+        AND source_type = #{sourceType}
+        AND source_id = #{sourceId}
+        AND r.is_enabled = 1
     </select>
 
     <select id="selectRolesByLabelNameAndType" resultMap="RoleDO">

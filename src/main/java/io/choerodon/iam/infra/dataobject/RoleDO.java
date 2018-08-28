@@ -24,6 +24,7 @@ public class RoleDO extends AuditDomain {
     private String name;
     private String code;
     private String description;
+    @Column(name = "fd_level")
     private String level;
     @Column(name = "is_enabled")
     private Boolean enabled;

@@ -20,16 +20,16 @@
         SELECT * FROM iam_label l
         WHERE 1=1
         <if test="label.type != null">
-            AND l.type LIKE concat('%',#{label.type})
+            AND l.type LIKE concat(concat('%',#{label.type}), '%')
         </if>
         <if test="label.name != null">
-            AND l.name LIKE concat('%',#{label.name})
+            AND l.name LIKE concat(concat('%',#{label.name}), '%')
         </if>
         <if test="label.level != null">
-            AND l.FD_LEVEL LIKE concat('%',#{label.level})
+            AND l.FD_LEVEL LIKE concat(concat('%',#{label.level}), '%')
         </if>
         <if test="label.description != null">
-            AND l.description LIKE concat('%',#{label.description})
+            AND l.description LIKE concat(concat('%',#{label.description}), '%')
         </if>
     </select>
 
