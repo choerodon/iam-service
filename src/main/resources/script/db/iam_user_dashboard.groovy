@@ -39,4 +39,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user_dashboard.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-28-rename') {
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '层级：site / organization / project', tableName: 'IAM_USER_DASHBOARD')
+    }
 }

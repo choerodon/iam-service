@@ -1,13 +1,13 @@
 package io.choerodon.iam.domain.iam.entity;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author dongfan117@gmail.com
@@ -24,6 +24,7 @@ public class UserDashboard extends AuditDomain {
     @Column(name = "is_visible")
     private Boolean visible;
     private Integer sort;
+    @Column(name = "fd_level")
     private String level;
     private Long sourceId;
 

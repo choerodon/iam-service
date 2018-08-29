@@ -14,10 +14,10 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     List<ProjectDO> fulltextSearch(@Param("project") ProjectDO projectDO,
                                    @Param("param") String param);
 
-    List selectProjectsFromMemberRoleByOption(@Param("userId") Long userId,
-                                              @Param("projectDO") ProjectDO projectDO);
+    List selectProjectsByUserId(@Param("userId") Long userId,
+                                @Param("projectDO") ProjectDO projectDO);
 
-    List<ProjectDO> pagingQueryProjectAndRolesById(
+    List<ProjectDO> selectProjectsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
             @Param("size") Integer size,
