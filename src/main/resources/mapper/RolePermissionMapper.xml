@@ -3,10 +3,11 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.RolePermissionMapper">
     <select id="queryPermissionIdByRoles" resultType="Long">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT DISTINCT
-        permission_id
-        from iam_role_permission
-        where role_id in
+        SELECT
+          DISTINCT permission_id
+        FROM iam_role_permission
+        WHERE role_id
+        IN
         <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
             #{item}
         </foreach>

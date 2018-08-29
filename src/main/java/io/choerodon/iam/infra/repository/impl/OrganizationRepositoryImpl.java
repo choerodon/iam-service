@@ -6,7 +6,6 @@ import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
@@ -93,7 +92,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
 
     @Override
     public List<OrganizationDO> selectAllOrganizationsWithEnabledProjects() {
-        return organizationMapper.selectAllOrganizationsWithEnabledProjects();
+        return organizationMapper.selectAllWithEnabledProjects();
     }
 
     @Override
@@ -113,7 +112,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
         int count = memberRoleMapper.selectCountBySourceId(id, "organization");
-        List<OrganizationDO> organizationList = organizationMapper.listOrganizationAndRoleById(id, start, size, params);
+        List<OrganizationDO> organizationList = organizationMapper.selectOrganizationsWithRoles(id, start, size, params);
         return new Page<>(organizationList, pageInfo, count);
     }
 }

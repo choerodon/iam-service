@@ -10,9 +10,4 @@ import java.util.List;
  * @author wuguokai
  */
 public interface GroupMapper extends BaseMapper<GroupDO> {
-
-    List selectGroup(@Param("organizationId") Long organizationId,
-                     @Param("groupDO") GroupDO groupDO);
-
-    List<String> selectGroupsByUser(@Param("userId") Long userId);
 }

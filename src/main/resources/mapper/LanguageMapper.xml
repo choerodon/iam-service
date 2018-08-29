@@ -3,24 +3,24 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.LanguageMapper">
     <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.LanguageDO">
         SELECT *
-        FROM `fd_language`
+        FROM fd_language
         WHERE 1=1
         <if test="languageDO != null">
             <if test="languageDO.code != null">
-                AND code LIKE concat('%',#{languageDO.code},'%')
+                AND code LIKE concat(concat('%',#{languageDO.code}),'%')
             </if>
             <if test="languageDO.name != null">
-                AND `name` LIKE concat('%',#{languageDO.name},'%')
+                AND name LIKE concat(concat('%',#{languageDO.name}),'%')
             </if>
             <if test="languageDO.description != null">
-                AND description LIKE concat('%',#{languageDO.description},'%')
+                AND description LIKE concat(concat('%',#{languageDO.description}),'%')
             </if>
         </if>
         <if test="param != null">
             AND (
-            code LIKE concat('%',#{param},'%') OR
-            `name` LIKE concat('%',#{param},'%') OR
-            description LIKE concat('%',#{param},'%')
+            code LIKE concat(concat('%',#{param}),'%') OR
+            name LIKE concat(concat('%',#{param}),'%') OR
+            description LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>

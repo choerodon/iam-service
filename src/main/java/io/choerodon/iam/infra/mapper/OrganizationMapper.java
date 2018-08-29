@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.OrganizationWithRoleDTO;
-import io.choerodon.iam.api.dto.ProjectWithRoleDTO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -22,9 +20,9 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
     List selectOrgByUserAndPros(@Param("memberId") Long memberId,
                                 @Param("includedDisabled") Boolean includedDisabled);
 
-    List selectAllOrganizationsWithEnabledProjects();
+    List selectAllWithEnabledProjects();
 
-    List<OrganizationDO> listOrganizationAndRoleById(
+    List<OrganizationDO> selectOrganizationsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
             @Param("size") Integer size,

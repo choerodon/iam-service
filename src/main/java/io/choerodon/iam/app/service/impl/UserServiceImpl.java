@@ -446,7 +446,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<OrganizationWithRoleDTO> pagingQueryOrganizationAndRolesById(PageRequest pageRequest, Long id, String params) {
+    public Page<OrganizationWithRoleDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest, Long id, String params) {
         return ConvertPageHelper.convertPage(organizationRepository.pagingQueryOrganizationAndRoleById(
                 pageRequest, id, params), OrganizationWithRoleDTO.class);
     }

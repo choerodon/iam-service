@@ -17,7 +17,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
     List<UserDO> fulltextSearch(@Param("userDO") UserDO userDO,
                                 @Param("param") String param);
 
-    List<UserDO> selectUserWithRolesBySourceIdAndType(
+    List<UserDO> selectUserWithRolesByOption(
             @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,
