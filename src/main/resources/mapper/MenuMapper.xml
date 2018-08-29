@@ -101,7 +101,7 @@
         <if test="level != null">
             fd_level = #{level} AND
         </if>
-        (type = "root" OR type = "dir")
+        (type = 'root' OR type = 'dir')
     </select>
 
     <delete id="deleteMenusById">
