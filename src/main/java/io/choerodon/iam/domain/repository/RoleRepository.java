@@ -16,9 +16,7 @@ public interface RoleRepository {
 
     Page<RoleDO> pagingQuery(PageRequest pageRequest, RoleDO roleDO, String param);
 
-    RoleE selectByName(String name);
-
-    RoleE selectByCode(String code);
+    RoleDO selectByCode(String code);
 
     RoleE insertSelective(RoleE roleE);
 

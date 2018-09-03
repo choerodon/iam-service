@@ -33,18 +33,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public RoleE selectByName(String name) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(name);
-        mapper.selectOne(roleDO);
-        return ConvertHelper.convert(mapper.selectOne(roleDO), RoleE.class);
-    }
-
-    @Override
-    public RoleE selectByCode(String code) {
+    public RoleDO selectByCode(String code) {
         RoleDO roleDO = new RoleDO();
         roleDO.setCode(code);
-        return ConvertHelper.convert(mapper.selectOne(roleDO), RoleE.class);
+        return mapper.selectOne(roleDO);
     }
 
     @Override

@@ -1,39 +1,41 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+
 import net.coobird.thumbnailator.Thumbnails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -42,9 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
@@ -57,6 +57,8 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 public class UserServiceImpl implements UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
@@ -72,7 +74,9 @@ public class UserServiceImpl implements UserService {
     private FileFeignClient fileFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
+    private RoleRepository roleRepository;
     private SagaClient sagaClient;
+    private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public UserServiceImpl(UserRepository userRepository,
@@ -83,7 +87,9 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
-                           PasswordPolicyManager passwordPolicyManager) {
+                           PasswordPolicyManager passwordPolicyManager,
+                           RoleRepository roleRepository,
+                           MemberRoleMapper memberRoleMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -93,6 +99,8 @@ public class UserServiceImpl implements UserService {
         this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
+        this.roleRepository = roleRepository;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
     @Override
@@ -455,6 +463,129 @@ public class UserServiceImpl implements UserService {
     public Page<ProjectWithRoleDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
         return ConvertPageHelper.convertPage(projectRepository.pagingQueryProjectAndRolesById(
                 pageRequest, id, params), ProjectWithRoleDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO createUserAndAssignRoles(final CreateUserWithRolesDTO userWithRoles) {
+        List<RoleDO> roles = validateRoles(userWithRoles);
+        UserDO user = validateUser(userWithRoles);
+        UserE userE = userRepository.insertSelective(ConvertHelper.convert(user, UserE.class));
+        Long userId = userE.getId();
+        roles.forEach(r -> {
+            MemberRoleDO memberRole = new MemberRoleDO();
+            memberRole.setMemberId(userId);
+            memberRole.setMemberType(userWithRoles.getMemberType());
+            memberRole.setRoleId(r.getId());
+            memberRole.setSourceId(userWithRoles.getSourceId());
+            memberRole.setSourceType(userWithRoles.getSourceType());
+            if(memberRoleMapper.selectOne(memberRole) == null
+                    && memberRoleMapper.insertSelective(memberRole) != 1) {
+                throw new CommonException("error.memberRole.insert");
+            }
+        });
+        return ConvertHelper.convert(user, UserDTO.class);
+    }
+
+    private UserDO validateUser(CreateUserWithRolesDTO userWithRoles) {
+        UserDO user = userWithRoles.getUser();
+        String loginName = user.getLoginName();
+        String email = user.getEmail();
+        if (StringUtils.isEmpty(loginName)) {
+            throw new CommonException("error.user.loginName.empty");
+        }
+        if (StringUtils.isEmpty(email)) {
+            throw new CommonException("error.user.email.empty");
+        }
+        if (userRepository.selectByLoginName(loginName) != null) {
+            throw new CommonException("error.user.loginName.existed");
+        }
+        UserDO userDO = new UserDO();
+        userDO.setEmail(email);
+        if (userRepository.selectOne(userDO) != null) {
+            throw new CommonException("error.user.email.existed");
+        }
+        validatePassword(user);
+        user.setPassword(ENCODER.encode(user.getPassword()));
+        user.setEnabled(true);
+        user.setLdap(false);
+        if (user.getLanguage() == null) {
+            user.setLanguage("zh_CN");
+        }
+        if (user.getTimeZone() == null) {
+            user.setTimeZone("CTT");
+        }
+        user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
+        user.setLocked(false);
+        user.setAdmin(false);
+        return user;
+    }
+
+    private void validatePassword(UserDO user) {
+        String password = user.getPassword();
+        if (StringUtils.isEmpty(password)) {
+            throw new CommonException("error.user.password.empty");
+        }
+        Long organizationId = user.getOrganizationId();
+        BaseUserDO userDO = new BaseUserDO();
+        BeanUtils.copyProperties(user, userDO);
+        Optional.ofNullable(basePasswordPolicyMapper.findByOrgId(organizationId))
+                .ifPresent(passwordPolicy -> {
+                    if (!password.equals(passwordPolicy.getOriginalPassword())) {
+                        passwordPolicyManager.passwordValidate(password, userDO, passwordPolicy);
+                    }
+                });
+    }
+
+    private List<RoleDO> validateRoles(CreateUserWithRolesDTO userWithRoles) {
+        UserDO user = userWithRoles.getUser();
+        if (user == null) {
+            throw new CommonException("error.user.null");
+        }
+        Long sourceId = userWithRoles.getSourceId();
+        String sourceType = userWithRoles.getSourceType();
+        validateSourceType(user, sourceId, sourceType);
+        if (userWithRoles.getMemberType() == null) {
+            userWithRoles.setMemberType("user");
+        }
+        Set<String> roleCodes = userWithRoles.getRoleCode();
+        List<RoleDO> roles = new ArrayList<>();
+        if (roleCodes == null) {
+            throw new CommonException("error.roleCode.null");
+        } else {
+            roleCodes.forEach(code -> {
+                RoleDO role = roleRepository.selectByCode(code);
+                if (role == null) {
+                    throw new CommonException("error.role.not.existed");
+                }
+                if (!role.getLevel().equals(sourceType)) {
+                    throw new CommonException("error.illegal.role.level");
+                }
+                roles.add(role);
+            });
+        }
+        return roles;
+    }
+
+    private void validateSourceType(UserDO user, Long sourceId, String sourceType) {
+        ResourceLevelValidator.validate(sourceType);
+        if (ResourceLevel.SITE.value().equals(sourceType)
+                || ResourceLevel.USER.value().equals(sourceType)) {
+            throw new CommonException("error.illegal.sourceType");
+        } else if (ResourceLevel.PROJECT.value().equals(sourceType)) {
+            ProjectDO projectDO = projectRepository.selectByPrimaryKey(sourceId);
+            if (projectDO == null) {
+                throw new CommonException("error.project.not.existed");
+            }
+            Long organizationId = projectDO.getOrganizationId();
+            user.setOrganizationId(organizationId);
+        } else {
+            //organization level
+            if (organizationRepository.selectByPrimaryKey(sourceId) == null) {
+                throw new CommonException("error.organization.not.existed");
+            }
+            user.setOrganizationId(sourceId);
+        }
     }
 
 }
