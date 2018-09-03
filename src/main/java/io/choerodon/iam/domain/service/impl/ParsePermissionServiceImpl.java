@@ -61,7 +61,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
-                Map<String, RoleE> initRoleMap = queryInitRoleByCode();
+                Map<String, RoleDO> initRoleMap = queryInitRoleByCode();
                 while (pathIterator.hasNext()) {
                     Map.Entry<String, JsonNode> pathNode = pathIterator.next();
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
@@ -83,7 +83,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      */
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
                               Map.Entry<String, JsonNode> pathNode, String serviceName,
-                              Map<String, RoleE> initRoleMap) {
+                              Map<String, RoleDO> initRoleMap) {
         while (methodIterator.hasNext()) {
             Map.Entry<String, JsonNode> methodNode = methodIterator.next();
             JsonNode tags = methodNode.getValue().get("tags");
@@ -120,7 +120,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private void processPermission(SwaggerExtraData extraData, String path, String method,
                                    String serviceName, String resourceCode, String description,
-                                   Map<String, RoleE> initRoleMap, String[] roles) {
+                                   Map<String, RoleDO> initRoleMap, String[] roles) {
         /**
          * 关于permission目前只有插入和更新操作，没有删除废弃的permission。因为目前的从swagger拿到的permission json无法判断是否与数据库中已存在的permission一致
          * 后续如果想通过parse的方式删除废弃的permission，目前的想法是只能在每个接口上加一个不变且各不相同的唯一标识，通过标识判断到底是删除了接口还是更新了接口
@@ -159,10 +159,10 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         }
     }
 
-    private void updateRolePermission(PermissionE permission, Map<String, RoleE> initRoleMap, String[] roles) {
+    private void updateRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
-        RoleE role = getRoleByLevel(initRoleMap, level);
+        RoleDO role = getRoleByLevel(initRoleMap, level);
         if (role != null) {
             RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
             if (rolePermissionRepository.selectOne(rp) == null) {
@@ -183,7 +183,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         processRolePermission(initRoleMap, roles, permissionId);
     }
 
-    private void insertRolePermission(PermissionE permission, Map<String, RoleE> initRoleMap, String[] roles) {
+    private void insertRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
         /**
@@ -192,7 +192,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
          * level=organization -> ORGANIZATION_ADMINISTRATOR
          * level=project -> PROJECT_ADMINISTRATOR
          */
-        RoleE role = getRoleByLevel(initRoleMap, level);
+        RoleDO role = getRoleByLevel(initRoleMap, level);
         if (role != null) {
             rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
         }
@@ -200,16 +200,16 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         processRolePermission(initRoleMap, roles, permissionId);
     }
 
-    private void processRolePermission(Map<String, RoleE> initRoleMap, String[] roles, Long permissionId) {
+    private void processRolePermission(Map<String, RoleDO> initRoleMap, String[] roles, Long permissionId) {
         if (roles != null) {
             Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
             for (String roleCode : roleSet) {
-                RoleE roleE = initRoleMap.get(roleCode);
-                if (roleE == null) {
+                RoleDO role = initRoleMap.get(roleCode);
+                if (role == null) {
                     //找不到code，说明没有初始化进去角色或者角色code拼错了
                     logger.info("can not find the role, role code is : {}", roleCode);
                 } else {
-                    RolePermissionE rp = new RolePermissionE(null, roleE.getId(), permissionId);
+                    RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
                     if (rolePermissionRepository.selectOne(rp) == null) {
                         rolePermissionRepository.insert(rp);
                     }
@@ -218,7 +218,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         }
     }
 
-    private RoleE getRoleByLevel(Map<String, RoleE> initRoleMap, String level) {
+    private RoleDO getRoleByLevel(Map<String, RoleDO> initRoleMap, String level) {
         if (ResourceLevel.SITE.value().equals(level)) {
             return initRoleMap.get(RoleCode.SITE_ADMINISTRATOR);
         }
@@ -231,11 +231,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         return null;
     }
 
-    private Map<String, RoleE> queryInitRoleByCode() {
-        Map<String, RoleE> map = new HashMap<>(10);
+    private Map<String, RoleDO> queryInitRoleByCode() {
+        Map<String, RoleDO> map = new HashMap<>(10);
         String[] codes = RoleCode.values();
         for (String code : codes) {
-            RoleE role = roleRepository.selectByCode(code);
+            RoleDO role = roleRepository.selectByCode(code);
             if (role == null) {
                 logger.info("init roles do not exist, code: {}", code);
 //                throw new CommonException("error.init.role.not.exist", code);

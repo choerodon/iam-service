@@ -243,7 +243,12 @@ public class UserController extends BaseController {
             @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
-
         return new ResponseEntity<>(userService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    }
+
+    @ApiOperation("新建用户，并根据角色code分配角色")
+    @PostMapping("/init_role")
+    public ResponseEntity<UserDTO> createUserAndAssignRoles(@RequestBody CreateUserWithRolesDTO userWithRoles) {
+        return new ResponseEntity<>(userService.createUserAndAssignRoles(userWithRoles),HttpStatus.OK);
     }
 }
