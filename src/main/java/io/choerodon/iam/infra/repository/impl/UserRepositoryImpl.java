@@ -238,9 +238,11 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<UserDO> insertList(List<UserDO> insertUsers) {
-        if (mapper.insertList(insertUsers) == 0) {
-            throw new CommonException("error.batch.insert.user");
-        }
+        insertUsers.forEach(u -> {
+            if (mapper.insertSelective(u) != 1) {
+                throw new CommonException("error.batch.insert.user");
+            }
+        });
         return insertUsers;
     }
 
