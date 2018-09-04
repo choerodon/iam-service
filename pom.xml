@@ -11,7 +11,7 @@
 
     <artifactId>iam-service</artifactId>
     <properties>
-        <choerodon.starters.version>0.6.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.6.2.RELEASE</choerodon.starters.version>
     </properties>
     <dependencies>
         <dependency>
@@ -85,6 +85,11 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc7</artifactId>
+            <version>12.1.0.1.0</version>
         </dependency>
         <!-- config server -->
         <dependency>

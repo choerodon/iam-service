@@ -101,7 +101,7 @@ public class UserRepositoryImpl implements UserRepository {
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
-                mapper.selectUserWithRolesBySourceIdAndType(
+                mapper.selectUserWithRolesByOption(
                         roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
@@ -123,7 +123,7 @@ public class UserRepositoryImpl implements UserRepository {
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
-                mapper.selectUserWithRolesBySourceIdAndType(
+                mapper.selectUserWithRolesByOption(
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
@@ -145,7 +145,7 @@ public class UserRepositoryImpl implements UserRepository {
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDO> userDOList =
-                mapper.selectUserWithRolesBySourceIdAndType(
+                mapper.selectUserWithRolesByOption(
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by

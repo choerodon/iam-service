@@ -10,7 +10,6 @@ import java.util.List;
  * @author wuguokai
  */
 public interface RolePermissionMapper extends BaseMapper<RolePermissionDO> {
-    //    @Select(" SELECT DISTINCT permission_id from iam_role_permission" +
-    //            " where role_id in ${roleIds}")
+
     List<Long> queryPermissionIdByRoles(@Param("list") List<Long> roleIds);
 }

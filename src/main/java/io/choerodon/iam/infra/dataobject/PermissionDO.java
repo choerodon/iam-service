@@ -4,6 +4,7 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -21,9 +22,11 @@ public class PermissionDO extends AuditDomain {
     private String code;
     private String path;
     private String method;
+    @Column(name = "fd_level")
     private String level;
     private String description;
     private String action;
+    @Column(name = "fd_resource")
     private String resource;
     private Boolean publicAccess;
     private Boolean loginAccess;

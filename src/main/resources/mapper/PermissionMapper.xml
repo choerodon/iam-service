@@ -1,30 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.PermissionMapper">
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
+
+    <resultMap id="PermissionDO" type="io.choerodon.iam.infra.dataobject.PermissionDO">
+        <id column="id" property="id"></id>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
+        <result column="fd_resource" property="resource" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="fulltextSearch" resultMap="PermissionDO">
         SELECT * FROM iam_permission ip
-        WHERE ip.public_access = 0 AND ip.login_access = 0
+        WHERE ip.public_access = 0
+        AND ip.login_access = 0
         <if test="permissionDO.code != null">
-            AND ip.code LIKE concat('%',#{permissionDO.code},'%')
+            AND ip.code LIKE concat(concat('%',#{permissionDO.code}), '%')
         </if>
         <if test="permissionDO.level != null">
-            AND ip.level = #{permissionDO.level}
+            AND ip.fd_level = #{permissionDO.level}
         </if>
         <if test="permissionDO.resource != null">
-            AND ip.resource LIKE concat('%',#{permissionDO.resource},'%')
+            AND ip.fd_resource LIKE concat(concat('%',#{permissionDO.resource}), '%')
         </if>
         <if test="permissionDO.serviceName != null">
-            AND ip.service_name LIKE concat('%',#{permissionDO.serviceName},'%')
+            AND ip.service_name LIKE concat(concat('%',#{permissionDO.serviceName}), '%')
         </if>
         <if test="param != null">
             AND(
-            ip.code LIKE concat('%',#{param},'%') OR
-            ip.description LIKE concat('%',#{param},'%')
+            ip.code LIKE concat(concat('%',#{param}), '%') OR
+            ip.description LIKE concat(concat('%',#{param}), '%')
             )
         </if>
     </select>
 
-    <select id="selectByRoleId" resultType="io.choerodon.iam.infra.dataobject.PermissionDO">
+    <select id="selectByRoleId" resultMap="PermissionDO">
         SELECT iam_permission.*
         FROM iam_role_permission
         INNER JOIN iam_permission
@@ -32,8 +40,8 @@
         WHERE iam_role_permission.role_id = #{roleId}
         <if test="params != null">
           AND (
-            iam_permission.code LIKE concat('%', #{params}, '%') OR
-            iam_permission.description LIKE concat('%', #{params}, '%')
+            iam_permission.code LIKE concat(concat('%', #{params), '%') OR
+            iam_permission.description LIKE concat(concat('%', #{params), '%')
             )
         </if>
     </select>
@@ -48,7 +56,7 @@
         left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
         (p.login_access=1 OR p.public_access=1 OR (
-        p.LEVEL = #{source_type}
+        p.fd_level = #{source_type}
         AND member_type = 'user'
         AND member_id = #{member_id}
         AND source_type = #{source_type}

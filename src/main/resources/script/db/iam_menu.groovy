@@ -59,4 +59,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: '菜单名')
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-28-rename') {
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '菜单层级', tableName: 'IAM_MENU')
+    }
 }

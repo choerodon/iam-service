@@ -28,35 +28,35 @@
         FROM fd_project
         WHERE organization_id = #{project.organizationId}
         <if test="project.name != null">
-            AND name LIKE concat('%',#{project.name},'%')
+            AND name LIKE concat(concat('%',#{project.name}),'%')
         </if>
         <if test="project.code != null">
-            AND code LIKE concat('%',#{project.code},'%')
+            AND code LIKE concat(concat('%',#{project.code}),'%')
         </if>
         <if test="project.enabled != null">
             AND is_enabled = #{project.enabled}
         </if>
         <if test="param != null">
             AND(
-            name LIKE concat('%',#{param},'%') OR
-            code LIKE concat('%',#{param},'%')
+            name LIKE concat(concat('%',#{param}),'%') OR
+            code LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>
 
-    <select id="selectProjectsFromMemberRoleByOption" resultMap="projectDO">
+    <select id="selectProjectsByUserId" resultMap="projectDO">
         SELECT DISTINCT fd_project.*
         FROM fd_project
         JOIN iam_member_role
         ON iam_member_role.source_id = fd_project.id
-        AND iam_member_role.source_type = "project"
+        AND iam_member_role.source_type = 'project'
         WHERE iam_member_role.member_id = #{userId}
         <if test="projectDO != null">
             <if test="projectDO.organizationId != null">
                 AND fd_project.organization_id = #{projectDO.organizationId}
             </if>
             <if test="projectDO.name != null">
-                AND fd_project.name LIKE concat('%',#{projectDO.name},'%')
+                AND fd_project.name LIKE concat(concat('%',#{projectDO.name}),'%')
             </if>
             <if test="projectDO.enabled != null">
                 AND fd_project.is_enabled = #{projectDO.enabled}
@@ -64,39 +64,89 @@
         </if>
     </select>
 
-    <select id="pagingQueryProjectAndRolesById" resultMap="ProjectWithRoleDTO">
+    <select id="selectProjectsWithRoles" databaseId="mysql" resultMap="ProjectWithRoleDTO">
         SELECT
-        fp.id,
-        fp.name,
-        fp.code,
-        fp.organization_id,
-        fo.name AS organization_name,
-        fp.is_enabled,
-        ir.id AS role_id,
-        ir.name AS role_name,
-        ir.code AS role_code,
-        ir.is_enabled AS role_is_enabled
-        FROM
+            fp.id,
+            fp.name,
+            fp.code,
+            fp.organization_id,
+            fo.name AS organization_name,
+            fp.is_enabled,
+            ir.id AS role_id,
+            ir.name AS role_name,
+            ir.code AS role_code,
+            ir.is_enabled AS role_is_enabled
+        FROM fd_project fp
+        INNER JOIN
         (
-        SELECT fd_project.* FROM fd_project
-        INNER JOIN iam_member_role imr ON imr.source_id = fd_project.id
-        WHERE imr.source_type = "project" AND imr.member_id = #{id}
+            SELECT DISTINCT source_id FROM iam_member_role
+            WHERE member_id = #{id}
+            AND member_type = 'user'
+            AND source_type = 'project'
+            ORDER BY source_id ASC
+            LIMIT #{start}, #{size}
+        ) t
+        ON fp.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.source_type = 'project'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
         <if test="params != null">
             AND (
-            fd_project.name LIKE concat('%', #{params}, '%') OR
-            fd_project.code LIKE concat('%', #{params}, '%')
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
             )
         </if>
-        GROUP BY fd_project.id
-        ORDER BY max(imr.member_id) ASC
-        LIMIT #{start}, #{size}
-        ) fp
-        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
-        INNER JOIN iam_role ir ON imr.role_id = ir.id
-        INNER JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.source_type = "project"
-        AND imr.member_id = #{id}
     </select>
 
-
+    <select id="selectProjectsWithRoles" databaseId="oracle" resultMap="ProjectWithRoleDTO">
+        SELECT
+            fp.id,
+            fp.name,
+            fp.code,
+            fp.organization_id,
+            fo.name AS organization_name,
+            fp.is_enabled,
+            ir.id AS role_id,
+            ir.name AS role_name,
+            ir.code AS role_code,
+            ir.is_enabled AS role_is_enabled
+        FROM fd_project fp
+        INNER JOIN
+        (
+        <![CDATA[
+            SELECT *
+            FROM
+            (
+                SELECT TMP_PAGE.*, ROWNUM ROW_ID
+                FROM
+                (
+                    SELECT DISTINCT source_id
+                    FROM iam_member_role
+                    WHERE member_id = #{id}
+                    AND member_type = 'user'
+                    AND source_type = 'project'
+                    ORDER BY source_id ASC
+                ) TMP_PAGE
+                WHERE ROWNUM <= ((#{start} + 1) * #{size})
+            )
+            WHERE ROW_ID > (#{start} * #{size})
+        ]]>
+        ) t
+        ON fp.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = fp.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        LEFT JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.source_type = 'project'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
 </mapper>

@@ -35,108 +35,178 @@
 
     <select id="fulltextSearch" resultMap="OrganizationDO">
         SELECT
-          o.*,
-          COUNT(p.id) AS project_count
-        FROM fd_organization o
-        LEFT JOIN fd_project p
-        ON o.id = p.organization_id
+          org.*,
+        CASE
+            WHEN
+              t.project_count IS NULL
+            THEN 0
+            ELSE t.project_count
+        END
+        AS project_count
+        FROM fd_organization org
+        LEFT JOIN
+        (
+            SELECT
+              p.organization_id AS org_id,
+              COUNT(p.id) AS project_count
+            FROM fd_organization o
+            JOIN fd_project p
+            ON o.id = p.organization_id
+            GROUP BY p.organization_id
+        ) t
+        ON org.id = t.org_id
         WHERE 1=1
         <if test="organization.name != null">
-            AND o.name LIKE concat('%',#{organization.name},'%')
+            AND org.name LIKE concat(concat('%',#{organization.name}),'%')
         </if>
         <if test="organization.code != null">
-            AND o.code LIKE concat('%',#{organization.code},'%')
+            AND org.code LIKE concat(concat('%',#{organization.code}),'%')
         </if>
         <if test="organization.enabled != null">
-            AND o.is_enabled = #{organization.enabled}
+            AND org.is_enabled = #{organization.enabled}
         </if>
         <if test="param != null">
             AND(
-            o.name LIKE concat('%',#{param},'%') OR
-            o.code LIKE concat('%',#{param},'%')
+            org.name LIKE concat(concat('%',#{param}),'%') OR
+            org.code LIKE concat(concat('%',#{param}),'%')
             )
         </if>
-        GROUP BY o.id
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
-        SELECT DISTINCT
-        fd_organization.*
+        SELECT
+          DISTINCT fd_organization.*
         FROM
-        fd_organization
+          fd_organization
         JOIN
-        iam_member_role
+          iam_member_role
         ON
-        fd_organization.id = iam_member_role.source_id
+          fd_organization.id = iam_member_role.source_id
         AND
-        iam_member_role.source_type = "organization"
+          iam_member_role.source_type = 'organization'
         WHERE
-        iam_member_role.member_id = #{memberId}
+          iam_member_role.member_id = #{memberId}
         <if test="!includedDisabled">
-            AND fd_organization.is_enabled = true
+            AND fd_organization.is_enabled = 1
         </if>
     </select>
 
     <select id="selectOrgByUserAndPros" resultMap="OrganizationDO">
-        SELECT DISTINCT fd_organization.* from fd_organization
-        where id in (
-        SELECT DISTINCT fp.organization_id from fd_project fp
-        LEFT JOIN iam_member_role imr on imr.source_id=fp.id and imr.source_type="project"
-        WHERE imr.member_id=#{memberId})
+        SELECT DISTINCT fd_organization.*
+        FROM fd_organization
+        WHERE id
+        IN
+            (
+                SELECT DISTINCT fp.organization_id
+                FROM fd_project fp
+                LEFT JOIN iam_member_role imr
+                ON imr.source_id=fp.id
+                AND imr.source_type='project'
+                WHERE imr.member_id=#{memberId}
+            )
         <if test="!includedDisabled">
-            AND fd_organization.is_enabled = true
+            AND fd_organization.is_enabled = 1
         </if>
     </select>
 
-    <select id="selectAllOrganizationsWithEnabledProjects" resultMap="organizationWithProjects">
+    <select id="selectAllWithEnabledProjects" resultMap="organizationWithProjects">
         SELECT
-        fd_organization.id,
-        fd_organization.code,
-        fd_organization.name,
-        fd_organization.is_enabled,
-        fd_project.id AS project_id,
-        fd_project.name AS project_name,
-        fd_project.code AS project_code,
-        fd_project.organization_id,
-        fd_project.is_enabled AS project_is_enabled
+            fd_organization.id,
+            fd_organization.code,
+            fd_organization.name,
+            fd_organization.is_enabled,
+            fd_project.id AS project_id,
+            fd_project.name AS project_name,
+            fd_project.code AS project_code,
+            fd_project.organization_id,
+            fd_project.is_enabled AS project_is_enabled
         FROM
-        fd_organization
+          fd_organization
         LEFT JOIN
-        fd_project
+          fd_project
         ON
-        fd_organization.id = fd_project.organization_id
+          fd_organization.id = fd_project.organization_id
         WHERE
-        fd_project.is_enabled = TRUE
+          fd_project.is_enabled = 1
     </select>
 
-    <select id="listOrganizationAndRoleById" resultMap="OrganizationWithRoleDTO">
+    <select id="selectOrganizationsWithRoles" databaseId="mysql" resultMap="OrganizationWithRoleDTO">
         SELECT
-        fo.id,
-        fo.name,
-        fo.code,
-        fo.is_enabled,
-        ir.id AS role_id,
-        ir.name AS role_name,
-        ir.code AS role_code,
-        ir.is_enabled AS role_is_enabled
-        FROM
+            o.id,
+            o.name,
+            o.code,
+            o.is_enabled,
+            ir.id AS role_id,
+            ir.name AS role_name,
+            ir.code AS role_code,
+            ir.is_enabled AS role_is_enabled
+        FROM fd_organization o
+        INNER JOIN
         (
-        SELECT fd_organization.* FROM fd_organization
-        INNER JOIN iam_member_role imr ON imr.source_id = fd_organization.id
-        WHERE imr.source_type = "organization" AND imr.member_id = #{id}
+            SELECT DISTINCT source_id FROM iam_member_role
+            WHERE member_id = #{id}
+            AND member_type = 'user'
+            AND source_type = 'organization'
+            ORDER BY source_id ASC
+            LIMIT #{start}, #{size}
+        ) t
+        ON o.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = o.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.source_type = 'organization'
+        AND imr.member_type = 'user'
+        AND imr.member_id = #{id}
         <if test="params != null">
             AND (
-            fd_organization.name LIKE concat('%', #{params}, '%') OR
-            fd_organization.code LIKE concat('%', #{params}, '%')
+            o.name LIKE concat(concat('%', #{params}), '%') OR
+            o.code LIKE concat(concat('%', #{params}), '%')
             )
         </if>
-        GROUP BY fd_organization.id
-        ORDER BY max(imr.member_id) ASC
-        LIMIT #{start}, #{size}
-        ) fo
-        INNER JOIN iam_member_role imr ON imr.source_id = fo.id
-        INNER JOIN iam_role ir ON imr.role_id = ir.id
-        WHERE imr.source_type = "organization"
+    </select>
+
+    <select id="selectOrganizationsWithRoles" databaseId="oracle" resultMap="OrganizationWithRoleDTO">
+        SELECT
+            o.id,
+            o.name,
+            o.code,
+            o.is_enabled,
+            ir.id AS role_id,
+            ir.name AS role_name,
+            ir.code AS role_code,
+            ir.is_enabled AS role_is_enabled
+        FROM fd_organization o
+        INNER JOIN
+        (
+        <![CDATA[
+            SELECT *
+            FROM
+            (
+                SELECT TMP_PAGE.*, ROWNUM ROW_ID
+                FROM
+                (
+                    SELECT DISTINCT source_id
+                    FROM iam_member_role
+                    WHERE member_id = #{id}
+                    AND member_type = 'user'
+                    AND source_type = 'organization'
+                    ORDER BY source_id ASC
+                ) TMP_PAGE
+                WHERE ROWNUM <= ((#{start} + 1) * #{size})
+            )
+            WHERE ROW_ID > (#{start} * #{size})
+        ]]>
+        ) t
+        ON o.id = t.source_id
+        INNER JOIN iam_member_role imr ON imr.source_id = o.id
+        LEFT JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.source_type = 'organization'
+        AND imr.member_type = 'user'
         AND imr.member_id = #{id}
+        <if test="params != null">
+            AND (
+            o.name LIKE concat(concat('%', #{params}), '%') OR
+            o.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
     </select>
 </mapper>

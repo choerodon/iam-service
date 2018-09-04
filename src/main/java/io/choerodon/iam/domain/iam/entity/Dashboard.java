@@ -1,5 +1,6 @@
 package io.choerodon.iam.domain.iam.entity;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -26,6 +27,7 @@ public class Dashboard extends AuditDomain {
     private String name;
     private String title;
     private String namespace;
+    @Column(name = "fd_level")
     private String level;
     private String description;
     private String icon;

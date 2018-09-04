@@ -3,7 +3,6 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LabelDTO;
-import io.choerodon.iam.api.validator.LabelValidator;
 import io.choerodon.iam.app.service.LabelService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +31,6 @@ public class LabelController extends BaseController {
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<LabelDTO>> listByType(LabelDTO label) {
-//        LabelValidator.validate(label);
         return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
     }
 

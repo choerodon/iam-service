@@ -6,10 +6,7 @@ import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -26,6 +23,7 @@ public class MenuDO extends AuditDomain {
     private String code;
     @MultiLanguageField
     private String name;
+    @Column(name = "fd_level")
     private String level;
     private Long parentId;
     //1、root 根目录 2、dir 目录 3、menu 菜单

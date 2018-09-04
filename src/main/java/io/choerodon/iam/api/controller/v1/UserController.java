@@ -231,7 +231,7 @@ public class UserController extends BaseController {
             @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(value = "id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
-        return new ResponseEntity<>(userService.pagingQueryOrganizationAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryOrganizationsWithRoles(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)

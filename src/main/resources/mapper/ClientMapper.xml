@@ -8,11 +8,11 @@
             AND organization_id = #{clientDO.organizationId}
         </if>
         <if test="clientDO.name != null">
-            AND name LIKE concat('%',#{clientDO.name},'%')
+            AND name LIKE concat(concat('%',#{clientDO.name}),'%')
         </if>
         <if test="param != null">
             AND
-            name LIKE concat('%',#{param},'%')
+            name LIKE concat(concat('%',#{param}),'%')
         </if>
     </select>
 </mapper>

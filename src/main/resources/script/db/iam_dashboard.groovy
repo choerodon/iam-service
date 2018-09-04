@@ -52,4 +52,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard.groovy') {
             column(name: 'NAME', type: 'VARCHAR(64)', remarks: 'dashboard名')
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-08-28-rename') {
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '层级：site / organization / project', tableName: 'IAM_DASHBOARD')
+    }
 }

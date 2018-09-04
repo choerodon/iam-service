@@ -75,8 +75,8 @@ public interface UserService {
      */
     List<UserDTO> listUsersByIds(Long[] ids);
 
-    Page<OrganizationWithRoleDTO> pagingQueryOrganizationAndRolesById(PageRequest pageRequest,
-                                                                      Long id, String params);
+    Page<OrganizationWithRoleDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest,
+                                                                    Long id, String params);
 
     Page<ProjectWithRoleDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest,
                                                             Long id, String params);

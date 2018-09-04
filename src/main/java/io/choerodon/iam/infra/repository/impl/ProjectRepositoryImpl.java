@@ -78,7 +78,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO) {
         return PageHelper.doPageAndSort(pageRequest, () ->
-                projectMapper.selectProjectsFromMemberRoleByOption(userId, projectDO));
+                projectMapper.selectProjectsByUserId(userId, projectDO));
     }
 
     @Override
@@ -97,7 +97,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     public List<ProjectDO> selectFromMemberRoleByOptionWithoutPaging(Long userId, Long organizationId) {
         ProjectDO projectDO = new ProjectDO();
         projectDO.setOrganizationId(organizationId);
-        return projectMapper.selectProjectsFromMemberRoleByOption(userId, projectDO);
+        return projectMapper.selectProjectsByUserId(userId, projectDO);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public List<ProjectDO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDO projectDO) {
-        return projectMapper.selectProjectsFromMemberRoleByOption(userId, projectDO);
+        return projectMapper.selectProjectsByUserId(userId, projectDO);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         int start = page * size;
         PageInfo pageInfo = new PageInfo(page, size);
         int count = memberRoleMapper.selectCountBySourceId(id, "project");
-        List<ProjectDO> projectList = projectMapper.pagingQueryProjectAndRolesById(id, start, size, params);
+        List<ProjectDO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
         return new Page<>(projectList, pageInfo, count);
     }
 }

@@ -38,7 +38,7 @@
     <select id="fulltextSearch" resultMap="userDO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userDO.loginName!= null">
-            AND login_name LIKE concat('%',#{userDO.loginName},'%')
+            AND login_name LIKE concat(concat('%',#{userDO.loginName}),'%')
         </if>
         <if test="userDO.organizationId != null">
             AND organization_id = #{userDO.organizationId}
@@ -59,63 +59,133 @@
             AND is_admin = #{userDO.admin}
         </if>
         <if test="userDO.email != null">
-            AND email LIKE concat('%',#{userDO.email},'%')
+            AND email LIKE concat(concat('%',#{userDO.email}),'%')
         </if>
         <if test="userDO.language != null">
-            AND `language` LIKE concat('%',#{userDO.language},'%')
+            AND `language` LIKE concat(concat('%',#{userDO.language}),'%')
         </if>
         <if test="param != null">
             AND(
-            login_name LIKE concat('%',#{param},'%') OR
-            email LIKE concat('%',#{param},'%') OR
-            real_name LIKE concat('%',#{param},'%')
+            login_name LIKE concat(concat('%',#{param}),'%') OR
+            email LIKE concat(concat('%',#{param}),'%') OR
+            real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>
 
-    <select id="selectUserWithRolesBySourceIdAndType" resultMap="userWithRoles">
+    <select id="selectUserWithRolesByOption" databaseId="mysql" resultMap="userWithRoles">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
-        iu.id,
-        iu.login_name,
-        iu.email,
-        iu.real_name,
-        iu.is_enabled,
-        role.id AS role_id,
-        irt.name AS name,
-        role.code,
-        role.is_enabled as role_is_enabled,
-        role.is_built_in as role_is_built_in,
-        imr.id
-        FROM (
-        SELECT iam_user.* FROM iam_user
-        LEFT JOIN iam_member_role imr on imr.member_id = iam_user.id
-        LEFT JOIN iam_role ir on ir.id = imr.role_id
+            iu.id,
+            iu.login_name,
+            iu.email,
+            iu.real_name,
+            iu.is_enabled,
+            role.id AS role_id,
+            irt.name AS name,
+            role.code,
+            role.is_enabled as role_is_enabled,
+            role.is_built_in as role_is_built_in,
+            imr.id
+        FROM
+        (
+            SELECT DISTINCT iam_user.*
+            FROM iam_user
+            LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
+            LEFT JOIN iam_role ir ON ir.id = imr.role_id
+            WHERE imr.member_type = 'user'
+            AND imr.source_id = #{sourceId}
+            AND imr.source_type = #{sourceType}
+            <if test="roleAssignmentSearchDTO != null">
+                <if test="roleAssignmentSearchDTO.loginName != null">
+                    AND iam_user.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.realName != null">
+                    AND iam_user.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
+                </if>
+                <if test="roleAssignmentSearchDTO.roleName != null">
+                    AND ir.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
+                </if>
+                <if test="param != null">
+                    AND(
+                    iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
+                    iam_user.real_name LIKE concat(concat('%',#{param}),'%') OR
+                    ir.name LIKE concat(concat('%',#{param}),'%') OR
+                    imr.member_type LIKE concat(concat('%',#{param}),'%')
+                    )
+                </if>
+            </if>
+            limit #{start}, #{size}
+        ) iu
+        LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
+        LEFT JOIN iam_role role ON imr.role_id = role.id
+        LEFT JOIN iam_role_tl irt ON role.id = irt.id
+        AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
-        <if test="roleAssignmentSearchDTO != null">
-            <if test="roleAssignmentSearchDTO.loginName != null">
-                AND iam_user.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
-            </if>
-            <if test="roleAssignmentSearchDTO.realName != null">
-                AND iam_user.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
-            </if>
-            <if test="roleAssignmentSearchDTO.roleName != null">
-                AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
-            </if>
-            <if test="param != null">
-                AND(
-                iam_user.login_name LIKE concat('%',#{param},'%') OR
-                iam_user.real_name LIKE concat('%',#{param},'%') OR
-                ir.name LIKE concat('%',#{param},'%') OR
-                imr.member_type LIKE concat('%',#{param},'%')
-                )
-            </if>
-        </if>
-        GROUP BY iam_user.id
-        ORDER BY max(imr.id) DESC
-        limit #{start}, #{size}
+        ORDER BY imr.id DESC
+    </select>
+
+    <select id="selectUserWithRolesByOption" databaseId="oracle" resultMap="userWithRoles">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+            iu.id,
+            iu.login_name,
+            iu.email,
+            iu.real_name,
+            iu.is_enabled,
+            role.id AS role_id,
+            irt.name AS name,
+            role.code,
+            role.is_enabled as role_is_enabled,
+            role.is_built_in as role_is_built_in,
+            imr.id
+        FROM
+        (
+            SELECT *
+            FROM
+            (
+                SELECT TMP_PAGE.*, ROWNUM ROW_ID
+                FROM
+                (
+
+                    SELECT * FROM iam_user iam_u
+                    JOIN (
+                        SELECT DISTINCT imr.member_id
+                        FROM iam_user
+                        LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
+                        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+                        WHERE imr.member_type = 'user'
+                        AND imr.source_id = #{sourceId}
+                        AND imr.source_type = #{sourceType}
+                        <if test="roleAssignmentSearchDTO != null">
+                            <if test="roleAssignmentSearchDTO.loginName != null">
+                                AND iam_user.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
+                            </if>
+                            <if test="roleAssignmentSearchDTO.realName != null">
+                                AND iam_user.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
+                            </if>
+                            <if test="roleAssignmentSearchDTO.roleName != null">
+                                AND ir.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
+                            </if>
+                            <if test="param != null">
+                                AND(
+                                iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
+                                iam_user.real_name LIKE concat(concat('%',#{param}),'%') OR
+                                ir.name LIKE concat(concat('%',#{param}),'%') OR
+                                imr.member_type LIKE concat(concat('%',#{param}),'%')
+                                )
+                            </if>
+                        </if>
+                    ) t
+                    ON iam_u.id = t.member_id
+                ) TMP_PAGE
+            <![CDATA[
+                WHERE ROWNUM <= ((#{start} + 1) * #{size})
+            )
+            WHERE ROW_ID > (#{start} * #{size})
+            ]]>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
@@ -138,20 +208,20 @@
         AND imr.source_type = #{sourceType}
         <if test="roleAssignmentSearchDTO != null">
             <if test="roleAssignmentSearchDTO.loginName != null">
-                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+                AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
             </if>
             <if test="roleAssignmentSearchDTO.realName != null">
-                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+                AND iu.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
             </if>
             <if test="roleAssignmentSearchDTO.roleName != null">
-                AND ir.name LIKE concat('%',#{roleAssignmentSearchDTO.roleName},'%')
+                AND ir.name LIKE concat(concat('%',#{roleAssignmentSearchDTO.roleName}),'%')
             </if>
             <if test="param != null">
                 AND(
-                iu.login_name LIKE concat('%',#{param},'%') OR
-                iu.real_name LIKE concat('%',#{param},'%') OR
-                ir.name LIKE concat('%',#{param},'%') OR
-                imr.member_type LIKE concat('%',#{param},'%')
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%') OR
+                ir.name LIKE concat(concat('%',#{param}),'%') OR
+                imr.member_type LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
         </if>
@@ -172,16 +242,16 @@
         </if>
         <if test="roleAssignmentSearchDTO != null">
             <if test="roleAssignmentSearchDTO.loginName != null">
-                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+                AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
             </if>
             <if test="roleAssignmentSearchDTO.realName != null">
-                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+                AND iu.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
             </if>
         </if>
         <if test="param != null">
             AND (
-              iu.login_name LIKE concat('%',#{param},'%') OR
-              iu.real_name LIKE concat('%',#{param},'%')
+              iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+              iu.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
         ) t
@@ -202,16 +272,16 @@
         </if>
         <if test="roleAssignmentSearchDTO != null">
             <if test="roleAssignmentSearchDTO.loginName != null">
-                AND iu.login_name LIKE concat('%',#{roleAssignmentSearchDTO.loginName},'%')
+                AND iu.login_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.loginName}),'%')
             </if>
             <if test="roleAssignmentSearchDTO.realName != null">
-                AND iu.real_name LIKE concat('%',#{roleAssignmentSearchDTO.realName},'%')
+                AND iu.real_name LIKE concat(concat('%',#{roleAssignmentSearchDTO.realName}),'%')
             </if>
         </if>
         <if test="param != null">
             AND (
-                iu.login_name LIKE concat('%',#{param},'%') OR
-                iu.real_name LIKE concat('%',#{param},'%')
+                iu.login_name LIKE concat(concat('%',#{param}),'%') OR
+                iu.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>
@@ -220,38 +290,40 @@
         SELECT iam_user.*
         FROM iam_user
         RIGHT JOIN
-        (SELECT
-        DISTINCT member_id
-        FROM
-        iam_member_role
-        WHERE
-        source_id = #{projectId}
-        AND source_type = 'project'
-        AND member_type = 'user') t
+        (
+            SELECT
+            DISTINCT member_id
+            FROM
+            iam_member_role
+            WHERE
+            source_id = #{projectId}
+            AND source_type = 'project'
+            AND member_type = 'user'
+        ) t
         ON iam_user.id = t.member_id
         WHERE 1=1
         <if test="userId != null">
             AND iam_user.id = #{userId}
         </if>
         <if test="email != null">
-            AND iam_user.email LIKE concat('%',#{email},'%')
+            AND iam_user.email LIKE concat(concat('%',#{email}),'%')
         </if>
         <if test="param != null">
             AND (
-            iam_user.login_name LIKE concat('%',#{param},'%') OR
-            iam_user.real_name LIKE concat('%',#{param},'%')
+            iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iam_user.real_name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>
 
 
     <select id="selectAdminUserPage" resultMap="userDO">
-        SELECT * FROM iam_user WHERE is_admin = TRUE
+        SELECT * FROM iam_user WHERE is_admin = 1
         <if test="userDO.loginName!= null">
-            AND login_name LIKE concat('%',#{userDO.loginName},'%')
+            AND login_name LIKE concat(concat('%',#{userDO.loginName}),'%')
         </if>
         <if test="userDO.realName != null">
-            AND real_name LIKE concat('%',#{userDO.realName},'%')
+            AND real_name LIKE concat(concat('%',#{userDO.realName}),'%')
         </if>
         <if test="userDO.enabled != null">
             AND is_enabled = #{userDO.enabled}
@@ -261,8 +333,8 @@
         </if>
         <if test="params != null">
             AND (
-                login_name LIKE concat('%',#{params},'%') OR
-                real_name LIKE concat('%',#{params},'%')
+                login_name LIKE concat(concat('%',#{params}),'%') OR
+                real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
     </select>
