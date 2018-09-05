@@ -14,11 +14,12 @@ public class PermissionE {
     private String resource;
     private Boolean publicAccess;
     private Boolean loginAccess;
+    private Boolean within;
     private String serviceName;
     private Long objectVersionNumber;
 
     public PermissionE(String code, String path, String method, String level, String description, String action,
-                       String resource, Boolean publicAccess, Boolean loginAccess, String serviceName, Long objectVersionNumber) {
+                       String resource, Boolean publicAccess, Boolean loginAccess, Boolean within, String serviceName, Long objectVersionNumber) {
         this.code = code;
         this.path = path;
         this.method = method;
@@ -28,6 +29,7 @@ public class PermissionE {
         this.resource = resource;
         this.publicAccess = publicAccess;
         this.loginAccess = loginAccess;
+        this.within = within;
         this.serviceName = serviceName;
         this.objectVersionNumber = objectVersionNumber;
     }
@@ -84,6 +86,10 @@ public class PermissionE {
         return loginAccess;
     }
 
+    public Boolean getWithin() {
+        return within;
+    }
+
     public String getServiceName() {
         return serviceName;
     }
@@ -104,6 +110,7 @@ public class PermissionE {
         if (!resource.equals(that.resource)) return false;
         if (!publicAccess.equals(that.publicAccess)) return false;
         if (!loginAccess.equals(that.loginAccess)) return false;
+        if (!within.equals(that.within)) return false;
         if (!serviceName.equals(that.serviceName)) return false;
         return objectVersionNumber != null ? objectVersionNumber.equals(that.objectVersionNumber) : that.objectVersionNumber == null;
     }
@@ -119,6 +126,7 @@ public class PermissionE {
         result = 31 * result + resource.hashCode();
         result = 31 * result + publicAccess.hashCode();
         result = 31 * result + loginAccess.hashCode();
+        result = 31 * result + within.hashCode();
         result = 31 * result + serviceName.hashCode();
         result = 31 * result + (objectVersionNumber != null ? objectVersionNumber.hashCode() : 0);
         return result;

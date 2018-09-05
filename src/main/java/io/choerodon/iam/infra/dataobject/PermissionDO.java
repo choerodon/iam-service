@@ -1,13 +1,13 @@
 package io.choerodon.iam.infra.dataobject;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author wuguokai
@@ -31,6 +31,7 @@ public class PermissionDO extends AuditDomain {
     private Boolean publicAccess;
     private Boolean loginAccess;
     private String serviceName;
+    private Boolean within;
 
     public Long getId() {
         return id;
@@ -118,6 +119,14 @@ public class PermissionDO extends AuditDomain {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public Boolean getWithin() {
+        return within;
+    }
+
+    public void setWithin(Boolean within) {
+        this.within = within;
     }
 
     public PermissionDO(String code) {

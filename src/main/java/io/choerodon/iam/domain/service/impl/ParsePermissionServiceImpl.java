@@ -1,13 +1,20 @@
 package io.choerodon.iam.domain.service.impl;
 
+import java.io.IOException;
+import java.util.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.iam.domain.iam.entity.InstanceE;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
-import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
@@ -15,13 +22,6 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.service.ParsePermissionService;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * @author zhipeng.zuo
@@ -109,7 +109,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             }
             String description = methodNode.getValue().get("summary").asText();
             String[] roles = null;
-            if (extraData.getPermission() != null ) {
+            if (extraData.getPermission() != null) {
                 roles = extraData.getPermission().getRoles();
             }
             processPermission(extraData, pathNode.getKey(),
@@ -133,7 +133,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             //插入操作
             PermissionE p =
                     new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
-                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), serviceName, null);
+                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, null);
             PermissionE permissionE1 = permissionRepository.insertSelective(p);
             if (permissionE1 != null) {
                 insertRolePermission(permissionE1, initRoleMap, roles);
@@ -146,7 +146,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             //更新操作
             PermissionE p =
                     new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
-                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), serviceName, permissionE.getObjectVersionNumber());
+                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, permissionE.getObjectVersionNumber());
             p.setId(permissionE.getId());
             if (!permissionE.equals(p)) {
                 permissionRepository.updateSelective(p);

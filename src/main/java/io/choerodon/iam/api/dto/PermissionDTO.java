@@ -26,6 +26,8 @@ public class PermissionDTO {
     private Boolean publicAccess;
     @ApiModelProperty(value = "是否登录可访问")
     private Boolean loginAccess;
+    @ApiModelProperty(value = "是否是内部接口")
+    private Boolean within;
     @ApiModelProperty(value = "服务名")
     private String serviceName;
     @ApiModelProperty(value = "乐观锁版本号")
@@ -111,6 +113,14 @@ public class PermissionDTO {
         this.loginAccess = loginAccess;
     }
 
+    public Boolean getWithin() {
+        return within;
+    }
+
+    public void setWithin(Boolean within) {
+        this.within = within;
+    }
+
     public String getServiceName() {
         return serviceName;
     }
@@ -144,6 +154,7 @@ public class PermissionDTO {
         if (resource != null ? !resource.equals(that.resource) : that.resource != null) return false;
         if (publicAccess != null ? !publicAccess.equals(that.publicAccess) : that.publicAccess != null) return false;
         if (loginAccess != null ? !loginAccess.equals(that.loginAccess) : that.loginAccess != null) return false;
+        if (within != null ? !within.equals(that.within) : that.within != null) return false;
         if (serviceName != null ? !serviceName.equals(that.serviceName) : that.serviceName != null) return false;
         return objectVersionNumber != null ? objectVersionNumber.equals(that.objectVersionNumber) : that.objectVersionNumber == null;
     }
@@ -160,6 +171,7 @@ public class PermissionDTO {
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (publicAccess != null ? publicAccess.hashCode() : 0);
         result = 31 * result + (loginAccess != null ? loginAccess.hashCode() : 0);
+        result = 31 * result + (within != null ? within.hashCode() : 0);
         result = 31 * result + (serviceName != null ? serviceName.hashCode() : 0);
         result = 31 * result + (objectVersionNumber != null ? objectVersionNumber.hashCode() : 0);
         return result;
