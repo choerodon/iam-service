@@ -48,7 +48,7 @@ public class RoleDTO {
     private Boolean enableForbidden;
     @ApiModelProperty(value = "是否内置角色/非必填")
     private Boolean builtIn;
-    @ApiModelProperty(value = "是否匀巡被分配/非必填")
+    @ApiModelProperty(value = "是否允许被分配/非必填")
     private Boolean assignable;
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
