@@ -2,8 +2,8 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
     changeSet(author: 'guokai.wu.work@gmail.com', id: '2018-04-02-iam-permission') {
-        if(helper.dbType().isSupportSequence()){
-            createSequence(sequenceName: 'IAM_PERMISSION_S', startValue:"1")
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'IAM_PERMISSION_S', startValue: "1")
         }
         createTable(tableName: "IAM_PERMISSION") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
@@ -67,4 +67,13 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
         renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
         renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "FD_RESOURCE", oldColumnName: "RESOURCE", remarks: '权限资源类型', tableName: 'IAM_PERMISSION')
     }
+
+    changeSet(author: 'longhe1996@icloud.com', id: '2018-09-04-add-column-within') {
+        addColumn(tableName: 'IAM_PERMISSION') {
+            column(name: 'WITHIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为内部接口') {
+                constraints(nullable: true)
+            }
+        }
+    }
+
 }

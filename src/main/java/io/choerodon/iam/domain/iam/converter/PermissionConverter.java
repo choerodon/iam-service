@@ -1,11 +1,12 @@
 package io.choerodon.iam.domain.iam.converter;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai
@@ -17,7 +18,7 @@ public class PermissionConverter implements ConvertorI<PermissionE, PermissionDO
         PermissionE permissionE =
                 new PermissionE(dto.getCode(), dto.getPath(), dto.getMethod(), dto.getLevel(), dto.getDescription(),
                         dto.getAction(), dto.getResource(), dto.getPublicAccess(),
-                        dto.getLoginAccess(), dto.getServiceName(), dto.getObjectVersionNumber());
+                        dto.getLoginAccess(), dto.getWithin(), dto.getServiceName(), dto.getObjectVersionNumber());
         permissionE.setId(dto.getId());
         return permissionE;
     }
@@ -35,7 +36,7 @@ public class PermissionConverter implements ConvertorI<PermissionE, PermissionDO
                 new PermissionE(dataObject.getCode(), dataObject.getPath(),
                         dataObject.getMethod(), dataObject.getLevel(),
                         dataObject.getDescription(), dataObject.getAction(), dataObject.getResource(),
-                        dataObject.getPublicAccess(), dataObject.getLoginAccess(),
+                        dataObject.getPublicAccess(), dataObject.getLoginAccess(), dataObject.getWithin(),
                         dataObject.getServiceName(), dataObject.getObjectVersionNumber());
         permissionE.setId(dataObject.getId());
         permissionE.setObjectVersionNumber(dataObject.getObjectVersionNumber());
