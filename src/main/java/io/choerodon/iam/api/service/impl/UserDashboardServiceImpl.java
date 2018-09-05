@@ -13,8 +13,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.UserDashboardDTO;
 import io.choerodon.iam.api.service.UserDashboardService;
 import io.choerodon.iam.api.validator.MemberRoleValidator;
-import io.choerodon.iam.domain.iam.entity.Dashboard;
-import io.choerodon.iam.domain.iam.entity.UserDashboard;
+import io.choerodon.iam.domain.iam.entity.DashboardE;
+import io.choerodon.iam.domain.iam.entity.UserDashboardE;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.UserDashboardMapper;
 
@@ -46,10 +46,10 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (!ResourceLevel.SITE.value().equals(level)) {
             memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
         }
-        List<UserDashboardDTO> userDashboards = userDashboardMapper.selectWithDashboard(new UserDashboard(userDetails.getUserId(), level, sourceId));
+        List<UserDashboardDTO> userDashboards = userDashboardMapper.selectWithDashboard(new UserDashboardE(userDetails.getUserId(), level, sourceId));
         if (!isEquals(userDetails.getUserId(), sourceId, level)) {
             List<UserDashboardDTO> userDashboards1 = userDashboardMapper.selectWithDashboardNotExist(
-                    new UserDashboard(userDetails.getUserId(), level, sourceId));
+                    new UserDashboardE(userDetails.getUserId(), level, sourceId));
             List<UserDashboardDTO> userDashboardsAdd = userDashboards1.stream().filter(
                     userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
                     .collect(Collectors.toList());
@@ -65,14 +65,14 @@ public class UserDashboardServiceImpl implements UserDashboardService {
             return new ArrayList<>();
         }
         if (!isEquals(userDetails.getUserId(), sourceId, level)) {
-            List<Dashboard> dashboardList = dashboardMapper.selectByLevel(level);
+            List<DashboardE> dashboardList = dashboardMapper.selectByLevel(level);
 
-            for (Dashboard dashboard : dashboardList) {
+            for (DashboardE dashboard : dashboardList) {
                 if (null != userDashboardMapper.selectOne(
-                        new UserDashboard(dashboard.getId(), userDetails.getUserId(), level, sourceId))) {
+                        new UserDashboardE(dashboard.getId(), userDetails.getUserId(), level, sourceId))) {
                     continue;
                 }
-                UserDashboard userDashboard = new UserDashboard(
+                UserDashboardE userDashboard = new UserDashboardE(
                         dashboard.getId(),
                         userDetails.getUserId(),
                         dashboard.getLevel(),
@@ -96,14 +96,14 @@ public class UserDashboardServiceImpl implements UserDashboardService {
             userDashboardDTO.setUserId(userDetails.getUserId());
             userDashboardDTO.setLevel(level);
             userDashboardDTO.setSourceId(sourceId);
-            userDashboardMapper.updateByPrimaryKeySelective(modelMapper.map(userDashboardDTO, UserDashboard.class));
+            userDashboardMapper.updateByPrimaryKeySelective(modelMapper.map(userDashboardDTO, UserDashboardE.class));
         }
         return list(level, sourceId);
     }
 
     private boolean isEquals(Long userId, Long sourceId, String level) {
         return userDashboardMapper.selectCount(
-                new UserDashboard(userId, sourceId)) == dashboardMapper.selectByLevel(level).size();
+                new UserDashboardE(userId, sourceId)) == dashboardMapper.selectByLevel(level).size();
     }
 
     private boolean dashboardExist(List<UserDashboardDTO> userDashboardList, UserDashboardDTO userDashboard) {

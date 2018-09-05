@@ -3,33 +3,33 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.DashboardMapper">
 
-    <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.Dashboard">
+    <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.DashboardE">
         <id column="id" property="id"></id>
         <result column="fd_level" property="level" jdbcType="VARCHAR"/>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
-        SELECT * FROM iam_dashboard
+        SELECT * FROM IAM_DASHBOARD
         WHERE 1=1
         <if test="dashboard.name != null">
-            AND name LIKE concat(concat('%',#{dashboard.name}),'%')
+            AND NAME LIKE concat(concat('%',#{dashboard.name}),'%')
         </if>
         <if test="dashboard.code != null">
-            AND code LIKE concat(concat('%',#{dashboard.code}),'%')
+            AND CODE LIKE concat(concat('%',#{dashboard.code}),'%')
         </if>
         <if test="dashboard.level != null">
-            AND fd_level = #{dashboard.level}
+            AND FD_LEVEL = #{dashboard.level}
         </if>
         <if test="param != null">
             AND
-            name LIKE concat(concat('%',#{param}),'%') OR
-            code LIKE concat(concat('%',#{param}),'%') OR
-            fd_level = #{param}
+            NAME LIKE concat(concat('%',#{param}),'%') OR
+            CODE LIKE concat(concat('%',#{param}),'%') OR
+            FD_LEVEL = #{param}
         </if>
     </select>
 
     <select id="selectByLevel" resultMap="Dashboard">
-        SELECT * FROM iam_dashboard d
-        WHERE d.fd_level IN ('site', #{level})
+        SELECT * FROM IAM_DASHBOARD d
+        WHERE d.FD_LEVEL IN ('site', #{level})
     </select>
 </mapper>

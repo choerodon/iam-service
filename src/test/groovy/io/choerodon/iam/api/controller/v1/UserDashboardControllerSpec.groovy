@@ -1,7 +1,7 @@
 package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.domain.iam.entity.Dashboard
+import io.choerodon.iam.domain.iam.entity.DashboardE
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import io.choerodon.iam.infra.mapper.UserDashboardMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,14 +31,14 @@ class UserDashboardControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Shared
-    List<Dashboard> dashboardList = new ArrayList<>()
+    List<DashboardE> dashboardList = new ArrayList<>()
 
     void setup() {
         if (!sharedSetupDone) {
             given: '初始化dashboard'
 
             for (int i = 0; i < 3; i++) {
-                Dashboard dashboard = new Dashboard();
+                DashboardE dashboard = new DashboardE();
                 dashboard.setCode("site-test-" + i);
                 dashboard.setDescription("site-test-desc-" + i);
                 dashboard.setName("site-test-name-" + i)
@@ -50,7 +50,7 @@ class UserDashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 4; i++) {
-                Dashboard dashboard = new Dashboard();
+                DashboardE dashboard = new DashboardE();
                 dashboard.setCode("project-test-" + i);
                 dashboard.setDescription("project-test-desc-" + i);
                 dashboard.setName("project-test-name-" + i)
@@ -62,7 +62,7 @@ class UserDashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 5; i++) {
-                Dashboard dashboard = new Dashboard();
+                DashboardE dashboard = new DashboardE();
                 dashboard.setCode("org-test-" + i);
                 dashboard.setDescription("org-test-desc-" + i);
                 dashboard.setName("org-test-name-" + i)
@@ -76,7 +76,7 @@ class UserDashboardControllerSpec extends Specification {
 
             when: '批量插入dashboard'
             def count = 0;
-            for (Dashboard dashboard : dashboardList) {
+            for (DashboardE dashboard : dashboardList) {
                 count = count + dashboardMapper.insert(dashboard)
             }
 

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.DashboardRoleMapper">
+
+    <resultMap id="DashboardRole" type="io.choerodon.iam.api.dto.DashboardRoleDTO">
+        <id column="ID" property="id"></id>
+        <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="query" resultMap="DashboardRole">
+		SELECT
+			dr.ID,
+			dr.DASHBOARD_ID,
+			dr.ROLE_ID,
+			r.CODE,
+			r.NAME,
+			r.FD_LEVEL,
+			r.DESCRIPTION,
+			r.IS_ENABLED
+		FROM
+			IAM_DASHBOARD_ROLE dr
+			LEFT JOIN IAM_ROLE r ON dr.ROLE_ID = r.ID
+		WHERE
+			dr.DASHBOARD_ID = #{dashboard.id} AND
+			r.FD_LEVEL = #{dashboard.level}
+    </select>
+</mapper>

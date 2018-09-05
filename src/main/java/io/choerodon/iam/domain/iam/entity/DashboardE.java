@@ -1,9 +1,7 @@
 package io.choerodon.iam.domain.iam.entity;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.List;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
@@ -17,8 +15,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @MultiLanguage
-@Table(name = "iam_dashboard")
-public class Dashboard extends AuditDomain {
+@Table(name = "IAM_DASHBOARD")
+public class DashboardE extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -27,16 +25,19 @@ public class Dashboard extends AuditDomain {
     private String name;
     private String title;
     private String namespace;
-    @Column(name = "fd_level")
+    @Column(name = "FD_LEVEL")
     private String level;
     private String description;
     private String icon;
     private Integer sort;
+    @Transient
+    private List<DashboardRoleE> dashboardRoleList;
 
-    public Dashboard() {
+    public DashboardE() {
     }
 
-    public Dashboard(
+
+    public DashboardE(
             Long id,
             String name,
             String title,
@@ -51,7 +52,12 @@ public class Dashboard extends AuditDomain {
         this.setObjectVersionNumber(objectVersionNumber);
     }
 
-    public Dashboard(String level) {
+    public DashboardE(Long id, String level) {
+        this.id = id;
+        this.level = level;
+    }
+
+    public DashboardE(String level) {
         this.level = level;
     }
 
