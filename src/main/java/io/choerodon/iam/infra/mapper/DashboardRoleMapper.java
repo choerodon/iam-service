@@ -21,4 +21,12 @@ public interface DashboardRoleMapper extends BaseMapper<DashboardRoleE> {
      * @return Dashboard 角色集合
      */
     List<DashboardRoleDTO> query(@Param("dashboard") DashboardE dashboard);
+
+    void insertWithRoleId(@Param("dashboardId") Long dashboardId,
+                          @Param("roleId") Long roleId,
+                          @Param("level") String level);
+
+    List<Long> selectRoleIds(@Param("dashboardId") Long dashboardId);
+
+    void deleteByDashboardId(@Param("dashboardId") Long dashboardId);
 }

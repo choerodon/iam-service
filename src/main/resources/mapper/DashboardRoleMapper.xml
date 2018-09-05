@@ -6,6 +6,7 @@
     <resultMap id="DashboardRole" type="io.choerodon.iam.api.dto.DashboardRoleDTO">
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
+        <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <select id="query" resultMap="DashboardRole">
@@ -25,4 +26,27 @@
 			dr.DASHBOARD_ID = #{dashboard.id} AND
 			r.FD_LEVEL = #{dashboard.level}
     </select>
+
+    <insert id="insertWithRoleId">
+      INSERT INTO IAM_DASHBOARD_ROLE ( DASHBOARD_ID, ROLE_ID ) SELECT
+      #{dashboardId},
+      ID role_id
+      FROM
+      	IAM_ROLE r
+      WHERE
+      	r.FD_LEVEL = #{level} AND r.ID=#{roleId};
+      </insert>
+
+    <select id="selectRoleIds" resultType="java.lang.Long">
+      SELECT
+      	ROLE_ID
+      FROM
+      	IAM_DASHBOARD_ROLE dr
+      WHERE
+      	dr.DASHBOARD_ID = #{dashboardId}
+    </select>
+
+    <delete id="deleteByDashboardId">
+        DELETE FROM IAM_DASHBOARD_ROLE WHERE DASHBOARD_ID = #{dashboardId}
+    </delete>
 </mapper>

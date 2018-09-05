@@ -5,7 +5,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
@@ -14,7 +13,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
-@MultiLanguage
 @Table(name = "IAM_DASHBOARD_ROLE")
 public class DashboardRoleE extends AuditDomain {
     @Id

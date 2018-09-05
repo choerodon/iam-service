@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.dto;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -32,6 +33,8 @@ public class DashboardDTO {
     private Integer sort;
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty(value = "角色ID 列表/非必填")
+    private List<Long> roleIds;
 
     public DashboardDTO() {
     }
@@ -114,5 +117,13 @@ public class DashboardDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public List<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<Long> roleIds) {
+        this.roleIds = roleIds;
     }
 }

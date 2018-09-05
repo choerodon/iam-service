@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +43,12 @@ public class DashboardController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "修改dashboard")
     @PostMapping(value = "/{dashboard_id}")
-    public ResponseEntity<DashboardDTO> update(@PathVariable("dashboard_id") Long dashboardId,
-                                               @RequestBody DashboardDTO dashboardDto) {
-        return new ResponseEntity<>(dashboardService.update(dashboardId, dashboardDto), HttpStatus.OK);
+    public ResponseEntity<DashboardDTO> update(
+            @PathVariable("dashboard_id") Long dashboardId,
+            @RequestParam(value = "update_role", required = false, defaultValue = "true")
+            @ApiParam("是否更新角色列表/默认true") Boolean updateRole,
+            @RequestBody DashboardDTO dashboardDto) {
+        return new ResponseEntity<>(dashboardService.update(dashboardId, dashboardDto, updateRole), HttpStatus.OK);
     }
 
     /**

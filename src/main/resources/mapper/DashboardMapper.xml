@@ -4,8 +4,8 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.DashboardMapper">
 
     <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.DashboardE">
-        <id column="id" property="id"></id>
-        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
+        <id column="ID" property="id"></id>
+        <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
