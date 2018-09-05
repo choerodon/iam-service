@@ -12,6 +12,7 @@ import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.dto.DashboardRoleDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.domain.iam.entity.DashboardE;
+import io.choerodon.iam.domain.iam.entity.DashboardRoleE;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardRoleMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -33,7 +34,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public DashboardDTO update(Long dashboardId, DashboardDTO dashboardDTO) {
+    public DashboardDTO update(Long dashboardId, DashboardDTO dashboardDTO, Boolean updateRole) {
         DashboardE dashboard = new DashboardE(
                 dashboardId,
                 dashboardDTO.getName(),
@@ -46,9 +47,21 @@ public class DashboardServiceImpl implements DashboardService {
         if (isUpdate != 1) {
             throw new CommonException("error.dashboard.not.exist");
         }
-        return modelMapper.map(
+        DashboardDTO select = modelMapper.map(
                 dashboardMapper.selectByPrimaryKey(dashboardId),
                 DashboardDTO.class);
+        if (!updateRole) {
+            return select;
+        }
+        List<Long> roleIds = dashboardDTO.getRoleIds();
+        if (roleIds != null && !roleIds.isEmpty()) {
+            dashboardRoleMapper.deleteByDashboardId(select.getId());
+            for (Long roleId : roleIds) {
+                dashboardRoleMapper.insertWithRoleId(select.getId(), roleId, dashboardDTO.getLevel());
+            }
+        }
+        select.setRoleIds(dashboardRoleMapper.selectRoleIds(select.getId()));
+        return select;
     }
 
     @Override
@@ -76,7 +89,6 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public List<DashboardRoleDTO> queryRoles(Long dashboardId, String level) {
         DashboardE dashboard = new DashboardE(dashboardId, level);
-
         return dashboardRoleMapper.query(dashboard);
     }
 
