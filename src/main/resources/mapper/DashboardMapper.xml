@@ -6,6 +6,7 @@
     <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.DashboardE">
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
+        <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN" />
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
