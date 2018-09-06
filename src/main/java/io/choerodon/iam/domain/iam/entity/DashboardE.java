@@ -1,7 +1,9 @@
 package io.choerodon.iam.domain.iam.entity;
 
-import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
@@ -30,8 +32,9 @@ public class DashboardE extends AuditDomain {
     private String description;
     private String icon;
     private Integer sort;
-    @Transient
-    private List<DashboardRoleE> dashboardRoleList;
+    private Boolean needRoles;
+    @Column(name = "IS_ENABLED")
+    private Boolean enabled;
 
     public DashboardE() {
     }
@@ -43,12 +46,14 @@ public class DashboardE extends AuditDomain {
             String title,
             String description,
             String icon,
+            Boolean needRoles,
             Long objectVersionNumber) {
-        this.id = id;
-        this.name = name;
-        this.title = title;
-        this.description = description;
-        this.icon = icon;
+        this.setId(id);
+        this.setName(name);
+        this.setTitle(title);
+        this.setDescription(description);
+        this.setIcon(icon);
+        this.setNeedRoles(needRoles);
         this.setObjectVersionNumber(objectVersionNumber);
     }
 
@@ -131,5 +136,21 @@ public class DashboardE extends AuditDomain {
 
     public void setSort(Integer sort) {
         this.sort = sort;
+    }
+
+    public Boolean getNeedRoles() {
+        return needRoles;
+    }
+
+    public void setNeedRoles(Boolean needRoles) {
+        this.needRoles = needRoles;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

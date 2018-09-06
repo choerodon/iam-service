@@ -41,6 +41,7 @@ public class DashboardServiceImpl implements DashboardService {
                 dashboardDTO.getTitle(),
                 dashboardDTO.getDescription(),
                 dashboardDTO.getIcon(),
+                dashboardDTO.getNeedRoles(),
                 dashboardDTO.getObjectVersionNumber());
 
         int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboard);
@@ -50,7 +51,7 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardDTO select = modelMapper.map(
                 dashboardMapper.selectByPrimaryKey(dashboardId),
                 DashboardDTO.class);
-        if (!updateRole) {
+        if (!updateRole && !select.getNeedRoles()) {
             return select;
         }
         List<Long> roleIds = dashboardDTO.getRoleIds();

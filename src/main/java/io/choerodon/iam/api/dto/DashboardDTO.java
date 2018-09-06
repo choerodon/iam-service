@@ -35,6 +35,10 @@ public class DashboardDTO {
     private Long objectVersionNumber;
     @ApiModelProperty(value = "角色ID 列表/非必填")
     private List<Long> roleIds;
+    @ApiModelProperty(value = "是否需要角色控制/非必填")
+    private Boolean needRoles;
+    @ApiModelProperty(value = "是否启用/非必填")
+    private Boolean enabled;
 
     public DashboardDTO() {
     }
@@ -125,5 +129,21 @@ public class DashboardDTO {
 
     public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
+    }
+
+    public Boolean getNeedRoles() {
+        return needRoles;
+    }
+
+    public void setNeedRoles(Boolean needRoles) {
+        this.needRoles = needRoles;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
