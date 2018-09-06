@@ -59,7 +59,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard.groovy') {
 
     changeSet(author: 'fan@choerodon.io', id: '2018-09-06-add-column') {
         addColumn(tableName: 'IAM_DASHBOARD') {
-            column(name: 'NEED_ROLES', type: "BIGINT UNSIGNED", remarks: '是否需要角色控制', defaultValue: '1') {
+            column(name: 'NEED_ROLES', type: "BIGINT UNSIGNED", remarks: '是否需要角色控制', defaultValue: '0') {
                 constraints(nullable: true)
             }
             column(name: 'IS_ENABLED', type: "VARCHAR(128)", remarks: '是否启用', defaultValue: '1') {
