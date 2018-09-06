@@ -9,20 +9,16 @@ image:
   pullPolicy: Always
 
 preJob:
-  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.5
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.6
   preConfig:
     configFile: application.yml
-    mysql:
-      host: localhost
-      port: 3306
-      database: manager_service
+    datasource:
+      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
       username: username
       password: password
   preInitDB:
-    mysql:
-      host: localhost
-      port: 3306
-      database: iam_service
+    datasource:
+      url: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
       username: username
       password: password
       exclusion: iam_user.password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name
