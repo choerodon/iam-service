@@ -38,7 +38,7 @@ public class ProjectController extends BaseController {
      * @param id 要查询的项目ID
      * @return 查询到的项目
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "通过id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
