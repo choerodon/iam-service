@@ -76,6 +76,11 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public Page<ProjectDO> pagingQueryByUserId(Long userId, ProjectDO projectDO, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDO, param));
+    }
+
+    @Override
     public Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO) {
         return PageHelper.doPageAndSort(pageRequest, () ->
                 projectMapper.selectProjectsByUserId(userId, projectDO));

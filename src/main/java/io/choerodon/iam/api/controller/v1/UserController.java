@@ -122,6 +122,28 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userService.queryProjects(id, includedDisabled), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "分页查询用户所在项目列表")
+    @CustomPageRequest
+    @GetMapping(value = "/{id}/projects/paging_query")
+    public ResponseEntity<List<ProjectDTO>> pagingQueryProjects(@ApiIgnore
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC)
+                                                                        PageRequest pageRequest,
+                                                                @PathVariable(value = "id") Long userId,
+                                                                @RequestParam(required = false) String name,
+                                                                @RequestParam(required = false) String code,
+                                                                @RequestParam(required = false) Boolean enabled,
+                                                                @ApiParam(name = "organization_id", value = "组织id")
+                                                                @RequestParam(value = "organization_id", required = false) Long organizationId,
+                                                                @RequestParam(required = false) String[] params) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setEnabled(enabled);
+        projectDTO.setCode(code);
+        projectDTO.setName(name);
+        projectDTO.setOrganizationId(organizationId);
+        return new ResponseEntity<>(userService.pagingQueryProjectsByUserId(userId, projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    }
+
     /**
      * @deprecated 已过期
      */
