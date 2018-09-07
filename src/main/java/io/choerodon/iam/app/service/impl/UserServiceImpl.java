@@ -488,7 +488,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ProjectDTO> pagingQueryProjectsByUserId(Long userId, ProjectDTO projectDTO,
+    public Page<ProjectDTO> pagingQueryProjectsByUserId(Long userId, ProjectDTO projectDTO,
                                                         PageRequest pageRequest, String params) {
         Page<ProjectDO> projectDOPage =
                 projectRepository.pagingQueryByUserId(userId, ConvertHelper.convert(

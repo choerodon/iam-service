@@ -126,7 +126,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "分页查询用户所在项目列表")
     @CustomPageRequest
     @GetMapping(value = "/{id}/projects/paging_query")
-    public ResponseEntity<List<ProjectDTO>> pagingQueryProjects(@ApiIgnore
+    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjects(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                                         PageRequest pageRequest,
                                                                 @PathVariable(value = "id") Long userId,
