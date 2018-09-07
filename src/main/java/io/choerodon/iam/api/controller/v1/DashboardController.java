@@ -45,7 +45,7 @@ public class DashboardController {
     @PostMapping(value = "/{dashboard_id}")
     public ResponseEntity<DashboardDTO> update(
             @PathVariable("dashboard_id") Long dashboardId,
-            @RequestParam(value = "update_role", required = false, defaultValue = "true")
+            @RequestParam(value = "update_role", required = false, defaultValue = "false")
             @ApiParam("是否更新角色列表/默认true") Boolean updateRole,
             @RequestBody DashboardDTO dashboardDto) {
         return new ResponseEntity<>(dashboardService.update(dashboardId, dashboardDto, updateRole), HttpStatus.OK);
