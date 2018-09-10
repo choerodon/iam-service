@@ -21,6 +21,8 @@ public interface ProjectRepository {
 
     Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param);
 
+    Page<ProjectDO> pagingQueryByUserId(Long userId, ProjectDO projectDO, PageRequest pageRequest, String param);
+
     Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO);
 
     ProjectE updateSelective(ProjectDO projectDO);

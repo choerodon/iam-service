@@ -44,6 +44,35 @@
         </if>
     </select>
 
+    <select id="selectProjectsByUserIdWithParam" resultMap="projectDO">
+        SELECT DISTINCT fd_project.*
+        FROM fd_project
+        JOIN iam_member_role
+        ON iam_member_role.source_id = fd_project.id
+        AND iam_member_role.source_type = 'project'
+        WHERE iam_member_role.member_id = #{userId}
+        <if test="projectDO != null">
+            <if test="projectDO.organizationId != null">
+                AND fd_project.organization_id = #{projectDO.organizationId}
+            </if>
+            <if test="projectDO.name != null">
+                AND fd_project.name LIKE concat(concat('%',#{projectDO.name}),'%')
+            </if>
+            <if test="projectDO.code != null">
+                AND fd_project.code LIKE concat(concat('%',#{projectDO.code}),'%')
+            </if>
+            <if test="projectDO.enabled != null">
+                AND fd_project.is_enabled = #{projectDO.enabled}
+            </if>
+        </if>
+        <if test="param != null">
+            AND (
+            fd_project.name LIKE concat(concat('%', #{param}), '%') OR
+            fd_project.code LIKE concat(concat('%', #{param}), '%')
+            )
+        </if>
+    </select>
+
     <select id="selectProjectsByUserId" resultMap="projectDO">
         SELECT DISTINCT fd_project.*
         FROM fd_project

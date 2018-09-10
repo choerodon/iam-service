@@ -479,12 +479,21 @@ public class UserServiceImpl implements UserService {
             memberRole.setRoleId(r.getId());
             memberRole.setSourceId(userWithRoles.getSourceId());
             memberRole.setSourceType(userWithRoles.getSourceType());
-            if(memberRoleMapper.selectOne(memberRole) == null
+            if (memberRoleMapper.selectOne(memberRole) == null
                     && memberRoleMapper.insertSelective(memberRole) != 1) {
                 throw new CommonException("error.memberRole.insert");
             }
         });
         return ConvertHelper.convert(user, UserDTO.class);
+    }
+
+    @Override
+    public Page<ProjectDTO> pagingQueryProjectsByUserId(Long userId, ProjectDTO projectDTO,
+                                                        PageRequest pageRequest, String params) {
+        Page<ProjectDO> projectDOPage =
+                projectRepository.pagingQueryByUserId(userId, ConvertHelper.convert(
+                        projectDTO, ProjectDO.class), pageRequest, params);
+        return ConvertPageHelper.convertPage(projectDOPage, ProjectDTO.class);
     }
 
     private UserDO validateUser(CreateUserWithRolesDTO userWithRoles) {

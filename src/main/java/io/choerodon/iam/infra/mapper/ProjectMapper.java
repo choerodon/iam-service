@@ -17,6 +17,10 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     List selectProjectsByUserId(@Param("userId") Long userId,
                                 @Param("projectDO") ProjectDO projectDO);
 
+    List selectProjectsByUserIdWithParam(@Param("userId") Long userId,
+                                @Param("projectDO") ProjectDO projectDO,
+                                @Param("param") String param);
+
     List<ProjectDO> selectProjectsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
