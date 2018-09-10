@@ -1,9 +1,7 @@
 package io.choerodon.iam.domain.iam.entity;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.List;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
@@ -35,6 +33,8 @@ public class DashboardE extends AuditDomain {
     private Boolean needRoles;
     @Column(name = "IS_ENABLED")
     private Boolean enabled;
+    @Transient
+    private List<Long> roleIds;
 
     public DashboardE() {
     }
@@ -152,5 +152,13 @@ public class DashboardE extends AuditDomain {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public List<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<Long> roleIds) {
+        this.roleIds = roleIds;
     }
 }
