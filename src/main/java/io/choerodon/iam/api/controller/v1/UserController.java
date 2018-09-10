@@ -123,13 +123,11 @@ public class UserController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
-    @ApiOperation(value = "分页查询用户所在项目列表")
+    @ApiOperation(value = "分页查询当前登录用户所有项目列表")
     @CustomPageRequest
-    @GetMapping(value = "/{id}/projects/paging_query")
+    @GetMapping(value = "/self/projects/paging_query")
     public ResponseEntity<Page<ProjectDTO>> pagingQueryProjects(@ApiIgnore
-                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC)
-                                                                        PageRequest pageRequest,
-                                                                @PathVariable(value = "id") Long userId,
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                 @RequestParam(required = false) String name,
                                                                 @RequestParam(required = false) String code,
                                                                 @RequestParam(required = false) Boolean enabled,
@@ -141,7 +139,7 @@ public class UserController extends BaseController {
         projectDTO.setCode(code);
         projectDTO.setName(name);
         projectDTO.setOrganizationId(organizationId);
-        return new ResponseEntity<>(userService.pagingQueryProjectsByUserId(userId, projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**

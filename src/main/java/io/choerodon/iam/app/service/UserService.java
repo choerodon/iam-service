@@ -83,6 +83,6 @@ public interface UserService {
 
     UserDTO createUserAndAssignRoles(CreateUserWithRolesDTO userWithRoles);
 
-    Page<ProjectDTO> pagingQueryProjectsByUserId(Long userId, ProjectDTO projectDTO,
-                                                 PageRequest pageRequest, String params);
+    Page<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
+                                             PageRequest pageRequest, String params);
 }
