@@ -7,10 +7,11 @@
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
         <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN" />
+        <collection property="roleIds" ofType="java.lang.Long" select="selectRoleIds" column="{dashboardId=id, fdLevel=fd_level}"></collection>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
-        SELECT * FROM IAM_DASHBOARD
+        SELECT d.* FROM IAM_DASHBOARD d
         WHERE 1=1
         <if test="dashboard.name != null">
             AND NAME LIKE concat(concat('%',#{dashboard.name}),'%')
@@ -32,5 +33,16 @@
     <select id="selectByLevel" resultMap="Dashboard">
         SELECT * FROM IAM_DASHBOARD d
         WHERE d.FD_LEVEL IN ('site', #{level})
+    </select>
+
+    <select id="selectRoleIds" resultType="java.lang.Long">
+        SELECT
+			dr.ID
+		FROM
+			IAM_DASHBOARD_ROLE dr
+			LEFT JOIN IAM_ROLE r ON dr.ROLE_ID = r.ID
+		WHERE
+			dr.DASHBOARD_ID = #{dashboardId} AND
+			r.FD_LEVEL = #{fdLevel}
     </select>
 </mapper>
