@@ -50,7 +50,7 @@
         DELETE FROM IAM_DASHBOARD_ROLE WHERE DASHBOARD_ID = #{dashboardId}
     </delete>
 
-    <select id="selectDashboardByUserId" resultMap="java.lang.Long">
+    <select id="selectDashboardByUserId" resultType="java.lang.Long">
         SELECT
         DASHBAORD_ID
         FROM
