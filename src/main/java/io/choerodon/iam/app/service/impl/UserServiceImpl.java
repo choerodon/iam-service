@@ -488,10 +488,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingQueryProjectsByUserId(Long userId, ProjectDTO projectDTO,
-                                                        PageRequest pageRequest, String params) {
+    public Page<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
+                                                    PageRequest pageRequest, String params) {
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         Page<ProjectDO> projectDOPage =
-                projectRepository.pagingQueryByUserId(userId, ConvertHelper.convert(
+                projectRepository.pagingQueryByUserId(customUserDetails.getUserId(), ConvertHelper.convert(
                         projectDTO, ProjectDO.class), pageRequest, params);
         return ConvertPageHelper.convertPage(projectDOPage, ProjectDTO.class);
     }
