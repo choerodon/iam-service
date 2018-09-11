@@ -86,12 +86,4 @@ public class DashboardServiceImpl implements DashboardService {
         return ConvertPageHelper.convertPage(
                 dashboardPage, DashboardDTO.class);
     }
-
-    @Override
-    public List<DashboardRoleDTO> queryRoles(Long dashboardId, String level) {
-        DashboardE dashboard = new DashboardE(dashboardId, level);
-        return dashboardRoleMapper.query(dashboard);
-    }
-
-
 }
