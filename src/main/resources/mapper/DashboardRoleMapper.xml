@@ -34,7 +34,7 @@
 
     <select id="selectDashboardByUserId" resultType="java.lang.Long">
         SELECT
-        DASHBAORD_ID
+        DASHBOARD_ID
         FROM
         IAM_DASHBOARD_ROLE dr
         LEFT JOIN IAM_DASHBOARD_ROLE mr ON mr.ROLE_ID = dr.ROLE_ID
