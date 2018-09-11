@@ -110,7 +110,12 @@ public class UserServiceImpl implements UserService {
             throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
         }
         Long userId = customUserDetails.getUserId();
-        return ConvertHelper.convert(userRepository.selectByPrimaryKey(userId), UserDTO.class);
+        UserDTO userDTO = ConvertHelper.convert(userRepository.selectByPrimaryKey(userId), UserDTO.class);
+        if (userDTO != null && userDTO.getOrganizationId() != null) {
+            OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
+            userDTO.setOrganizationName(organizationDO.getName());
+        }
+        return userDTO;
     }
 
     @Override
@@ -495,6 +500,14 @@ public class UserServiceImpl implements UserService {
                 projectRepository.pagingQueryByUserId(customUserDetails.getUserId(), ConvertHelper.convert(
                         projectDTO, ProjectDO.class), pageRequest, params);
         return ConvertPageHelper.convertPage(projectDOPage, ProjectDTO.class);
+    }
+
+    @Override
+    public Page<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
+                                                              PageRequest pageRequest, String params) {
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        Page<OrganizationDO> organizationDOPage = organizationRepository.pagingQueryByUserId(customUserDetails.getUserId(), ConvertHelper.convert(organizationDTO, OrganizationDO.class), pageRequest, params);
+        return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 
     private UserDO validateUser(CreateUserWithRolesDTO userWithRoles) {

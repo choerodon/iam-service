@@ -27,6 +27,9 @@ public class UserDTO {
     @ApiModelProperty(value = "组织ID/非必填")
     private Long organizationId;
 
+    @ApiModelProperty(value = "组织名称/非必填")
+    private String organizationName;
+
     @ApiModelProperty(value = "登录名/必填")
     @NotEmpty(message = "error.user.login_name.empty", groups = UserValidator.UserGroup.class)
     @Size(min = 1, max = 128, message = "error.user.login_name.size", groups = UserValidator.UserGroup.class)
@@ -100,6 +103,14 @@ public class UserDTO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
     }
 
     public String getLoginName() {

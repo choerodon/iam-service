@@ -27,4 +27,8 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
             @Param("start") Integer start,
             @Param("size") Integer size,
             @Param("params") String params);
+
+    List<OrganizationDO> selectOrganizationsByUserId(@Param("userId") Long userId,
+                                                     @Param("organizationDO") OrganizationDO organizationDO,
+                                                     @Param("params") String params);
 }

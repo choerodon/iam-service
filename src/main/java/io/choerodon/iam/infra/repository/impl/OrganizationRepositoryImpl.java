@@ -115,4 +115,9 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
         List<OrganizationDO> organizationList = organizationMapper.selectOrganizationsWithRoles(id, start, size, params);
         return new Page<>(organizationList, pageInfo, count);
     }
+
+    @Override
+    public Page<OrganizationDO> pagingQueryByUserId(Long userId, OrganizationDO organizationDO, PageRequest pageRequest, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectOrganizationsByUserId(userId, organizationDO, param));
+    }
 }
