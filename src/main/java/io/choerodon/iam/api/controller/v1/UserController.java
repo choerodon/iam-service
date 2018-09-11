@@ -126,7 +126,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "分页查询当前登录用户所有项目列表")
     @CustomPageRequest
     @GetMapping(value = "/self/projects/paging_query")
-    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjects(@ApiIgnore
+    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectsSelf(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                 @RequestParam(required = false) String name,
                                                                 @RequestParam(required = false) String code,
@@ -140,6 +140,23 @@ public class UserController extends BaseController {
         projectDTO.setName(name);
         projectDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "分页查询当前登录用户所有组织列表")
+    @CustomPageRequest
+    @GetMapping(value = "/self/organizations/paging_query")
+    public ResponseEntity<Page<OrganizationDTO>> pagingQueryOrganizationsSelf(@ApiIgnore
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                @RequestParam(required = false) String name,
+                                                                @RequestParam(required = false) String code,
+                                                                @RequestParam(required = false) Boolean enabled,
+                                                                @RequestParam(required = false) String[] params) {
+        OrganizationDTO organizationDTO = new OrganizationDTO();
+        organizationDTO.setName(name);
+        organizationDTO.setCode(code);
+        organizationDTO.setEnabled(enabled);
+        return new ResponseEntity<>(userService.pagingQueryOrganizationsSelf(organizationDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**
