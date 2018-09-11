@@ -16,6 +16,7 @@ import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.domain.iam.entity.DashboardE;
 import io.choerodon.iam.domain.iam.entity.UserDashboardE;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
+import io.choerodon.iam.infra.mapper.DashboardRoleMapper;
 import io.choerodon.iam.infra.mapper.UserDashboardMapper;
 
 /**
@@ -26,14 +27,17 @@ public class UserDashboardServiceImpl implements UserDashboardService {
     private final ModelMapper modelMapper = new ModelMapper();
     private UserDashboardMapper userDashboardMapper;
     private DashboardMapper dashboardMapper;
+    private DashboardRoleMapper dashboardRoleMapper;
     private MemberRoleValidator memberRoleValidator;
 
     public UserDashboardServiceImpl(
             UserDashboardMapper userDashboardMapper,
             DashboardMapper dashboardMapper,
+            DashboardRoleMapper dashboardRoleMapper,
             MemberRoleValidator memberRoleValidator) {
         this.userDashboardMapper = userDashboardMapper;
         this.dashboardMapper = dashboardMapper;
+        this.dashboardRoleMapper = dashboardRoleMapper;
         this.memberRoleValidator = memberRoleValidator;
     }
 
@@ -55,7 +59,8 @@ public class UserDashboardServiceImpl implements UserDashboardService {
                     .collect(Collectors.toList());
             userDashboards.addAll(userDashboardsAdd);
         }
-        return userDashboards;
+
+        return userDashboardHasRole(userDashboards, userDetails.getUserId(), sourceId, level);
     }
 
     @Override
@@ -116,5 +121,21 @@ public class UserDashboardServiceImpl implements UserDashboardService {
             }
         }
         return isExist;
+    }
+
+    private List<UserDashboardDTO> userDashboardHasRole(
+            List<UserDashboardDTO> userDashboardList,
+            Long userId,
+            Long sourceId,
+            String level) {
+        List<Long> dashboardIds = dashboardRoleMapper.selectDashboardByUserId(userId, sourceId, level);
+
+        return userDashboardList.stream()
+                .filter(userDashboard -> dashboardNeedRole(dashboardIds, userDashboard))
+                .collect(Collectors.toList());
+    }
+
+    private boolean dashboardNeedRole(List<Long> dashboardIds, UserDashboardDTO userDashboard) {
+        return !userDashboard.getNeedRoles() || dashboardIds.contains(userDashboard.getDashboardId());
     }
 }

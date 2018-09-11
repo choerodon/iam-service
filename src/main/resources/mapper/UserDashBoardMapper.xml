@@ -29,7 +29,8 @@
 			d.title dashboard_title,
 			d.namespace dashboard_namespace,
 			d.description dashboard_description,
-			d.icon dashboard_icon
+			d.icon dashboard_icon,
+			d.NEED_ROLES NEED_ROLES
 		FROM
 			iam_dashboard d,
 			iam_user_dashboard ud
@@ -54,7 +55,8 @@
 			d.title dashboard_title,
 			d.namespace dashboard_namespace,
 			d.description dashboard_description,
-			d.icon dashboard_icon
+			d.icon dashboard_icon,
+			d.NEED_ROLES NEED_ROLES
 		FROM
 			iam_dashboard d
 		WHERE

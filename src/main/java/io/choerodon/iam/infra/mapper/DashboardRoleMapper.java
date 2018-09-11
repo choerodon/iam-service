@@ -29,4 +29,8 @@ public interface DashboardRoleMapper extends BaseMapper<DashboardRoleE> {
     List<Long> selectRoleIds(@Param("dashboardId") Long dashboardId);
 
     void deleteByDashboardId(@Param("dashboardId") Long dashboardId);
+
+    List<Long> selectDashboardByUserId(@Param("userId") Long userId,
+                                       @Param("sourceId") Long sourceId,
+                                       @Param("level") String level);
 }

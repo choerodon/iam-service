@@ -33,6 +33,8 @@ public class UserDashboardDTO {
     private String dashboardNamespace;
     private String dashboardDescription;
     private String dashboardIcon;
+    @ApiModelProperty(value = "是否需要角色控制")
+    private Boolean needRoles;
 
     public UserDashboardDTO() {
     }
@@ -163,5 +165,13 @@ public class UserDashboardDTO {
 
     public void setDashboardIcon(String dashboardIcon) {
         this.dashboardIcon = dashboardIcon;
+    }
+
+    public Boolean getNeedRoles() {
+        return needRoles;
+    }
+
+    public void setNeedRoles(Boolean needRoles) {
+        this.needRoles = needRoles;
     }
 }
