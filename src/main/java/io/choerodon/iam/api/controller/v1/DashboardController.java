@@ -1,7 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -12,7 +10,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.DashboardDTO;
-import io.choerodon.iam.api.dto.DashboardRoleDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -62,21 +59,6 @@ public class DashboardController {
     @GetMapping(value = "/{dashboard_id}")
     public ResponseEntity<DashboardDTO> query(@PathVariable("dashboard_id") Long dashboardId) {
         return new ResponseEntity<>(dashboardService.query(dashboardId), HttpStatus.OK);
-    }
-
-    /**
-     * 根据DashboardId,查询Dashboard对象
-     *
-     * @param dashboardId DashboardE Id
-     * @return 查询到的Dashboard 所有角色
-     */
-    @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "通过id查询Dashboard的所有角色")
-    @GetMapping(value = "/{dashboard_id}/roles")
-    public ResponseEntity<List<DashboardRoleDTO>> queryRole(
-            @PathVariable("dashboard_id") Long dashboardId,
-            @RequestParam("level") String level) {
-        return new ResponseEntity<>(dashboardService.queryRoles(dashboardId, level), HttpStatus.OK);
     }
 
     /**

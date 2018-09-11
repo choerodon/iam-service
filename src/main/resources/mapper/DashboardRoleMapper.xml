@@ -9,24 +9,6 @@
         <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <select id="query" resultMap="DashboardRole">
-		SELECT
-			dr.ID,
-			dr.DASHBOARD_ID,
-			dr.ROLE_ID,
-			r.CODE,
-			r.NAME,
-			r.FD_LEVEL,
-			r.DESCRIPTION,
-			r.IS_ENABLED
-		FROM
-			IAM_DASHBOARD_ROLE dr
-			LEFT JOIN IAM_ROLE r ON dr.ROLE_ID = r.ID
-		WHERE
-			dr.DASHBOARD_ID = #{dashboard.id} AND
-			r.FD_LEVEL = #{dashboard.level}
-    </select>
-
     <insert id="insertWithRoleId">
       INSERT INTO IAM_DASHBOARD_ROLE ( DASHBOARD_ID, ROLE_ID ) SELECT
       #{dashboardId},
@@ -54,7 +36,7 @@
         SELECT
         DASHBAORD_ID
         FROM
-        IAM_DASHBAORD_ROLE dr
+        IAM_DASHBOARD_ROLE dr
         LEFT JOIN IAM_DASHBOARD_ROLE mr ON mr.ROLE_ID = dr.ROLE_ID
         WHERE
         mr.MEMBER_TYPE = "user"
