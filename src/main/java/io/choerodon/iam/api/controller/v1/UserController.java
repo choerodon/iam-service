@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 
+import io.choerodon.iam.infra.annotation.NamingRuleTrans;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -128,17 +129,8 @@ public class UserController extends BaseController {
     @GetMapping(value = "/self/projects/paging_query")
     public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectsSelf(@ApiIgnore
                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                @RequestParam(required = false) String name,
-                                                                @RequestParam(required = false) String code,
-                                                                @RequestParam(required = false) Boolean enabled,
-                                                                @ApiParam(name = "organization_id", value = "组织id")
-                                                                @RequestParam(value = "organization_id", required = false) Long organizationId,
+                                                                @NamingRuleTrans ProjectDTO projectDTO,
                                                                 @RequestParam(required = false) String[] params) {
-        ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setEnabled(enabled);
-        projectDTO.setCode(code);
-        projectDTO.setName(name);
-        projectDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
