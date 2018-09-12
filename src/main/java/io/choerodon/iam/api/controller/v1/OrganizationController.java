@@ -60,6 +60,19 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.queryOrganizationById(id), HttpStatus.OK);
     }
 
+    /**
+     * 组织层根据组织id查询组织
+     *
+     * @param id 所要查询的组织id号
+     * @return 组织信息
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据组织id查询组织")
+    @GetMapping(value = "/self/organizations/{organization_id}")
+    public ResponseEntity<OrganizationDTO> queryOrgLevel(@PathVariable(name = "organization_id") Long id) {
+        return new ResponseEntity<>(organizationService.queryOrganizationWithRoleById(id), HttpStatus.OK);
+    }
+
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "分页查询组织")
     @CustomPageRequest

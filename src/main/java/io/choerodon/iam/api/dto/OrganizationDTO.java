@@ -40,6 +40,8 @@ public class OrganizationDTO {
 
     private List<ProjectDTO> projects;
 
+    private List<RoleDTO> roles;
+
     public Boolean getInto() {
         return isInto;
     }
@@ -86,6 +88,14 @@ public class OrganizationDTO {
 
     public void setProjects(List<ProjectDTO> projects) {
         this.projects = projects;
+    }
+
+    public List<RoleDTO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleDTO> roles) {
+        this.roles = roles;
     }
 
     public Boolean getEnabled() {

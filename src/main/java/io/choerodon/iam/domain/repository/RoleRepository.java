@@ -43,4 +43,6 @@ public interface RoleRepository {
     List<RoleDO> selectUsersRolesBySourceIdAndType(String sourceType, Long sourceId, Long userId);
 
     Set<String> matchCode(Set<String> codeSet);
+
+    List<RoleDO> queryRoleByOrgId(Long orgId);
 }

@@ -32,4 +32,6 @@ public interface RoleMapper extends BaseMapper<RoleDO> {
     List<RoleDO> selectInitRolesByPermissionId(Long permissionId);
 
     Set<String> matchCode(@Param("codeSet") Set<String> codeSet);
+
+    List<RoleDO> queryRoleByOrgId(@Param("orgId") Long orgId);
 }
