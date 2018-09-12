@@ -85,4 +85,7 @@ public interface UserService {
 
     Page<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
                                              PageRequest pageRequest, String params);
+
+    Page<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
+                                             PageRequest pageRequest, String params);
 }
