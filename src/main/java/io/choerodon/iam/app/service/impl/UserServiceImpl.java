@@ -484,7 +484,7 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException("error.memberRole.insert");
             }
         });
-        return ConvertHelper.convert(user, UserDTO.class);
+        return ConvertHelper.convert(userE, UserDTO.class);
     }
 
     @Override
