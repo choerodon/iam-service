@@ -39,7 +39,7 @@
         IAM_DASHBOARD_ROLE dr
         LEFT JOIN IAM_MEMBER_ROLE mr ON mr.ROLE_ID = dr.ROLE_ID
         WHERE
-        mr.MEMBER_TYPE = "user"
+        mr.MEMBER_TYPE = 'user'
         AND mr.MEMBER_ID = #{userId}
         AND mr.SOURCE_ID = #{sourceId}
         AND mr.SOURCE_TYPE = #{level}
