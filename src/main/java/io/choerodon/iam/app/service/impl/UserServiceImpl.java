@@ -198,22 +198,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
         return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersByRoleIdOnSiteLevel(
-                        pageRequest, roleAssignmentSearchDTO, roleId), UserDTO.class);
+                userRepository.pagingQueryUsersByRoleIdAndLevel(
+                        pageRequest, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value()), UserDTO.class);
     }
 
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
         return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersByRoleIdOnOrganizationLevel(
-                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId), UserDTO.class);
+                userRepository.pagingQueryUsersByRoleIdAndLevel(
+                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value()), UserDTO.class);
     }
 
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
         return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersByRoleIdOnProjectLevel(
-                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId), UserDTO.class);
+                userRepository.pagingQueryUsersByRoleIdAndLevel(
+                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value()), UserDTO.class);
     }
 
     @Override
