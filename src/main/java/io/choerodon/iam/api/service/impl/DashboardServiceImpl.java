@@ -58,7 +58,10 @@ public class DashboardServiceImpl implements DashboardService {
         if (roleIds != null && !roleIds.isEmpty()) {
             dashboardRoleMapper.deleteByDashboardId(select.getId());
             for (Long roleId : roleIds) {
-                dashboardRoleMapper.insertWithRoleId(select.getId(), roleId, dashboardDTO.getLevel());
+                DashboardRoleE dashboardRoleE = new DashboardRoleE();
+                dashboardRoleE.setRoleId(roleId);
+                dashboardRoleE.setDashboardId(dashboardId);
+                dashboardRoleMapper.insertSelective(dashboardRoleE);
             }
         }
         select.setRoleIds(dashboardRoleMapper.selectRoleIds(select.getId()));
