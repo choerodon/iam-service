@@ -17,9 +17,9 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DashboardRoleE extends AuditDomain {
     @Id
     @GeneratedValue
-    Long id;
-    Long dashboardId;
-    long roleId;
+    private Long id;
+    private Long dashboardId;
+    private Long roleId;
 
     public DashboardRoleE() {
     }
@@ -40,11 +40,11 @@ public class DashboardRoleE extends AuditDomain {
         this.dashboardId = dashboardId;
     }
 
-    public long getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(long roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 }
