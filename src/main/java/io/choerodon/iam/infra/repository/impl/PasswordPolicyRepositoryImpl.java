@@ -29,7 +29,9 @@ public class PasswordPolicyRepositoryImpl implements PasswordPolicyRepository {
 
     @Override
     public PasswordPolicyDTO queryByOrgId(Long orgId) {
-        PasswordPolicyDO passwordPolicyDO = passwordPolicyMapper.queryByOrgId(orgId);
+        PasswordPolicyDO passwordPolicy = new PasswordPolicyDO();
+        passwordPolicy.setOrganizationId(orgId);
+        PasswordPolicyDO passwordPolicyDO = passwordPolicyMapper.selectOne(passwordPolicy);
         return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
     }
 
