@@ -15,9 +15,7 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author superlee
@@ -210,6 +208,9 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<UserDO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        Map<String, String> map = new HashMap<>();
+        map.put("source_id", "imr.source_id");
+        pageRequest.resetOrder("iu", map);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                         ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param));
