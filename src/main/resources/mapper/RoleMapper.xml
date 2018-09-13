@@ -196,4 +196,17 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="queryRoleByOrgId" resultMap="RoleDO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT ir.*
+        FROM iam_role ir
+        JOIN iam_role_tl irt ON ir.id = irt.id
+        WHERE irt.lang = #{lang}
+        AND EXISTS
+        (SELECT 'X' FROM iam_member_role imr
+        WHERE imr.source_id = #{orgId}
+        AND imr.source_type ='organization'
+        AND ir.id=imr.role_id)
+    </select>
 </mapper>

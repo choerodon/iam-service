@@ -6,6 +6,9 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.RoleDTO;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.infra.dataobject.RoleDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -36,6 +39,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private OrganizationRepository organizationRepository;
     private ProjectRepository projectRepository;
+    private RoleRepository roleRepository;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -49,10 +53,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
                                    SagaClient sagaClient,
-                                   ProjectRepository projectRepository) {
+                                   ProjectRepository projectRepository,
+                                   RoleRepository roleRepository) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
         this.projectRepository = projectRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -75,6 +81,14 @@ public class OrganizationServiceImpl implements OrganizationService {
         organizationDO.setProjects(projects);
         organizationDO.setProjectCount(projects.size());
         return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+    }
+
+    @Override
+    public OrganizationDTO queryOrganizationWithRoleById(Long organizationId) {
+        OrganizationDTO organizationDTO = queryOrganizationById(organizationId);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.queryRoleByOrgId(organizationId), RoleDTO.class);
+        organizationDTO.setRoles(roles);
+        return organizationDTO;
     }
 
     @Override

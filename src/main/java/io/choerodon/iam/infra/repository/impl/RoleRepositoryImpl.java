@@ -112,6 +112,11 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
+    public List<RoleDO> queryRoleByOrgId(Long orgId) {
+        return mapper.queryRoleByOrgId(orgId);
+    }
+
+    @Override
     public List<RoleDO> selectUsersRolesBySourceIdAndType(String sourceType, Long sourceId, Long userId) {
         return mapper.queryRolesInfoByUser(sourceType, sourceId, userId);
     }
