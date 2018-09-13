@@ -6,6 +6,10 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.infra.dataobject.RoleDO;
@@ -86,8 +90,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDTO queryOrganizationWithRoleById(Long organizationId) {
         OrganizationDTO organizationDTO = queryOrganizationById(organizationId);
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.queryRoleByOrgId(organizationId), RoleDTO.class);
-        organizationDTO.setRoles(roles);
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        if (customUserDetails == null) {
+            throw new CommonException("error.user.not.login");
+        }
+        Long userId = customUserDetails.getUserId();
+        List<RoleDO> roles = roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
+        organizationDTO.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
         return organizationDTO;
     }
 
