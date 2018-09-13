@@ -11,7 +11,7 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
-import io.choerodon.iam.infra.common.utils.ListUtils;
+import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
@@ -85,7 +85,7 @@ public class ExcelImportUserTask {
         List<UserDO> insertUsers = compareWithDb(distinctUsers, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
-        List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
+        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, 1000);
         list.forEach(l -> {
             if (!l.isEmpty()) {
                 organizationUserService.batchCreateUsers(l);
@@ -254,9 +254,14 @@ public class ExcelImportUserTask {
         List<UserDO> insertList = new ArrayList<>();
         if (!validateUsers.isEmpty()) {
             Set<String> nameSet = validateUsers.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
-            Set<String> existedNames = userRepository.matchLoginName(nameSet);
+            //oracle In-list上限为1000，这里List size要小于1000
+            List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
+            Set<String> existedNames = new HashSet<>();
+            subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
             Set<String> emailSet = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toSet());
-            Set<String> existedEmails = userRepository.matchEmail(emailSet);
+            List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
+            Set<String> existedEmails = new HashSet<>();
+            subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
             for (UserDO user : validateUsers) {
                 boolean loginNameExisted = false;
                 boolean emailExisted = false;

@@ -3,7 +3,7 @@ package io.choerodon.iam.infra.common.utils.ldap;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.common.utils.ListUtils;
+import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
@@ -102,8 +102,13 @@ public class LdapSyncUserTask {
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
-        Set<String> existedNames = userRepository.matchLoginName(nameSet);
-        Set<String> existedEmails = userRepository.matchEmail(emailSet);
+        //oracle In-list上限为1000，这里List size要小于1000
+        List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
+        List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
+        Set<String> existedNames = new HashSet<>();
+        Set<String> existedEmails = new HashSet<>();
+        subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
+        subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
         users.forEach(u -> {
             if (!existedNames.contains(u.getLoginName())) {
                 //插入
@@ -128,7 +133,7 @@ public class LdapSyncUserTask {
                 //更新,目前不做更新操作
             }
         });
-        List<List<UserDO>> list = ListUtils.subList(insertUsers, 1000);
+        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, 1000);
         list.forEach(l -> {
             if (!l.isEmpty()) {
                 organizationUserService.batchCreateUsers(l);

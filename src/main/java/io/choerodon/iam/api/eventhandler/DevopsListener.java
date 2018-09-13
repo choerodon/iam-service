@@ -8,7 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.domain.repository.LabelRepository;
-import io.choerodon.iam.infra.common.utils.ListUtils;
+import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.stereotype.Component;
@@ -72,7 +72,7 @@ public class DevopsListener {
             }
             userMemberEventPayloads.add(payload);
         }
-        List<List<UserMemberEventPayload>> list = ListUtils.subList(userMemberEventPayloads, 1000);
+        List<List<UserMemberEventPayload>> list = CollectionUtils.subList(userMemberEventPayloads, 1000);
         list.forEach(l -> {
             try {
                 String input = objectMapper.writeValueAsString(l);

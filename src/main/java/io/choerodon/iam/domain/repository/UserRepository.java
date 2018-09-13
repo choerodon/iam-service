@@ -50,20 +50,14 @@ public interface UserRepository {
                                                    String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                    String param);
 
-    Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
-                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId);
-
     List<UserDO> listUsersByRoleIdOnSiteLevel(Long roleId);
 
     List<UserDO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId);
 
     List<UserDO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId);
 
-    Page<UserDO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest,
-                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId);
-
-    Page<UserDO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                        RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId);
+    Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest,
+                                                  RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level);
 
     List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
 

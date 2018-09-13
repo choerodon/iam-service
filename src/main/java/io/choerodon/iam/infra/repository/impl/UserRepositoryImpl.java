@@ -198,30 +198,15 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
-        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
-                        0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param));
-    }
-
-    @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
+    public Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId,
+                                                         String level) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         Map<String, String> map = new HashMap<>();
         map.put("source_id", "imr.source_id");
         pageRequest.resetOrder("iu", map);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-                        ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param));
-    }
-
-    @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
-        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-                        ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param));
+                        level, roleAssignmentSearchDTO, param));
     }
 
     @Override
