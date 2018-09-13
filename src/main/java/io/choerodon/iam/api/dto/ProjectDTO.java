@@ -4,6 +4,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
@@ -26,6 +27,7 @@ public class ProjectDTO {
     @Size(min = 1, max = 32, message = "error.project.code.size")
     private String name;
 
+    @ApiParam(name = "organization_id", value = "组织id")
     @ApiModelProperty(value = "组织ID/非必填")
     private Long organizationId;
 
