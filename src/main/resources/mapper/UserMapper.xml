@@ -415,4 +415,8 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="listUserIds" resultType="java.lang.Long">
+        SELECT id from iam_user
+    </select>
 </mapper>

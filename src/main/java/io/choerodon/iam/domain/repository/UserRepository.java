@@ -76,4 +76,6 @@ public interface UserRepository {
     Set<String> matchLoginName(Set<String> nameSet);
 
     Set<String> matchEmail(Set<String> emailSet);
+
+    Long[] listUserIds();
 }
