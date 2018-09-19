@@ -12,10 +12,10 @@ import java.util.Map;
  * @author dengyouquan
  **/
 @Component
-public class LdapSyncUserTask {
+public class LdapSyncUserQuartzTask {
     private LdapService ldapService;
 
-    public LdapSyncUserTask(LdapService ldapService) {
+    public LdapSyncUserQuartzTask(LdapService ldapService) {
         this.ldapService = ldapService;
     }
 
