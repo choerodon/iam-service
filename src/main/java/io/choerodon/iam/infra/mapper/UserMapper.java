@@ -60,4 +60,6 @@ public interface UserMapper extends BaseMapper<UserDO> {
     Set<String> matchLoginName(@Param("nameSet") Set<String> nameSet);
 
     Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
+
+    Long[] listUserIds();
 }

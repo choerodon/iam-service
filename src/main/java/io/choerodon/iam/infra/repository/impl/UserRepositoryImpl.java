@@ -243,6 +243,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Long[] listUserIds() {
+        return mapper.listUserIds();
+    }
+
+    @Override
     public List<UserDO> listUsersByIds(Long[] ids) {
         return mapper.listUsersByIds(ids);
     }

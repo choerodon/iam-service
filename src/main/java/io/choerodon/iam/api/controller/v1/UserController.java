@@ -282,4 +282,11 @@ public class UserController extends BaseController {
     public ResponseEntity<UserDTO> createUserAndAssignRoles(@RequestBody CreateUserWithRolesDTO userWithRoles) {
         return new ResponseEntity<>(userService.createUserAndAssignRoles(userWithRoles), HttpStatus.OK);
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation("得到所有用户id")
+    @GetMapping("/ids")
+    public ResponseEntity<Long[]> getUserIds() {
+        return new ResponseEntity<>(userService.listUserIds(), HttpStatus.OK);
+    }
 }

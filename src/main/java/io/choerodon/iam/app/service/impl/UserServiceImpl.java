@@ -510,6 +510,11 @@ public class UserServiceImpl implements UserService {
         return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 
+    @Override
+    public Long[] listUserIds() {
+        return userRepository.listUserIds();
+    }
+
     private UserDO validateUser(CreateUserWithRolesDTO userWithRoles) {
         UserDO user = userWithRoles.getUser();
         String loginName = user.getLoginName();
