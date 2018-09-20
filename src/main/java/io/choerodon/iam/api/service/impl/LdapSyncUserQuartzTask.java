@@ -52,10 +52,6 @@ public class LdapSyncUserQuartzTask {
         if (organizationDO.getId() == null) {
             throw new CommonException("error.ldapSyncUserTask.idNotNull");
         }
-        UserDTO userDTO = userService.querySelf();
-        if (!userDTO.getLdap()) {
-            throw new CommonException("error.ldapSyncUserTask.user.notLdapUser");
-        }
         return organizationDO.getId();
     }
 }
