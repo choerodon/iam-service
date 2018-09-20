@@ -55,6 +55,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private static final String ORG_MSG_NOT_EXIST = "error.organization.not.exist";
+
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
                                    SagaClient sagaClient,
                                    ProjectRepository projectRepository,
@@ -79,7 +81,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
-            throw new CommonException("error.organization.not.exist", organizationId);
+            throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
         }
         List<ProjectDO> projects = projectRepository.selectByOrgId(organizationId);
         organizationDO.setProjects(projects);
@@ -89,12 +91,21 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationDTO queryOrganizationWithRoleById(Long organizationId) {
-        OrganizationDTO organizationDTO = queryOrganizationById(organizationId);
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         if (customUserDetails == null) {
             throw new CommonException("error.user.not.login");
         }
-        Long userId = customUserDetails.getUserId();
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        long userId = customUserDetails.getUserId();
+        if (organizationDO == null) {
+            throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
+        }
+        List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, true);
+        organizationDO.setProjects(projects);
+        organizationDO.setProjectCount(projects.size());
+        OrganizationDTO organizationDTO =  ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+
+
         List<RoleDO> roles = roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
         organizationDTO.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
         return organizationDTO;
@@ -114,7 +125,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationE organization =
                 ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
         if (organization == null) {
-            throw new CommonException("error.organization.not.exist");
+            throw new CommonException(ORG_MSG_NOT_EXIST);
         }
         organization.enable();
         OrganizationE organizationE = updateAndSendEvent(organization, ORG_ENABLE);
@@ -127,7 +138,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationE organization =
                 ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
         if (organization == null) {
-            throw new CommonException("error.organization.not.exist");
+            throw new CommonException(ORG_MSG_NOT_EXIST);
         }
         organization.disable();
         OrganizationE organizationE = updateAndSendEvent(organization, ORG_DISABLE);

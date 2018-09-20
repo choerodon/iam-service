@@ -9,7 +9,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
- * @date 2018/3/26
  */
 public interface ProjectRepository {
 
@@ -23,19 +22,19 @@ public interface ProjectRepository {
 
     Page<ProjectDO> pagingQueryByUserId(Long userId, ProjectDO projectDO, PageRequest pageRequest, String param);
 
-    Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO);
-
     ProjectE updateSelective(ProjectDO projectDO);
-
-    List<ProjectDO> selectFromMemberRoleByOptionWithoutPaging(Long userId, Long id);
-
-    List<ProjectDO> selectByOptions(ProjectDO projectDO);
 
     List<ProjectDO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDO projectDO);
 
     List<ProjectDO> selectAll();
 
     ProjectDO selectOne(ProjectDO projectDO);
+
+    /**
+     * 查找用户在某个组织下所有的项目
+     * @param includeDisabled 是否包括未启用的项目。
+     */
+    List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, boolean includeDisabled);
 
     List<ProjectDO> selectByOrgId(Long organizationId);
 
