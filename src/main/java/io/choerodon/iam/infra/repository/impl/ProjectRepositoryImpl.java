@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -16,10 +12,12 @@ import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author flyleft
- * @date 2018/3/26
  */
 @Repository
 public class ProjectRepositoryImpl implements ProjectRepository {
@@ -81,12 +79,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Page<ProjectDO> pagingSelectFromMemberRoleByOption(Long userId, PageRequest pageRequest, ProjectDO projectDO) {
-        return PageHelper.doPageAndSort(pageRequest, () ->
-                projectMapper.selectProjectsByUserId(userId, projectDO));
-    }
-
-    @Override
     public ProjectE updateSelective(ProjectDO projectDO) {
         ProjectDO project = projectMapper.selectByPrimaryKey(projectDO.getId());
         if (project == null) {
@@ -98,17 +90,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return ConvertHelper.convert(projectMapper.selectByPrimaryKey(projectDO.getId()), ProjectE.class);
     }
 
-    @Override
-    public List<ProjectDO> selectFromMemberRoleByOptionWithoutPaging(Long userId, Long organizationId) {
-        ProjectDO projectDO = new ProjectDO();
-        projectDO.setOrganizationId(organizationId);
-        return projectMapper.selectProjectsByUserId(userId, projectDO);
-    }
-
-    @Override
-    public List<ProjectDO> selectByOptions(ProjectDO projectDO) {
-        return projectMapper.select(projectDO);
-    }
 
     @Override
     public List<ProjectDO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDO projectDO) {
@@ -121,16 +102,22 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public ProjectDO selectOne(ProjectDO projectDO) {
+        return projectMapper.selectOne(projectDO);
+    }
+
+    @Override
+    public List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, boolean includeDisabled) {
+        return projectMapper.selectUserProjectsUnderOrg(userId, orgId, includeDisabled);
+    }
+
+    @Override
     public List<ProjectDO> selectByOrgId(Long organizationId) {
         ProjectDO projectDO = new ProjectDO();
         projectDO.setOrganizationId(organizationId);
         return projectMapper.select(projectDO);
     }
 
-    @Override
-    public ProjectDO selectOne(ProjectDO projectDO) {
-        return projectMapper.selectOne(projectDO);
-    }
 
     @Override
     public Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {

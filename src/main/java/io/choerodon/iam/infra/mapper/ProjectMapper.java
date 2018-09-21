@@ -14,7 +14,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     List<ProjectDO> fulltextSearch(@Param("project") ProjectDO projectDO,
                                    @Param("param") String param);
 
-    List selectProjectsByUserId(@Param("userId") Long userId,
+    List<ProjectDO> selectProjectsByUserId(@Param("userId") Long userId,
                                 @Param("projectDO") ProjectDO projectDO);
 
     List selectProjectsByUserIdWithParam(@Param("userId") Long userId,
@@ -26,4 +26,8 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
             @Param("start") Integer start,
             @Param("size") Integer size,
             @Param("params") String params);
+
+    List<ProjectDO> selectUserProjectsUnderOrg(@Param("userId") Long userId,
+                                               @Param("orgId") Long orgId,
+                                               @Param("includeDisabled") boolean includeDisabled);
 }

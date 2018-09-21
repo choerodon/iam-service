@@ -23,6 +23,14 @@
         </collection>
     </resultMap>
 
+    <select id="selectUserProjectsUnderOrg" resultMap="projectDO">
+        SELECT fp.*
+        FROM fd_project fp
+        INNER JOIN iam_member_role imr
+        ON imr.source_id = fp.id
+        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId} AND is_enabled = #{includeDisabled}
+    </select>
+
     <select id="fulltextSearch" resultMap="projectDO">
         SELECT *
         FROM fd_project
