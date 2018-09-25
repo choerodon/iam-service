@@ -1,5 +1,9 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -12,9 +16,6 @@ import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * @author flyleft
@@ -128,5 +129,11 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         int count = memberRoleMapper.selectCountBySourceId(id, "project");
         List<ProjectDO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
         return new Page<>(projectList, pageInfo, count);
+    }
+
+    @Override
+    public List<Long> listUserIds(Long id) {
+        return projectMapper.listUserIds(id);
+
     }
 }

@@ -35,4 +35,7 @@ public interface OrganizationUserService {
      * @param insertUsers
      */
     void batchCreateUsers(List<UserDO> insertUsers);
+
+    List<Long> listUserIds(Long organizationId);
+
 }

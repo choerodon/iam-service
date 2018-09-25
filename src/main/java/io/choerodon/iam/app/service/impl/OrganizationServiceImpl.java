@@ -3,16 +3,11 @@ package io.choerodon.iam.app.service.impl;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.RoleDTO;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,14 +20,22 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.RoleDTO;
+import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -55,16 +58,20 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private NotifyFeignClient notifyFeignClient;
+
     private static final String ORG_MSG_NOT_EXIST = "error.organization.not.exist";
 
     public OrganizationServiceImpl(OrganizationRepository organizationRepository,
                                    SagaClient sagaClient,
                                    ProjectRepository projectRepository,
-                                   RoleRepository roleRepository) {
+                                   RoleRepository roleRepository,
+                                   NotifyFeignClient notifyFeignClient) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
         this.projectRepository = projectRepository;
         this.roleRepository = roleRepository;
+        this.notifyFeignClient = notifyFeignClient;
     }
 
     @Override
@@ -103,7 +110,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, true);
         organizationDO.setProjects(projects);
         organizationDO.setProjectCount(projects.size());
-        OrganizationDTO organizationDTO =  ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        OrganizationDTO organizationDTO = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
 
 
         List<RoleDO> roles = roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
@@ -152,12 +159,31 @@ public class OrganizationServiceImpl implements OrganizationService {
             OrganizationEventPayload payload = new OrganizationEventPayload();
             payload.setOrganizationId(organization.getId());
             BeanUtils.copyProperties(organizationRepository.update(organization), organizationE);
+            //saga
             try {
                 String input = mapper.writeValueAsString(payload);
                 sagaClient.startSaga(consumerType, new StartInstanceDTO(input, "organization", payload.getOrganizationId() + ""));
             } catch (Exception e) {
                 throw new CommonException("error.organizationService.enableOrDisable.event", e);
             }
+
+            // 给组织下所有用户发送站内信
+            List<Long> userIds = organizationRepository.listUserIds(organization.getId());
+            userIds.stream().forEach(id -> {
+                WsSendDTO wsSendDTO = new WsSendDTO();
+                wsSendDTO.setId(id);
+                wsSendDTO.setCode("sit-msg");
+                if (ORG_DISABLE.equals(consumerType)) {
+                    wsSendDTO.setTemplateCode("disableOrgMsg");
+                } else if (ORG_ENABLE.equals(consumerType)) {
+                    wsSendDTO.setTemplateCode("enableOrgMsg");
+                }
+                Map<String, Object> params = new HashMap<>();
+                params.put("organizationName",organizationRepository.selectByPrimaryKey(organization.getId()).getName());
+                wsSendDTO.setParams(params);
+                notifyFeignClient.postPm(wsSendDTO);
+            });
+
         } else {
             organizationE = organizationRepository.update(organization);
         }
