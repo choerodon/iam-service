@@ -2,6 +2,7 @@ package io.choerodon.iam.api.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -136,6 +137,6 @@ public class UserDashboardServiceImpl implements UserDashboardService {
     }
 
     private boolean dashboardNeedRole(List<Long> dashboardIds, UserDashboardDTO userDashboard) {
-        return !userDashboard.getNeedRoles() || dashboardIds.contains(userDashboard.getDashboardId());
+        return !Optional.ofNullable(userDashboard.getNeedRoles()).orElse(false) || dashboardIds.contains(userDashboard.getDashboardId());
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Stepwise
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -20,10 +21,13 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Stepwise
 class DashboardControllerSpec extends Specification {
     private static String path = "/v1/dashboards"
     @Shared
     boolean sharedSetupDone = false;
+    @Shared
+    boolean sharedCleanupDone = true;
     @Autowired
     private DashboardMapper dashboardMapper
 
@@ -86,6 +90,18 @@ class DashboardControllerSpec extends Specification {
         }
     }
 
+    def cleanup(){
+        if (!sharedCleanupDone) {
+            when: '批量删除dashboard'
+            def count = 0;
+            for (DashboardE dashboard : dashboardList) {
+                count = count + dashboardMapper.deleteByPrimaryKey(dashboard)
+            }
+
+            then: '批量删除成功'
+            count == 12
+        }
+    }
 
     def "List"() {
         given: "单页查询dashboard list"
@@ -98,7 +114,7 @@ class DashboardControllerSpec extends Specification {
         def entity =
                 restTemplate.getForEntity(path + '?page={page}&size={size}', Page.class, paramMap)
         then: '默认查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.body.getTotalPages() == 2
         entity.body.getTotalElements() == 12
         entity.getBody().size() == 10
@@ -108,7 +124,7 @@ class DashboardControllerSpec extends Specification {
         entity =
                 restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}', Page.class, paramMap)
         then: '根据level 查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.body.getTotalPages() == 1
         entity.body.getTotalElements() == 4
         entity.getBody().size() == 4
@@ -118,7 +134,7 @@ class DashboardControllerSpec extends Specification {
         entity =
                 restTemplate.getForEntity(path + '?page={page}&size={size}&name={name}', Page.class, paramMap)
         then: '根据name 查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.body.getTotalPages() == 1
         entity.body.getTotalElements() == 5
         entity.getBody().size() == 5
@@ -128,7 +144,7 @@ class DashboardControllerSpec extends Specification {
         entity =
                 restTemplate.getForEntity(path + '?page={page}&size={size}&code={code}', Page.class, paramMap)
         then: '根据code 查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.body.getTotalPages() == 2
         entity.body.getTotalElements() == 12
         entity.getBody().size() == 10
@@ -143,7 +159,7 @@ class DashboardControllerSpec extends Specification {
         entity =
                 restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}&name={name}&code={code}', Page.class, allParamMap)
         then: '根据所有条件查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.body.getTotalPages() == 1
         entity.body.getTotalElements() == 1
         entity.getBody().size() == 1
@@ -160,7 +176,7 @@ class DashboardControllerSpec extends Specification {
                 restTemplate.getForEntity(path + '/' + dashboard.getId(), DashboardDTO.class)
 
         then: '查询成功'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         DashboardDTO dashboardDTO = entity.getBody()
 
         dashboardDTO.getId() == dashboard.getId()
@@ -179,7 +195,7 @@ class DashboardControllerSpec extends Specification {
                 restTemplate.getForEntity(path + '/' + 15, ExceptionResponse.class)
 
         then: '查询失败'
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.dashboard.not.exist")
         entity.getBody().getMessage().equals("该Dashboard不存在")
     }
@@ -194,7 +210,7 @@ class DashboardControllerSpec extends Specification {
         def entity =
                 restTemplate.getForEntity(path + '/' + dashboard.getId(), DashboardDTO.class)
 
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         DashboardDTO dashboardDTO = entity.getBody()
 
         when: "更新Dashboard"
@@ -205,10 +221,11 @@ class DashboardControllerSpec extends Specification {
 
         entity =
                 restTemplate.postForEntity(path + '/' + dashboardDTO.getId(), dashboardDTO, DashboardDTO.class)
+        sharedCleanupDone = false
 
         then: '更新成功'
 
-        entity.statusCode.is2xxSuccessful() == true
+        entity.statusCode.is2xxSuccessful()
         entity.getBody().getId() == dashboardDTO.getId()
         entity.getBody().getCode().equals(dashboardDTO.getCode())
         entity.getBody().getDescription().equals(dashboardDTO.getDescription())

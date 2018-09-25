@@ -54,8 +54,9 @@ public class ClientValidator {
                 .orElseThrow(() -> new CommonException("error.client.not.exist"));
         ClientDO client = new ClientDO();
         client.setName(name);
-        Optional.ofNullable(clientMapper.selectOne(client))
-                .orElseThrow(() -> new CommonException("error.clientName.exist"));
+        if (!clientMapper.select(client).isEmpty()) {
+            throw new CommonException("error.clientName.exist");
+        }
         if (clientDTO.getAdditionalInformation() == null) {
             clientDTO.setAdditionalInformation("{}");
         } else {

@@ -54,7 +54,7 @@ public class OrganizationController extends BaseController {
      * @return 组织信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "根据组织id查询组织")
+    @ApiOperation(value = "全局层根据组织id查询组织")
     @GetMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> query(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.queryOrganizationById(id), HttpStatus.OK);
@@ -67,7 +67,7 @@ public class OrganizationController extends BaseController {
      * @return 组织信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据组织id查询组织")
+    @ApiOperation(value = "组织层根据组织id查询组织，并查询被分配的角色")
     @GetMapping(value = "/{organization_id}/org_level")
     public ResponseEntity<OrganizationDTO> queryOrgLevel(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.queryOrganizationWithRoleById(id), HttpStatus.OK);

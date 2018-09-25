@@ -51,7 +51,7 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardDTO select = modelMapper.map(
                 dashboardMapper.selectByPrimaryKey(dashboardId),
                 DashboardDTO.class);
-        if (!updateRole && !select.getNeedRoles()) {
+        if (!updateRole && select.getNeedRoles() != null && !select.getNeedRoles()) {
             return select;
         }
         List<Long> roleIds = dashboardDTO.getRoleIds();
