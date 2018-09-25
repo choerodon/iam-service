@@ -24,7 +24,7 @@
     </resultMap>
 
     <select id="selectUserProjectsUnderOrg" resultMap="projectDO">
-        SELECT fp.*
+        SELECT DISTINCT fp.*
         FROM fd_project fp
         INNER JOIN iam_member_role imr
         ON imr.source_id = fp.id
