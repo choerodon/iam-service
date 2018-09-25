@@ -23,6 +23,8 @@ class UserDashboardControllerSpec extends Specification {
     private static String path = "/v1/home/dashboard"
     @Shared
     boolean sharedSetupDone = false;
+    @Shared
+    boolean sharedCleanupDone = true;
 
     @Autowired
     private UserDashboardMapper userDashboardMapper
@@ -79,11 +81,24 @@ class UserDashboardControllerSpec extends Specification {
             for (DashboardE dashboard : dashboardList) {
                 count = count + dashboardMapper.insert(dashboard)
             }
+            sharedSetupDone = true
 
             then: '批量插入成功'
             count == 12
 
-            sharedSetupDone = true
+        }
+    }
+
+    def cleanup(){
+        if (!sharedCleanupDone) {
+            when: '批量删除dashboard'
+            def count = 0;
+            for (DashboardE dashboard : dashboardList) {
+                count = count + dashboardMapper.deleteByPrimaryKey(dashboard)
+            }
+
+            then: '批量删除成功'
+            count == 12
         }
     }
 
@@ -96,16 +111,19 @@ class UserDashboardControllerSpec extends Specification {
         paramMap.put("sourceId", 0)
 
         when: "查询site层"
-
         def entity =
-                restTemplate.getForEntity(path + '?level={level}&source_id={sourceId}', List.class, paramMap)
-        then: '查询site成功'
-        entity.statusCode.is2xxSuccessful() == true
-        entity.getBody().size() == 3
+                restTemplate.getForEntity(path + '?level={level}&source_id={sourceId}', String, paramMap)
+        sharedCleanupDone = false
 
+        then: '查询site成功'
+        entity.statusCode.is2xxSuccessful()
     }
 
     def "Update"() {
+    }
+
+    def "clear"() {
+
     }
 
 }

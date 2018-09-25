@@ -30,10 +30,10 @@ public class LdapSyncUserQuartzTask {
         this.organizationMapper = organizationMapper;
     }
 
-    @JobTask(maxRetryCount = 2, code = "syncUser", params = {
+    @JobTask(maxRetryCount = 2, code = "syncLdapUser", params = {
             @JobParam(name = "organizationCode", defaultValue = "hand")
     })
-    public void syncUser(Map<String, Object> map) {
+    public void syncLdapUser(Map<String, Object> map) {
         String orgCode = (String) map.get("organizationCode");
         OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(orgCode);

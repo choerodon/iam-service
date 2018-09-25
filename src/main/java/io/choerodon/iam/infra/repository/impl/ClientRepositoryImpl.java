@@ -59,7 +59,7 @@ public class ClientRepositoryImpl implements ClientRepository {
         clientDO.setName(clientName);
         List<ClientDO> clientDOS = clientMapper.select(clientDO);
         if (clientDOS.isEmpty()) {
-            throw new CommonException("error.client.not.exit");
+            throw new CommonException("error.client.not.exist");
         }
         return ConvertHelper.convert(clientDOS.get(0), ClientE.class);
     }
@@ -68,7 +68,7 @@ public class ClientRepositoryImpl implements ClientRepository {
     public ClientE update(Long clientId, ClientE clientE) {
         ClientDO clientDO = ConvertHelper.convert(clientE, ClientDO.class);
         clientDO.setId(clientId);
-        int isUpdate = clientMapper.updateByPrimaryKeySelective(clientDO);
+        int isUpdate = clientMapper.updateByPrimaryKey(clientDO);
         if (isUpdate != 1) {
             throw new CommonException("error.client.update");
         }
