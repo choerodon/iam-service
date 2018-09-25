@@ -32,6 +32,7 @@ public interface ProjectRepository {
 
     /**
      * 查找用户在某个组织下所有的项目
+     *
      * @param includeDisabled 是否包括未启用的项目。
      */
     List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, boolean includeDisabled);
@@ -39,4 +40,6 @@ public interface ProjectRepository {
     List<ProjectDO> selectByOrgId(Long organizationId);
 
     Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params);
+
+    List<Long> listUserIds(Long id);
 }

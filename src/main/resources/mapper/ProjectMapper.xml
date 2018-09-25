@@ -23,6 +23,23 @@
         </collection>
     </resultMap>
 
+    <select id="listUserIds" resultType="java.lang.Long">
+    SELECT
+	    iam_user.id
+    FROM
+	    iam_user
+    RIGHT JOIN (
+	  SELECT DISTINCT
+		  member_id
+	  FROM
+		  iam_member_role
+	  WHERE
+		  source_id = #{projectId}
+	  AND source_type = 'project'
+	  AND member_type = 'user'
+    ) t ON iam_user.id = t.member_id
+    </select>
+
     <select id="selectUserProjectsUnderOrg" resultMap="projectDO">
         SELECT fp.*
         FROM fd_project fp
@@ -103,25 +120,25 @@
 
     <select id="selectProjectsWithRoles" databaseId="mysql" resultMap="ProjectWithRoleDTO">
         SELECT
-            fp.id,
-            fp.name,
-            fp.code,
-            fp.organization_id,
-            fo.name AS organization_name,
-            fp.is_enabled,
-            ir.id AS role_id,
-            ir.name AS role_name,
-            ir.code AS role_code,
-            ir.is_enabled AS role_is_enabled
+        fp.id,
+        fp.name,
+        fp.code,
+        fp.organization_id,
+        fo.name AS organization_name,
+        fp.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
         FROM fd_project fp
         INNER JOIN
         (
-            SELECT DISTINCT source_id FROM iam_member_role
-            WHERE member_id = #{id}
-            AND member_type = 'user'
-            AND source_type = 'project'
-            ORDER BY source_id ASC
-            LIMIT #{start}, #{size}
+        SELECT DISTINCT source_id FROM iam_member_role
+        WHERE member_id = #{id}
+        AND member_type = 'user'
+        AND source_type = 'project'
+        ORDER BY source_id ASC
+        LIMIT #{start}, #{size}
         ) t
         ON fp.id = t.source_id
         INNER JOIN iam_member_role imr ON imr.source_id = fp.id
@@ -178,16 +195,16 @@
 
     <select id="selectProjectsWithRoles" databaseId="oracle" resultMap="ProjectWithRoleDTO">
         SELECT
-            fp.id,
-            fp.name,
-            fp.code,
-            fp.organization_id,
-            fo.name AS organization_name,
-            fp.is_enabled,
-            ir.id AS role_id,
-            ir.name AS role_name,
-            ir.code AS role_code,
-            ir.is_enabled AS role_is_enabled
+        fp.id,
+        fp.name,
+        fp.code,
+        fp.organization_id,
+        fo.name AS organization_name,
+        fp.is_enabled,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
         FROM fd_project fp
         INNER JOIN
         (

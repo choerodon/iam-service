@@ -1,6 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -12,6 +24,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
@@ -24,20 +37,8 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -70,6 +71,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private SagaClient sagaClient;
 
+    private NotifyFeignClient notifyFeignClient;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
@@ -79,7 +82,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           RoleRepository roleRepository,
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
-                                          SagaClient sagaClient) {
+                                          SagaClient sagaClient,
+                                          NotifyFeignClient notifyFeignClient) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -88,6 +92,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
         this.sagaClient = sagaClient;
+        this.notifyFeignClient = notifyFeignClient;
     }
 
     @Transactional
@@ -231,12 +236,29 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             ProjectEventPayload payload = new ProjectEventPayload();
             payload.setProjectId(projectId);
             BeanUtils.copyProperties(projectRepository.updateSelective(projectDO), project);
+            //saga
             try {
                 String input = mapper.writeValueAsString(payload);
                 sagaClient.startSaga(consumerType, new StartInstanceDTO(input, "project", "" + payload.getProjectId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }
+            // 给项目下所有用户发送站内信
+            List<Long> userIds = projectRepository.listUserIds(projectId);
+            userIds.stream().forEach(id -> {
+                WsSendDTO wsSendDTO = new WsSendDTO();
+                wsSendDTO.setId(id);
+                wsSendDTO.setCode("sit-msg");
+                if (PROJECT_DISABLE.equals(consumerType)) {
+                    wsSendDTO.setTemplateCode("disableProjMsg");
+                } else if (PROJECT_ENABLE.equals(consumerType)) {
+                    wsSendDTO.setTemplateCode("enableProjMsg");
+                }
+                Map<String, Object> params = new HashMap<>();
+                params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
+                wsSendDTO.setParams(params);
+                notifyFeignClient.postPm(wsSendDTO);
+            });
         } else {
             projectRepository.updateSelective(projectDO);
             project = iProjectService.updateProjectEnabled(projectId);

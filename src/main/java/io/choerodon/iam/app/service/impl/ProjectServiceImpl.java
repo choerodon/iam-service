@@ -31,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
+import java.util.List;
+
 /**
  * @author flyleft
  */
@@ -138,5 +140,10 @@ public class ProjectServiceImpl implements ProjectService {
             projectE = projectRepository.updateSelective(project);
         }
         return projectE;
+    }
+
+    @Override
+    public List<Long> listUserIds(Long projectId) {
+        return projectRepository.listUserIds(projectId);
     }
 }
