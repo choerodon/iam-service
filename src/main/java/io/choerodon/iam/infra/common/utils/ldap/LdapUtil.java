@@ -1,9 +1,6 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import io.choerodon.iam.infra.dataobject.LdapDO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.*;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -12,7 +9,12 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dataobject.LdapDO;
 
 /**
  * @author wuguokai
@@ -152,8 +154,7 @@ public class LdapUtil {
             ldapContext.addToEnvironment(Context.SECURITY_CREDENTIALS, password);
             ldapContext.reconnect(null);
         } catch (NamingException e) {
-            LOGGER.info("ldap authenticate fail: {}", e);
-            return false;
+            throw new CommonException("ldap authenticate fail", e);
         }
         return true;
     }
