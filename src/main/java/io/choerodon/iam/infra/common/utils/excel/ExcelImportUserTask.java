@@ -18,6 +18,7 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +126,7 @@ public class ExcelImportUserTask {
 
     @Async("excel-executor")
     public void importMemberRole(List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDO uploadHistory,
-                                  FinishFallback finishFallback) {
+                                 FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
         List<ExcelMemberRoleDTO> errorMemberRoles = new CopyOnWriteArrayList<>();
@@ -370,6 +371,7 @@ public class ExcelImportUserTask {
 
     /**
      * 去除同一个对象loginName和email完全相同的对象
+     *
      * @param users
      * @param errorUsers
      * @return
@@ -408,12 +410,12 @@ public class ExcelImportUserTask {
         propertyMap.put("cause", "原因");
         HSSFWorkbook hssfWorkbook;
         try {
-            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap,errorUsers,"error users",ErrorUserDTO.class);
+            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap, errorUsers, "error users", ErrorUserDTO.class);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             logger.error("something wrong was happened when exporting the excel, exception : {}", e.getMessage());
-            throw new CommonException("error.excel.export");
+            throw new CommonException("error.excel.export", e);
         }
-        return upload(hssfWorkbook,"errorUser.xls", "error-user");
+        return upload(hssfWorkbook, "errorUser.xls", "error-user");
     }
 
     private String upload(HSSFWorkbook hssfWorkbook, String originalFilename, String bucketName) {
@@ -422,14 +424,14 @@ public class ExcelImportUserTask {
         try {
             hssfWorkbook.write(bos);
             MockMultipartFile multipartFile =
-                    new MockMultipartFile("file",originalFilename,"application/vnd.ms-excel", bos.toByteArray());
+                    new MockMultipartFile("file", originalFilename, "application/vnd.ms-excel", bos.toByteArray());
             url = fileFeignClient.uploadFile(bucketName, multipartFile.getOriginalFilename(), multipartFile).getBody();
         } catch (IOException e) {
             logger.error("HSSFWorkbook to ByteArrayOutputStream failed, exception: {}", e.getMessage());
-            throw new CommonException("error.byteArrayOutputStream");
+            throw new CommonException("error.byteArrayOutputStream", e);
         } catch (Exception e) {
             logger.error("feign invoke exception : {}", e.getMessage());
-            throw new CommonException("error.feign.invoke");
+            throw new CommonException("error.feign.invoke", e);
         } finally {
             try {
                 bos.close();
@@ -447,7 +449,7 @@ public class ExcelImportUserTask {
         propertyMap.put("cause", "原因");
         HSSFWorkbook hssfWorkbook;
         try {
-            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap, errorMemberRoles,"error",ExcelMemberRoleDTO.class);
+            hssfWorkbook = ExcelExportHelper.exportExcel2003(propertyMap, errorMemberRoles, "error", ExcelMemberRoleDTO.class);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             logger.error("something wrong was happened when exporting the excel, exception : {}", e.getMessage());
             throw new CommonException("error.excel.export");

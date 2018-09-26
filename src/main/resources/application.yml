@@ -29,10 +29,10 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-event:
-  store:
-    service:
-      name: event-store-service
+#event:
+#  store:
+#    service:
+#      name: event-store-service
 choerodon:
   devops:
     message: true
