@@ -11,6 +11,8 @@ public final class SagaTopic {
 
         //创建用户
         public static final String USER_CREATE = "iam-create-user";
+        //iam接收创建组织事件的SagaTaskCode
+        public static final String TASK_USER_CREATE = "task-create-user";
         //批量创建用户
         public static final String USER_CREATE_BATCH = "iam-create-user";
         //更新用户

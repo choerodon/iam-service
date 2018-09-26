@@ -14,6 +14,16 @@ public class UserEventPayload {
 
     private String email;
 
+    private Long fromUserId;
+
+    public Long getFromUserId() {
+        return fromUserId;
+    }
+
+    public void setFromUserId(Long fromUserId) {
+        this.fromUserId = fromUserId;
+    }
+
     public String getId() {
         return id;
     }
