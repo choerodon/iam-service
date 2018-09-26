@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.DashboardDTO;
@@ -23,7 +24,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping(value = "/v1/dashboards")
-public class DashboardController {
+public class DashboardController extends BaseController {
     private DashboardService dashboardService;
 
     public DashboardController(DashboardService dashboardService) {
@@ -76,9 +77,9 @@ public class DashboardController {
     public ResponseEntity<Page<DashboardDTO>> list(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "code", required = false) String code,
-            @RequestParam(value = "level", required = false) String level,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String level,
             @RequestParam(required = false) String[] params) {
 
         DashboardDTO dashboardDTO = new DashboardDTO();
