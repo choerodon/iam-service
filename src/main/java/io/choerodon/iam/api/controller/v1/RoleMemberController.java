@@ -381,24 +381,24 @@ public class RoleMemberController extends BaseController {
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("查site层的历史")
-    @GetMapping("/site/member_role/upload/history")
-    public ResponseEntity latestHistoryOnSite(@RequestParam(value = "user_id") Long userId) {
+    @GetMapping("/site/member_role/users/{user_id}/upload/history")
+    public ResponseEntity latestHistoryOnSite(@PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", 0L, ResourceLevel.SITE.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("查组织层的历史")
-    @GetMapping("/organizations/{organization_id}/member_role/upload/history")
+    @GetMapping("/organizations/{organization_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
-                                                      @RequestParam(value = "user_id") Long userId) {
+                                                      @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation("查项目层的历史")
-    @GetMapping("/projects/{project_id}/member_role/upload/history")
+    @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
-                                                 @RequestParam(value = "user_id") Long userId) {
+                                                 @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
