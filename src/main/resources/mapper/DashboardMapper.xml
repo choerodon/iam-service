@@ -13,16 +13,16 @@
     <select id="fulltextSearch" resultMap="Dashboard">
         SELECT d.* FROM IAM_DASHBOARD d
         WHERE 1=1
-        <if test="dashboard.name != null">
+        <if test="dashboard.name != null and dashboard.name !=''">
             AND NAME LIKE concat(concat('%',#{dashboard.name}),'%')
         </if>
-        <if test="dashboard.code != null">
+        <if test="dashboard.code != null and dashboard.code !=''">
             AND CODE LIKE concat(concat('%',#{dashboard.code}),'%')
         </if>
-        <if test="dashboard.level != null">
+        <if test="dashboard.level != null and dashboard.level !=''">
             AND FD_LEVEL = #{dashboard.level}
         </if>
-        <if test="param != null">
+        <if test="param != null and param !=''">
             AND
             NAME LIKE concat(concat('%',#{param}),'%') OR
             CODE LIKE concat(concat('%',#{param}),'%') OR
