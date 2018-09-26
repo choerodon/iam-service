@@ -38,5 +38,5 @@ public interface OrganizationRepository {
 
     Page<OrganizationDO> pagingQueryByUserId(Long userId, OrganizationDO organizationDO, PageRequest pageRequest, String param);
 
-    List<Long> listUserIds(Long organizationId);
+    List<Long> listMemberIds(Long organizationId);
 }

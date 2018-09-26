@@ -297,6 +297,6 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public List<Long> listUserIds(Long organizationId) {
-        return organizationRepository.listUserIds(organizationId);
+        return organizationRepository.listMemberIds(organizationId);
     }
 }
