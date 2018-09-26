@@ -16,11 +16,11 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.naming.ldap.LdapContext;
-import java.util.Optional;
 
 /**
  * @author wuguokai
@@ -113,9 +113,9 @@ public class LdapServiceImpl implements LdapService {
 
     @Override
     public void syncLdapUser(Long organizationId, Long id) {
-        Optional
-                .ofNullable(organizationRepository.selectByPrimaryKey(organizationId))
-                .orElseThrow(() -> new CommonException("error.organization.notFound"));
+        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
+            throw new CommonException("error.organization.notFound");
+        }
         LdapDO ldap = ldapRepository.queryById(id);
         if (ldap == null) {
             throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
