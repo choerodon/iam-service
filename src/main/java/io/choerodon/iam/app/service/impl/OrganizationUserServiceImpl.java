@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -22,6 +21,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
@@ -119,12 +119,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             List<UserEventPayload> payloads = new ArrayList<>();
             List<UserDO> users = userRepository.insertList(insertUsers);
             users.forEach(user -> {
-                UserEventPayload payload = new UserEventPayload();
-                payload.setEmail(user.getEmail());
-                payload.setId(user.getId().toString());
-                payload.setName(user.getRealName());
-                payload.setUsername(user.getLoginName());
-                payloads.add(payload);
+                if (user.getEnabled()) {
+                    UserEventPayload payload = new UserEventPayload();
+                    payload.setEmail(user.getEmail());
+                    payload.setId(user.getId().toString());
+                    payload.setName(user.getRealName());
+                    payload.setUsername(user.getLoginName());
+                    payloads.add(payload);
+                }
             });
             try {
                 String input = mapper.writeValueAsString(payloads);

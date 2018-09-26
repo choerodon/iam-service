@@ -118,7 +118,6 @@ public class LdapSyncUserTask {
                     logger.info("duplicate email, email : {}", u.getEmail());
                 } else {
                     //可以插入
-                    u.setEnabled(true);
                     u.setLanguage("zh_CN");
                     u.setTimeZone("CTT");
                     u.setPassword(ENCODER.encode("unknown password"));
@@ -145,10 +144,12 @@ public class LdapSyncUserTask {
         UserDO user = new UserDO();
         user.setOrganizationId(organizationId);
         try {
-            //离职的用户不同步
+            //离职的用户同步，但状态改为停用,其余用户状态为可用
             if (attributes.get("employeeType") == null
                     || DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
-                return null;
+                user.setEnabled(false);
+            }else {
+                user.setEnabled(true);
             }
             if (ldap.getLoginNameField() == null
                     || attributes.get(ldap.getLoginNameField()) == null) {
