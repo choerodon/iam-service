@@ -166,9 +166,8 @@ public class OrganizationServiceImpl implements OrganizationService {
             } catch (Exception e) {
                 throw new CommonException("error.organizationService.enableOrDisable.event", e);
             }
-
             // 给组织下所有用户发送站内信
-            List<Long> userIds = organizationRepository.listUserIds(organization.getId());
+            List<Long> userIds = organizationRepository.listMemberIds(organization.getId());
             userIds.stream().forEach(id -> {
                 WsSendDTO wsSendDTO = new WsSendDTO();
                 wsSendDTO.setId(id);
@@ -179,7 +178,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     wsSendDTO.setTemplateCode("enableOrgMsg");
                 }
                 Map<String, Object> params = new HashMap<>();
-                params.put("organizationName",organizationRepository.selectByPrimaryKey(organization.getId()).getName());
+                params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
                 wsSendDTO.setParams(params);
                 notifyFeignClient.postPm(wsSendDTO);
             });

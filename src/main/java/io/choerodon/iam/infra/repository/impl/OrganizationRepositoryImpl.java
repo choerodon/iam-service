@@ -1,5 +1,9 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -11,9 +15,6 @@ import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author wuguokai
@@ -122,7 +123,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public List<Long> listUserIds(Long organizationId) {
-        return organizationMapper.listUserIds(organizationId);
+    public List<Long> listMemberIds(Long organizationId) {
+        return organizationMapper.listMemberIds(organizationId, "organization");
     }
 }
