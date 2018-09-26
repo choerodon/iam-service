@@ -2,9 +2,11 @@ package io.choerodon.iam.infra.common.utils.excel;
 
 import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ErrorUserDTO;
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
 import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
@@ -18,6 +20,7 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import java.util.stream.Collectors;
 @Component
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
+    private static final String ADD_USER_PRESET = "addUser-preset";
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
@@ -51,25 +55,22 @@ public class ExcelImportUserTask {
     private IRoleMemberService iRoleMemberService;
     private OrganizationUserService organizationUserService;
     private FileFeignClient fileFeignClient;
+    private NotifyFeignClient notifyFeignClient;
     private final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
 
-    public ExcelImportUserTask(UserRepository userRepository,
-                               OrganizationUserService organizationUserService,
-                               FileFeignClient fileFeignClient,
-                               RoleRepository roleRepository,
-                               MemberRoleRepository memberRoleRepository,
-                               IRoleMemberService iRoleMemberService) {
+    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, NotifyFeignClient notifyFeignClient) {
         this.userRepository = userRepository;
-        this.organizationUserService = organizationUserService;
-        this.fileFeignClient = fileFeignClient;
         this.roleRepository = roleRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.iRoleMemberService = iRoleMemberService;
+        this.organizationUserService = organizationUserService;
+        this.fileFeignClient = fileFeignClient;
+        this.notifyFeignClient = notifyFeignClient;
     }
 
     @Async("excel-executor")
-    public void importUsers(List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistory, FinishFallback fallback) {
+    public void importUsers(Long userId, List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
         List<UserDO> validateUsers = new CopyOnWriteArrayList<>();
@@ -96,6 +97,19 @@ public class ExcelImportUserTask {
         uploadHistory.setSuccessfulCount(successCount);
         uploadHistory.setFailedCount(failedCount);
         uploadAndFallback(uploadHistory, fallback, errorUsers);
+        sendStationLetter(successCount,userId);
+    }
+
+    private void sendStationLetter(Integer successCount,Long userId) {
+        WsSendDTO wsSendDTO = new WsSendDTO();
+        wsSendDTO.setCode("sit-msg");
+        wsSendDTO.setId(userId);
+        wsSendDTO.setTemplateCode(ADD_USER_PRESET);
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("addCount", successCount);
+        wsSendDTO.setParams(paramsMap);
+        notifyFeignClient.postPm(wsSendDTO);
+        logger.info("batch import user send station letter.");
     }
 
     private void uploadAndFallback(UploadHistoryDO uploadHistoryDO, FinishFallback fallback, List<ErrorUserDTO> errorUsers) {

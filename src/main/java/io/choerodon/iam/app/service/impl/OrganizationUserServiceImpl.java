@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -97,6 +98,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 userEventPayload.setId(user.getId().toString());
                 userEventPayload.setName(user.getRealName());
                 userEventPayload.setUsername(user.getLoginName());
+                userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
                 //devop处理接受的是list
                 List<UserEventPayload> payloads = new ArrayList<>();
                 payloads.add(userEventPayload);

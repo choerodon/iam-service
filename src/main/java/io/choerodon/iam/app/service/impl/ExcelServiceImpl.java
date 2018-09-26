@@ -55,13 +55,14 @@ public class ExcelServiceImpl implements ExcelService {
         long begin = System.currentTimeMillis();
         try {
             List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
-            if(users.isEmpty()) {
+            if (users.isEmpty()) {
                 throw new CommonException("error.excel.user.empty");
             }
             UploadHistoryDO uploadHistory = initUploadHistory(organizationId);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
-            excelImportUserTask.importUsers(users, organizationId, uploadHistory, finishFallback);
+            Long userId = DetailsHelper.getUserDetails().getUserId();
+            excelImportUserTask.importUsers(userId, users, organizationId, uploadHistory, finishFallback);
         } catch (IOException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new CommonException("error.excel.read", e.getCause());
         } catch (IllegalArgumentException e) {
