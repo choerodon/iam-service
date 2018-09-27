@@ -1,12 +1,14 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.repository.LdapHistoryRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.common.utils.CollectionUtils;
-import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -14,14 +16,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.repository.LdapHistoryRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.common.utils.CollectionUtils;
+import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
+import io.choerodon.iam.infra.dataobject.UserDO;
 
 
 /**
@@ -110,7 +112,8 @@ public class LdapSyncUserTask {
         subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
         subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
         users.forEach(u -> {
-            if (!existedNames.contains(u.getLoginName())) {
+            // 用户不存在 且 非离职状态 则 插入
+            if (!existedNames.contains(u.getLoginName()) && u.getEnabled()) {
                 //插入
                 if (existedEmails.contains(u.getEmail())) {
                     //邮箱重复，报错
@@ -128,6 +131,10 @@ public class LdapSyncUserTask {
                     insertUsers.add(u);
                     ldapSyncReport.incrementNewInsert();
                 }
+            } else if (existedNames.contains(u.getLoginName()) && !u.getEnabled()) {
+                // 用户存在 且 离职状态 则 停用
+                UserE userE = userRepository.selectByLoginName(u.getLoginName());
+                organizationUserService.disableUser(userE.getOrganizationId(), userE.getId());
             } else {
                 //更新,目前不做更新操作
             }
@@ -144,11 +151,11 @@ public class LdapSyncUserTask {
         UserDO user = new UserDO();
         user.setOrganizationId(organizationId);
         try {
-            //离职的用户同步，但状态改为停用,其余用户状态为可用
+            //用户离职，状态改为停用,其余用户状态为可用
             if (attributes.get("employeeType") == null
                     || DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
                 user.setEnabled(false);
-            }else {
+            } else {
                 user.setEnabled(true);
             }
             if (ldap.getLoginNameField() == null
