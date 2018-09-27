@@ -248,7 +248,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             userIds.stream().forEach(id -> {
                 WsSendDTO wsSendDTO = new WsSendDTO();
                 wsSendDTO.setId(id);
-                wsSendDTO.setCode("sit-msg");
+                wsSendDTO.setCode("site-msg");
                 if (PROJECT_DISABLE.equals(consumerType)) {
                     wsSendDTO.setTemplateCode("disableProjMsg");
                 } else if (PROJECT_ENABLE.equals(consumerType)) {

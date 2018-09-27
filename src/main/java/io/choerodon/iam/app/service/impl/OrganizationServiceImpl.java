@@ -171,7 +171,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             userIds.stream().forEach(id -> {
                 WsSendDTO wsSendDTO = new WsSendDTO();
                 wsSendDTO.setId(id);
-                wsSendDTO.setCode("sit-msg");
+                wsSendDTO.setCode("site-msg");
                 if (ORG_DISABLE.equals(consumerType)) {
                     wsSendDTO.setTemplateCode("disableOrgMsg");
                 } else if (ORG_ENABLE.equals(consumerType)) {

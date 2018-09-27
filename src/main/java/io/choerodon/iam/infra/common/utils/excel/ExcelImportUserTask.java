@@ -102,7 +102,7 @@ public class ExcelImportUserTask {
 
     private void sendStationLetter(Integer successCount,Long userId) {
         WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode("sit-msg");
+        wsSendDTO.setCode("site-msg");
         wsSendDTO.setId(userId);
         wsSendDTO.setTemplateCode(ADD_USER_PRESET);
         Map<String, Object> paramsMap = new HashMap<>();
