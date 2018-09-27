@@ -5,9 +5,8 @@ import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.infra.common.utils.JsonUtils;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.mapper.ClientMapper;
-import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import org.springframework.stereotype.Component;
 
 /**
  * @author wuguokai
@@ -36,25 +35,27 @@ public class ClientValidator {
     /**
      * 更新客户端校验
      *
-     * @param orgId     组织id
-     * @param clientId  客户端id
      * @param clientDTO 客户端对象
      * @return 校验之后的客户端对象
      */
-    public ClientDTO update(Long orgId, Long clientId, ClientDTO clientDTO) {
-        String name = Optional.ofNullable(clientDTO.getName()).orElseThrow(() -> new CommonException("error.clientName.null"));
-        Optional.ofNullable(clientMapper.selectByPrimaryKey(clientId))
-                .map(c -> {
-                    Long organizationId = c.getOrganizationId();
-                    if (!orgId.equals(organizationId)) {
-                        throw new CommonException("error.organizationId.not.same");
-                    }
-                    return c;
-                })
-                .orElseThrow(() -> new CommonException("error.client.not.exist"));
+    public ClientDTO update(ClientDTO clientDTO) {
+        String name = clientDTO.getName();
+        if (name == null) {
+            throw new CommonException("error.clientName.null");
+        }
+        Long clientId = clientDTO.getId();
+        Long organizationId = clientDTO.getOrganizationId();
+        ClientDO existedClient = clientMapper.selectByPrimaryKey(clientId);
+        if (existedClient == null) {
+            throw new CommonException("error.client.not.exist");
+        }
+        if(!organizationId.equals(existedClient.getOrganizationId())){
+            throw new CommonException("error.organizationId.not.same");
+        }
         ClientDO client = new ClientDO();
         client.setName(name);
-        if (!clientMapper.select(client).isEmpty()) {
+        ClientDO clientDO = clientMapper.selectOne(client);
+        if(clientDO!=null && !clientDO.getId().equals(clientId)){
             throw new CommonException("error.clientName.exist");
         }
         if (clientDTO.getAdditionalInformation() == null) {
@@ -65,8 +66,6 @@ public class ClientValidator {
                 throw new CommonException("error.client.additionalInfo.notJson");
             }
         }
-        //组织id不能修改
-        clientDTO.setOrganizationId(null);
         return clientDTO;
     }
 }
