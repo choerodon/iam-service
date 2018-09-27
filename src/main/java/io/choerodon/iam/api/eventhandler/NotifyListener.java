@@ -46,7 +46,7 @@ public class NotifyListener {
         UserEventPayload payload = payloads.get(0);
         //发送站内信
         WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode("sit-msg");
+        wsSendDTO.setCode("site-msg");
         wsSendDTO.setId(payload.getFromUserId());
         wsSendDTO.setTemplateCode(ADD_USER_PRESET);
         Map<String, Object> paramsMap = new HashMap<>();
