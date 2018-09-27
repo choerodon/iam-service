@@ -134,8 +134,10 @@ public class LdapSyncUserTask {
             } else if (existedNames.contains(u.getLoginName()) && !u.getEnabled()) {
                 // 用户存在 且 离职状态 则 停用
                 UserE userE = userRepository.selectByLoginName(u.getLoginName());
-                organizationUserService.disableUser(userE.getOrganizationId(), userE.getId());
-                ldapSyncReport.incrementUpdate();
+                if (userE.getEnabled()) {
+                    organizationUserService.disableUser(userE.getOrganizationId(), userE.getId());
+                    ldapSyncReport.incrementUpdate();
+                }
             } else {
                 //更新,目前不做更新操作
             }
