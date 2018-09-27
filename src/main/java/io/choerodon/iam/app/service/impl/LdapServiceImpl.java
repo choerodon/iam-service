@@ -113,14 +113,13 @@ public class LdapServiceImpl implements LdapService {
 
     @Override
     public void syncLdapUser(Long organizationId, Long id) {
-        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
-            throw new CommonException("error.organization.notFound");
-        }
-        LdapDO ldap = ldapRepository.queryById(id);
-        if (ldap == null) {
-            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
-        }
-        LdapValidator.validate(ldap);
+        LdapDO ldap = validateLdap(organizationId, id);
+        LdapContext ldapContext = getLdapContext(ldap);
+        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, finishFallback);
+    }
+
+    @Override
+    public LdapContext getLdapContext(LdapDO ldap) {
         //匿名用户
         boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapContext ldapContext = null;
@@ -144,7 +143,20 @@ public class LdapServiceImpl implements LdapService {
         if (!ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, finishFallback);
+        return ldapContext;
+    }
+
+    @Override
+    public LdapDO validateLdap(Long organizationId, Long id) {
+        if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
+            throw new CommonException("error.organization.notFound");
+        }
+        LdapDO ldap = ldapRepository.queryById(id);
+        if (ldap == null) {
+            throw new CommonException(LDAP_NOT_EXIST_EXCEPTION);
+        }
+        LdapValidator.validate(ldap);
+        return ldap;
     }
 
     @Override

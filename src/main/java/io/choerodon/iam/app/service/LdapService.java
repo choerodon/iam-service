@@ -4,6 +4,9 @@ import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.LdapHistoryDTO;
+import io.choerodon.iam.infra.dataobject.LdapDO;
+
+import javax.naming.ldap.LdapContext;
 
 /**
  * @author wuguokai
@@ -34,6 +37,9 @@ public interface LdapService {
      */
     void syncLdapUser(Long organizationId, Long id);
 
+    LdapDO validateLdap(Long organizationId, Long id);
+
+    LdapContext getLdapContext(LdapDO ldap);
     /**
      * 根据ldap id 查询最新的一条记录
      *
