@@ -173,9 +173,9 @@ public class OrganizationServiceImpl implements OrganizationService {
                 wsSendDTO.setId(id);
                 wsSendDTO.setCode("site-msg");
                 if (ORG_DISABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("disableOrgMsg");
+                    wsSendDTO.setTemplateCode("disableOrganization-preset");
                 } else if (ORG_ENABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("enableOrgMsg");
+                    wsSendDTO.setTemplateCode("enableOrganization-preset");
                 }
                 Map<String, Object> params = new HashMap<>();
                 params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
