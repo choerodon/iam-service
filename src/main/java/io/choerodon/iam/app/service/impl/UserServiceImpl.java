@@ -1,6 +1,25 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.coobird.thumbnailator.Thumbnails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -16,11 +35,15 @@ import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
@@ -28,26 +51,6 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
-
-import net.coobird.thumbnailator.Thumbnails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author superlee
@@ -78,6 +81,7 @@ public class UserServiceImpl implements UserService {
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
+    private NotifyFeignClient notifyFeignClient;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -89,7 +93,8 @@ public class UserServiceImpl implements UserService {
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
                            PasswordPolicyManager passwordPolicyManager,
                            RoleRepository roleRepository,
-                           MemberRoleMapper memberRoleMapper) {
+                           MemberRoleMapper memberRoleMapper,
+                           NotifyFeignClient notifyFeignClient) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -101,6 +106,7 @@ public class UserServiceImpl implements UserService {
         this.passwordPolicyManager = passwordPolicyManager;
         this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
+        this.notifyFeignClient = notifyFeignClient;
     }
 
     @Override
@@ -307,6 +313,9 @@ public class UserServiceImpl implements UserService {
         user.resetPassword(userPasswordDTO.getPassword());
         userRepository.updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
+
+        // send siteMsg
+        this.sendSiteMsg(user.getId(), user.getRealName());
     }
 
     @Override
@@ -616,4 +625,18 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private void sendSiteMsg(Long userId, String userName) {
+        WsSendDTO wsSendDTO = new WsSendDTO();
+        wsSendDTO.setCode("site-msg");
+        wsSendDTO.setId(userId);
+        wsSendDTO.setTemplateCode("modifyPassword-preset");
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("userName", userName);
+        wsSendDTO.setParams(paramsMap);
+        try {
+            notifyFeignClient.postPm(wsSendDTO);
+        } catch (CommonException e) {
+            LOGGER.warn("The site msg send error. {} {}", e.getCode(), e);
+        }
+    }
 }
