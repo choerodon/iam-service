@@ -4,7 +4,7 @@ import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.LdapService;
-import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncReport;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
@@ -29,11 +29,13 @@ public class LdapSyncUserQuartzTask {
     private LdapService ldapService;
     private OrganizationMapper organizationMapper;
     private LdapSyncUserTask ldapSyncUserTask;
+    private LdapHistoryRepository ldapHistoryRepository;
 
-    public LdapSyncUserQuartzTask(LdapService ldapService, OrganizationMapper organizationMapper, LdapSyncUserTask ldapSyncUserTask) {
+    public LdapSyncUserQuartzTask(LdapService ldapService, OrganizationMapper organizationMapper, LdapSyncUserTask ldapSyncUserTask, LdapHistoryRepository ldapHistoryRepository) {
         this.ldapService = ldapService;
         this.organizationMapper = organizationMapper;
         this.ldapSyncUserTask = ldapSyncUserTask;
+        this.ldapHistoryRepository = ldapHistoryRepository;
     }
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUser", params = {
@@ -53,7 +55,11 @@ public class LdapSyncUserQuartzTask {
         CountDownLatch latch = new CountDownLatch(1);
         ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, (LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) -> {
             latch.countDown();
-            return null;
+            ldapHistoryDO.setSyncEndTime(ldapSyncReport.getEndTime());
+            ldapHistoryDO.setNewUserCount(ldapSyncReport.getInsert());
+            ldapHistoryDO.setUpdateUserCount(ldapSyncReport.getUpdate());
+            ldapHistoryDO.setErrorUserCount(ldapSyncReport.getError());
+            return ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO);
         });
         try {
             latch.await();
