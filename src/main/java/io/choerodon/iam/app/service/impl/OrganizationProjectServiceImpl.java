@@ -250,9 +250,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 wsSendDTO.setId(id);
                 wsSendDTO.setCode("site-msg");
                 if (PROJECT_DISABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("disableProjMsg");
+                    wsSendDTO.setTemplateCode("disableProject-preset");
                 } else if (PROJECT_ENABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("enableProjMsg");
+                    wsSendDTO.setTemplateCode("enableProject-preset");
                 }
                 Map<String, Object> params = new HashMap<>();
                 params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
