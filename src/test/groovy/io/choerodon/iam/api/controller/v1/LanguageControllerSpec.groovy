@@ -121,8 +121,32 @@ class LanguageControllerSpec extends Specification {
     }
 
     def "ListAll"() {
+        when: "调用方法"
+        def entity = restTemplate.getForEntity(BASE_PATH + "/list", List)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().size() == 2
     }
 
     def "QueryByCode"() {
+        given: "构造参数列表"
+        def paramsMap = new HashMap<String, Object>()
+
+        when: "调用方法[存在code]"
+        paramsMap.put("value", "zh_CN")
+        def entity = restTemplate.getForEntity(BASE_PATH + "/code?value={value}", LanguageDTO, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode().equals(paramsMap.get("value"))
+
+        when: "调用方法[不存在code]"
+        paramsMap.put("value", "zh_US")
+        entity = restTemplate.getForEntity(BASE_PATH + "/code?value={value}", ExceptionResponse, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode().equals("error.resource.notExist")
     }
 }

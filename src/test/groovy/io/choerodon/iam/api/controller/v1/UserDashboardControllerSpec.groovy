@@ -1,6 +1,8 @@
 package io.choerodon.iam.api.controller.v1
 
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
+import io.choerodon.iam.api.dto.UserDashboardDTO
 import io.choerodon.iam.domain.iam.entity.DashboardE
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import io.choerodon.iam.infra.mapper.UserDashboardMapper
@@ -41,6 +43,7 @@ class UserDashboardControllerSpec extends Specification {
 
             for (int i = 0; i < 3; i++) {
                 DashboardE dashboard = new DashboardE();
+                dashboard.setId(1000 + i);
                 dashboard.setCode("site-test-" + i);
                 dashboard.setDescription("site-test-desc-" + i);
                 dashboard.setName("site-test-name-" + i)
@@ -89,7 +92,7 @@ class UserDashboardControllerSpec extends Specification {
         }
     }
 
-    def cleanup(){
+    def cleanup() {
         if (!sharedCleanupDone) {
             when: '批量删除dashboard'
             def count = 0;
@@ -120,10 +123,52 @@ class UserDashboardControllerSpec extends Specification {
     }
 
     def "Update"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("level", "project")
+        paramsMap.put("source_id", 1)
+        def userDashboard1 = dashboardList.get(1)
+        def userDashboard2 = dashboardList.get(2)
+        def userDashboardDTO1 = new UserDashboardDTO()
+        userDashboardDTO1.setObjectVersionNumber(2)
+        userDashboardDTO1.setDashboardId(userDashboard1.getId())
+        userDashboardDTO1.setLevel(userDashboard1.getLevel())
+        userDashboardDTO1.setDashboardCode(userDashboard1.getCode())
+        userDashboardDTO1.setSort(userDashboard1.getSort())
+        userDashboardDTO1.setDashboardDescription(userDashboard1.getDescription())
+        userDashboardDTO1.setDashboardIcon(userDashboard1.getIcon())
+        userDashboardDTO1.setDashboardTitle(userDashboard1.getTitle())
+        userDashboardDTO1.setNeedRoles(userDashboardDTO1.getNeedRoles())
+        userDashboardDTO1.setDashboardName("update-1")
+        def userDashboardDTO2 = new UserDashboardDTO()
+        userDashboardDTO2.setObjectVersionNumber(2)
+        userDashboardDTO2.setDashboardId(userDashboard2.getId())
+        userDashboardDTO2.setLevel(userDashboard2.getLevel())
+        userDashboardDTO2.setSort(userDashboard2.getSort())
+        userDashboardDTO2.setDashboardCode(userDashboard2.getCode())
+        userDashboardDTO2.setDashboardDescription(userDashboard2.getDescription())
+        userDashboardDTO2.setDashboardIcon(userDashboard2.getIcon())
+        userDashboardDTO2.setDashboardTitle(userDashboard2.getTitle())
+        userDashboardDTO2.setNeedRoles(userDashboard2.getNeedRoles())
+        userDashboardDTO2.setDashboardName("update-2")
+        def userDashboardDTOs = new ArrayList<UserDashboardDTO>()
+        userDashboardDTOs.add(userDashboardDTO1)
+        userDashboardDTOs.add(userDashboardDTO2)
+
+        when: "调用方法"
+        paramsMap.put("level", "error")
+        def entity = restTemplate.postForEntity(path + "?level={level}&source_id={source_id}", userDashboardDTOs, ExceptionResponse, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode().equals("error.level.illegal")
+
+        when: "调用方法"
+        paramsMap.put("level", "site")
+        entity = restTemplate.postForEntity(path + "?level={level}&source_id={source_id}", userDashboardDTOs, String, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().size() == 2
     }
-
-    def "clear"() {
-
-    }
-
 }

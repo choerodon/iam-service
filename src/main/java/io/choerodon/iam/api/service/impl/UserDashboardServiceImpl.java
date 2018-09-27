@@ -84,13 +84,13 @@ public class UserDashboardServiceImpl implements UserDashboardService {
                         dashboard.getLevel(),
                         sourceId,
                         dashboard.getSort());
-                if (ResourceLevel.SITE.equals(level)) {
+                if (ResourceLevel.SITE.value().equals(level)) {
                     userDashboard.setSourceId(0L);
                 }
                 userDashboardMapper.insertSelective(userDashboard);
 
                 for (UserDashboardDTO userDashboardDTO : userDashboardList) {
-                    if (dashboard.getId() == userDashboardDTO.getDashboardId()) {
+                    if (dashboard.getId().equals(userDashboardDTO.getDashboardId())) {
                         userDashboardDTO.setId(userDashboard.getId());
                         break;
                     }
@@ -116,7 +116,7 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         Boolean isExist = false;
 
         for (UserDashboardDTO userDashboard1 : userDashboardList) {
-            if (userDashboard.getDashboardId() == userDashboard1.getDashboardId()) {
+            if (userDashboard.getDashboardId().equals(userDashboard1.getDashboardId())) {
                 isExist = true;
                 break;
             }

@@ -31,8 +31,8 @@ public class LdapSyncUserQuartzTask {
     }
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUser", params = {
-            @JobParam(name = "organizationCode", defaultValue = "hand")
-    })
+            @JobParam(name = "organizationCode", defaultValue = "hand", description = "组织编码")
+    }, description = "同步idap用户")
     public void syncLdapUser(Map<String, Object> map) {
         String orgCode = (String) map.get("organizationCode");
         OrganizationDO organizationDO = new OrganizationDO();
