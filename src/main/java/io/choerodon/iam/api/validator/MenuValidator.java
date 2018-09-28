@@ -20,11 +20,15 @@ public class MenuValidator {
 
     //code不能重复
     public void create(MenuDTO menuDTO) {
-        MenuTypeValidator.validate(menuDTO.getType());
-        ResourceLevelValidator.validate(menuDTO.getLevel());
-        MenuDTO menuDTO1 = new MenuDTO();
-        menuDTO1.setCode(menuDTO.getCode());
-        if (!menuMapper.select(ConvertHelper.convert(menuDTO1, MenuDO.class)).isEmpty()) {
+        String level = menuDTO.getLevel();
+        String type = menuDTO.getType();
+        MenuTypeValidator.validate(type);
+        ResourceLevelValidator.validate(level);
+        MenuDO menu = new MenuDO();
+        menu.setCode(menuDTO.getCode());
+        menu.setLevel(level);
+        menu.setType(type);
+        if (!menuMapper.select(menu).isEmpty()) {
             throw new CommonException("error.menuCode.exist");
         }
     }
