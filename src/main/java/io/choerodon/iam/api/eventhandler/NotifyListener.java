@@ -27,7 +27,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_CREATE;
 @Component
 public class NotifyListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotifyListener.class);
-    private static final String ADD_USER_PRESET = "addUser-preset";
+    private static final String ADD_USER = "addUser";
     private final ObjectMapper mapper = new ObjectMapper();
 
     private NotifyFeignClient notifyFeignClient;
@@ -46,9 +46,8 @@ public class NotifyListener {
         UserEventPayload payload = payloads.get(0);
         //发送站内信
         WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode("site-msg");
+        wsSendDTO.setCode(ADD_USER);
         wsSendDTO.setId(payload.getFromUserId());
-        wsSendDTO.setTemplateCode(ADD_USER_PRESET);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", 1);
         wsSendDTO.setParams(paramsMap);
