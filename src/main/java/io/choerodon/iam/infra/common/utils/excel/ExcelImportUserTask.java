@@ -97,10 +97,12 @@ public class ExcelImportUserTask {
         uploadHistory.setSuccessfulCount(successCount);
         uploadHistory.setFailedCount(failedCount);
         uploadAndFallback(uploadHistory, fallback, errorUsers);
-        sendStationLetter(successCount,userId);
+        if (successCount > 0) {
+            sendStationLetter(successCount, userId);
+        }
     }
 
-    private void sendStationLetter(Integer successCount,Long userId) {
+    private void sendStationLetter(Integer successCount, Long userId) {
         WsSendDTO wsSendDTO = new WsSendDTO();
         wsSendDTO.setCode("site-msg");
         wsSendDTO.setId(userId);
