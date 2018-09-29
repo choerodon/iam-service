@@ -63,7 +63,9 @@ public class ClientController extends BaseController {
     @PostMapping(value = "/{client_id}")
     public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId,
                                             @RequestBody ClientDTO clientDTO) {
-        clientDTO = clientValidator.update(organizationId, clientId, clientDTO);
+        clientDTO.setId(clientId);
+        clientDTO.setOrganizationId(organizationId);
+        clientDTO = clientValidator.update(clientDTO);
         return new ResponseEntity<>(clientService.update(organizationId, clientId, clientDTO), HttpStatus.OK);
     }
 

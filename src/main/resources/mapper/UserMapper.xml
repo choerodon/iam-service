@@ -417,6 +417,6 @@
     </select>
 
     <select id="listUserIds" resultType="java.lang.Long">
-        SELECT id from iam_user
+        SELECT id from iam_user where is_enabled = 1
     </select>
 </mapper>

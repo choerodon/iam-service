@@ -2,8 +2,12 @@ package io.choerodon.iam
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.iam.api.dto.LdapConnectionDTO
+import io.choerodon.iam.domain.service.ILdapService
+import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -22,12 +26,13 @@ import org.springframework.security.jwt.crypto.sign.Signer
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
+
 /**
  * @author dongfan117@gmail.com
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
-class IntegrationTestConfiguration{
+class IntegrationTestConfiguration {
 
     private final detachedMockFactory = new DetachedMockFactory()
 
@@ -45,6 +50,14 @@ class IntegrationTestConfiguration{
     @Bean
     KafkaTemplate kafkaTemplate() {
         detachedMockFactory.Mock(KafkaTemplate)
+    }
+
+    @Bean
+    ILdapService iLdapService() {
+        ILdapService iLdapService = Mockito.mock(ILdapService)
+        LdapConnectionDTO dto = new LdapConnectionDTO()
+        Mockito.doReturn(dto).when(iLdapService).testConnect(Mockito.any(LdapDO.class))
+        return iLdapService
     }
 
     @PostConstruct

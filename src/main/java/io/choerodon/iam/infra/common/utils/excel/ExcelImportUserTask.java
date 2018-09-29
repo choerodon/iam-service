@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 @Component
 public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
-    private static final String ADD_USER_PRESET = "addUser-preset";
+    private static final String ADD_USER = "addUser";
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
@@ -97,14 +97,15 @@ public class ExcelImportUserTask {
         uploadHistory.setSuccessfulCount(successCount);
         uploadHistory.setFailedCount(failedCount);
         uploadAndFallback(uploadHistory, fallback, errorUsers);
-        sendStationLetter(successCount,userId);
+        if (successCount > 0) {
+            sendStationLetter(successCount, userId);
+        }
     }
 
-    private void sendStationLetter(Integer successCount,Long userId) {
+    private void sendStationLetter(Integer successCount, Long userId) {
         WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode("site-msg");
+        wsSendDTO.setCode(ADD_USER);
         wsSendDTO.setId(userId);
-        wsSendDTO.setTemplateCode(ADD_USER_PRESET);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", successCount);
         wsSendDTO.setParams(paramsMap);
