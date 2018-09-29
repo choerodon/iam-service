@@ -171,11 +171,10 @@ public class OrganizationServiceImpl implements OrganizationService {
             userIds.stream().forEach(id -> {
                 WsSendDTO wsSendDTO = new WsSendDTO();
                 wsSendDTO.setId(id);
-                wsSendDTO.setCode("site-msg");
                 if (ORG_DISABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("disableOrganization-preset");
+                    wsSendDTO.setCode("disableOrganization");
                 } else if (ORG_ENABLE.equals(consumerType)) {
-                    wsSendDTO.setTemplateCode("enableOrganization-preset");
+                    wsSendDTO.setCode("enableOrganization");
                 }
                 Map<String, Object> params = new HashMap<>();
                 params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
