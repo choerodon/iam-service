@@ -42,7 +42,7 @@ public class LdapSyncUserQuartzTask {
             @JobParam(name = "organizationCode", defaultValue = "hand", description = "组织编码")
     }, description = "同步idap用户")
     public void syncLdapUser(Map<String, Object> map) {
-        String orgCode = Optional.ofNullable((String) map.get("organizationCode")).orElse("hand");
+        String orgCode = Optional.ofNullable((String) map.get("organizationCode")).orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
         OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(orgCode);
         organizationDO = organizationMapper.selectOne(organizationDO);
