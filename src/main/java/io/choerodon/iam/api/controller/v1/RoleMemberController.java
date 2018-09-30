@@ -295,9 +295,9 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 organization 层根据 用户Id 及 组织Id 查询用户及该用户在此组织下拥有的角色
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据用户Id及组织Id查询用户及该用户拥有的角色")
-    @GetMapping(value = "/organization/{organization_id}/role_members/users/{user_id}")
+    @GetMapping(value = "/organizations/{organization_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithOrgLevelRolesByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                                           @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(roleService.listRolesBySourceIdAndTypeAndUserId(ResourceLevel.ORGANIZATION.value(), organizationId, userId), HttpStatus.OK);
@@ -306,9 +306,9 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 project 层根据 用户Id 及 项目Id 查询用户及该用户在此项目下拥有的角色
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, permissionLogin = true)
     @ApiOperation(value = "项目层根据用户Id及项目Id查询用户及该用户拥有的角色")
-    @GetMapping(value = "/project/{project_id}/role_members/users/{user_id}")
+    @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithProjLevelRolesByUserId(@PathVariable(name = "project_id") Long projectId,
                                                                            @PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(roleService.listRolesBySourceIdAndTypeAndUserId(ResourceLevel.PROJECT.value(), projectId, userId), HttpStatus.OK);
@@ -346,7 +346,7 @@ public class RoleMemberController extends BaseController {
      * @param projectId
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
@@ -370,7 +370,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/projects/{project_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
@@ -394,7 +394,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation("查项目层的历史")
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
