@@ -295,7 +295,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 organization 层根据 用户Id 及 组织Id 查询用户及该用户在此组织下拥有的角色
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据用户Id及组织Id查询用户及该用户拥有的角色")
     @GetMapping(value = "/organizations/{organization_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithOrgLevelRolesByUserId(@PathVariable(name = "organization_id") Long organizationId,
@@ -306,7 +306,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 project 层根据 用户Id 及 项目Id 查询用户及该用户在此项目下拥有的角色
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, permissionLogin = true)
     @ApiOperation(value = "项目层根据用户Id及项目Id查询用户及该用户拥有的角色")
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithProjLevelRolesByUserId(@PathVariable(name = "project_id") Long projectId,
