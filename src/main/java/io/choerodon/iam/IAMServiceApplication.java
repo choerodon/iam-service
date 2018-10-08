@@ -17,7 +17,7 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
  * @author wuguokai
  */
 @EnableFeignClients("io.choerodon")
-//@EnableEurekaClient
+@EnableEurekaClient
 @SpringBootApplication
 @EnableChoerodonResourceServer
 @EnableAsync
