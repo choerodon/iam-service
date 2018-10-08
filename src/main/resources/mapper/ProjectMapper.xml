@@ -45,7 +45,10 @@
         FROM fd_project fp
         INNER JOIN iam_member_role imr
         ON imr.source_id = fp.id
-        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId} AND is_enabled = #{includeDisabled}
+        WHERE imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.organization_id = #{orgId}
+        <if test="isEnabled != null">
+            AND is_enabled = #{isEnabled}
+        </if>
     </select>
 
     <select id="fulltextSearch" resultMap="projectDO">

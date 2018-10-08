@@ -107,7 +107,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (organizationDO == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
         }
-        List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, true);
+        List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, null);
         organizationDO.setProjects(projects);
         organizationDO.setProjectCount(projects.size());
         OrganizationDTO organizationDTO = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
