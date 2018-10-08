@@ -108,8 +108,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, boolean includeDisabled) {
-        return projectMapper.selectUserProjectsUnderOrg(userId, orgId, includeDisabled);
+    public List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled) {
+        return projectMapper.selectUserProjectsUnderOrg(userId, orgId, isEnabled);
     }
 
     @Override

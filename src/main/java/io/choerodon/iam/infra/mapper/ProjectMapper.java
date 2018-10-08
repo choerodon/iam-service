@@ -30,7 +30,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
 
     List<ProjectDO> selectUserProjectsUnderOrg(@Param("userId") Long userId,
                                                @Param("orgId") Long orgId,
-                                               @Param("includeDisabled") boolean includeDisabled);
+                                               @Param("isEnabled") Boolean isEnabled);
 
 
     List<Long> listUserIds(@Param("projectId") Long projectId);

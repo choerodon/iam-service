@@ -33,9 +33,9 @@ public interface ProjectRepository {
     /**
      * 查找用户在某个组织下所有的项目
      *
-     * @param includeDisabled 是否包括未启用的项目。
+     * @param isEnabled
      */
-    List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, boolean includeDisabled);
+    List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled);
 
     List<ProjectDO> selectByOrgId(Long organizationId);
 
