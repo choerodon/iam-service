@@ -59,7 +59,7 @@ public class MenuServiceImpl implements MenuService {
     public MenuDTO update(Long menuId, MenuDTO menuDTO) {
         MenuE menuE = menuRepository.queryById(menuId);
         if (menuE == null) {
-            throw new CommonException("error.menu.not.exit");
+            throw new CommonException("error.menu.not.exist");
         }
         if (menuE.getDefault()) {
             throw new CommonException("error.menu.default");

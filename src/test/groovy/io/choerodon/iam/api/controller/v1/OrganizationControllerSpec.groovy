@@ -223,7 +223,7 @@ class OrganizationControllerSpec extends Specification {
         when: "调用对应方法"
         def organizationDTO3 = new OrganizationDTO()
         organizationDTO3.setCode("test")
-        entity = restTemplate.postForEntity(BASE_PATH + "/check", organizationDTO3, ExceptionResponse)
+        entity = restTemplate.postForEntity(BASE_PATH + "/check", organizationDTO3, Void)
         needClean = true
 
         then: "校验结果"
