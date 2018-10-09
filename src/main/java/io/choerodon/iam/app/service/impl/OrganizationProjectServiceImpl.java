@@ -259,8 +259,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 notifyFeignClient.postPm(wsSendDTO);
             });
         } else {
-            projectRepository.updateSelective(projectDO);
-            project = iProjectService.updateProjectEnabled(projectId);
+            project = projectRepository.updateSelective(projectDO);
+            //project = iProjectService.updateProjectEnabled(projectId);
         }
         return project;
     }

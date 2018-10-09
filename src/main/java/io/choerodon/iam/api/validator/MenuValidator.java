@@ -57,7 +57,7 @@ public class MenuValidator {
         }
         menuDO = menuMapper.selectByPrimaryKey(menuId);
         if (menuDO == null) {
-            throw new CommonException("error.menu.not.exit");
+            throw new CommonException("error.menu.not.exist");
         }
         if (menuDO.getDefault()) {
             throw new CommonException("error.menu.default");
