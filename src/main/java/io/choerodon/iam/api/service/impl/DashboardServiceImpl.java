@@ -43,7 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
                 dashboardDTO.getIcon(),
                 dashboardDTO.getNeedRoles(),
                 dashboardDTO.getObjectVersionNumber());
-
+        dashboard.setEnabled(dashboardDTO.getEnabled());
         int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboard);
         if (isUpdate != 1) {
             throw new CommonException("error.dashboard.not.exist");

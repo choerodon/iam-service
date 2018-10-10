@@ -344,7 +344,7 @@
     <select id="selectUsersByProjectIdAndOptions" resultMap="userDO">
         SELECT iam_user.*
         FROM iam_user
-        RIGHT JOIN
+        JOIN
         (
             SELECT
             DISTINCT member_id

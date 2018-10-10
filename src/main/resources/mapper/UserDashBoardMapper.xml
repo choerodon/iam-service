@@ -39,6 +39,7 @@
 			AND ud.fd_level IN ( 'site', #{userDashboard.level} )
 			AND ud.user_id = #{userDashboard.userId}
 			AND source_id = #{userDashboard.sourceId}
+			AND d.is_enabled = 1
 	</select>
 
 	<select id="selectWithDashboardNotExist" resultMap="UserDashboardDTO">
@@ -61,6 +62,7 @@
 			iam_dashboard d
 		WHERE
 			d.fd_level IN ( 'site', #{userDashboard.level} )
+			AND d.is_enabled = 1
 	</select>
 </mapper>
 
