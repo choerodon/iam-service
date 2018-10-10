@@ -21,13 +21,18 @@ public class OrganizationE {
 
     private Boolean enabled;
 
+    private Long userId;
+
+    private String address;
+
     private UserRepository userRepository;
 
     private PasswordRecord passwordRecord;
 
     public OrganizationE(Long id, String name, String code,
                          Long objectVersionNumber,
-                         UserRepository userRepository, Boolean enabled, PasswordRecord passwordRecord) {
+                         UserRepository userRepository, Boolean enabled, PasswordRecord passwordRecord,
+                         Long userId, String address) {
         this.id = id;
         this.name = name;
         this.objectVersionNumber = objectVersionNumber;
@@ -35,6 +40,8 @@ public class OrganizationE {
         this.code = code;
         this.enabled = enabled;
         this.passwordRecord = passwordRecord;
+        this.userId = userId;
+        this.address = address;
     }
 
     public OrganizationE() {}
@@ -137,5 +144,21 @@ public class OrganizationE {
 
     public void disable() {
         this.enabled = false;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

@@ -194,7 +194,7 @@ public class UserController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "用户信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody UserDTO user) {

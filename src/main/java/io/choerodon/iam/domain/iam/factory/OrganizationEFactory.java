@@ -15,9 +15,9 @@ public class OrganizationEFactory {
     }
 
     public static OrganizationE createOrganizationE(
-            Long id, String name, String code, Long objectVersionNumber, Boolean isEnabled) {
+            Long id, String name, String code, Long objectVersionNumber, Boolean isEnabled, Long userId, String address) {
         UserRepository userRepository = ApplicationContextHelper.getSpringFactory().getBean(UserRepository.class);
         PasswordRecord passwordRecord = ApplicationContextHelper.getSpringFactory().getBean(PasswordRecord.class);
-        return new OrganizationE(id, name, code, objectVersionNumber, userRepository, isEnabled, passwordRecord);
+        return new OrganizationE(id, name, code, objectVersionNumber, userRepository, isEnabled, passwordRecord, userId, address);
     }
 }

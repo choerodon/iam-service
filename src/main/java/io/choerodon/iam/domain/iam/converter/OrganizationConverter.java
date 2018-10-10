@@ -17,7 +17,8 @@ public class OrganizationConverter implements ConvertorI<OrganizationE, Organiza
     public OrganizationE dtoToEntity(OrganizationDTO dto) {
         return OrganizationEFactory.createOrganizationE(
                 dto.getId(), dto.getName(), dto.getCode(),
-                dto.getObjectVersionNumber(), dto.getEnabled());
+                dto.getObjectVersionNumber(), dto.getEnabled(),
+                dto.getUserId(), dto.getAddress());
     }
 
     @Override
@@ -31,7 +32,8 @@ public class OrganizationConverter implements ConvertorI<OrganizationE, Organiza
     public OrganizationE doToEntity(OrganizationDO dataObject) {
         return OrganizationEFactory.createOrganizationE(
                 dataObject.getId(), dataObject.getName(), dataObject.getCode(),
-                dataObject.getObjectVersionNumber(), dataObject.getEnabled());
+                dataObject.getObjectVersionNumber(), dataObject.getEnabled(),
+                dataObject.getUserId(), dataObject.getAddress());
     }
 
     @Override
