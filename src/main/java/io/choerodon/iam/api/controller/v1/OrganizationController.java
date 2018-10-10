@@ -66,7 +66,7 @@ public class OrganizationController extends BaseController {
      * @param id 所要查询的组织id号
      * @return 组织信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据组织id查询组织，并查询被分配的角色")
     @GetMapping(value = "/{organization_id}/org_level")
     public ResponseEntity<OrganizationDTO> queryOrgLevel(@PathVariable(name = "organization_id") Long id) {

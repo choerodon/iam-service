@@ -88,7 +88,7 @@ public class PermissionServiceImpl implements PermissionService {
             return checkPermissionDTOList;
         }
         //super admin例外处理
-        if (details.getAdmin()) {
+        if (details.getAdmin() != null && details.getAdmin()) {
             checkPermissionDTOList.stream().filter(t -> permissionRepository.existByCode(t.getCode().trim())).forEach(cp -> cp.setApprove(true));
             return checkPermissionDTOList;
         }
