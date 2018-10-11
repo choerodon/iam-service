@@ -103,6 +103,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationDTO dto = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
         dto.setOwnerLoginName(user.getLoginName());
         dto.setOwnerRealName(user.getRealName());
+        dto.setOwnerPhone(user.getPhone());
+        dto.setOwnerEmail(user.getEmail());
         return dto;
     }
 
