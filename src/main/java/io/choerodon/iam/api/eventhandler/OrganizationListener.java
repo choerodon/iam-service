@@ -2,11 +2,14 @@ package io.choerodon.iam.api.eventhandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
+import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
@@ -16,9 +19,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE_USER;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_CREATE;
 
 
 /**
@@ -39,12 +46,16 @@ public class OrganizationListener {
     private Integer lockedExpireTime;
     @Value("${max.checkCaptcha:3}")
     private Integer maxCheckCaptcha;
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
+    private SagaClient sagaClient;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService) {
+                                OrganizationService organizationService, SagaClient sagaClient) {
         this.ldapService = ldapService;
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
+        this.sagaClient = sagaClient;
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
@@ -90,5 +101,16 @@ public class OrganizationListener {
             LOGGER.error("create password policy error of organization {}", orgId);
         }
         return organizationEventPayload;
+    }
+
+    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE_USER, seq = 1, description = "iam接收org服务注册组织同时新建了用户的事件")
+    public void createUser(String message) throws IOException {
+        UserEventPayload userEventPayload = mapper.readValue(message, UserEventPayload.class);
+        List<UserEventPayload> payloads = new ArrayList<>();
+        payloads.add(userEventPayload);
+        if(devopsMessage) {
+            String input = mapper.writeValueAsString(payloads);
+            sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+        }
     }
 }

@@ -23,6 +23,10 @@ public class OrganizationDO extends AuditDomain {
 
     private String code;
 
+    private Long userId;
+
+    private String address;
+
     @Column(name = "is_enabled")
     private Boolean enabled;
 
@@ -96,5 +100,21 @@ public class OrganizationDO extends AuditDomain {
 
     public void setProjectCount(Integer projectCount) {
         this.projectCount = projectCount;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

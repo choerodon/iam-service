@@ -32,4 +32,13 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-10-10-fd-organization-add') {
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'USER_ID', type: "BIGINT UNSIGNED", remarks: '创建用户的id', defaultValue: '1', afterColumn: 'IS_ENABLED') {
+                constraints(nullable: true)
+            }
+            column(name: 'ADDRESS', type: "VARCHAR(128)", remarks: '组织的地址', afterColumn: 'USER_ID')
+        }
+    }
 }

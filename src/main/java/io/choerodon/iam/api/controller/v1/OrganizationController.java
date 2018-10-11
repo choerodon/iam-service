@@ -43,6 +43,7 @@ public class OrganizationController extends BaseController {
     @PutMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> update(@PathVariable(name = "organization_id") Long id,
                                                   @RequestBody @Valid OrganizationDTO organizationDTO) {
+        organizationDTO.setUserId(null);
         return new ResponseEntity<>(organizationService.updateOrganization(id, organizationDTO),
                 HttpStatus.OK);
     }
@@ -106,7 +107,7 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.disableOrganization(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody OrganizationDTO organization) {
