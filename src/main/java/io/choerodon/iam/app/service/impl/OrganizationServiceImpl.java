@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -47,6 +49,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private OrganizationRepository organizationRepository;
     private ProjectRepository projectRepository;
     private RoleRepository roleRepository;
+    private UserRepository userRepository;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -66,12 +69,14 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    SagaClient sagaClient,
                                    ProjectRepository projectRepository,
                                    RoleRepository roleRepository,
-                                   NotifyFeignClient notifyFeignClient) {
+                                   NotifyFeignClient notifyFeignClient,
+                                   UserRepository userRepository) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
         this.projectRepository = projectRepository;
         this.roleRepository = roleRepository;
         this.notifyFeignClient = notifyFeignClient;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -93,7 +98,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<ProjectDO> projects = projectRepository.selectByOrgId(organizationId);
         organizationDO.setProjects(projects);
         organizationDO.setProjectCount(projects.size());
-        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        Long userId = organizationDO.getUserId();
+        UserE user = userRepository.selectByPrimaryKey(userId);
+        OrganizationDTO dto = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        dto.setOwnerLoginName(user.getLoginName());
+        dto.setOwnerRealName(user.getRealName());
+        return dto;
     }
 
     @Override
