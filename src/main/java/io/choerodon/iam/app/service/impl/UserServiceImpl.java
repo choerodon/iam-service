@@ -639,4 +639,15 @@ public class UserServiceImpl implements UserService {
             LOGGER.warn("The site msg send error. {} {}", e.getCode(), e);
         }
     }
+
+    @Override
+    public Long queryOrgIdByEmail(String email) {
+        UserDO userDO = new UserDO();
+        userDO.setEmail(email);
+        UserDO userDO1 = userRepository.selectOne(userDO);
+        if (null == userDO1) {
+            throw new CommonException("error.user.email.not.exist");
+        }
+        return userDO1.getOrganizationId();
+    }
 }

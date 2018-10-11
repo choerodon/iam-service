@@ -90,4 +90,6 @@ public interface UserService {
                                              PageRequest pageRequest, String params);
 
     Long[] listUserIds();
+
+    Long queryOrgIdByEmail(String email);
 }
