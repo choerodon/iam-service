@@ -180,7 +180,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 rolePermissionRepository.delete(rolePermission);
             }
         }
-        processRolePermission(initRoleMap, roles, permissionId);
+        processRolePermission(initRoleMap, roles, permissionId, level);
     }
 
     private void insertRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
@@ -197,10 +197,10 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
         }
         //roles不为空，关联自定义角色
-        processRolePermission(initRoleMap, roles, permissionId);
+        processRolePermission(initRoleMap, roles, permissionId, level);
     }
 
-    private void processRolePermission(Map<String, RoleDO> initRoleMap, String[] roles, Long permissionId) {
+    private void processRolePermission(Map<String, RoleDO> initRoleMap, String[] roles, Long permissionId, String level) {
         if (roles != null) {
             Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
             for (String roleCode : roleSet) {
@@ -209,9 +209,15 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     //找不到code，说明没有初始化进去角色或者角色code拼错了
                     logger.info("can not find the role, role code is : {}", roleCode);
                 } else {
-                    RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
-                    if (rolePermissionRepository.selectOne(rp) == null) {
-                        rolePermissionRepository.insert(rp);
+                    if (level.equals(role.getLevel())) {
+                        RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
+                        if (rolePermissionRepository.selectOne(rp) == null) {
+                            rolePermissionRepository.insert(rp);
+                        }
+                    } else {
+                        //角色层级与权限不匹配，不分配
+                        logger.error("the level of permission does not match the level of role, permissionId : {}, permissionLevel : {}, roleLevel : {}, roleCode : {}",
+                                permissionId, level, role.getLevel(), role.getCode());
                     }
                 }
             }
