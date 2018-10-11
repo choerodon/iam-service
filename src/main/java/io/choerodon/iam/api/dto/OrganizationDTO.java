@@ -36,6 +36,10 @@ public class OrganizationDTO {
     @ApiModelProperty(value = "项目数量")
     private Integer projectCount;
 
+    private String ownerLoginName;
+
+    private String ownerRealName;
+
     private Boolean isInto = true;
 
     private List<ProjectDTO> projects;
@@ -132,5 +136,21 @@ public class OrganizationDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getOwnerLoginName() {
+        return ownerLoginName;
+    }
+
+    public void setOwnerLoginName(String ownerLoginName) {
+        this.ownerLoginName = ownerLoginName;
+    }
+
+    public String getOwnerRealName() {
+        return ownerRealName;
+    }
+
+    public void setOwnerRealName(String ownerRealName) {
+        this.ownerRealName = ownerRealName;
     }
 }
