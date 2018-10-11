@@ -86,6 +86,7 @@ class LookupControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals(createdDto.getCode())
         entity.getBody().getDescription().equals(createdDto.getDescription())
+        lookupMapper.deleteByPrimaryKey(entity.getBody().getId())
     }
 
     def "Delete"() {

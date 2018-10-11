@@ -107,7 +107,7 @@ class OrganizationUserControllerSpec extends Specification {
 
         when: "调用方法[异常-组织不存在]"
         def userDTO1 = new UserDTO()
-        BeanUtils.copyProperties(userDTO,userDTO1)
+        BeanUtils.copyProperties(userDTO, userDTO1)
         userDTO1.setPassword("123456")
         entity = restTemplate.postForEntity(BASE_PATH + "/users", userDTO1, ExceptionResponse, notExistOrganizationId)
 
@@ -127,6 +127,7 @@ class OrganizationUserControllerSpec extends Specification {
         entity.getBody().getLoginName().equals(userDTO.getLoginName())
         entity.getBody().getRealName().equals(userDTO.getRealName())
         entity.getBody().getOrganizationId().equals(userDTO.getOrganizationId())
+        userMapper.deleteByPrimaryKey(entity.getBody().getId())
     }
 
     def "Update"() {
@@ -228,14 +229,14 @@ class OrganizationUserControllerSpec extends Specification {
         def httpEntity = new HttpEntity<Object>()
 
         when: "调用方法[异常-组织不存在]"
-        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}/enable",HttpMethod.PUT,httpEntity, ExceptionResponse, notExistOrganizationId, userId)
+        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}/enable", HttpMethod.PUT, httpEntity, ExceptionResponse, notExistOrganizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
-        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/enable",HttpMethod.PUT,httpEntity, UserDTO, organizationId, userId)
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/enable", HttpMethod.PUT, httpEntity, UserDTO, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -248,14 +249,14 @@ class OrganizationUserControllerSpec extends Specification {
         def httpEntity = new HttpEntity<Object>()
 
         when: "调用方法[异常-组织不存在]"
-        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}/disable",HttpMethod.PUT,httpEntity, ExceptionResponse, notExistOrganizationId, userId)
+        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}/disable", HttpMethod.PUT, httpEntity, ExceptionResponse, notExistOrganizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
-        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/disable",HttpMethod.PUT,httpEntity, UserDTO, organizationId, userId)
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/disable", HttpMethod.PUT, httpEntity, UserDTO, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -273,7 +274,7 @@ class OrganizationUserControllerSpec extends Specification {
         when: "调用方法[异常-登录名字段为空]"
         userDTO.setLoginName("")
         userDTO.setEmail("")
-        def entity = restTemplate.postForEntity(BASE_PATH + "/users/check",userDTO, ExceptionResponse, organizationId, userId)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/users/check", userDTO, ExceptionResponse, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -281,7 +282,7 @@ class OrganizationUserControllerSpec extends Specification {
 
         when: "调用方法[异常-登录名已经存在]"
         userDTO.setLoginName("dengyouquan1")
-        entity = restTemplate.postForEntity(BASE_PATH + "/users/check",userDTO, ExceptionResponse, organizationId, userId)
+        entity = restTemplate.postForEntity(BASE_PATH + "/users/check", userDTO, ExceptionResponse, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -290,7 +291,7 @@ class OrganizationUserControllerSpec extends Specification {
         when: "调用方法[异常-邮箱地址已经存在]"
         userDTO.setLoginName("check")
         userDTO.setEmail("youquan.deng0@hand-china.com")
-        entity = restTemplate.postForEntity(BASE_PATH + "/users/check",userDTO, ExceptionResponse, organizationId, userId)
+        entity = restTemplate.postForEntity(BASE_PATH + "/users/check", userDTO, ExceptionResponse, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -298,7 +299,7 @@ class OrganizationUserControllerSpec extends Specification {
 
         when: "调用方法"
         userDTO.setEmail("check@qq.com")
-        entity = restTemplate.postForEntity(BASE_PATH + "/users/check",userDTO, ExceptionResponse, organizationId, userId)
+        entity = restTemplate.postForEntity(BASE_PATH + "/users/check", userDTO, ExceptionResponse, organizationId, userId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()

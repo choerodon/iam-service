@@ -120,6 +120,7 @@ class ClientControllerSpec extends Specification {
         entity.getBody().getOrganizationId().equals(clientDTO.getOrganizationId())
         entity.getBody().getSecret().equals(clientDTO.getSecret())
         entity.getBody().getAuthorizedGrantTypes().equals(clientDTO.getAuthorizedGrantTypes())
+        clientMapper.deleteByPrimaryKey(entity.getBody().getId())
 
         when: "调用插入方法[异常-组织id不存在]"
         paramMap.put("organization_id", notExistOrganizationId)
