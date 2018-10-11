@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 
-import io.choerodon.iam.infra.annotation.NamingRuleTrans;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.annotation.NamingRuleTrans;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -35,6 +37,8 @@ import io.choerodon.swagger.annotation.Permission;
 public class UserController extends BaseController {
 
     private UserService userService;
+    @Autowired
+    private PasswordPolicyService passwordPolicyService;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -128,9 +132,9 @@ public class UserController extends BaseController {
     @CustomPageRequest
     @GetMapping(value = "/self/projects/paging_query")
     public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectsSelf(@ApiIgnore
-                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                @NamingRuleTrans ProjectDTO projectDTO,
-                                                                @RequestParam(required = false) String[] params) {
+                                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                    @NamingRuleTrans ProjectDTO projectDTO,
+                                                                    @RequestParam(required = false) String[] params) {
         return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
@@ -139,11 +143,11 @@ public class UserController extends BaseController {
     @CustomPageRequest
     @GetMapping(value = "/self/organizations/paging_query")
     public ResponseEntity<Page<OrganizationDTO>> pagingQueryOrganizationsSelf(@ApiIgnore
-                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-                                                                @RequestParam(required = false) String name,
-                                                                @RequestParam(required = false) String code,
-                                                                @RequestParam(required = false) Boolean enabled,
-                                                                @RequestParam(required = false) String[] params) {
+                                                                              @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                              @RequestParam(required = false) String name,
+                                                                              @RequestParam(required = false) String code,
+                                                                              @RequestParam(required = false) Boolean enabled,
+                                                                              @RequestParam(required = false) String[] params) {
         OrganizationDTO organizationDTO = new OrganizationDTO();
         organizationDTO.setName(name);
         organizationDTO.setCode(code);
@@ -288,5 +292,18 @@ public class UserController extends BaseController {
     @GetMapping("/ids")
     public ResponseEntity<Long[]> getUserIds() {
         return new ResponseEntity<>(userService.listUserIds(), HttpStatus.OK);
+    }
+
+    /**
+     * 根据用户邮箱查询对应组织下的密码策略
+     *
+     * @return 目标组织密码策略
+     */
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "根据用户邮箱查询对应组织下的密码策略")
+    @GetMapping("/password_policies")
+    public ResponseEntity<PasswordPolicyDTO> queryByUserEmail(@RequestParam(value = "email", required = false) String email) {
+        Long organizationId = userService.queryOrgIdByEmail(email);
+        return new ResponseEntity<>(passwordPolicyService.queryByOrgId(organizationId), HttpStatus.OK);
     }
 }
