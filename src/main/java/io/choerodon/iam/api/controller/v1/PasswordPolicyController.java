@@ -23,8 +23,6 @@ public class PasswordPolicyController {
 
     private PasswordPolicyService passwordPolicyService;
     private PasswordPolicyValidator passwordPolicyValidator;
-    @Autowired
-    private UserService userService;
 
     public PasswordPolicyController(PasswordPolicyService passwordPolicyService, PasswordPolicyValidator passwordPolicyValidator) {
         this.passwordPolicyService = passwordPolicyService;
@@ -63,19 +61,6 @@ public class PasswordPolicyController {
                                                     @RequestBody @Validated PasswordPolicyDTO passwordPolicyDTO) {
         passwordPolicyValidator.update(organizationId, id, passwordPolicyDTO);
         return new ResponseEntity<>(passwordPolicyService.update(organizationId, id, passwordPolicyDTO), HttpStatus.OK);
-    }
-
-    /**
-     * 根据用户邮箱查询对应组织下的密码策略
-     *
-     * @return 目标组织密码策略
-     */
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "根据用户邮箱查询对应组织下的密码策略")
-    @GetMapping("/email")
-    public ResponseEntity<PasswordPolicyDTO> queryByUserEmail(@PathVariable("email") String email) {
-        Long organizationId = userService.queryOrgIdByEmail(email);
-        return new ResponseEntity<>(passwordPolicyService.queryByOrgId(organizationId), HttpStatus.OK);
     }
 
 }
