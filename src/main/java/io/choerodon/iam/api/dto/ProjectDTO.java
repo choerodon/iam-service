@@ -17,7 +17,7 @@ import io.choerodon.core.exception.CommonException;
 public class ProjectDTO {
 
     private static final String CODE_REGULAR_EXPRESSION =
-            "^[a-z]([a-z0-9]|-(?!-))*[a-z0-9]$";
+            "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
@@ -33,7 +33,7 @@ public class ProjectDTO {
 
     @ApiModelProperty(value = "项目编码/必填")
     @NotEmpty(message = "error.project.code.empty")
-    @Size(min = 2, max = 14, message = "error.project.code.size")
+    @Size(min = 1, max = 14, message = "error.project.code.size")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
     private String code;
 

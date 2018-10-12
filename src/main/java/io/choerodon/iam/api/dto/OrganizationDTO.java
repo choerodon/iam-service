@@ -12,7 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 public class OrganizationDTO {
     private static final String CODE_REGULAR_EXPRESSION
-            = "^[a-z]([a-z0-9]|-(?!-))*[a-z0-9]$";
+            = "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
     @ApiModelProperty(value = "主键/非必填")
     private Long id;
     
@@ -24,7 +24,7 @@ public class OrganizationDTO {
     @ApiModelProperty(value = "组织编码/必填")
     @NotEmpty(message = "error.code.empty")
     @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.code.illegal")
-    @Size(min = 2, max = 15, message = "error.organization.code.size")
+    @Size(min = 1, max = 15, message = "error.organization.code.size")
     private String code;
     
     @ApiModelProperty(value = "乐观锁版本号")

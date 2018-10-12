@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.web.multipart.MultipartFile
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -307,10 +307,14 @@ class OrganizationUserControllerSpec extends Specification {
 
     def "ImportUsersFromExcel"() {
         given: "构造请求参数"
+        def organizationId = 1L
+        MultipartFile multipartFile = null
 
         when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/users/batch_import", multipartFile, Void, organizationId)
 
         then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
     }
 
     def "DownloadTemplates"() {
