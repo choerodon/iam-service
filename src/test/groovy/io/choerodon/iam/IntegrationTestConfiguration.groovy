@@ -67,14 +67,6 @@ class IntegrationTestConfiguration {
         return iLdapService
     }
 
-    @Bean
-    ExcelService excelService() {
-        ExcelService excelService = Mockito.mock(ExcelService)
-        Mockito.doReturn(null).when(excelService).getHttpHeaders()
-        Mockito.doReturn(null).when(excelService).getUserTemplates()
-        return excelService
-    }
-
     @Bean("mockDiscoveryClient")
     @Primary
     DiscoveryClient discoveryClient() {
