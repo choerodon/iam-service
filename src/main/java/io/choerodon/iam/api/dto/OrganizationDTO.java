@@ -40,6 +40,10 @@ public class OrganizationDTO {
 
     private String ownerRealName;
 
+    private String ownerPhone;
+
+    private String ownerEmail;
+
     private Boolean isInto = true;
 
     private List<ProjectDTO> projects;
@@ -152,5 +156,21 @@ public class OrganizationDTO {
 
     public void setOwnerRealName(String ownerRealName) {
         this.ownerRealName = ownerRealName;
+    }
+
+    public String getOwnerPhone() {
+        return ownerPhone;
+    }
+
+    public void setOwnerPhone(String ownerPhone) {
+        this.ownerPhone = ownerPhone;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
     }
 }
