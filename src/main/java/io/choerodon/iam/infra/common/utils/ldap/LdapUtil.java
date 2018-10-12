@@ -10,6 +10,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
+import io.choerodon.core.ldap.DirectoryType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,38 +32,63 @@ public class LdapUtil {
     /**
      * ldap用户通过ldap认证
      *
-     * @param userName ldap用户名
-     * @param password 密码
      * @param ldap     ldap配置
      * @return 返回认证结果
      */
-    public static LdapContext authenticate(String userName, String password, LdapDO ldap) {
-        String userDn;
-        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+    public static LdapContext authenticate(LdapDO ldap) {
+        String username = ldap.getAccount();
+        String password = ldap.getPassword();
+        String dirType = ldap.getDirectoryType();
+        LdapContext ldapContext = ldapConnect(ldap);
         if (ldapContext == null) {
             return null;
         }
-        userDn = getUserDn(ldapContext, ldap, userName);
-        if (userDn.length() != 0 && ldapAuthenticate(ldapContext, userDn, password)) {
-            return ldapContext;
+        if (dirType.equals(DirectoryType.OPEN_LDAP.value())) {
+            String userDn;
+            userDn = getUserDn(ldapContext, ldap, username);
+            if (userDn.length() != 0 && ldapAuthenticate(ldapContext, userDn, password)) {
+                return ldapContext;
+            }
+        } else if(dirType.equals(DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value())) {
+            try {
+                ldapContext.addToEnvironment(Context.SECURITY_PRINCIPAL, username);
+                ldapContext.addToEnvironment(Context.SECURITY_CREDENTIALS, password);
+                ldapContext.reconnect(null);
+                return ldapContext;
+            } catch (NamingException e) {
+                LOGGER.error("Microsoft Active Directory authenticate failed, exception : {}", e);
+            }
+        } else {
+            LOGGER.error("not support directory type : {}", dirType);
         }
         return null;
+//        String userDn;
+//        LdapContext ldapContext = ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+//        if (ldapContext == null) {
+//            return null;
+//        }
+//        userDn = getUserDn(ldapContext, ldap, username);
+//        if (userDn.length() != 0 && ldapAuthenticate(ldapContext, userDn, password)) {
+//            return ldapContext;
+//        }
+//        return null;
     }
 
     /**
      * 使用匿名模式连接ldap初始化ldapContext
      *
-     * @param url    ldap url
-     * @param baseDn ldap baseDn
-     * @param port   ldap port
+     * @param ldapDO    ldapDO ldapDO
      * @return 返回ldapContext
      */
-    public static LdapContext ldapConnect(String url, String baseDn, String port, Boolean useSSL) {
-        HashMap<String, String> ldapEnv = new HashMap<>(5);
+    public static LdapContext ldapConnect(LdapDO ldapDO) {
+        String url = ldapDO.getServerAddress();
+        String baseDn = ldapDO.getBaseDn();
+        String port = ldapDO.getPort();
+        HashMap<String, String> ldapEnv = new HashMap<>(10);
         ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
         ldapEnv.put(Context.PROVIDER_URL, url + ":" + port + "/" + baseDn);
         ldapEnv.put(Context.SECURITY_AUTHENTICATION, SECURITY_AUTHENTICATION);
-        if (useSSL) {
+        if (ldapDO.getUseSSL()) {
             // Specify SSL
             ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
         }
@@ -124,18 +150,29 @@ public class LdapUtil {
         SearchControls constraints = new SearchControls();
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
         NamingEnumeration namingEnumeration = null;
-        try {
-            Iterator<String> iterator = attributeSet.iterator();
-            while (iterator.hasNext()) {
+        for (String str : attributeSet) {
+            try {
                 namingEnumeration = ldapContext.search("",
-                        iterator.next() + "=" + username, constraints);
+                        str + "=" + username, constraints);
                 if (namingEnumeration.hasMoreElements()) {
                     break;
                 }
+            } catch (NamingException e) {
+                LOGGER.error("ldap search fail: {}", e);
             }
-        } catch (NamingException e) {
-            LOGGER.info("ldap search fail: {}", e);
         }
+//        try {
+//            Iterator<String> iterator = attributeSet.iterator();
+//            while (iterator.hasNext()) {
+//                namingEnumeration = ldapContext.search("",
+//                        iterator.next() + "=" + username, constraints);
+//                if (namingEnumeration.hasMoreElements()) {
+//                    break;
+//                }
+//            }
+//        } catch (NamingException e) {
+//            LOGGER.info("ldap search fail: {}", e);
+//        }
         return namingEnumeration;
     }
 

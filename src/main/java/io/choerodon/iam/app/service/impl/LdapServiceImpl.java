@@ -126,14 +126,14 @@ public class LdapServiceImpl implements LdapService {
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         if (anonymous) {
             //匿名用户只连接
-            ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+            ldapContext = LdapUtil.ldapConnect(ldap);
             if (ldapContext == null) {
                 throw new CommonException("error.ldap.connect");
             }
             iLdapService.anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
         } else {
             //非匿名用户登陆
-            ldapContext = LdapUtil.authenticate(ldap.getAccount(), ldap.getPassword(), ldap);
+            ldapContext = LdapUtil.authenticate(ldap);
             if (ldapContext == null) {
                 throw new CommonException("error.ldap.connect");
             }
