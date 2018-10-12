@@ -28,7 +28,7 @@ public class ILdapServiceImpl implements ILdapService {
         boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         //测试连接
-        LdapContext ldapContext = LdapUtil.ldapConnect(ldap.getServerAddress(), ldap.getBaseDn(), ldap.getPort(), ldap.getUseSSL());
+        LdapContext ldapContext = LdapUtil.ldapConnect(ldap);
         if (ldapContext != null) {
             //可以连接服务器测试登陆
             ldapConnectionDTO.setCanConnectServer(true);
@@ -39,7 +39,7 @@ public class ILdapServiceImpl implements ILdapService {
                 anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
             } else {
                 //非匿名用户，登陆测试
-                LdapContext context = loginTesting(ldap);
+                LdapContext context = LdapUtil.authenticate(ldap);
                 ldapConnectionDTO.setCanLogin(context != null);
                 if (ldapConnectionDTO.getCanLogin()) {
                     //可以登陆，匹配属性
@@ -140,10 +140,6 @@ public class ILdapServiceImpl implements ILdapService {
         attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
         attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
         return attributeMap;
-    }
-
-    private LdapContext loginTesting(LdapDO ldap) {
-        return LdapUtil.authenticate(ldap.getAccount(), ldap.getPassword(), ldap);
     }
 
 }

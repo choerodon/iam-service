@@ -92,4 +92,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         dropColumn(tableName: 'OAUTH_LDAP', ColumnName: 'SYNC_BEGIN_TIME')
     }
 
+    changeSet(author: 'superleader8@gmail.com', id: '2018-10-12-oauth-ldap-add-notnull') {
+        addNotNullConstraint(tableName: 'OAUTH_LDAP', defaultNullValue: 'OpenLDAP', columnName: 'DIRECTORY_TYPE', columnDataType:'VARCHAR(64)')
+    }
+
 }

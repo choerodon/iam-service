@@ -11,8 +11,7 @@
 
     <artifactId>iam-service</artifactId>
     <properties>
-        <choerodon.starters.version>0.6.4.RELEASE</choerodon.starters.version>
-        <powermock.version>1.7.4</powermock.version>
+        <choerodon.starters.version>0.7.0.RELEASE</choerodon.starters.version>
     </properties>
     <dependencies>
         <dependency>
