@@ -10,7 +10,6 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -30,7 +29,6 @@ import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
@@ -81,12 +79,13 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO) {
-        organizationDTO.setId(organizationId);
-        //code不可更新
-        organizationDTO.setCode(null);
-        OrganizationE organizationE = ConvertHelper.convert(organizationDTO, OrganizationE.class);
-        organizationE = organizationRepository.update(organizationE);
-        return ConvertHelper.convert(organizationE, OrganizationDTO.class);
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        organizationDO.setAddress(organizationDTO.getAddress());
+        organizationDO.setEnabled(organizationDTO.getEnabled());
+        organizationDO.setName(organizationDTO.getName());
+        organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
+        organizationDO = organizationRepository.update(organizationDO);
+        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
@@ -141,36 +140,31 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO enableOrganization(Long organizationId) {
-        OrganizationE organization =
-                ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
+        OrganizationDO organization = organizationRepository.selectByPrimaryKey(organizationId);
         if (organization == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
-        organization.enable();
-        OrganizationE organizationE = updateAndSendEvent(organization, ORG_ENABLE);
-        return ConvertHelper.convert(organizationE, OrganizationDTO.class);
+        organization.setEnabled(true);
+        OrganizationDO organizationDO = updateAndSendEvent(organization, ORG_ENABLE);
+        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO disableOrganization(Long organizationId) {
-        OrganizationE organization =
-                ConvertHelper.convert(organizationRepository.selectByPrimaryKey(organizationId), OrganizationE.class);
-        if (organization == null) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
-        organization.disable();
-        OrganizationE organizationE = updateAndSendEvent(organization, ORG_DISABLE);
-        return ConvertHelper.convert(organizationE, OrganizationDTO.class);
+        organizationDO.setEnabled(false);
+        return ConvertHelper.convert(updateAndSendEvent(organizationDO, ORG_DISABLE), OrganizationDTO.class);
     }
 
-    private OrganizationE updateAndSendEvent(OrganizationE organization, String consumerType) {
-        OrganizationE organizationE;
+    private OrganizationDO updateAndSendEvent(OrganizationDO organization, String consumerType) {
+        OrganizationDO organizationDO = organizationRepository.update(organization);
         if (devopsMessage) {
-            organizationE = new OrganizationE();
             OrganizationEventPayload payload = new OrganizationEventPayload();
             payload.setOrganizationId(organization.getId());
-            BeanUtils.copyProperties(organizationRepository.update(organization), organizationE);
             //saga
             try {
                 String input = mapper.writeValueAsString(payload);
@@ -194,10 +188,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 notifyFeignClient.postPm(wsSendDTO);
             });
 
-        } else {
-            organizationE = organizationRepository.update(organization);
         }
-        return organizationE;
+        return organizationRepository.selectByPrimaryKey(organizationDO.getId());
     }
 
     @Override
