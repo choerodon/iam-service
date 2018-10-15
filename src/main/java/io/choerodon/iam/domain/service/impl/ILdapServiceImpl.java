@@ -1,11 +1,13 @@
 package io.choerodon.iam.domain.service.impl;
 
+import io.choerodon.core.ldap.Ldap;
+import io.choerodon.core.ldap.LdapUtil;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.domain.service.ILdapService;
-import io.choerodon.iam.infra.common.utils.ldap.LdapUtil;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,11 +24,13 @@ import java.util.*;
 public class ILdapServiceImpl implements ILdapService {
 
     @Override
-    public LdapConnectionDTO testConnect(LdapDO ldap) {
-        LdapValidator.validate(ldap);
+    public LdapConnectionDTO testConnect(LdapDO ldapDO) {
+        LdapValidator.validate(ldapDO);
         //匿名用户
-        boolean anonymous = StringUtils.isEmpty(ldap.getAccount()) || StringUtils.isEmpty(ldap.getPassword());
+        boolean anonymous = StringUtils.isEmpty(ldapDO.getAccount()) || StringUtils.isEmpty(ldapDO.getPassword());
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
+        Ldap ldap = new Ldap();
+        BeanUtils.copyProperties(ldapDO, ldap);
         //测试连接
         LdapContext ldapContext = LdapUtil.ldapConnect(ldap);
         if (ldapContext != null) {
@@ -36,14 +40,14 @@ public class ILdapServiceImpl implements ILdapService {
                 //匿名用户，直接为可登录
                 ldapConnectionDTO.setCanLogin(true);
                 //匿名属性匹配，只能匹配loginNameField和emailField
-                anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldap);
+                anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldapDO);
             } else {
                 //非匿名用户，登陆测试
                 LdapContext context = LdapUtil.authenticate(ldap);
                 ldapConnectionDTO.setCanLogin(context != null);
                 if (ldapConnectionDTO.getCanLogin()) {
                     //可以登陆，匹配属性
-                    matchAttributeTesting(context, ldapConnectionDTO, ldap);
+                    matchAttributeTesting(context, ldapConnectionDTO, ldapDO);
                 } else {
                     ldapConnectionDTO.setMatchAttribute(false);
                 }
@@ -94,16 +98,18 @@ public class ILdapServiceImpl implements ILdapService {
      *
      * @param ldapContext
      * @param ldapConnectionDTO
-     * @param ldap
+     * @param ldapDO
      */
     @Override
     public void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
-                                                   LdapDO ldap) {
+                                                   LdapDO ldapDO) {
+        Ldap ldap = new Ldap();
+        BeanUtils.copyProperties(ldapDO, ldap);
         Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap, ldapContext);
         //todo 这个地方写的不好，写死了
         Map<String, String> attributeMap = new HashMap<>(10);
-        attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
-        attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
+        attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldapDO.getLoginNameField());
+        attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldapDO.getEmailField());
         Set<String> keySet = new HashSet<>();
         if (attributes != null) {
             NamingEnumeration attributesIDs = attributes.getIDs();
@@ -113,10 +119,10 @@ public class ILdapServiceImpl implements ILdapService {
             fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
         } else {
             ldapConnectionDTO.setMatchAttribute(false);
-            ldapConnectionDTO.setLoginNameField(ldap.getLoginNameField());
-            ldapConnectionDTO.setRealNameField(ldap.getRealNameField());
-            ldapConnectionDTO.setPhoneField(ldap.getPhoneField());
-            ldapConnectionDTO.setEmailField(ldap.getEmailField());
+            ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
+            ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
+            ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
+            ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
         }
     }
 
