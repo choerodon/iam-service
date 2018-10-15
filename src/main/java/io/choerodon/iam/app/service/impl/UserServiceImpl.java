@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -390,6 +391,9 @@ public class UserServiceImpl implements UserService {
     private void checkLoginName(UserDTO user) {
         Boolean createCheck = StringUtils.isEmpty(user.getId());
         String loginName = user.getLoginName();
+        if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
+            throw new CommonException("error.user.loginName.regex");
+        }
         UserDO userDO = new UserDO();
         userDO.setLoginName(loginName);
         if (createCheck) {
