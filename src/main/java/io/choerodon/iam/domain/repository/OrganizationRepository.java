@@ -14,7 +14,7 @@ public interface OrganizationRepository {
 
     OrganizationE create(OrganizationE organizationE);
 
-    OrganizationE update(OrganizationE organizationE);
+    OrganizationDO update(OrganizationDO organizationDO);
 
     OrganizationDO selectByPrimaryKey(Long organizationId);
 

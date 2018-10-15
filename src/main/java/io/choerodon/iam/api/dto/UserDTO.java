@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.dto;
 
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,9 +16,11 @@ import io.choerodon.iam.api.validator.UserValidator;
  */
 public class UserDTO {
 
-    public static final String EMAIL_REGULAR_EXPRESSION = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
+    public static final String EMAIL_REG = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
 
-    public static final String PHONE_REGULAR_EXPRESSION = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
+    public static final String PHONE_REG = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
+
+    public static final String LOGIN_NAME_REG = "[a-zA-Z0-9]{1,128}";
 
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
@@ -31,12 +32,11 @@ public class UserDTO {
     private String organizationName;
 
     @ApiModelProperty(value = "登录名/必填")
-    @NotEmpty(message = "error.user.login_name.empty", groups = UserValidator.UserGroup.class)
-    @Size(min = 1, max = 128, message = "error.user.login_name.size", groups = UserValidator.UserGroup.class)
+    @Pattern(regexp = LOGIN_NAME_REG, message = "error.user.loginName.regex")
     private String loginName;
 
     @ApiModelProperty(value = "邮箱/必填")
-    @Pattern(regexp = EMAIL_REGULAR_EXPRESSION, message = "error.user.email.illegal",
+    @Pattern(regexp = EMAIL_REG, message = "error.user.email.illegal",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     @NotEmpty(message = "error.user.email.empty",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
@@ -47,7 +47,7 @@ public class UserDTO {
     private String realName;
 
     @ApiModelProperty(value = "手机号/非必填")
-    @Pattern(regexp = PHONE_REGULAR_EXPRESSION, message = "error.phone.illegal",
+    @Pattern(regexp = PHONE_REG, message = "error.phone.illegal",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     private String phone;
 

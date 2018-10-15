@@ -47,14 +47,12 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public OrganizationE update(OrganizationE organizationE) {
-        OrganizationDO organizationDO = ConvertHelper.convert(organizationE, OrganizationDO.class);
-        int isUpdate = organizationMapper.updateByPrimaryKeySelective(organizationDO);
+    public OrganizationDO update(OrganizationDO organizationDO) {
+        int isUpdate = organizationMapper.updateByPrimaryKey(organizationDO);
         if (isUpdate != 1) {
             throw new CommonException("error.organization.update");
         }
-        return ConvertHelper.convert(organizationMapper.selectByPrimaryKey(
-                organizationDO.getId()), OrganizationE.class);
+        return organizationMapper.selectByPrimaryKey(organizationDO.getId());
     }
 
     @Override

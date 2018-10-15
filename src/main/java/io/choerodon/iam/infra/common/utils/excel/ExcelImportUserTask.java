@@ -507,12 +507,12 @@ public class ExcelImportUserTask {
             BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("登录名或邮箱为空");
             errorUsers.add(errorUser);
-        } else if (loginName.length() > 128) {
+        } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("登陆名长度超过128位");
+            errorUser.setCause("用户名只能使用字母和数字，长度在1-128位之间");
             errorUsers.add(errorUser);
-        } else if (!Pattern.matches(UserDTO.EMAIL_REGULAR_EXPRESSION, email)) {
+        } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("非法的邮箱格式");
@@ -522,7 +522,7 @@ public class ExcelImportUserTask {
             BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("用户名超过32位");
             errorUsers.add(errorUser);
-        } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REGULAR_EXPRESSION, phone)) {
+        } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("手机号格式不正确");

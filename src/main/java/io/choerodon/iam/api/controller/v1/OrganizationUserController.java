@@ -6,7 +6,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.UploadHistoryDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
-import io.choerodon.iam.api.validator.UserValidator;
 import io.choerodon.iam.app.service.ExcelService;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.UploadHistoryService;
@@ -26,8 +25,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
 
 /**
  * @author superlee
@@ -60,7 +57,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation(value = "创建用户")
     @PostMapping("/users")
     public ResponseEntity<UserDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                          @RequestBody @Validated(value = UserValidator.UserGroup.class) UserDTO userDTO) {
+                                          @RequestBody @Validated UserDTO userDTO) {
         userDTO.setOrganizationId(organizationId);
         //新增用户不能创建ldap用户
         userDTO.setLdap(false);
@@ -75,7 +72,7 @@ public class OrganizationUserController extends BaseController {
     @PutMapping(value = "/users/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                           @PathVariable Long id,
-                                          @RequestBody @Valid UserDTO userDTO) {
+                                          @RequestBody @Validated UserDTO userDTO) {
         //不能更新admin字段
         userDTO.setAdmin(null);
         //不能更新ldap字段
