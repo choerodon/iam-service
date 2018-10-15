@@ -46,9 +46,9 @@ class ProjectControllerSpec extends Specification {
             needInit = false
             for (int i = 0; i < 3; i++) {
                 ProjectDO projectDO = new ProjectDO()
-                projectDO.setCode("hand" + i)
-                projectDO.setName("汉得" + i)
-                projectDO.setOrganizationId(1L)
+                projectDO.setCode("choerodon" + i)
+                projectDO.setName("猪齿鱼" + i)
+                projectDO.setOrganizationId(organizationId)
                 projectDOList.add(projectDO)
             }
 

@@ -21,4 +21,10 @@ public class SpockUtils {
         customUserDetails.setLanguage("zh_CN");
         return customUserDetails;
     }
+
+    public static CustomUserDetails getNotAdminCustomUserDetails() {
+        CustomUserDetails customUserDetails = getCustomUserDetails();
+        customUserDetails.setAdmin(false);
+        return customUserDetails;
+    }
 }

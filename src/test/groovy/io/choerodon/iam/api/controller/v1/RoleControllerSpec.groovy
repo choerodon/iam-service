@@ -360,6 +360,7 @@ class RoleControllerSpec extends Specification {
     def "ListPermissionById"() {
         when: "调用方法[角色code为空]"
         def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/permissions", Page, roleDO.getId())
+        needClean = true
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
