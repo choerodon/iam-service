@@ -164,7 +164,7 @@ class OrganizationProjectControllerSpec extends Specification {
     def "EnableProject"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
-        def projectId = 1L
+        def projectId = projectDOList.get(1).getId()
         def httpEntity = new HttpEntity<Object>()
 
         when: "调用对应方法[异常-组织id不存在]"

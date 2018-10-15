@@ -1,0 +1,2447 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Api Documentation",
+    "version": "1.0",
+    "title": "Api Documentation",
+    "termsOfService": "urn:tos",
+    "contact": {},
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "host": "127.0.0.1:8080",
+  "basePath": "/manager",
+  "tags": [
+    {
+      "name": "group-label-controller",
+      "description": "Group Label Controller"
+    },
+    {
+      "name": "api-controller",
+      "description": "Api Controller"
+    },
+    {
+      "name": "document-controller",
+      "description": "Document Controller"
+    },
+    {
+      "name": "service-controller",
+      "description": "Service Controller"
+    },
+    {
+      "name": "instance-controller",
+      "description": "Instance Controller"
+    },
+    {
+      "name": "route-controller",
+      "description": "Route Controller"
+    },
+    {
+      "name": "config-controller",
+      "description": "Config Controller"
+    }
+  ],
+  "paths": {
+    "/docs/permission/refresh/{service_name}": {
+      "put": {
+        "tags": [
+          "document-controller"
+        ],
+        "summary": "手动刷新表中swagger json和权限",
+        "operationId": "refreshUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "description": "service_name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "version",
+            "required": false,
+            "type": "string",
+            "default": "null_version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/docs/{service_prefix}": {
+      "get": {
+        "tags": [
+          "document-controller"
+        ],
+        "summary": "获取服务id对应的版本swagger json字符串",
+        "description": "{\"permission\":{\"action\":\"get\",\"menuLevel\":null,\"permissionLevel\":\"project\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "operationId": "getUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_prefix",
+            "in": "path",
+            "description": "service_prefix",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "version",
+            "required": false,
+            "type": "string",
+            "default": "null_version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs": {
+      "post": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "创建配置",
+        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "createUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "configDTO",
+            "description": "configDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateConfigDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ConfigDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs/check": {
+      "post": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "配置校验接口",
+        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "checkUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "configDTO",
+            "description": "configDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ConfigCheckDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs/{config_id}": {
+      "get": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "查询配置",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "queryUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "要返回的配置文本类型，可为properties或者yaml，对应DTO的txt字段，为空不返回",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ConfigDTO"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "修改配置",
+        "description": "{\"permission\":{\"action\":\"updateConfig\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "updateConfigUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "要更新的配置文本类型，可为properties或者yaml，对应DTO的txt字段，为空则根据value值更新",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "configDTO",
+            "description": "configDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ConfigDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ConfigDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "删除配置，默认配置不可删除",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "deleteUsingDELETE",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs/{config_id}/default": {
+      "put": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "设置配置为默认配置",
+        "description": "{\"permission\":{\"action\":\"updateConfigDefault\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "updateConfigDefaultUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ConfigDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs/{config_id}/items": {
+      "post": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "增加或修改配置项",
+        "description": "{\"permission\":{\"action\":\"addItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "addItemUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "item",
+            "description": "item",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ItemDto"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "删除配置项",
+        "description": "{\"permission\":{\"action\":\"deleteItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "deleteItemUsingDELETE",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "property",
+            "in": "query",
+            "description": "property",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/configs/{config_id}/yaml": {
+      "get": {
+        "tags": [
+          "config-controller"
+        ],
+        "summary": "查询配置的yaml形式",
+        "description": "{\"permission\":{\"action\":\"queryYaml\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "queryYamlUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/YamlDTO"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/groupLabels": {
+      "get": {
+        "tags": [
+          "group-label-controller"
+        ],
+        "summary": "可以查询对应labelValue的用户组id列表",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "operationId": "queryUsingGET_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "labelValue",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "groupCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "objectVersionNumber",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupLabelDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "group-label-controller"
+        ],
+        "summary": "插入对应用户组标签",
+        "description": "{\"permission\":{\"action\":\"creat\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "operationId": "creatUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "groupLabelDTO",
+            "description": "groupLabelDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GroupLabelDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GroupLabelDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "group-label-controller"
+        ],
+        "summary": "更新对应用户组",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "operationId": "updateUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "groupLabelDTOList",
+            "description": "groupLabelDTOList",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupLabelDTO"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupLabelDTO"
+              }
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "group-label-controller"
+        ],
+        "summary": "删除对应用户组",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "operationId": "deleteUsingDELETE_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "labelValue",
+            "in": "query",
+            "description": "labelValue",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/instances": {
+      "get": {
+        "tags": [
+          "instance-controller"
+        ],
+        "summary": "查询实例列表",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "listUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "description": "service",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "instanceId",
+            "in": "query",
+            "description": "instanceId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "version",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "status",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "description": "params",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "size",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sort",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InstanceDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/instances/{instance_id}": {
+      "get": {
+        "tags": [
+          "instance-controller"
+        ],
+        "summary": "查询实例详情",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "queryUsingGET_2",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "instance_id",
+            "in": "path",
+            "description": "instance_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/InstanceDetailDTO"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/instances/{instance_id}/configs/{config_id}": {
+      "put": {
+        "tags": [
+          "instance-controller"
+        ],
+        "summary": "修改实例的配置",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "updateUsingPUT_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "instance_id",
+            "in": "path",
+            "description": "instance_id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "config_id",
+            "in": "path",
+            "description": "config_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/routes": {
+      "get": {
+        "tags": [
+          "route-controller"
+        ],
+        "summary": "分页查询路由信息",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "listUsingGET_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "path",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "serviceId",
+            "in": "query",
+            "description": "serviceId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "builtIn",
+            "in": "query",
+            "description": "builtIn",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "description": "params",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "size",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sort",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RouteDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "route-controller"
+        ],
+        "summary": "增加一个新路由",
+        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "createUsingPOST_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "routeDTO",
+            "description": "routeDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RouteDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/RouteDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/routes/check": {
+      "post": {
+        "tags": [
+          "route-controller"
+        ],
+        "summary": "route 校验接口",
+        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "checkUsingPOST_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "routeDTO",
+            "description": "routeDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RouteDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/routes/{route_id}": {
+      "post": {
+        "tags": [
+          "route-controller"
+        ],
+        "summary": "更新一个路由",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "updateUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "description": "route_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "routeDTO",
+            "description": "routeDTO",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RouteDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/RouteDTO"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "route-controller"
+        ],
+        "summary": "根据routeId删除一个路由",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "deleteUsingDELETE_2",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "description": "route_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/services": {
+      "get": {
+        "tags": [
+          "service-controller"
+        ],
+        "summary": "查询服务列表",
+        "description": "{\"permission\":{\"action\":\"pageAll\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "pageAllUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "param",
+            "in": "query",
+            "description": "param",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ServiceDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/services/manager": {
+      "get": {
+        "tags": [
+          "service-controller"
+        ],
+        "summary": "微服务管理列表",
+        "description": "{\"permission\":{\"action\":\"pageManager\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "pageManagerUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "description": "service_name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "description": "params",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "size",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sort",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ServiceManagerDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/services/{service_name}/configs": {
+      "get": {
+        "tags": [
+          "service-controller"
+        ],
+        "summary": "分页模糊查询服务的配置",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "listUsingGET_2",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "description": "service_name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "source",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "configVersion",
+            "in": "query",
+            "description": "configVersion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isDefault",
+            "in": "query",
+            "description": "isDefault",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "description": "params",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "size",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sort",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ConfigDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/swaggers/resources": {
+      "get": {
+        "tags": [
+          "api-controller"
+        ],
+        "summary": "查询不包含跳过的服务的路由列表",
+        "description": "{\"permission\":{\"action\":\"resources\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "resourcesUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SwaggerResource"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/swaggers/{service_prefix}/controllers": {
+      "get": {
+        "tags": [
+          "api-controller"
+        ],
+        "summary": "查询服务controller和接口",
+        "description": "{\"permission\":{\"action\":\"queryByNameAndVersion\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "queryByNameAndVersionUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_prefix",
+            "in": "path",
+            "description": "service_prefix",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "version",
+            "required": false,
+            "type": "string",
+            "default": "null_version"
+          },
+          {
+            "name": "params",
+            "in": "query",
+            "description": "params",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "description": "description",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "size",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sort",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ControllerDTO"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/swaggers/{service_prefix}/controllers/{name}/paths": {
+      "get": {
+        "tags": [
+          "api-controller"
+        ],
+        "summary": "根据path的url和method查询单个path",
+        "description": "{\"permission\":{\"action\":\"queryPathDetail\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "operationId": "queryPathDetailUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "service_prefix",
+            "in": "path",
+            "description": "service_prefix",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "version",
+            "required": false,
+            "type": "string",
+            "default": "null_version"
+          },
+          {
+            "name": "operation_id",
+            "in": "query",
+            "description": "operation_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ControllerDTO"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "client": [
+              "default"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "SwaggerResource": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "swaggerVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "ServiceManagerDTO": {
+      "type": "object",
+      "properties": {
+        "instanceNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "serviceName": {
+          "type": "string"
+        }
+      }
+    },
+    "ConfigDTO": {
+      "type": "object",
+      "properties": {
+        "configVersion": {
+          "type": "string",
+          "description": "配置版本"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "isDefault": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "objectVersionNumber": {
+          "type": "integer",
+          "format": "int64",
+          "description": "乐观锁版本号"
+        },
+        "publicTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serviceId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "source": {
+          "type": "string"
+        },
+        "txt": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        }
+      }
+    },
+    "GroupLabelDTO": {
+      "type": "object",
+      "properties": {
+        "groupCode": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "labelValue": {
+          "type": "string"
+        },
+        "objectVersionNumber": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ServiceDTO": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "ControllerDTO": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "controller的描述"
+        },
+        "name": {
+          "type": "string",
+          "description": "controller的名字"
+        },
+        "paths": {
+          "type": "array",
+          "description": "接口集合",
+          "items": {
+            "$ref": "#/definitions/PathDTO"
+          }
+        }
+      }
+    },
+    "CreateConfigDTO": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "配置名/必填"
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "服务名/必填"
+        },
+        "version": {
+          "type": "string",
+          "description": "版本号/必填"
+        },
+        "yaml": {
+          "type": "string",
+          "description": "yml格式的配置信息/必填"
+        }
+      }
+    },
+    "SchemaDTO": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "ParameterDTO": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "collectionFormat": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "description": "参数描述"
+        },
+        "format": {
+          "type": "string"
+        },
+        "in": {
+          "type": "string",
+          "description": "参数位置"
+        },
+        "name": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean",
+          "example": false,
+          "description": "是否必填"
+        },
+        "schema": {
+          "$ref": "#/definitions/SchemaDTO"
+        },
+        "type": {
+          "type": "string",
+          "description": "参数类型"
+        }
+      }
+    },
+    "InstanceDetailDTO": {
+      "type": "object",
+      "properties": {
+        "app": {
+          "type": "string"
+        },
+        "configInfoYml": {
+          "$ref": "#/definitions/YamlDTO"
+        },
+        "envInfoYml": {
+          "$ref": "#/definitions/YamlDTO"
+        },
+        "hostName": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "ipAddr": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "port": {
+          "type": "string"
+        },
+        "registrationTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "PathDTO": {
+      "type": "object",
+      "properties": {
+        "basePath": {
+          "type": "string",
+          "description": "请求的basePath"
+        },
+        "consumes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "接口自定义扩展详细信息"
+        },
+        "innerInterface": {
+          "type": "boolean",
+          "example": false,
+          "description": "内部调用的接口"
+        },
+        "method": {
+          "type": "string",
+          "description": "请求方法"
+        },
+        "operationId": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterDTO"
+          }
+        },
+        "produces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "refController": {
+          "type": "string",
+          "description": "接口相关联的controller"
+        },
+        "remark": {
+          "type": "string",
+          "description": "接口描述"
+        },
+        "responses": {
+          "type": "array",
+          "description": "响应集合",
+          "items": {
+            "$ref": "#/definitions/ResponseDTO"
+          }
+        },
+        "url": {
+          "type": "string",
+          "description": "请求url"
+        }
+      }
+    },
+    "ResponseEntity": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "object"
+        },
+        "statusCode": {
+          "type": "string",
+          "enum": [
+            "100",
+            "101",
+            "102",
+            "103",
+            "200",
+            "201",
+            "202",
+            "203",
+            "204",
+            "205",
+            "206",
+            "207",
+            "208",
+            "226",
+            "300",
+            "301",
+            "302",
+            "303",
+            "304",
+            "305",
+            "307",
+            "308",
+            "400",
+            "401",
+            "402",
+            "403",
+            "404",
+            "405",
+            "406",
+            "407",
+            "408",
+            "409",
+            "410",
+            "411",
+            "412",
+            "413",
+            "414",
+            "415",
+            "416",
+            "417",
+            "418",
+            "419",
+            "420",
+            "421",
+            "422",
+            "423",
+            "424",
+            "426",
+            "428",
+            "429",
+            "431",
+            "451",
+            "500",
+            "501",
+            "502",
+            "503",
+            "504",
+            "505",
+            "506",
+            "507",
+            "508",
+            "509",
+            "510",
+            "511"
+          ]
+        },
+        "statusCodeValue": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ConfigCheckDTO": {
+      "type": "object",
+      "properties": {
+        "configVersion": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "serviceName": {
+          "type": "string"
+        }
+      }
+    },
+    "InstanceDTO": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "pod": {
+          "type": "string"
+        },
+        "registrationTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "service": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "ResponseDTO": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "description": "接口返回的结果"
+        },
+        "description": {
+          "type": "string",
+          "description": "状态码描述"
+        },
+        "httpStatus": {
+          "type": "string",
+          "description": "http状态码"
+        }
+      }
+    },
+    "ItemDto": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "YamlDTO": {
+      "type": "object",
+      "properties": {
+        "highlightMarkers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HighlightMarker"
+          }
+        },
+        "objectVersionNumber": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "totalLine": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "yaml": {
+          "type": "string"
+        }
+      }
+    },
+    "RouteDTO": {
+      "type": "object",
+      "properties": {
+        "builtIn": {
+          "type": "boolean"
+        },
+        "customSensitiveHeaders": {
+          "type": "boolean"
+        },
+        "helperService": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "objectVersionNumber": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "path": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "sensitiveHeaders": {
+          "type": "string"
+        },
+        "serviceId": {
+          "type": "string"
+        },
+        "stripPrefix": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "HighlightMarker": {
+      "type": "object",
+      "properties": {
+        "endColumn": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "endIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "line": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "startColumn": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "startIndex": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "client": {
+      "description": null,
+      "type": "oauth2",
+      "authorizationUrl": "http://localhost:8080/oauth/oauth/authorize",
+      "tokenUrl": null,
+      "flow": "implicit",
+      "scopes": {
+        "default": "default scope"
+      }
+    }
+  }
+}

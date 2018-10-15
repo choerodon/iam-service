@@ -1,10 +1,10 @@
 package io.choerodon.iam.api.service.impl
 
-import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.app.service.ExcelService
 import io.choerodon.iam.app.service.impl.ExcelServiceImpl
 import io.choerodon.iam.domain.repository.UploadHistoryRepository
+import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask
 import org.apache.http.entity.ContentType
 import org.junit.runner.RunWith
@@ -14,7 +14,6 @@ import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
 import org.springframework.mock.web.MockMultipartFile
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Specification
 
@@ -44,16 +43,8 @@ class ExcelServiceImplSpec extends Specification {
                 fileInputStream)
 
         and: "mock静态方法"
-        def authorities = new ArrayList<GrantedAuthority>()
-        def customUserDetails = new CustomUserDetails("dengyouquan", "123456", authorities)
-        customUserDetails.setOrganizationId(1L)
-        customUserDetails.setEmail("dengyouquan@qq.com")
-        customUserDetails.setAdmin(true)
-        customUserDetails.setTimeZone("CTT")
-        customUserDetails.setUserId(1L)
-        customUserDetails.setLanguage("zh_CN")
         PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(customUserDetails)
+        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
 
         when: "调用方法"
         excelService.importUsers(1L, multipartFile)
