@@ -23,6 +23,17 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             column(name: 'DEFAULT_LANGUAGE', type: 'VARCHAR(50)', remarks: '平台默认语言') {
                 constraints(nullable: false)
             }
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
 }
