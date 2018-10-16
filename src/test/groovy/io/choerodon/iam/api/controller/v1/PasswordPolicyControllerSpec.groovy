@@ -1,9 +1,12 @@
 package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.convertor.ConvertHelper
+import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.PasswordPolicyDTO
+import io.choerodon.iam.api.validator.PasswordPolicyValidator
+import io.choerodon.iam.infra.dataobject.PasswordPolicyDO
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,6 +15,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
 import spock.lang.Stepwise
+
+import java.lang.reflect.Field
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -99,4 +104,35 @@ class PasswordPolicyControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getId().equals(passwordPolicyId)
     }
+
+    def "Create"() {
+        given: "构造请求参数"
+        Long orgId = 1L
+        PasswordPolicyDTO passwordPolicyDTO = new PasswordPolicyDTO()
+        List<PasswordPolicyDO> policyDOList = new ArrayList<>()
+        policyDOList << new PasswordPolicyDO()
+        PasswordPolicyMapper passwordPolicyMapper = Mock(PasswordPolicyMapper)
+        PasswordPolicyValidator passwordPolicyValidator =
+                new PasswordPolicyValidator()
+        Field field = passwordPolicyValidator.getClass().getDeclaredField("passwordPolicyMapper")
+        field.setAccessible(true)
+        field.set(passwordPolicyValidator, passwordPolicyMapper)
+
+        when: "测试PasswordPolicyValidator create"
+        passwordPolicyValidator.create(orgId, passwordPolicyDTO)
+
+        then: "校验结果"
+        def exception = thrown(CommonException)
+        exception.message.equals("error.passwordPolicy.organizationId.exist")
+        1 * passwordPolicyMapper.select(_) >> { policyDOList }
+
+        when: "测试PasswordPolicyValidator create"
+        passwordPolicyValidator.create(orgId, passwordPolicyDTO)
+
+        then: "校验结果"
+        exception = thrown(CommonException)
+        exception.message.equals("error.passwordPolicy.code.exist")
+        passwordPolicyMapper.select(_) >>> [new ArrayList<PasswordPolicyDO>(), policyDOList]
+    }
 }
+

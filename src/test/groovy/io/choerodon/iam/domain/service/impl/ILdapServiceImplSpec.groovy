@@ -3,20 +3,10 @@ package io.choerodon.iam.domain.service.impl
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.domain.service.ILdapService
-import io.choerodon.iam.infra.common.utils.ldap.LdapUtil
 import io.choerodon.iam.infra.dataobject.LdapDO
-import org.junit.runner.RunWith
-import org.mockito.Mockito
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
-
-import javax.naming.ldap.LdapContext
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
