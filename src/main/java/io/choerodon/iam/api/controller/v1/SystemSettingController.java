@@ -61,8 +61,11 @@ public class SystemSettingController {
     @GetMapping
     @ApiOperation(value = "获取系统设置")
     @Permission(level = ResourceLevel.SITE, roles = InitRoleCode.SITE_ADMINISTRATOR)
-    public ResponseEntity<SystemSettingDTO> getSetting() {
-        return new ResponseEntity<>(systemSettingService.getSetting(), HttpStatus.OK);
+    public ResponseEntity<Object> getSetting() {
+        SystemSettingDTO systemSettingDTO = systemSettingService.getSetting();
+        Object result;
+        result = systemSettingDTO == null ? "{}" : systemSettingDTO;
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping(value = "/upload/favicon")
