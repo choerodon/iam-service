@@ -144,7 +144,7 @@ public class LdapServiceImpl implements LdapService {
             //匹配属性
             iLdapService.matchAttributeTesting(ldapContext, ldapConnectionDTO, ldapDO);
         }
-        if (!ldapConnectionDTO.getMatchAttribute()) {
+        if (ldapConnectionDTO.getMatchAttribute() != null && !ldapConnectionDTO.getMatchAttribute()) {
             throw new CommonException("error.ldap.attribute.match");
         }
         return ldapContext;

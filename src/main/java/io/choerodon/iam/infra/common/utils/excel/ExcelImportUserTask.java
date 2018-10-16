@@ -530,7 +530,9 @@ public class ExcelImportUserTask {
         } else {
             ok = true;
             user.setLoginName(user.getLoginName().trim());
-            user.setRealName(user.getRealName().trim());
+            if (!StringUtils.isEmpty(user.getRealName())) {
+                user.setRealName(user.getRealName().trim());
+            }
             user.setEmail(user.getEmail().trim());
             if (!StringUtils.isEmpty(user.getPhone())) {
                 user.setPhone(user.getPhone().trim());

@@ -120,6 +120,14 @@ class UserDashboardControllerSpec extends Specification {
 
         then: '查询site成功'
         entity.statusCode.is2xxSuccessful()
+
+        when: "查询project层"
+        paramMap.put("level", "project")
+        entity =
+                restTemplate.getForEntity(path + '?level={level}&source_id={sourceId}', String, paramMap)
+
+        then: '查询site成功'
+        entity.statusCode.is2xxSuccessful()
     }
 
     def "Update"() {

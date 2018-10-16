@@ -11,7 +11,7 @@ import io.choerodon.iam.domain.iam.entity.DashboardE;
  * @author dongfan117@gmail.com
  */
 @Component
-public class DashboardConverter implements ConvertorI<DashboardE, DashboardE, DashboardDTO> {
+public class DashboardConverter implements ConvertorI<DashboardE, Object, DashboardDTO> {
 
     @Override
     public DashboardE dtoToEntity(DashboardDTO dto) {
@@ -28,24 +28,10 @@ public class DashboardConverter implements ConvertorI<DashboardE, DashboardE, Da
     }
 
     @Override
-    public DashboardE doToEntity(DashboardE dataObject) {
-        DashboardE entity = new DashboardE();
-        BeanUtils.copyProperties(dataObject, entity);
-        return entity;
-    }
-
-    @Override
     public DashboardE entityToDo(DashboardE entity) {
         DashboardE Dashboard = new DashboardE();
         BeanUtils.copyProperties(entity, Dashboard);
         return Dashboard;
-    }
-
-    @Override
-    public DashboardDTO doToDto(DashboardE dataObject) {
-        DashboardDTO DashboardDTO = new DashboardDTO();
-        BeanUtils.copyProperties(dataObject, DashboardDTO);
-        return DashboardDTO;
     }
 
     @Override
