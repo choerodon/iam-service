@@ -134,7 +134,7 @@ class OrganizationUserControllerSpec extends Specification {
         given: "构造请求参数"
         def userId = userDOList.get(2).getId()
         def userDTO = new UserDTO()
-        userDTO.setLoginName("dengyouquan-update")
+        userDTO.setLoginName("dengyouquanupdate")
         userDTO.setRealName("邓有全update")
         userDTO.setEmail("youquan.deng-update@hand-china.com")
         userDTO.setOrganizationId(1)
