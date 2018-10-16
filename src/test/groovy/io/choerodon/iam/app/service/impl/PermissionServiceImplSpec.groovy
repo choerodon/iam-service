@@ -83,7 +83,7 @@ class PermissionServiceImplSpec extends Specification {
             CheckPermissionDTO checkPermissionDTO = new CheckPermissionDTO()
             checkPermissionDTO.setResourceType("project")
             checkPermissionDTO.setCode("project")
-            checkPermissionDTO.setOrganizationId(1L)
+            checkPermissionDTO.setProjectId(1L)
             checkPermissionDTOList.add(checkPermissionDTO)
         }
         Set<String> set = new HashSet<>()
