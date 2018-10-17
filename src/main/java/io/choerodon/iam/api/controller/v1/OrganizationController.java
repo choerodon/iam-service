@@ -107,7 +107,7 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.disableOrganization(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+    @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody OrganizationDTO organization) {
