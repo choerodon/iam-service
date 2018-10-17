@@ -1,16 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
+import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.SystemSettingDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 /**
  * @author zmf
@@ -34,7 +38,14 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     @Override
     public String uploadSystemLogo(MultipartFile file) {
-        return uploadFile(file);
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Thumbnails.of(file.getInputStream()).forceSize(80, 80).toOutputStream(outputStream);
+            file = new MockMultipartFile(file.getName(), file.getOriginalFilename(), file.getContentType(), outputStream.toByteArray());
+            return uploadFile(file);
+        } catch (Exception e) {
+            throw new CommonException("error.user.photo.save");
+        }
     }
 
     @Override
