@@ -33,7 +33,8 @@ public class SystemSettingDTO implements Serializable {
     @Pattern(regexp = "[a-zA-Z0-9]+", message = "error.setting.default.password.format.invalid")
     private String defaultPassword;
 
-    @ApiModelProperty(value = "平台默认语言")
+    @ApiModelProperty(value = "平台默认语言，必填字段")
+    @NotEmpty(message = "error.setting.default.language.null")
     private String defaultLanguage;
 
     @ApiModelProperty(value = "乐观锁版本号")

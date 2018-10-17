@@ -44,7 +44,7 @@ public class SystemSettingServiceImpl implements SystemSettingService {
             file = new MockMultipartFile(file.getName(), file.getOriginalFilename(), file.getContentType(), outputStream.toByteArray());
             return uploadFile(file);
         } catch (Exception e) {
-            throw new CommonException("error.user.photo.save");
+            throw new CommonException("error.setting.logo.save.failure");
         }
     }
 

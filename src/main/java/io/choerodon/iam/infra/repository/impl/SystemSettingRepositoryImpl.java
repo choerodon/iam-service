@@ -27,6 +27,10 @@ public class SystemSettingRepositoryImpl implements SystemSettingRepository {
 
     @Override
     public SystemSettingDTO addSetting(SystemSettingDO systemSettingDO) {
+        List<SystemSettingDO> records = queryAll();
+        if (!records.isEmpty()) {
+            throw new CommonException("error.setting.already.one");
+        }
         if (systemSettingMapper.insertSelective(systemSettingDO) != 1) {
             throw new CommonException("error.setting.insert.failed");
         }
