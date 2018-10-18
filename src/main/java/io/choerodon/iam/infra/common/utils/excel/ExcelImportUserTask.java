@@ -147,7 +147,7 @@ public class ExcelImportUserTask {
         List<ExcelMemberRoleDTO> validateMemberRoles = new CopyOnWriteArrayList<>();
         memberRoles.parallelStream().forEach(mr -> {
             if (StringUtils.isEmpty(mr.getLoginName())) {
-                mr.setCause("用户名为空");
+                mr.setCause("登录名为空");
                 errorMemberRoles.add(mr);
             } else if (StringUtils.isEmpty(mr.getRoleCode())) {
                 mr.setCause("角色编码为空");
@@ -235,7 +235,7 @@ public class ExcelImportUserTask {
         user.setLoginName(loginName);
         UserDO userDO = userRepository.selectOne(user);
         if (userDO == null) {
-            emr.setCause("用户名不存在");
+            emr.setCause("登录名不存在");
             errorMemberRoles.add(emr);
             return null;
         }
@@ -328,7 +328,7 @@ public class ExcelImportUserTask {
                     if (emailMap.get(email).size() > 1) {
                         ErrorUserDTO dto = new ErrorUserDTO();
                         BeanUtils.copyProperties(user, dto);
-                        dto.setCause("Excel中存在重复的用户名和密码");
+                        dto.setCause("Excel中存在重复的登录名和密码");
                         errorUsers.add(dto);
                     } else {
                         distinct.add(user);
@@ -356,7 +356,7 @@ public class ExcelImportUserTask {
                 for (int i = 1; i < list.size(); i++) {
                     ErrorUserDTO dto = new ErrorUserDTO();
                     BeanUtils.copyProperties(list.get(i), dto);
-                    dto.setCause("Excel中存在重复的用户名");
+                    dto.setCause("Excel中存在重复的登录名");
                     errorUsers.add(dto);
                 }
             }
@@ -406,7 +406,7 @@ public class ExcelImportUserTask {
                 for (int i = 1; i < list.size(); i++) {
                     ErrorUserDTO dto = new ErrorUserDTO();
                     BeanUtils.copyProperties(list.get(i), dto);
-                    dto.setCause("Excel中存在重复的用户名和邮箱");
+                    dto.setCause("Excel中存在重复的登录名和邮箱");
                     errorUsers.add(dto);
                 }
             }
@@ -510,7 +510,7 @@ public class ExcelImportUserTask {
         } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("用户名只能使用字母和数字，长度在1-128位之间");
+            errorUser.setCause("登录名只能使用字母和数字，长度在1-128位之间");
             errorUsers.add(errorUser);
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();

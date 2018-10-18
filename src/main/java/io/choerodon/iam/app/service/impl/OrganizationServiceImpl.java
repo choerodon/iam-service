@@ -81,7 +81,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         organizationDO.setAddress(organizationDTO.getAddress());
-        organizationDO.setEnabled(organizationDTO.getEnabled());
+        organizationDO.setEnabled(organizationDTO.getEnabled() == null ? true : organizationDTO.getEnabled());
         organizationDO.setName(organizationDTO.getName());
         organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
         organizationDO = organizationRepository.update(organizationDO);
