@@ -60,7 +60,7 @@ class LdapServiceImplSpec extends Specification {
         1 * ldapRepository.queryById(_) >> { ldapDO }
         1 * ldapSyncUserTask.syncLDAPUser(_, _, _)
 
-        when: "调用方法"
+        /*when: "调用方法"
         ldapDO.setAccount("20631")
         ldapDO.setPassword("511322qQ")
         ldapService.syncLdapUser(organizationId, id)
@@ -68,7 +68,7 @@ class LdapServiceImplSpec extends Specification {
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(organizationId) >> { new OrganizationDO() }
         1 * ldapRepository.queryById(_) >> { ldapDO }
-        1 * ldapSyncUserTask.syncLDAPUser(_, _, _)
+        1 * ldapSyncUserTask.syncLDAPUser(_, _, _)*/
     }
 
     def "GetLdapContext"() {
