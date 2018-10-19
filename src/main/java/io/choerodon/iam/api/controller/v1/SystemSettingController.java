@@ -60,7 +60,7 @@ public class SystemSettingController {
 
     @GetMapping
     @ApiOperation(value = "获取系统设置")
-    @Permission(level = ResourceLevel.SITE, roles = InitRoleCode.SITE_ADMINISTRATOR)
+    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
     public ResponseEntity<Object> getSetting() {
         SystemSettingDTO systemSettingDTO = systemSettingService.getSetting();
         Object result;
