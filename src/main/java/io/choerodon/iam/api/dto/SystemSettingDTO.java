@@ -37,7 +37,6 @@ public class SystemSettingDTO implements Serializable {
     private String defaultLanguage;
 
     @ApiModelProperty(value = "乐观锁版本号")
-    @NotEmpty(message = "error.setting.object.version.null")
     private Long objectVersionNumber;
 
     public String getFavicon() {
