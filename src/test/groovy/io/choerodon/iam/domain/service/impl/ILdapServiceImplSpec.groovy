@@ -49,7 +49,8 @@ class ILdapServiceImplSpec extends Specification {
         ldapConnectionDTO.getMatchAttribute()
 
 
-        when: "调用方法"
+        /*when: "调用方法"
+        //暂时不用真实密码测试
         ldapDO.setAccount("20631")
         ldapDO.setPassword("511322qQ")
         ldapConnectionDTO = iLdapService.testConnect(ldapDO)
@@ -57,6 +58,6 @@ class ILdapServiceImplSpec extends Specification {
         then: "校验结果"
         ldapConnectionDTO.getCanConnectServer()
         ldapConnectionDTO.getCanLogin()
-        ldapConnectionDTO.getMatchAttribute()
+        ldapConnectionDTO.getMatchAttribute()*/
     }
 }
