@@ -12,8 +12,7 @@ import java.io.Serializable;
  * @since 2018-10-15
  */
 public class SystemSettingDTO implements Serializable {
-    @ApiModelProperty(value = "平台徽标，必填字段，图片地址，大小缩放显示")
-    @NotEmpty(message = "error.setting.favicon.null")
+    @ApiModelProperty(value = "平台徽标，非必填字段，图片地址，大小缩放显示")
     private String favicon;
 
     @ApiModelProperty(value = "平台导航栏图形标，非必填字段，图片，大小缩放")
@@ -38,6 +37,7 @@ public class SystemSettingDTO implements Serializable {
     private String defaultLanguage;
 
     @ApiModelProperty(value = "乐观锁版本号")
+    @NotEmpty(message = "error.setting.object.version.null")
     private Long objectVersionNumber;
 
     public String getFavicon() {
