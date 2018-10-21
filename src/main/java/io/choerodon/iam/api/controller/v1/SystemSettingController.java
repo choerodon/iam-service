@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.core.base.BaseController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -22,7 +23,7 @@ import javax.validation.Valid;
  */
 @RestController
 @RequestMapping(value = "/v1/system/setting")
-public class SystemSettingController {
+public class SystemSettingController extends BaseController {
     private final SystemSettingService systemSettingService;
 
     @Autowired
