@@ -5,8 +5,11 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.iam.infra.dataobject.PermissionDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,7 +24,6 @@ import io.choerodon.iam.domain.repository.RolePermissionRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.service.ParsePermissionService;
 import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.iam.infra.enums.RoleCode;
 
 /**
  * @author zhipeng.zuo
@@ -42,6 +44,9 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RoleRepository roleRepository;
 
+    @Value("${choerodon.role-permission.clean:true}")
+    private boolean cleanErrorRolePermission;
+
     public ParsePermissionServiceImpl(PermissionRepository permissionRepository,
                                       RolePermissionRepository rolePermissionRepository,
                                       RoleRepository roleRepository) {
@@ -52,6 +57,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     @Override
     public void parser(String message) {
+        //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
+        if (cleanErrorRolePermission) {
+            logger.info("begin to clean the error role_permission");
+            cleanRolePermission();
+        }
         try {
             InstanceE instanceE = objectMapper.readValue(message, InstanceE.class);
             String serviceName = instanceE.getAppName();
@@ -69,9 +79,24 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 }
             }
         } catch (IOException e) {
-            logger.info("read message failed: {}", e);
-//            throw new CommonException("error.permission.parse");
+            logger.error("read message failed: {}", e);
         }
+    }
+
+    private void cleanRolePermission() {
+        List<RoleDO> roles = roleRepository.selectAll();
+        int count = 0;
+        for (RoleDO role : roles) {
+            List<PermissionDO> permissions = permissionRepository.selectErrorLevelPermissionByRole(role);
+            for (PermissionDO permission : permissions) {
+                RolePermissionE rp = new RolePermissionE(null, role.getId(), permission.getId());
+                rolePermissionRepository.delete(rp);
+                logger.debug("delete error role_permission, role id: {}, code: {}, levle: {} ## permission id: {}, code:{}, level: {}",
+                        role.getId(), role.getCode(), role.getLevel(), permission.getId(), permission.getCode(), permission.getLevel());
+                count++;
+            }
+        }
+        logger.info("clean error role_permission finished, total: {}", count);
     }
 
     /**
@@ -173,14 +198,16 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         //删掉除去SITE_ADMINISTRATOR，ORGANIZATION_ADMINISTRATOR，PROJECT_ADMINISTRATOR的所有role_permission关系
         for (RoleDO roleDO : roleList) {
             String code = roleDO.getCode();
-            if (!RoleCode.SITE_ADMINISTRATOR.equals(code)
-                    && !RoleCode.PROJECT_ADMINISTRATOR.equals(code)
-                    && !RoleCode.ORGANIZATION_ADMINISTRATOR.equals(code)) {
+            if (!InitRoleCode.SITE_ADMINISTRATOR.equals(code)
+                    && !InitRoleCode.PROJECT_ADMINISTRATOR.equals(code)
+                    && !InitRoleCode.ORGANIZATION_ADMINISTRATOR.equals(code)) {
                 RolePermissionE rolePermission = new RolePermissionE(null, roleDO.getId(), permissionId);
                 rolePermissionRepository.delete(rolePermission);
             }
         }
-        processRolePermission(initRoleMap, roles, permissionId, level);
+        if (roles != null) {
+            processRolePermission(initRoleMap, roles, permissionId, level);
+        }
     }
 
     private void insertRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
@@ -197,28 +224,27 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
         }
         //roles不为空，关联自定义角色
-        processRolePermission(initRoleMap, roles, permissionId, level);
+        if (roles != null) {
+            processRolePermission(initRoleMap, roles, permissionId, level);
+        }
     }
 
     private void processRolePermission(Map<String, RoleDO> initRoleMap, String[] roles, Long permissionId, String level) {
-        if (roles != null) {
-            Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
-            for (String roleCode : roleSet) {
-                RoleDO role = initRoleMap.get(roleCode);
-                if (role == null) {
-                    //找不到code，说明没有初始化进去角色或者角色code拼错了
-                    logger.info("can not find the role, role code is : {}", roleCode);
-                } else {
-                    if (level.equals(role.getLevel())) {
-                        RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
-                        if (rolePermissionRepository.selectOne(rp) == null) {
-                            rolePermissionRepository.insert(rp);
-                        }
-                    } else {
-                        //角色层级与权限不匹配，不分配
-                        logger.error("the level of permission does not match the level of role, permissionId : {}, permissionLevel : {}, roleLevel : {}, roleCode : {}",
-                                permissionId, level, role.getLevel(), role.getCode());
+        Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
+        for (String roleCode : roleSet) {
+            RoleDO role = initRoleMap.get(roleCode);
+            if (role == null) {
+                //找不到code，说明没有初始化进去角色或者角色code拼错了
+                logger.info("can not find the role, role code is : {}", roleCode);
+            } else {
+                if (level.equals(role.getLevel())) {
+                    RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
+                    if (rolePermissionRepository.selectOne(rp) == null) {
+                        rolePermissionRepository.insert(rp);
                     }
+                } else {
+                    logger.info("init role level do not match the permission level, permission id: {}, level: {}, @@ role code: {}, level: {}",
+                            permissionId, level, role.getCode(), role.getLevel());
                 }
             }
         }
@@ -226,25 +252,24 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RoleDO getRoleByLevel(Map<String, RoleDO> initRoleMap, String level) {
         if (ResourceLevel.SITE.value().equals(level)) {
-            return initRoleMap.get(RoleCode.SITE_ADMINISTRATOR);
+            return initRoleMap.get(InitRoleCode.SITE_ADMINISTRATOR);
         }
         if (ResourceLevel.ORGANIZATION.value().equals(level)) {
-            return initRoleMap.get(RoleCode.ORGANIZATION_ADMINISTRATOR);
+            return initRoleMap.get(InitRoleCode.ORGANIZATION_ADMINISTRATOR);
         }
         if (ResourceLevel.PROJECT.value().equals(level)) {
-            return initRoleMap.get(RoleCode.PROJECT_ADMINISTRATOR);
+            return initRoleMap.get(InitRoleCode.PROJECT_ADMINISTRATOR);
         }
         return null;
     }
 
     private Map<String, RoleDO> queryInitRoleByCode() {
         Map<String, RoleDO> map = new HashMap<>(10);
-        String[] codes = RoleCode.values();
+        String[] codes = InitRoleCode.values();
         for (String code : codes) {
             RoleDO role = roleRepository.selectByCode(code);
             if (role == null) {
                 logger.info("init roles do not exist, code: {}", code);
-//                throw new CommonException("error.init.role.not.exist", code);
             }
             map.put(code, role);
         }

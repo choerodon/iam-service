@@ -6,6 +6,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
+import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -100,5 +101,10 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     public Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id, String params) {
         return PageHelper.doPageAndSort(pageRequest,
                 () -> permissionMapper.selectByRoleId(id, params));
+    }
+
+    @Override
+    public List<PermissionDO> selectErrorLevelPermissionByRole(RoleDO roleDO) {
+        return permissionMapper.selectErrorLevelPermissionByRole(roleDO);
     }
 }
