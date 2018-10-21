@@ -45,4 +45,6 @@ public interface RoleRepository {
     Set<String> matchCode(Set<String> codeSet);
 
     List<RoleDO> queryRoleByOrgId(Long orgId);
+
+    List<RoleDO> selectAll();
 }
