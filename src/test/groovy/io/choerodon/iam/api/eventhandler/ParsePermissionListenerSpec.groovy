@@ -27,7 +27,6 @@ class ParsePermissionListenerSpec extends Specification {
         parsePermissionListener = new ParsePermissionListener(parsePermissionService)
     }
 
-    @Transactional
     def "Parse"() {
         given: "构造请求参数"
         def file = new File(this.class.getResource('/templates/swagger.json').toURI())
