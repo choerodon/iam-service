@@ -3,6 +3,7 @@ package io.choerodon.iam.domain.repository;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
+import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -35,4 +36,6 @@ public interface PermissionRepository {
     List<PermissionE> query(String level, String serviceName, String code);
 
     Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id, String params);
+
+    List<PermissionDO> selectErrorLevelPermissionByRole(RoleDO roleDO);
 }

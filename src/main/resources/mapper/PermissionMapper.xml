@@ -70,4 +70,14 @@
             </foreach>
         </if>
     </select>
+
+
+    <select id="selectErrorLevelPermissionByRole" resultMap="PermissionDO">
+        SELECT ip.* FROM iam_role ir
+        INNER JOIN iam_role_permission irp ON ir.id = irp.role_id
+        INNER JOIN iam_permission ip ON irp.permission_id = ip.id
+        WHERE ir.id = #{role.id}
+        AND ir.fd_level != ip.fd_level
+    </select>
+
 </mapper>

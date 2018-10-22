@@ -34,6 +34,8 @@ spring:
 #    service:
 #      name: event-store-service
 choerodon:
+  role-permission:
+    clean: true
   devops:
     message: true
   saga:
