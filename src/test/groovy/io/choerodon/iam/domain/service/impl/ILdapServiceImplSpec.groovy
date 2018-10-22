@@ -50,9 +50,8 @@ class ILdapServiceImplSpec extends Specification {
 
 
         /*when: "调用方法"
-        //暂时不用真实密码测试
         ldapDO.setAccount("20631")
-        ldapDO.setPassword("511322qQ")
+        ldapDO.setPassword("***")
         ldapConnectionDTO = iLdapService.testConnect(ldapDO)
 
         then: "校验结果"

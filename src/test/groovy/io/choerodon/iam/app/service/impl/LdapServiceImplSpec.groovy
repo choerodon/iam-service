@@ -62,7 +62,7 @@ class LdapServiceImplSpec extends Specification {
 
         /*when: "调用方法"
         ldapDO.setAccount("20631")
-        ldapDO.setPassword("511322qQ")
+        ldapDO.setPassword("****")
         ldapService.syncLdapUser(organizationId, id)
 
         then: "校验结果"
