@@ -7,6 +7,7 @@ import io.choerodon.iam.domain.service.ParsePermissionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -26,6 +27,7 @@ class ParsePermissionListenerSpec extends Specification {
         parsePermissionListener = new ParsePermissionListener(parsePermissionService)
     }
 
+    @Transactional
     def "Parse"() {
         given: "构造请求参数"
         def file = new File(this.class.getResource('/templates/swagger.json').toURI())
