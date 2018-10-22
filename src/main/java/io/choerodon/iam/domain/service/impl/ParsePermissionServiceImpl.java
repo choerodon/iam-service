@@ -91,7 +91,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             for (PermissionDO permission : permissions) {
                 RolePermissionE rp = new RolePermissionE(null, role.getId(), permission.getId());
                 rolePermissionRepository.delete(rp);
-                logger.debug("delete error role_permission, role id: {}, code: {}, levle: {} ## permission id: {}, code:{}, level: {}",
+                logger.debug("delete error role_permission, role id: {}, code: {}, level: {} ## permission id: {}, code:{}, level: {}",
                         role.getId(), role.getCode(), role.getLevel(), permission.getId(), permission.getCode(), permission.getLevel());
                 count++;
             }
