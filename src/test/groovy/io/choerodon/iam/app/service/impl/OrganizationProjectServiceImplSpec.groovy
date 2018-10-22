@@ -138,7 +138,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * notifyFeignClient.postPm(_)
+        1 * notifyFeignClient.postNotice(_)
     }
 
     def "DisableProject"() {
@@ -159,6 +159,6 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * notifyFeignClient.postPm(_)
+        1 * notifyFeignClient.postNotice(_)
     }
 }

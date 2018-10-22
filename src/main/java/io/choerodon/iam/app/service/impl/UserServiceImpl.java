@@ -630,15 +630,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private void sendSiteMsg(Long userId, String userName) {
-        WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode("modifyPassword");
-        wsSendDTO.setId(userId);
-        wsSendDTO.setTemplateCode("modifyPassword-preset");
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode("modifyPassword");
+        NoticeSendDTO.User user = new NoticeSendDTO.User();
+        user.setId(userId);
+        List<NoticeSendDTO.User> users = new ArrayList<>();
+        users.add(user);
+        noticeSendDTO.setTargetUsers(users);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("userName", userName);
-        wsSendDTO.setParams(paramsMap);
+        noticeSendDTO.setParams(paramsMap);
         try {
-            notifyFeignClient.postPm(wsSendDTO);
+            notifyFeignClient.postNotice(noticeSendDTO);
         } catch (CommonException e) {
             LOGGER.warn("The site msg send error. {} {}", e.getCode(), e);
         }

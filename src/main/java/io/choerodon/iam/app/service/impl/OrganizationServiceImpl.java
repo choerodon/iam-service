@@ -3,11 +3,10 @@ package io.choerodon.iam.app.service.impl;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +25,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
-import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
@@ -174,19 +172,23 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
             // 给组织下所有用户发送站内信
             List<Long> userIds = organizationRepository.listMemberIds(organization.getId());
-            userIds.stream().forEach(id -> {
-                WsSendDTO wsSendDTO = new WsSendDTO();
-                wsSendDTO.setId(id);
-                if (ORG_DISABLE.equals(consumerType)) {
-                    wsSendDTO.setCode("disableOrganization");
-                } else if (ORG_ENABLE.equals(consumerType)) {
-                    wsSendDTO.setCode("enableOrganization");
-                }
-                Map<String, Object> params = new HashMap<>();
-                params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
-                wsSendDTO.setParams(params);
-                notifyFeignClient.postPm(wsSendDTO);
+            NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+            if (ORG_DISABLE.equals(consumerType)) {
+                noticeSendDTO.setCode("disableOrganization");
+            } else if (ORG_ENABLE.equals(consumerType)) {
+                noticeSendDTO.setCode("enableOrganization");
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
+            noticeSendDTO.setParams(params);
+            List<NoticeSendDTO.User> users = new LinkedList<>();
+            userIds.forEach(id -> {
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                user.setId(id);
+                users.add(user);
             });
+            noticeSendDTO.setTargetUsers(users);
+            notifyFeignClient.postNotice(noticeSendDTO);
 
         }
         return organizationRepository.selectByPrimaryKey(organizationDO.getId());

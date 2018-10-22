@@ -58,7 +58,7 @@ public class OrganizationListener {
         this.sagaClient = sagaClient;
     }
 
-    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
+    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq =  1, description = "iam接收org服务创建组织事件")
     public OrganizationCreateEventPayload create(String message) throws IOException {
         OrganizationCreateEventPayload organizationEventPayload = mapper.readValue(message, OrganizationCreateEventPayload.class);
         Long orgId = organizationEventPayload.getId();

@@ -2,11 +2,9 @@ package io.choerodon.iam.infra.common.utils.excel;
 
 import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.ErrorUserDTO;
-import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.api.dto.WsSendDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
@@ -98,18 +96,27 @@ public class ExcelImportUserTask {
         uploadHistory.setFailedCount(failedCount);
         uploadAndFallback(uploadHistory, fallback, errorUsers);
         if (successCount > 0) {
-            sendStationLetter(successCount, userId);
+            sendNotice(successCount, userId);
         }
     }
 
-    private void sendStationLetter(Integer successCount, Long userId) {
-        WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode(ADD_USER);
-        wsSendDTO.setId(userId);
+    private void sendNotice(Integer successCount, Long userId) {
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(ADD_USER);
+        NoticeSendDTO.User user = new NoticeSendDTO.User();
+        UserE userE = userRepository.selectByPrimaryKey(userId);
+        user.setId(userId);
+        user.setEmail(userE.getEmail());
+        user.setLoginName(userE.getLoginName());
+        user.setRealName(userE.getRealName());
+        noticeSendDTO.setFromUser(user);
+        List<NoticeSendDTO.User> users = new ArrayList<>();
+        users.add(user);
+        noticeSendDTO.setTargetUsers(users);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", successCount);
-        wsSendDTO.setParams(paramsMap);
-        notifyFeignClient.postPm(wsSendDTO);
+        noticeSendDTO.setParams(paramsMap);
+        notifyFeignClient.postNotice(noticeSendDTO);
         logger.info("batch import user send station letter.");
     }
 

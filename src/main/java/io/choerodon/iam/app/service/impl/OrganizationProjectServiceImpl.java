@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.NoticeSendDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -24,7 +25,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.WsSendDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
@@ -245,19 +245,23 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             }
             // 给项目下所有用户发送站内信
             List<Long> userIds = projectRepository.listUserIds(projectId);
-            userIds.stream().forEach(id -> {
-                WsSendDTO wsSendDTO = new WsSendDTO();
-                wsSendDTO.setId(id);
-                if (PROJECT_DISABLE.equals(consumerType)) {
-                    wsSendDTO.setCode("disableProject");
-                } else if (PROJECT_ENABLE.equals(consumerType)) {
-                    wsSendDTO.setCode("enableProject");
-                }
-                Map<String, Object> params = new HashMap<>();
-                params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
-                wsSendDTO.setParams(params);
-                notifyFeignClient.postPm(wsSendDTO);
+            NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+            if (PROJECT_DISABLE.equals(consumerType)) {
+                noticeSendDTO.setCode("disableProject");
+            } else if (PROJECT_ENABLE.equals(consumerType)) {
+                noticeSendDTO.setCode("enableProject");
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
+            noticeSendDTO.setParams(params);
+            List<NoticeSendDTO.User> users = new LinkedList<>();
+            userIds.forEach(id -> {
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                user.setId(id);
+                users.add(user);
             });
+            noticeSendDTO.setTargetUsers(users);
+            notifyFeignClient.postNotice(noticeSendDTO);
         } else {
             project = projectRepository.updateSelective(projectDO);
             //project = iProjectService.updateProjectEnabled(projectId);
