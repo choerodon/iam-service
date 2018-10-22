@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.WsSendDTO;
+import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import org.slf4j.Logger;
@@ -45,13 +44,17 @@ public class NotifyListener {
         }
         UserEventPayload payload = payloads.get(0);
         //发送站内信
-        WsSendDTO wsSendDTO = new WsSendDTO();
-        wsSendDTO.setCode(ADD_USER);
-        wsSendDTO.setId(payload.getFromUserId());
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(ADD_USER);
+        NoticeSendDTO.User user = new NoticeSendDTO.User();
+        user.setId(payload.getFromUserId());
+        List<NoticeSendDTO.User> users = new ArrayList<>();
+        users.add(user);
+        noticeSendDTO.setTargetUsers(users);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", 1);
-        wsSendDTO.setParams(paramsMap);
-        notifyFeignClient.postPm(wsSendDTO);
+        noticeSendDTO.setParams(paramsMap);
+        notifyFeignClient.postNotice(noticeSendDTO);
         LOGGER.info("NotifyListener create user send station letter.");
         return payloads;
     }

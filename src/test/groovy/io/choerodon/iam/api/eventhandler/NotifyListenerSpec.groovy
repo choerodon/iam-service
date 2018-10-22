@@ -32,7 +32,7 @@ class NotifyListenerSpec extends Specification {
         notifyListener.create(message)
 
         then: "校验结果"
-        1 * notifyFeignClient.postPm(_)
+        1 * notifyFeignClient.postNotice(_)
         0 * _
     }
 }
