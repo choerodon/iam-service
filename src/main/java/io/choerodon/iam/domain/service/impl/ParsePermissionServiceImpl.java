@@ -44,7 +44,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RoleRepository roleRepository;
 
-    @Value("${choerodon.role-permission.clean:true}")
+    @Value("${choerodon.cleanRolePermission:true}")
     private boolean cleanErrorRolePermission;
 
     public ParsePermissionServiceImpl(PermissionRepository permissionRepository,
