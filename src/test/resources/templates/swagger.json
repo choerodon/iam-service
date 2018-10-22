@@ -109,7 +109,7 @@
           "document-controller"
         ],
         "summary": "获取服务id对应的版本swagger json字符串",
-        "description": "{\"permission\":{\"action\":\"get\",\"menuLevel\":null,\"permissionLevel\":\"project\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"get\",\"menuLevel\":null,\"permissionLevel\":\"project\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
         "operationId": "getUsingGET",
         "consumes": [
           "application/json"
@@ -166,7 +166,7 @@
           "config-controller"
         ],
         "summary": "创建配置",
-        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "createUsingPOST",
         "consumes": [
           "application/json"
@@ -220,7 +220,7 @@
           "config-controller"
         ],
         "summary": "配置校验接口",
-        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "checkUsingPOST",
         "consumes": [
           "application/json"
@@ -274,7 +274,7 @@
           "config-controller"
         ],
         "summary": "查询配置",
-        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "queryUsingGET",
         "consumes": [
           "application/json"
@@ -329,7 +329,7 @@
           "config-controller"
         ],
         "summary": "修改配置",
-        "description": "{\"permission\":{\"action\":\"updateConfig\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"updateConfig\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "updateConfigUsingPUT",
         "consumes": [
           "application/json"
@@ -396,7 +396,7 @@
           "config-controller"
         ],
         "summary": "删除配置，默认配置不可删除",
-        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "deleteUsingDELETE",
         "consumes": [
           "application/json"
@@ -446,7 +446,7 @@
           "config-controller"
         ],
         "summary": "设置配置为默认配置",
-        "description": "{\"permission\":{\"action\":\"updateConfigDefault\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"updateConfigDefault\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "updateConfigDefaultUsingPUT",
         "consumes": [
           "application/json"
@@ -499,7 +499,7 @@
           "config-controller"
         ],
         "summary": "增加或修改配置项",
-        "description": "{\"permission\":{\"action\":\"addItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"addItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "addItemUsingPOST",
         "consumes": [
           "application/json"
@@ -559,7 +559,7 @@
           "config-controller"
         ],
         "summary": "删除配置项",
-        "description": "{\"permission\":{\"action\":\"deleteItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"deleteItem\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "deleteItemUsingDELETE",
         "consumes": [
           "application/json"
@@ -616,7 +616,7 @@
           "config-controller"
         ],
         "summary": "查询配置的yaml形式",
-        "description": "{\"permission\":{\"action\":\"queryYaml\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"queryYaml\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "queryYamlUsingGET",
         "consumes": [
           "application/json"
@@ -666,7 +666,7 @@
           "group-label-controller"
         ],
         "summary": "可以查询对应labelValue的用户组id列表",
-        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
         "operationId": "queryUsingGET_1",
         "consumes": [
           "application/json"
@@ -735,7 +735,7 @@
           "group-label-controller"
         ],
         "summary": "插入对应用户组标签",
-        "description": "{\"permission\":{\"action\":\"creat\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"creat\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
         "operationId": "creatUsingPOST",
         "consumes": [
           "application/json"
@@ -787,7 +787,7 @@
           "group-label-controller"
         ],
         "summary": "更新对应用户组",
-        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
         "operationId": "updateUsingPUT",
         "consumes": [
           "application/json"
@@ -845,7 +845,7 @@
           "group-label-controller"
         ],
         "summary": "删除对应用户组",
-        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":true},\"label\":null}",
         "operationId": "deleteUsingDELETE_1",
         "consumes": [
           "application/json"
@@ -894,7 +894,7 @@
           "instance-controller"
         ],
         "summary": "查询实例列表",
-        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "listUsingGET",
         "consumes": [
           "application/json"
@@ -1001,7 +1001,7 @@
           "instance-controller"
         ],
         "summary": "查询实例详情",
-        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"query\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "queryUsingGET_2",
         "consumes": [
           "application/json"
@@ -1050,7 +1050,7 @@
           "instance-controller"
         ],
         "summary": "修改实例的配置",
-        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "updateUsingPUT_1",
         "consumes": [
           "application/json"
@@ -1107,7 +1107,7 @@
           "route-controller"
         ],
         "summary": "分页查询路由信息",
-        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "listUsingGET_1",
         "consumes": [
           "application/json"
@@ -1212,7 +1212,7 @@
           "route-controller"
         ],
         "summary": "增加一个新路由",
-        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"create\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "createUsingPOST_1",
         "consumes": [
           "application/json"
@@ -1266,7 +1266,7 @@
           "route-controller"
         ],
         "summary": "route 校验接口",
-        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"check\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "checkUsingPOST_1",
         "consumes": [
           "application/json"
@@ -1320,7 +1320,7 @@
           "route-controller"
         ],
         "summary": "更新一个路由",
-        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"update\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "updateUsingPOST",
         "consumes": [
           "application/json"
@@ -1380,7 +1380,7 @@
           "route-controller"
         ],
         "summary": "根据routeId删除一个路由",
-        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"delete\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "deleteUsingDELETE_2",
         "consumes": [
           "application/json"
@@ -1430,7 +1430,7 @@
           "service-controller"
         ],
         "summary": "查询服务列表",
-        "description": "{\"permission\":{\"action\":\"pageAll\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"pageAll\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "pageAllUsingGET",
         "consumes": [
           "application/json"
@@ -1482,7 +1482,7 @@
           "service-controller"
         ],
         "summary": "微服务管理列表",
-        "description": "{\"permission\":{\"action\":\"pageManager\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"pageManager\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "pageManagerUsingGET",
         "consumes": [
           "application/json"
@@ -1568,7 +1568,7 @@
           "service-controller"
         ],
         "summary": "分页模糊查询服务的配置",
-        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"list\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "listUsingGET_2",
         "consumes": [
           "application/json"
@@ -1682,7 +1682,7 @@
           "api-controller"
         ],
         "summary": "查询不包含跳过的服务的路由列表",
-        "description": "{\"permission\":{\"action\":\"resources\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"resources\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "resourcesUsingGET",
         "consumes": [
           "application/json"
@@ -1725,7 +1725,7 @@
           "api-controller"
         ],
         "summary": "查询服务controller和接口",
-        "description": "{\"permission\":{\"action\":\"queryByNameAndVersion\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"queryByNameAndVersion\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "queryByNameAndVersionUsingGET",
         "consumes": [
           "application/json"
@@ -1833,7 +1833,7 @@
           "api-controller"
         ],
         "summary": "根据path的url和method查询单个path",
-        "description": "{\"permission\":{\"action\":\"queryPathDetail\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
+        "description": "{\"permission\":{\"action\":\"queryPathDetail\",\"menuLevel\":null,\"permissionLevel\":\"site\",\"roles\":[\"role/project/default/administrator\"],\"permissionLogin\":false,\"permissionPublic\":false},\"label\":null}",
         "operationId": "queryPathDetailUsingGET",
         "consumes": [
           "application/json"
