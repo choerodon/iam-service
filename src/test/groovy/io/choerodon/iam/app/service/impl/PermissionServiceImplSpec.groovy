@@ -63,7 +63,6 @@ class PermissionServiceImplSpec extends Specification {
         Mockito.doReturn(serviceInstances).when(discoveryClient).getInstances("iam-service")
     }
 
-    @Transactional
     def "CheckPermission"() {
         given: "构造请求参数"
         List<CheckPermissionDTO> checkPermissionDTOList = new ArrayList<>()
