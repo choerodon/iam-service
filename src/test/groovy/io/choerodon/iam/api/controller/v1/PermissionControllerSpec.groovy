@@ -51,7 +51,14 @@ class PermissionControllerSpec extends Specification {
 
     def setup() {
         if (needInit) {
-            given: "构造参数"
+            given: "清除parsePermissionService数据"
+            //异步数据，无法用@Transactional，要么Mock，要么删除
+            List<PermissionDO> list = permissionMapper.selectAll()
+            for (PermissionDO permissionDO1 : list) {
+                permissionMapper.deleteByPrimaryKey(permissionDO1)
+            }
+
+            and: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
                 PermissionDO permissionDO = new PermissionDO()
