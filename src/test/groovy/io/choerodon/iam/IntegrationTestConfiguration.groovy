@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.appinfo.InstanceInfo
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.api.dto.LdapConnectionDTO
-import io.choerodon.iam.app.service.ExcelService
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.liquibase.LiquibaseConfig
@@ -29,7 +28,6 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import org.springframework.web.multipart.MultipartFile
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
