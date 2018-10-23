@@ -13,6 +13,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
  *
  * @author zmf
@@ -132,6 +133,7 @@ class SystemSettingControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getObjectVersionNumber() == versionNumber + 1
     }
+
     def "UpdateSetting with invalid input"() {
         given: "准备场景"
         restTemplate.delete(BASE_PATH)
@@ -195,21 +197,19 @@ class SystemSettingControllerSpec extends Specification {
 
     def "UploadFavicon"() {
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/system/setting/upload/favicon", null, ExceptionResponse, 0L)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/upload/favicon", null, ExceptionResponse, 0L)
 
         then: "校验结果"
-//        entity.statusCode.is2xxSuccessful()
-//        entity.getBody().getCode() == "error.upload.multipartSize"
-        noExceptionThrown()
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode() == "error.upload.multipartSize"
     }
 
     def "UploadLogo"() {
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/system/setting/upload/logo", null, ExceptionResponse, 0L)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/upload/logo", null, ExceptionResponse, 0L)
 
         then: "校验结果"
-//        entity.statusCode.is2xxSuccessful()
-//        entity.getBody().getCode() == "error.upload.multipartSize"
-        noExceptionThrown()
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode() == "error.upload.multipartSize"
     }
 }
