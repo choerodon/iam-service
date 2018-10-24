@@ -44,7 +44,6 @@ import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
@@ -82,7 +81,6 @@ public class UserServiceImpl implements UserService {
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
-    private NotifyFeignClient notifyFeignClient;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -94,8 +92,7 @@ public class UserServiceImpl implements UserService {
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
                            PasswordPolicyManager passwordPolicyManager,
                            RoleRepository roleRepository,
-                           MemberRoleMapper memberRoleMapper,
-                           NotifyFeignClient notifyFeignClient) {
+                           MemberRoleMapper memberRoleMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -107,7 +104,6 @@ public class UserServiceImpl implements UserService {
         this.passwordPolicyManager = passwordPolicyManager;
         this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
-        this.notifyFeignClient = notifyFeignClient;
     }
 
     @Override
@@ -316,7 +312,12 @@ public class UserServiceImpl implements UserService {
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
         // send siteMsg
-        this.sendSiteMsg(user.getId(), user.getRealName());
+        //this.sendSiteMsg(user.getId(), user.getRealName());
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("userName", user.getRealName());
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(user.getId());
+        iUserService.sendNotice(user.getId(), userIds, "forgetPassword", paramsMap);
     }
 
     @Override
@@ -626,24 +627,6 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException("error.organization.not.existed");
             }
             user.setOrganizationId(sourceId);
-        }
-    }
-
-    private void sendSiteMsg(Long userId, String userName) {
-        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-        noticeSendDTO.setCode("modifyPassword");
-        NoticeSendDTO.User user = new NoticeSendDTO.User();
-        user.setId(userId);
-        List<NoticeSendDTO.User> users = new ArrayList<>();
-        users.add(user);
-        noticeSendDTO.setTargetUsers(users);
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("userName", userName);
-        noticeSendDTO.setParams(paramsMap);
-        try {
-            notifyFeignClient.postNotice(noticeSendDTO);
-        } catch (CommonException e) {
-            LOGGER.warn("The site msg send error. {} {}", e.getCode(), e);
         }
     }
 

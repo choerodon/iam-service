@@ -8,17 +8,16 @@ import io.choerodon.iam.domain.repository.RoleRepository
 import io.choerodon.iam.domain.repository.UploadHistoryRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.domain.service.IRoleMemberService
+import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.dataobject.RoleDO
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO
 import io.choerodon.iam.infra.dataobject.UserDO
 import io.choerodon.iam.infra.feign.FileFeignClient
-import io.choerodon.iam.infra.feign.NotifyFeignClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
-import sun.reflect.misc.ReflectUtil
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -34,13 +33,13 @@ class ExcelImportUserTaskSpec extends Specification {
     private IRoleMemberService iRoleMemberService = Mock(IRoleMemberService)
     private OrganizationUserService organizationUserService = Mock(OrganizationUserService)
     private FileFeignClient fileFeignClient = Mock(FileFeignClient)
-    private NotifyFeignClient notifyFeignClient = Mock(NotifyFeignClient)
+    private IUserService iUserService = Mock(IUserService)
     private ExcelImportUserTask excelImportUserTask
     private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
     private int count = 3
 
     def setup() {
-        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, notifyFeignClient)
+        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService)
     }
 
     def "ImportUsers"() {

@@ -6,6 +6,9 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +32,10 @@ public class NotifyListener {
     private static final String ADD_USER = "addUser";
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private NotifyFeignClient notifyFeignClient;
+    private IUserService iUserService;
 
-    public NotifyListener(NotifyFeignClient notifyFeignClient) {
-        this.notifyFeignClient = notifyFeignClient;
+    public NotifyListener(IUserService iUserService) {
+        this.iUserService = iUserService;
     }
 
     @SagaTask(code = TASK_USER_CREATE, sagaCode = USER_CREATE, seq = 1, description = "创建用户成功后发送站内信事件")
@@ -42,19 +45,14 @@ public class NotifyListener {
         if (payloads == null || payloads.size() == 0) {
             throw new CommonException("error.sagaTask.sendPm.payloadsIsEmpty");
         }
+        //发送通知
         UserEventPayload payload = payloads.get(0);
-        //发送站内信
-        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-        noticeSendDTO.setCode(ADD_USER);
-        NoticeSendDTO.User user = new NoticeSendDTO.User();
-        user.setId(payload.getFromUserId());
-        List<NoticeSendDTO.User> users = new ArrayList<>();
-        users.add(user);
-        noticeSendDTO.setTargetUsers(users);
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(payload.getFromUserId());
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", 1);
-        noticeSendDTO.setParams(paramsMap);
-        notifyFeignClient.postNotice(noticeSendDTO);
+        //发送的人和接受站内信的人是同一个人
+        iUserService.sendNotice(payload.getFromUserId(), userIds, ADD_USER, paramsMap);
         LOGGER.info("NotifyListener create user send station letter.");
         return payloads;
     }

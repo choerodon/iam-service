@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.service.IUserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -57,7 +58,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private NotifyFeignClient notifyFeignClient;
+    private IUserService iUserService;
 
     private static final String ORG_MSG_NOT_EXIST = "error.organization.not.exist";
 
@@ -65,14 +66,14 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    SagaClient sagaClient,
                                    ProjectRepository projectRepository,
                                    RoleRepository roleRepository,
-                                   NotifyFeignClient notifyFeignClient,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository,
+                                   IUserService iUserService) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
         this.projectRepository = projectRepository;
         this.roleRepository = roleRepository;
-        this.notifyFeignClient = notifyFeignClient;
         this.userRepository = userRepository;
+        this.iUserService = iUserService;
     }
 
     @Override
@@ -137,28 +138,28 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
-    public OrganizationDTO enableOrganization(Long organizationId) {
+    public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
         OrganizationDO organization = organizationRepository.selectByPrimaryKey(organizationId);
         if (organization == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
         organization.setEnabled(true);
-        OrganizationDO organizationDO = updateAndSendEvent(organization, ORG_ENABLE);
+        OrganizationDO organizationDO = updateAndSendEvent(organization, ORG_ENABLE, userId);
         return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
-    public OrganizationDTO disableOrganization(Long organizationId) {
+    public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
         organizationDO.setEnabled(false);
-        return ConvertHelper.convert(updateAndSendEvent(organizationDO, ORG_DISABLE), OrganizationDTO.class);
+        return ConvertHelper.convert(updateAndSendEvent(organizationDO, ORG_DISABLE, userId), OrganizationDTO.class);
     }
 
-    private OrganizationDO updateAndSendEvent(OrganizationDO organization, String consumerType) {
+    private OrganizationDO updateAndSendEvent(OrganizationDO organization, String consumerType, Long userId) {
         OrganizationDO organizationDO = organizationRepository.update(organization);
         if (devopsMessage) {
             OrganizationEventPayload payload = new OrganizationEventPayload();
@@ -170,26 +171,15 @@ public class OrganizationServiceImpl implements OrganizationService {
             } catch (Exception e) {
                 throw new CommonException("error.organizationService.enableOrDisable.event", e);
             }
-            // 给组织下所有用户发送站内信
+            // 给组织下所有用户发送通知
             List<Long> userIds = organizationRepository.listMemberIds(organization.getId());
-            NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-            if (ORG_DISABLE.equals(consumerType)) {
-                noticeSendDTO.setCode("disableOrganization");
-            } else if (ORG_ENABLE.equals(consumerType)) {
-                noticeSendDTO.setCode("enableOrganization");
-            }
             Map<String, Object> params = new HashMap<>();
             params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
-            noticeSendDTO.setParams(params);
-            List<NoticeSendDTO.User> users = new LinkedList<>();
-            userIds.forEach(id -> {
-                NoticeSendDTO.User user = new NoticeSendDTO.User();
-                user.setId(id);
-                users.add(user);
-            });
-            noticeSendDTO.setTargetUsers(users);
-            notifyFeignClient.postNotice(noticeSendDTO);
-
+            if (ORG_DISABLE.equals(consumerType)) {
+                iUserService.sendNotice(userId, userIds, "disableOrganization", params);
+            } else if (ORG_ENABLE.equals(consumerType)) {
+                iUserService.sendNotice(userId, userIds, "enableOrganization", params);
+            }
         }
         return organizationRepository.selectByPrimaryKey(organizationDO.getId());
     }

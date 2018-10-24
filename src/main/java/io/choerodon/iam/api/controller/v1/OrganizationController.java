@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -97,14 +98,16 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "启用组织")
     @PutMapping(value = "/{organization_id}/enable")
     public ResponseEntity<OrganizationDTO> enableOrganization(@PathVariable(name = "organization_id") Long id) {
-        return new ResponseEntity<>(organizationService.enableOrganization(id), HttpStatus.OK);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        return new ResponseEntity<>(organizationService.enableOrganization(id, userId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "禁用组织")
     @PutMapping(value = "/{organization_id}/disable")
     public ResponseEntity<OrganizationDTO> disableOrganization(@PathVariable(name = "organization_id") Long id) {
-        return new ResponseEntity<>(organizationService.disableOrganization(id), HttpStatus.OK);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        return new ResponseEntity<>(organizationService.disableOrganization(id, userId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

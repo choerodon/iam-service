@@ -87,7 +87,7 @@ public interface UserService {
                                              PageRequest pageRequest, String params);
 
     Page<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
-                                             PageRequest pageRequest, String params);
+                                                       PageRequest pageRequest, String params);
 
     Long[] listUserIds();
 

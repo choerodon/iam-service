@@ -65,7 +65,6 @@ class UserServiceImplSpec extends Specification {
     private RoleRepository roleRepository = Mock(RoleRepository)
     private SagaClient sagaClient = Mock(SagaClient)
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
-    private NotifyFeignClient notifyFeignClient = Mock(NotifyFeignClient)
     private UserService userService
     private Long userId
 
@@ -74,7 +73,7 @@ class UserServiceImplSpec extends Specification {
         userService = new UserServiceImpl(userRepository, organizationRepository,
                 projectRepository, iUserService, passwordRecord, fileFeignClient,
                 sagaClient, basePasswordPolicyMapper, passwordPolicyManager, roleRepository,
-                memberRoleMapper, notifyFeignClient)
+                memberRoleMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(userService, true)
@@ -200,7 +199,7 @@ class UserServiceImplSpec extends Specification {
         1 * passwordPolicyManager.passwordValidate(_, _, _)
         1 * userRepository.updateSelective(_)
         1 * passwordRecord.updatePassword(_, _)
-        1 * notifyFeignClient.postNotice(_)
+        1 * iUserService.sendNotice(_, _, _, _)
         noExceptionThrown()
     }
 

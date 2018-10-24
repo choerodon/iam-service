@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -96,7 +97,8 @@ public class OrganizationProjectController extends BaseController {
     @PutMapping(value = "/{project_id}/enable")
     public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                     @PathVariable(name = "project_id") Long projectId) {
-        return new ResponseEntity<>(organizationProjectService.enableProject(organizationId, projectId), HttpStatus.OK);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        return new ResponseEntity<>(organizationProjectService.enableProject(organizationId, projectId, userId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -104,8 +106,9 @@ public class OrganizationProjectController extends BaseController {
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                      @PathVariable(name = "project_id") Long projectId) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         return new ResponseEntity<>(organizationProjectService.disableProject(
-                organizationId, projectId), HttpStatus.OK);
+                organizationId, projectId, userId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
