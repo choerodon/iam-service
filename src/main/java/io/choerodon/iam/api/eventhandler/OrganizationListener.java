@@ -2,13 +2,13 @@ package io.choerodon.iam.api.eventhandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.ldap.DirectoryType;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
+import io.choerodon.iam.api.dto.payload.OrganizationRegisterPayload;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE_USER;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_REGISTER;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_REGISTER;
 
 
 /**
@@ -37,6 +37,7 @@ public class OrganizationListener {
     private LdapService ldapService;
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
+    private NotifyListener notifyListener;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -48,17 +49,16 @@ public class OrganizationListener {
     private Integer maxCheckCaptcha;
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
-    private SagaClient sagaClient;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, SagaClient sagaClient) {
+                                OrganizationService organizationService, NotifyListener notifyListener) {
         this.ldapService = ldapService;
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
-        this.sagaClient = sagaClient;
+        this.notifyListener = notifyListener;
     }
 
-    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq =  1, description = "iam接收org服务创建组织事件")
+    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
     public OrganizationCreateEventPayload create(String message) throws IOException {
         OrganizationCreateEventPayload organizationEventPayload = mapper.readValue(message, OrganizationCreateEventPayload.class);
         Long orgId = organizationEventPayload.getId();
@@ -66,26 +66,18 @@ public class OrganizationListener {
         if (organizationDTO == null) {
             throw new CommonException("error.organization.not exist");
         }
-        try {
-            LOGGER.info("### begin create ldap of organization {} ", orgId);
-            LdapDTO ldapDTO = new LdapDTO();
-            ldapDTO.setOrganizationId(orgId);
-            ldapDTO.setName(organizationDTO.getName());
-            ldapDTO.setServerAddress("");
-            ldapDTO.setPort("389");
-            ldapDTO.setEnabled(true);
-            ldapDTO.setUseSSL(false);
-            ldapDTO.setObjectClass("person");
-            ldapService.create(orgId, ldapDTO);
-        } catch (Exception e) {
-            LOGGER.error("create ldap error of organization {}", orgId);
-        }
+        createLdap(orgId, organizationDTO.getName());
+        createPasswordPolicy(orgId, organizationDTO.getCode(), organizationDTO.getName());
+        return organizationEventPayload;
+    }
+
+    private void createPasswordPolicy(Long orgId, String code, String name) {
         try {
             LOGGER.info("### begin create password policy of organization {} ", orgId);
             PasswordPolicyDTO passwordPolicyDTO = new PasswordPolicyDTO();
             passwordPolicyDTO.setOrganizationId(orgId);
-            passwordPolicyDTO.setCode(organizationDTO.getCode());
-            passwordPolicyDTO.setName(organizationDTO.getName());
+            passwordPolicyDTO.setCode(code);
+            passwordPolicyDTO.setName(name);
             passwordPolicyDTO.setMaxCheckCaptcha(maxCheckCaptcha);
             passwordPolicyDTO.setMaxErrorTime(maxErrorTime);
             passwordPolicyDTO.setLockedExpireTime(lockedExpireTime);
@@ -98,19 +90,46 @@ public class OrganizationListener {
             passwordPolicyDTO.setLockedExpireTime(600);
             passwordPolicyService.create(orgId, passwordPolicyDTO);
         } catch (Exception e) {
-            LOGGER.error("create password policy error of organization {}", orgId);
+            LOGGER.error("create password policy error of organizationId: {}, exception: {}", orgId, e);
         }
-        return organizationEventPayload;
     }
 
-    @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE_USER, seq = 1, description = "iam接收org服务注册组织同时新建了用户的事件")
-    public void createUser(String message) throws IOException {
-        UserEventPayload userEventPayload = mapper.readValue(message, UserEventPayload.class);
-        List<UserEventPayload> payloads = new ArrayList<>();
-        payloads.add(userEventPayload);
-        if(devopsMessage) {
-            String input = mapper.writeValueAsString(payloads);
-            sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+    private void createLdap(Long orgId, String name) {
+        try {
+            LOGGER.info("### begin create ldap of organization {} ", orgId);
+            LdapDTO ldapDTO = new LdapDTO();
+            ldapDTO.setOrganizationId(orgId);
+            ldapDTO.setName(name);
+            ldapDTO.setServerAddress("");
+            ldapDTO.setPort("389");
+            ldapDTO.setDirectoryType(DirectoryType.OPEN_LDAP.value());
+            ldapDTO.setEnabled(true);
+            ldapDTO.setUseSSL(false);
+            ldapDTO.setObjectClass("person");
+            ldapService.create(orgId, ldapDTO);
+        } catch (Exception e) {
+            LOGGER.error("create ldap error of organization, organizationId: {}, exception: {}", orgId, e);
         }
+    }
+
+    @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
+    public void registerOrganization(String message) throws IOException {
+        OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
+        Long organizationId = payload.getOrganizationId();
+        String organizationCode = payload.getOrganizationCode();
+        String organizationName = payload.getOrganizationName();
+        createLdap(organizationId, organizationName);
+        createPasswordPolicy(organizationId, organizationCode, organizationName);
+        //发送站内信
+        UserEventPayload userEventPayload = new UserEventPayload();
+        userEventPayload.setId(payload.getUserId() + "");
+        userEventPayload.setEmail(payload.getEmail());
+        userEventPayload.setFromUserId(payload.getFromUserId());
+        userEventPayload.setUsername(payload.getLoginName());
+        userEventPayload.setName(payload.getRealName());
+        List<UserEventPayload> userEventPayloads = new ArrayList<>();
+        userEventPayloads.add(userEventPayload);
+        String input = mapper.writeValueAsString(userEventPayloads);
+        notifyListener.create(input);
     }
 }

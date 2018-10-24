@@ -59,7 +59,9 @@ public final class SagaTopic {
         public static final String ORG_CREATE = "org-create-organization";
 
         //组织服务注册用户
-        public static final String ORG_CREATE_USER = "org-create-user";
+        public static final String ORG_REGISTER = "org-register";
+
+        public static final String TASK_ORG_REGISTER = "iam-register-organization";
 
         //iam接收创建组织事件的SagaTaskCode
         public static final String TASK_ORG_CREATE = "iam-create-organization";
