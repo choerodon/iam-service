@@ -1,12 +1,10 @@
 package io.choerodon.iam.api.eventhandler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.choerodon.asgard.saga.dto.StartInstanceDTO
-import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.OrganizationDTO
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload
-import io.choerodon.iam.api.dto.payload.UserEventPayload
+import io.choerodon.iam.api.dto.payload.OrganizationRegisterPayload
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.app.service.PasswordPolicyService
@@ -27,13 +25,13 @@ class OrganizationListenerSpec extends Specification {
     private LdapService ldapService = Mock(LdapService)
     private PasswordPolicyService passwordPolicyService = Mock(PasswordPolicyService)
     private OrganizationService organizationService = Mock(OrganizationService)
-    private SagaClient sagaClient = Mock(SagaClient)
+    private NotifyListener notifyListener = Mock(NotifyListener)
     private OrganizationListener organizationListener
     private final ObjectMapper mapper = new ObjectMapper()
 
     def setup() {
         organizationListener = new OrganizationListener(ldapService, passwordPolicyService,
-                organizationService, sagaClient)
+                organizationService, notifyListener)
 
         Field field = organizationListener.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
@@ -56,16 +54,23 @@ class OrganizationListenerSpec extends Specification {
         0 * _
     }
 
-    def "CreateUser"() {
+    def "registerOrganization"() {
         given: "构造请求参数"
-        UserEventPayload payload = new UserEventPayload()
+        OrganizationRegisterPayload payload = new OrganizationRegisterPayload()
+        payload.setOrganizationName("aaa")
+        payload.setOrganizationCode("code1314")
+        payload.setUserId(1L)
+        payload.setFromUserId(1L)
+        payload.setEmail("110101123@qq.com")
+        payload.setOrganizationId(10090L)
+        payload.setLoginName("zhangsan09876")
+        payload.setRealName("zhangsan")
         String message = mapper.writeValueAsString(payload)
 
         when: "调用方法"
-        organizationListener.createUser(message)
+        organizationListener.registerOrganization(message)
 
         then: "校验结果"
-        1 * sagaClient.startSaga(_, _ as StartInstanceDTO)
-        0 * _
+        noExceptionThrown()
     }
 }
