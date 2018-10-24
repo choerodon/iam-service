@@ -4,12 +4,12 @@ import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
+import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
@@ -53,18 +53,18 @@ public class ExcelImportUserTask {
     private IRoleMemberService iRoleMemberService;
     private OrganizationUserService organizationUserService;
     private FileFeignClient fileFeignClient;
-    private NotifyFeignClient notifyFeignClient;
+    private IUserService iUserService;
     private final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
 
-    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, NotifyFeignClient notifyFeignClient) {
+    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, IUserService iUserService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.iRoleMemberService = iRoleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
-        this.notifyFeignClient = notifyFeignClient;
+        this.iUserService = iUserService;
     }
 
     @Async("excel-executor")
@@ -101,22 +101,11 @@ public class ExcelImportUserTask {
     }
 
     private void sendNotice(Integer successCount, Long userId) {
-        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-        noticeSendDTO.setCode(ADD_USER);
-        NoticeSendDTO.User user = new NoticeSendDTO.User();
-        UserE userE = userRepository.selectByPrimaryKey(userId);
-        user.setId(userId);
-        user.setEmail(userE.getEmail());
-        user.setLoginName(userE.getLoginName());
-        user.setRealName(userE.getRealName());
-        noticeSendDTO.setFromUser(user);
-        List<NoticeSendDTO.User> users = new ArrayList<>();
-        users.add(user);
-        noticeSendDTO.setTargetUsers(users);
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", successCount);
-        noticeSendDTO.setParams(paramsMap);
-        notifyFeignClient.postNotice(noticeSendDTO);
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(userId);
+        iUserService.sendNotice(userId, userIds, ADD_USER, paramsMap);
         logger.info("batch import user send station letter.");
     }
 

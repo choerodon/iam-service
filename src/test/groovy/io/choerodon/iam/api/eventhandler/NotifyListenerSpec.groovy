@@ -3,7 +3,7 @@ package io.choerodon.iam.api.eventhandler
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.payload.UserEventPayload
-import io.choerodon.iam.infra.feign.NotifyFeignClient
+import io.choerodon.iam.domain.service.IUserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -16,8 +16,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class NotifyListenerSpec extends Specification {
-    private NotifyFeignClient notifyFeignClient = Mock(NotifyFeignClient)
-    private NotifyListener notifyListener = new NotifyListener(notifyFeignClient)
+    private IUserService iUserService = Mock(IUserService)
+    private NotifyListener notifyListener = new NotifyListener(iUserService)
     private final ObjectMapper mapper = new ObjectMapper()
 
     def "Create"() {
@@ -32,7 +32,7 @@ class NotifyListenerSpec extends Specification {
         notifyListener.create(message)
 
         then: "校验结果"
-        1 * notifyFeignClient.postNotice(_)
+        1 * iUserService.sendNotice(_, _, _, _)
         0 * _
     }
 }

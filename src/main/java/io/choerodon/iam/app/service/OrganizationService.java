@@ -17,9 +17,9 @@ public interface OrganizationService {
 
     Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param);
 
-    OrganizationDTO enableOrganization(Long organizationId);
+    OrganizationDTO enableOrganization(Long organizationId, Long userId);
 
-    OrganizationDTO disableOrganization(Long organizationId);
+    OrganizationDTO disableOrganization(Long organizationId, Long userId);
 
     void check(OrganizationDTO organization);
 

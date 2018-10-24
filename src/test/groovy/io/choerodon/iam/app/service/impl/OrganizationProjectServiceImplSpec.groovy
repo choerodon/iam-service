@@ -15,11 +15,11 @@ import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.repository.RoleRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.domain.service.IProjectService
+import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dataobject.OrganizationDO
 import io.choerodon.iam.infra.dataobject.ProjectDO
 import io.choerodon.iam.infra.dataobject.RoleDO
-import io.choerodon.iam.infra.feign.NotifyFeignClient
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
@@ -46,14 +46,14 @@ class OrganizationProjectServiceImplSpec extends Specification {
     private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
     private LabelRepository labelRepository = Mock(LabelRepository)
     private SagaClient sagaClient = Mock(SagaClient)
-    private NotifyFeignClient notifyFeignClient = Mock(NotifyFeignClient)
+    private IUserService iUserService = Mock(IUserService)
     private OrganizationProjectService organizationProjectService
 
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, iProjectService, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, notifyFeignClient)
+                memberRoleRepository, labelRepository, sagaClient, iUserService)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)
@@ -126,7 +126,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
         PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new ProjectDTO())
 
         when: "调用方法"
-        organizationProjectService.enableProject(1L, 1L)
+        organizationProjectService.enableProject(1L, 1L, 1L)
 
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
@@ -138,7 +138,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * notifyFeignClient.postNotice(_)
+        1 * iUserService.sendNotice(_, _, _, _)
     }
 
     def "DisableProject"() {
@@ -147,7 +147,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
         PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new ProjectDTO())
 
         when: "调用方法"
-        organizationProjectService.enableProject(1L, 1L)
+        organizationProjectService.enableProject(1L, 1L, 1L)
 
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
@@ -159,6 +159,6 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * notifyFeignClient.postNotice(_)
+        1 * iUserService.sendNotice(_, _, _, _)
     }
 }

@@ -20,9 +20,9 @@ public interface OrganizationProjectService {
 
     ProjectDTO update(Long organizationId, ProjectDTO projectDTO);
 
-    ProjectDTO enableProject(Long organizationId, Long projectId);
+    ProjectDTO enableProject(Long organizationId, Long projectId, Long userId);
 
-    ProjectDTO disableProject(Long organizationId, Long projectId);
+    ProjectDTO disableProject(Long organizationId, Long projectId, Long userId);
 
     void check(ProjectDTO projectDTO);
 }

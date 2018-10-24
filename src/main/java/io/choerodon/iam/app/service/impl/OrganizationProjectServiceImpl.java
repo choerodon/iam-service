@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.iam.api.dto.NoticeSendDTO;
+import io.choerodon.iam.domain.service.IUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -71,7 +72,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private SagaClient sagaClient;
 
-    private NotifyFeignClient notifyFeignClient;
+    private IUserService iUserService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -83,7 +84,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
                                           SagaClient sagaClient,
-                                          NotifyFeignClient notifyFeignClient) {
+                                          IUserService iUserService) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -92,7 +93,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
         this.sagaClient = sagaClient;
-        this.notifyFeignClient = notifyFeignClient;
+        this.iUserService = iUserService;
     }
 
     @Transactional
@@ -218,16 +219,16 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
-    public ProjectDTO enableProject(Long organizationId, Long projectId) {
+    public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, PROJECT_ENABLE, true);
+        ProjectE project = updateAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
-    private ProjectE updateAndSendEvent(Long projectId, String consumerType, boolean enabled) {
+    private ProjectE updateAndSendEvent(Long projectId, String consumerType, boolean enabled, Long userId) {
         ProjectE project;
         ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
         projectDO.setEnabled(enabled);
@@ -243,25 +244,15 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }
-            // 给项目下所有用户发送站内信
+            // 给项目下所有用户发送通知
             List<Long> userIds = projectRepository.listUserIds(projectId);
-            NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-            if (PROJECT_DISABLE.equals(consumerType)) {
-                noticeSendDTO.setCode("disableProject");
-            } else if (PROJECT_ENABLE.equals(consumerType)) {
-                noticeSendDTO.setCode("enableProject");
-            }
             Map<String, Object> params = new HashMap<>();
             params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
-            noticeSendDTO.setParams(params);
-            List<NoticeSendDTO.User> users = new LinkedList<>();
-            userIds.forEach(id -> {
-                NoticeSendDTO.User user = new NoticeSendDTO.User();
-                user.setId(id);
-                users.add(user);
-            });
-            noticeSendDTO.setTargetUsers(users);
-            notifyFeignClient.postNotice(noticeSendDTO);
+            if (PROJECT_DISABLE.equals(consumerType)) {
+                iUserService.sendNotice(userId, userIds, "disableProject", params);
+            } else if (PROJECT_ENABLE.equals(consumerType)) {
+                iUserService.sendNotice(userId, userIds, "enableProject", params);
+            }
         } else {
             project = projectRepository.updateSelective(projectDO);
             //project = iProjectService.updateProjectEnabled(projectId);
@@ -270,12 +261,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public ProjectDTO disableProject(Long organizationId, Long projectId) {
+    public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectE project = updateAndSendEvent(projectId, PROJECT_DISABLE, false);
+        ProjectE project = updateAndSendEvent(projectId, PROJECT_DISABLE, false, userId);
         return ConvertHelper.convert(project, ProjectDTO.class);
     }
 
