@@ -9,10 +9,10 @@ import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
 import io.choerodon.iam.api.dto.payload.OrganizationRegisterPayload;
-import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
+import io.choerodon.iam.domain.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_REGISTER;
@@ -37,7 +39,7 @@ public class OrganizationListener {
     private LdapService ldapService;
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
-    private NotifyListener notifyListener;
+    private IUserService iUserService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -51,11 +53,11 @@ public class OrganizationListener {
     private boolean devopsMessage;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, NotifyListener notifyListener) {
+                                OrganizationService organizationService, IUserService iUserService) {
         this.ldapService = ldapService;
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
-        this.notifyListener = notifyListener;
+        this.iUserService = iUserService;
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
@@ -121,15 +123,11 @@ public class OrganizationListener {
         createLdap(organizationId, organizationName);
         createPasswordPolicy(organizationId, organizationCode, organizationName);
         //发送站内信
-        UserEventPayload userEventPayload = new UserEventPayload();
-        userEventPayload.setId(payload.getUserId() + "");
-        userEventPayload.setEmail(payload.getEmail());
-        userEventPayload.setFromUserId(payload.getFromUserId());
-        userEventPayload.setUsername(payload.getLoginName());
-        userEventPayload.setName(payload.getRealName());
-        List<UserEventPayload> userEventPayloads = new ArrayList<>();
-        userEventPayloads.add(userEventPayload);
-        String input = mapper.writeValueAsString(userEventPayloads);
-        notifyListener.create(input);
+        Long fromUserId = payload.getFromUserId();
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(payload.getUserId());
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("addCount", userIds.size());
+        iUserService.sendNotice(fromUserId,userIds,"addUser", paramsMap);
     }
 }
