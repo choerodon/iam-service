@@ -74,5 +74,11 @@ public final class SagaTopic {
 
     }
 
+    public static class SystemSetting {
+        private SystemSetting() {}
+
+        // iam 系统设置发生改变时（增加，更新，重置），触发 Saga 流程时的 code
+        public static final String SYSTEM_SETTING_UPDATE = "iam-update-system-setting";
+    }
 
 }

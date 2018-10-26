@@ -150,6 +150,13 @@
             <artifactId>choerodon-starter-hitoa</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <!-- Only needed at compile time -->
+            <optional>true</optional>
+        </dependency>
 
         <!-- 以下是单元测试相关依赖 -->
         <dependency>
