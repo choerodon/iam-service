@@ -1,16 +1,23 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.SystemSettingDTO;
+import io.choerodon.iam.api.dto.payload.SystemSettingEventPayload;
 import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
+import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.SystemSettingDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -23,11 +30,16 @@ import java.io.ByteArrayOutputStream;
 public class SystemSettingServiceImpl implements SystemSettingService {
     private final FileFeignClient fileFeignClient;
     private final SystemSettingRepository systemSettingRepository;
+    private final SagaClient sagaClient;
+    private final ObjectMapper objectMapper;
+    private final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
 
     @Autowired
-    public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository) {
+    public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository, SagaClient sagaClient) {
         this.fileFeignClient = fileFeignClient;
         this.systemSettingRepository = systemSettingRepository;
+        this.sagaClient = sagaClient;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -47,19 +59,60 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         }
     }
 
+    @Transactional(rollbackFor = CommonException.class)
+    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam增加系统设置以覆盖默认系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public SystemSettingDTO addSetting(SystemSettingDTO systemSettingDTO) {
-        return systemSettingRepository.addSetting(convert(systemSettingDTO));
+        // 执行业务代码
+        SystemSettingDTO dto = systemSettingRepository.addSetting(convert(systemSettingDTO));
+
+        // 触发 saga 流程
+        triggerSagaFlow(dto);
+
+        return dto;
     }
 
+    @Transactional(rollbackFor = CommonException.class)
+    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam更新系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public SystemSettingDTO updateSetting(SystemSettingDTO systemSettingDTO) {
-        return systemSettingRepository.updateSetting(convert(systemSettingDTO));
+        // 执行业务代码
+        SystemSettingDTO dto = systemSettingRepository.updateSetting(convert(systemSettingDTO));
+
+        // 触发 saga 流程
+        triggerSagaFlow(dto);
+
+        return dto;
     }
 
+    /**
+     * 触发 saga 流程
+     *
+     * @param dto 返回的 dto
+     */
+    private void triggerSagaFlow(final SystemSettingDTO dto) {
+        try {
+            SystemSettingEventPayload payload = new SystemSettingEventPayload();
+            BeanUtils.copyProperties(dto, payload);
+            sagaClient.startSaga(SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, new StartInstanceDTO(objectMapper.writeValueAsString(payload)));
+        } catch (Exception e) {
+            throw new CommonException(ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND, e);
+        }
+    }
+
+    @Transactional(rollbackFor = CommonException.class)
+    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam重置系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public void resetSetting() {
+        // 执行业务代码
         systemSettingRepository.resetSetting();
+
+        // 触发 saga 流程
+        try {
+            sagaClient.startSaga(SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, new StartInstanceDTO(""));
+        } catch (Exception e) {
+            throw new CommonException(ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND, e);
+        }
     }
 
     @Override
