@@ -17,7 +17,6 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -27,6 +26,7 @@ import java.io.ByteArrayOutputStream;
  * @since 2018-10-15
  */
 @Service
+@Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam更改系统设置", inputSchemaClass = SystemSettingEventPayload.class)
 public class SystemSettingServiceImpl implements SystemSettingService {
     private final FileFeignClient fileFeignClient;
     private final SystemSettingRepository systemSettingRepository;
@@ -59,8 +59,6 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         }
     }
 
-    @Transactional(rollbackFor = CommonException.class)
-    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam增加系统设置以覆盖默认系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public SystemSettingDTO addSetting(SystemSettingDTO systemSettingDTO) {
         // 执行业务代码
@@ -72,8 +70,6 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         return dto;
     }
 
-    @Transactional(rollbackFor = CommonException.class)
-    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam更新系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public SystemSettingDTO updateSetting(SystemSettingDTO systemSettingDTO) {
         // 执行业务代码
@@ -100,8 +96,6 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         }
     }
 
-    @Transactional(rollbackFor = CommonException.class)
-    @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam重置系统设置", inputSchemaClass = SystemSettingEventPayload.class)
     @Override
     public void resetSetting() {
         // 执行业务代码
