@@ -103,7 +103,7 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
         // 触发 saga 流程
         try {
-            sagaClient.startSaga(SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, new StartInstanceDTO(""));
+            sagaClient.startSaga(SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, new StartInstanceDTO(objectMapper.writeValueAsString(new SystemSettingEventPayload())));
         } catch (Exception e) {
             throw new CommonException(ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND, e);
         }
