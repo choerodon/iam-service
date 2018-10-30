@@ -7,6 +7,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.util.List;
 
 /**
  * @author wuguokai
@@ -29,6 +31,9 @@ public class ClientDO extends AuditDomain {
     private Long refreshTokenValidity;
     private String additionalInformation;
     private String autoApprove;
+
+    @Transient
+    private List<RoleDO> roles;
 
     public Long getId() {
         return id;
@@ -124,5 +129,13 @@ public class ClientDO extends AuditDomain {
 
     public void setAutoApprove(String autoApprove) {
         this.autoApprove = autoApprove;
+    }
+
+    public List<RoleDO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleDO> roles) {
+        this.roles = roles;
     }
 }

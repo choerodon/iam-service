@@ -1,25 +1,28 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.excel.ExcelReadConfig;
 import io.choerodon.core.excel.ExcelReadHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
-import io.choerodon.iam.api.dto.MemberRoleDTO;
-import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.RoleMemberService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
+import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -45,6 +49,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     private final Logger logger = LoggerFactory.getLogger(RoleMemberServiceImpl.class);
 
+    private MemberRoleRepository memberRoleRepository;
     private IRoleMemberService iRoleMemberService;
     private UploadHistoryRepository uploadHistoryRepository;
     private ExcelImportUserTask excelImportUserTask;
@@ -57,13 +62,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                                  ExcelImportUserTask excelImportUserTask,
                                  ExcelImportUserTask.FinishFallback finishFallback,
                                  OrganizationMapper organizationMapper,
-                                 ProjectMapper projectMapper) {
+                                 ProjectMapper projectMapper,
+                                 MemberRoleRepository memberRoleRepository) {
         this.iRoleMemberService = iRoleMemberService;
         this.uploadHistoryRepository = uploadHistoryRepository;
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
         this.organizationMapper = organizationMapper;
         this.projectMapper = projectMapper;
+        this.memberRoleRepository = memberRoleRepository;
     }
 
 
@@ -76,7 +83,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                     m.setMemberId(memberId)
             );
             memberRoleDTOS.addAll(ConvertHelper.convertList(
-                    iRoleMemberService.insertOrUpdateRolesByMemberId(isEdit, 0L, memberId, ConvertHelper.convertList(
+                    iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, 0L, memberId, ConvertHelper.convertList(
                             memberRoleDTOList, MemberRoleE.class), ResourceLevel.SITE.value()), MemberRoleDTO.class));
         }
         return memberRoleDTOS;
@@ -86,16 +93,47 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+
+        // member type 为 'client' 时
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals("client")) {
+            for (Long memberId : memberIds) {
+                memberRoleDTOList.forEach(m ->
+                        m.setMemberId(memberId)
+                );
+                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                        iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, organizationId, memberId,
+                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
+                                ResourceLevel.ORGANIZATION.value()), MemberRoleDTO.class));
+            }
+            return memberRoleDTOS;
+        }
+
+        // member type 为 'user' 时
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
             );
             memberRoleDTOS.addAll(ConvertHelper.convertList(
-                    iRoleMemberService.insertOrUpdateRolesByMemberId(isEdit, organizationId, memberId,
+                    iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, organizationId, memberId,
                             ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
                             ResourceLevel.ORGANIZATION.value()), MemberRoleDTO.class));
         }
         return memberRoleDTOS;
+    }
+
+    @Override
+    public Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(
+                pageRequest, clientRoleSearchDTO, sourceId);
+        Page<ClientWithRoleDTO> newPage = new Page<>();
+        BeanUtils.copyProperties(page, newPage, "content");
+        newPage.setContent(page.getContent().stream().map(clientDO -> {
+            ClientWithRoleDTO dto = new ClientWithRoleDTO();
+            BeanUtils.copyProperties(clientDO, dto, "roles");
+            dto.setRoles(clientDO.getRoles());
+            return dto;
+        }).collect(Collectors.toList()));
+        return newPage;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -107,7 +145,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                     m.setMemberId(memberId)
             );
             memberRoleDTOS.addAll(ConvertHelper.convertList(
-                    iRoleMemberService.insertOrUpdateRolesByMemberId(isEdit, projectId, memberId,
+                    iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, projectId, memberId,
                             ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
                             ResourceLevel.PROJECT.value()), MemberRoleDTO.class));
         }
@@ -174,7 +212,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         long begin = System.currentTimeMillis();
         try {
             List<ExcelMemberRoleDTO> memberRoles = ExcelReadHelper.read(file, ExcelMemberRoleDTO.class, excelReadConfig);
-            if(memberRoles.isEmpty()) {
+            if (memberRoles.isEmpty()) {
                 throw new CommonException("error.excel.memberRole.empty");
             }
             UploadHistoryDO uploadHistory = initUploadHistory(sourceId, sourceType);

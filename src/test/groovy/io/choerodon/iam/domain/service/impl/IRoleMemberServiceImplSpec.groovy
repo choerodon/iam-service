@@ -90,7 +90,7 @@ class IRoleMemberServiceImplSpec extends Specification {
         set << "label"
 
         when: "调用方法"
-        iRoleMemberService.insertOrUpdateRolesByMemberId(isEdit, sourceId, memberId, memberRoleEList, sourceType)
+        iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, sourceId, memberId, memberRoleEList, sourceType)
 
         then: "校验结果"
         1 * labelRepository.selectLabelNamesInRoleIds(_) >> { set }

@@ -1,6 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.MemberRoleMapper">
+    <resultMap id="clientWithRoles" type="io.choerodon.iam.infra.dataobject.ClientDO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO"
+                    select="selectMemberRolesByClientId" column="{client_id = id}"/>
+    </resultMap>
+
+    <resultMap id="RoleDO" type="io.choerodon.iam.infra.dataobject.RoleDO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="builtIn" column="is_built_in"/>
+    </resultMap>
+
+    <select id="selectMemberRolesByClientId" parameterType="java.util.Map" resultMap="RoleDO">
+        SELECT role.IS_ENABLED, role.ID, role.NAME, role.CODE, role.IS_ENABLE_FORBIDDEN, role.IS_BUILT_IN
+        FROM iam_member_role imr
+                 LEFT JOIN iam_role role ON imr.ROLE_ID = role.ID
+        WHERE imr.MEMBER_ID = #{client_id}
+          AND imr.MEMBER_TYPE = 'client'
+    </select>
+
+    <select id="selectClientsWithRoles" resultMap="clientWithRoles">
+        SELECT DISTINCT client.NAME as name, client.ID as id
+        FROM oauth_client client
+        LEFT JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.roleName != null">
+                LEFT JOIN iam_role role ON imr.ROLE_ID = role.ID
+            </if>
+        </if>
+        WHERE client.ORGANIZATION_ID = #{organizationId}
+        AND imr.MEMBER_TYPE = 'client'
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
+            </if>
+            <if test="clientRoleSearchDTO.roleName != null">
+                AND role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
+            </if>
+        </if>
+    </select>
 
     <select id="selectDeleteList" resultType="java.lang.Long">
         SELECT id FROM iam_member_role
@@ -18,7 +61,7 @@
         SELECT COUNT(DISTINCT source_id)
         FROM iam_member_role
         WHERE iam_member_role.member_id = #{id}
-        AND iam_member_role.source_type = #{type}
+          AND iam_member_role.source_type = #{type}
     </select>
 
 </mapper>

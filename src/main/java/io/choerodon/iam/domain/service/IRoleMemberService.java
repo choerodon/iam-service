@@ -12,7 +12,10 @@ import java.util.List;
  */
 public interface IRoleMemberService {
 
-    List<MemberRoleE> insertOrUpdateRolesByMemberId(
+    List<MemberRoleE> insertOrUpdateRolesOfUserByMemberId(
+            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType);
+
+    List<MemberRoleE> insertOrUpdateRolesOfClientByMemberId(
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType);
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);

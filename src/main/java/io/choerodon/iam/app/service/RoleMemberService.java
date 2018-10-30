@@ -1,7 +1,11 @@
 package io.choerodon.iam.app.service;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.ClientWithRoleDTO;
 import io.choerodon.iam.api.dto.MemberRoleDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +15,7 @@ import java.util.List;
 /**
  * @author superlee
  * @author wuguokai
+ * @author zmf
  */
 public interface RoleMemberService {
 
@@ -19,6 +24,8 @@ public interface RoleMemberService {
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(
             Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
+
+    Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(
             Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
