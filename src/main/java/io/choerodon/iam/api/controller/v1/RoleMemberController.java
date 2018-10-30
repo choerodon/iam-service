@@ -1,17 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -30,6 +18,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author superlee
@@ -79,7 +78,7 @@ public class RoleMemberController extends BaseController {
      * 在organization层分配角色
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "组织层批量分配给用户角色")
+    @ApiOperation(value = "组织层批量分配给用户角色/客户端")
     @PostMapping(value = "/organizations/{organization_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnOrganizationLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                                  @PathVariable(name = "organization_id") Long sourceId,
@@ -271,6 +270,23 @@ public class RoleMemberController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithOrganizationLevelRoles(
                 pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的organization层的角色
+     *
+     * @param clientRoleSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询客户端列表以及该客户端拥有的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients/roles")
+    public ResponseEntity<Page<ClientWithRoleDTO>> pagingQueryClientsWithOrganizationLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithOrganizationLevelRoles(pageRequest, clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
 
     /**

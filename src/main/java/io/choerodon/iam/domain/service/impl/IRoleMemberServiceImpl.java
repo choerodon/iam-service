@@ -10,6 +10,8 @@ import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.oauth.entity.ClientE;
+import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.domain.repository.LabelRepository;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -46,6 +48,8 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
 
     private LabelRepository labelRepository;
 
+    private ClientRepository clientRepository;
+
     private SagaClient sagaClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -60,12 +64,14 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                                   MemberRoleRepository memberRoleRepository,
                                   LabelRepository labelRepository,
                                   SagaClient sagaClient,
-                                  MemberRoleMapper memberRoleMapper) {
+                                  MemberRoleMapper memberRoleMapper,
+                                  ClientRepository clientRepository) {
         this.userRepository = userRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
         this.sagaClient = sagaClient;
         this.memberRoleMapper = memberRoleMapper;
+        this.clientRepository = clientRepository;
     }
 
     @Override
@@ -100,9 +106,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     @Override
     @Saga(code = MEMBER_ROLE_UPDATE, description = "iam更新用户角色", inputSchemaClass = List.class)
     @Transactional
-    public List<MemberRoleE> insertOrUpdateRolesByMemberId(Boolean isEdit, Long sourceId,
-                                                           Long memberId, List<MemberRoleE> memberRoleEList,
-                                                           String sourceType) {
+    public List<MemberRoleE> insertOrUpdateRolesOfUserByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType) {
         UserE userE = userRepository.selectByPrimaryKey(memberId);
         if (userE == null) {
             throw new CommonException("error.user.not.exist");
@@ -133,6 +137,22 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     returnList);
             return returnList;
         }
+    }
+
+    @Override
+    public List<MemberRoleE> insertOrUpdateRolesOfClientByMemberId(Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType) {
+        ClientE clientE = clientRepository.query(memberId);
+        if (clientE == null) {
+            throw new CommonException("error.client.not.exist");
+        }
+        List<MemberRoleE> returnList = new ArrayList<>();
+        insertOrUpdateRolesByMemberIdExecute(isEdit,
+                sourceId,
+                memberId,
+                sourceType,
+                memberRoleEList,
+                returnList);
+        return returnList;
     }
 
     private void sendEvent(List<UserMemberEventPayload> userMemberEventPayloads) {
@@ -238,8 +258,9 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleE> memberRoleEList,
                                                             List<MemberRoleE> returnList) {
+        String memberType = memberRoleEList.get(0).getMemberType();
         MemberRoleE memberRoleE =
-                new MemberRoleE(null, null, memberId, "user", sourceId, sourceType);
+                new MemberRoleE(null, null, memberId, memberType, sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);
         List<Long> existingRoleIds =
                 existingMemberRoleEList.stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
@@ -254,7 +275,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 !intersection.contains(item)).collect(Collectors.toList());
         returnList.addAll(existingMemberRoleEList);
         insertList.forEach(item -> {
-            MemberRoleE mr = new MemberRoleE(null, item, memberId, "user", sourceId, sourceType);
+            MemberRoleE mr = new MemberRoleE(null, item, memberId, memberType, sourceId, sourceType);
             returnList.add(memberRoleRepository.insertSelective(mr));
         });
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
@@ -266,7 +287,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                         }
                     });
         }
-        //查当前用户有那些角色
+        //查当前用户/客户端有那些角色
         return memberRoleRepository.select(memberRoleE)
                 .stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
     }

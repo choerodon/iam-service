@@ -1,15 +1,20 @@
 package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
+import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -91,5 +96,11 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     public List<Long> selectDeleteList(final List<Long> deleteList, final long memberId,
                                        final long sourceId, final String sourceType) {
         return memberRoleMapper.selectDeleteList(memberId, sourceId, sourceType, deleteList);
+    }
+
+    @Override
+    public Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
+            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, clientRoleSearchDTO));
     }
 }

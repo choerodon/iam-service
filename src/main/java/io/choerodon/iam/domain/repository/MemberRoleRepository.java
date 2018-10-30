@@ -1,7 +1,11 @@
 package io.choerodon.iam.domain.repository;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
+import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -23,4 +27,7 @@ public interface MemberRoleRepository {
 
     List<Long> selectDeleteList(List<Long> deleteList, long memberId,
                                 long sourceId, String sourceType);
+
+    Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
+            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 }

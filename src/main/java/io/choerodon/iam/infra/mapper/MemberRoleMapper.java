@@ -1,5 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.ClientWithRoleDTO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,4 +19,5 @@ public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
 
     int selectCountBySourceId(@Param("id") Long id, @Param("type") String type);
 
+    List<ClientWithRoleDTO> selectClientsWithRoles(@Param("organizationId") Long organizationId, @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO);
 }
