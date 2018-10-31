@@ -192,10 +192,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersWithProjectLevelRoles(
-                        pageRequest, roleAssignmentSearchDTO, sourceId), UserWithRoleDTO.class);
+    public List<UserWithRoleDTO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPageAndSort) {
+        if (doPageAndSort) {
+            return ConvertPageHelper.convertPage(
+                    (Page<UserDO>) userRepository.pagingQueryUsersWithProjectLevelRoles(
+                            pageRequest, roleAssignmentSearchDTO, sourceId, true), UserWithRoleDTO.class);
+
+        } else {
+            return ConvertHelper.convertList(userRepository.pagingQueryUsersWithProjectLevelRoles(
+                    pageRequest, roleAssignmentSearchDTO, sourceId, false), UserWithRoleDTO.class);
+        }
     }
 
     @Override

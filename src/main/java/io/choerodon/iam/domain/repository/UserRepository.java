@@ -37,8 +37,8 @@ public interface UserRepository {
     Page<UserDO> pagingQueryUsersWithOrganizationLevelRoles(
             PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
-    Page<UserDO> pagingQueryUsersWithProjectLevelRoles(
-            PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+    List<UserDO> pagingQueryUsersWithProjectLevelRoles(
+            PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPageAndSort);
 
     UserE updateUserInfo(UserE userE);
 
