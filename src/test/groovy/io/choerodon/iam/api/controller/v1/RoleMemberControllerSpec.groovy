@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
@@ -191,6 +192,25 @@ class RoleMemberControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         !entity.getBody().isEmpty()
+
+        when: "调用方法"
+        def memberIds2 = new Long[1]
+        memberIds2[0] = 1L
+        paramsMap.put("member_ids", memberIds2)
+        paramsMap.put("organization_id", 1L)
+        memberRoleDOList1 = new ArrayList<MemberRoleDO>()
+        MemberRoleDO memberRoleDO1 = new MemberRoleDO()
+        memberRoleDO1.setMemberId(1L)
+        memberRoleDO1.setMemberType("client")
+        memberRoleDO1.setRoleId(2L)
+        memberRoleDO1.setSourceId(1L)
+        memberRoleDO1.setSourceType("organization")
+        memberRoleDOList1.add(memberRoleDO1)
+        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        !entity.getBody().isEmpty()
     }
 
     def "CreateOrUpdateOnProjectLevel"() {
@@ -207,7 +227,7 @@ class RoleMemberControllerSpec extends Specification {
         def memberRoleDOList1 = memberRoleMapper.select(memberRoleDO)
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, String, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -402,6 +422,22 @@ class RoleMemberControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         //自己插入的userDO
+        entity.getBody().size() != 0
+    }
+
+    def "pagingQueryClientsWithOrganizationLevelRoles"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("organization_id", 1L)
+        def clientSearch = new ClientRoleSearchDTO()
+        clientSearch.setClientName("client")
+        clientSearch.setRoleName("管理")
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients/roles", clientSearch, Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
         entity.getBody().size() != 0
     }
 
