@@ -1,13 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -17,14 +9,18 @@ import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.iam.entity.RoleE;
-import io.choerodon.iam.domain.repository.PermissionRepository;
-import io.choerodon.iam.domain.repository.RolePermissionRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -32,6 +28,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class RoleServiceImpl implements RoleService {
+
+    private ClientRepository clientRepository;
 
     private RoleRepository roleRepository;
 
@@ -45,12 +43,13 @@ public class RoleServiceImpl implements RoleService {
 
     public RoleServiceImpl(RoleRepository roleRepository, IRoleService iRoleService,
                            UserRepository userRepository, RolePermissionRepository rolePermissionRepository,
-                           PermissionRepository permissionRepository) {
+                           PermissionRepository permissionRepository, ClientRepository clientRepository) {
         this.roleRepository = roleRepository;
         this.iRoleService = iRoleService;
         this.userRepository = userRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.permissionRepository = permissionRepository;
+        this.clientRepository = clientRepository;
     }
 
     @Override
@@ -170,6 +169,21 @@ public class RoleServiceImpl implements RoleService {
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
                     r.getId(), "user", sourceId, ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
+    @Override
+    public List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        RoleDO roleDO = new RoleDO();
+        roleDO.setName(clientRoleSearchDTO.getRoleName());
+        roleDO.setLevel(ResourceLevel.ORGANIZATION.value());
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        roles.forEach(r -> {
+            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), sourceId, ResourceLevel.ORGANIZATION.value(), clientRoleSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;

@@ -8,10 +8,7 @@ import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
-import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.app.service.RoleService;
-import io.choerodon.iam.app.service.UploadHistoryService;
-import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,6 +39,8 @@ public class RoleMemberController extends BaseController {
 
     private UserService userService;
 
+    private ClientService clientService;
+
     private RoleService roleService;
     private UploadHistoryService uploadHistoryService;
 
@@ -51,11 +50,13 @@ public class RoleMemberController extends BaseController {
     public RoleMemberController(RoleMemberService roleMemberService,
                                 UserService userService,
                                 RoleService roleService,
+                                ClientService clientService,
                                 UploadHistoryService uploadHistoryService) {
         this.roleMemberService = roleMemberService;
         this.userService = userService;
         this.roleService = roleService;
         this.uploadHistoryService = uploadHistoryService;
+        this.clientService = clientService;
     }
 
     /**
@@ -179,6 +180,19 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层分页查询角色下的客户端")
+    @CustomPageRequest
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients")
+    public ResponseEntity<Page<ClientDTO>> pagingQueryClientsByRoleIdOnOrganizationLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
+    }
+
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
@@ -220,6 +234,21 @@ public class RoleMemberController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithUserCountOnOrganizationLevel(
                 roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询organization层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithClientCountOnOrganizationLevel(
+                clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
 
     /**

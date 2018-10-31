@@ -4,7 +4,9 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientDTO;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
@@ -96,6 +98,13 @@ public class ClientServiceImpl implements ClientService {
         } else {
             checkName(client);
         }
+    }
+
+    @Override
+    public Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        Page<ClientDO> clientDOS = clientRepository.pagingQueryClientsByRoleIdAndOptions(
+                pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
+        return ConvertPageHelper.convertPage(clientDOS, ClientDTO.class);
     }
 
     private void checkName(ClientDTO client) {
