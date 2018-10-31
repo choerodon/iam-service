@@ -1,8 +1,8 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author superlee
@@ -18,7 +18,7 @@ public class MemberRoleDTO {
     @ApiModelProperty(value = "成员ID/必填")
     @NotNull(message = "error.member.id.null")
     private Long memberId;
-    @ApiModelProperty(value = "成员类型/非必填/默认：user")
+    @ApiModelProperty(value = "成员类型/必填/默认：user")
     private String memberType;
     @ApiModelProperty(value = "资源ID/必填")
     @NotNull(message = "error.source.id.null")

@@ -258,7 +258,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleE> memberRoleEList,
                                                             List<MemberRoleE> returnList) {
-        String memberType = memberRoleEList.get(0).getMemberType();
+        String memberType = memberRoleEList.isEmpty() ? "user" : memberRoleEList.get(0).getMemberType();
         MemberRoleE memberRoleE =
                 new MemberRoleE(null, null, memberId, memberType, sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);
