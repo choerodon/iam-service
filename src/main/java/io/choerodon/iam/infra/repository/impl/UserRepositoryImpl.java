@@ -131,25 +131,31 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
+    public List<UserDO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long sourceId) {
-        //TODO
-        //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
-        int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
-        int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
-                ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-        List<UserDO> userDOList =
-                mapper.selectUserWithRolesByOption(
-                        roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), start, size,
-                        ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-        //没有order by
-        //TODO
-        //筛选非空角色以及角色内部按id排序
-        return new Page<>(userDOList, pageInfo, count);
+                                                              Long sourceId, boolean doPageAndSort) {
+        if (doPageAndSort) {
+            //TODO
+            //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
+            int page = pageRequest.getPage();
+            int size = pageRequest.getSize();
+            int start = page * size;
+            int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
+                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            List<UserDO> userDOList =
+                    mapper.selectUserWithRolesByOption(
+                            roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), start, size,
+                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            PageInfo pageInfo = new PageInfo(page, size);
+            //没有order by
+            //TODO
+            //筛选非空角色以及角色内部按id排序
+            return new Page<>(userDOList, pageInfo, count);
+        } else {
+            return mapper.selectUserWithRolesByOption(
+                    roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), null, null,
+                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+        }
     }
 
     @Override

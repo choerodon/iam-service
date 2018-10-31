@@ -298,13 +298,14 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
-    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
+    public ResponseEntity<List<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+            @RequestParam(defaultValue = "true") boolean doPageAndSort) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
-                pageRequest, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, sourceId, doPageAndSort), HttpStatus.OK);
     }
 
 

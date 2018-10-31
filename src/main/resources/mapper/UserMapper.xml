@@ -116,7 +116,9 @@
                 )
             </if>
         </if>
-        limit #{start}, #{size}
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
@@ -170,7 +172,9 @@
                     )
                 </if>
             </if>
+        <if test="start != null and size != null">
             limit #{start}, #{size}
+        </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
@@ -198,15 +202,16 @@
             imr.id
         FROM
         (
+        <if test="start != null and size != null">
             SELECT *
-            FROM
-            (
-                SELECT TMP_PAGE.*, ROWNUM ROW_ID
-                FROM
+              FROM
                 (
-
-                    SELECT * FROM iam_user iam_u
-                    JOIN (
+                  SELECT TMP_PAGE.*, ROWNUM ROW_ID
+                  FROM
+                    (
+        </if>
+                      SELECT * FROM iam_user iam_u
+                      JOIN (
                         SELECT DISTINCT imr.member_id
                         FROM iam_user
                         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
@@ -233,14 +238,16 @@
                                 )
                             </if>
                         </if>
-                    ) t
-                    ON iam_u.id = t.member_id
-                ) TMP_PAGE
-            <![CDATA[
-                WHERE ROWNUM <= ((#{start} + 1) * #{size})
-            )
-            WHERE ROW_ID > (#{start} * #{size})
-            ]]>
+                        ) t
+                      ON iam_u.id = t.member_id
+        <if test="start != null and size != null">
+                    ) TMP_PAGE
+                <![CDATA[
+                    WHERE ROWNUM <= ((#{start} + 1) * #{size})
+                    )
+                  WHERE ROW_ID > (#{start} * #{size})
+                ]]>
+        </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
