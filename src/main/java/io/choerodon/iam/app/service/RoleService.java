@@ -1,12 +1,13 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.RoleSearchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -35,6 +36,8 @@ public interface RoleService {
     List<RoleDTO> listRolesWithUserCountOnSiteLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     List<RoleDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+
+    List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
     List<RoleDTO> listRolesWithUserCountOnProjectLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 

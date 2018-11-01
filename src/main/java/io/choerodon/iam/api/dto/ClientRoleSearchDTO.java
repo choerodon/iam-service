@@ -15,6 +15,9 @@ public class ClientRoleSearchDTO {
     @ApiModelProperty(value = "客户端名")
     private String clientName;
 
+    @ApiModelProperty(value = "参数")
+    private String[] param;
+
     public String getRoleName() {
         return roleName;
     }
@@ -29,5 +32,13 @@ public class ClientRoleSearchDTO {
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
+    }
+
+    public String[] getParam() {
+        return param;
+    }
+
+    public void setParam(String[] param) {
+        this.param = param;
     }
 }

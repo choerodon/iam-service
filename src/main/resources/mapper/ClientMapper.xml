@@ -15,4 +15,55 @@
             name LIKE concat(concat('%',#{param}),'%')
         </if>
     </select>
+
+    <select id="selectClientCountFromMemberRoleByOptions" resultType="int"
+            parameterType="io.choerodon.iam.api.dto.ClientRoleSearchDTO">
+        SELECT COUNT(1) FROM (
+        SELECT DISTINCT client.id FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{roleAssignmentSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        ) t
+    </select>
+
+    <select id="selectClientsByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dataobject.ClientDO">
+        SELECT DISTINCT client.* FROM iam_member_role imr
+        INNER JOIN oauth_client client ON imr.member_id = client.id
+        WHERE imr.role_id = #{roleId}
+        AND imr.member_type = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE concat(concat('%',#{roleAssignmentSearchDTO.clientName}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
 </mapper>

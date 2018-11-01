@@ -4,7 +4,9 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientDTO;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
@@ -12,6 +14,7 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -46,6 +49,7 @@ public class ClientServiceImpl implements ClientService {
                 ClientDTO.class);
     }
 
+    @Transactional
     @Override
     public Boolean delete(Long orgId, Long clientId) {
         ClientDTO clientDTO = query(orgId, clientId);
@@ -96,6 +100,13 @@ public class ClientServiceImpl implements ClientService {
         } else {
             checkName(client);
         }
+    }
+
+    @Override
+    public Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        Page<ClientDO> clientDOS = clientRepository.pagingQueryClientsByRoleIdAndOptions(
+                pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
+        return ConvertPageHelper.convertPage(clientDOS, ClientDTO.class);
     }
 
     private void checkName(ClientDTO client) {

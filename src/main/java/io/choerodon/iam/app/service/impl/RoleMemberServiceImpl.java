@@ -13,6 +13,7 @@ import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
@@ -123,8 +124,9 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Override
     public Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(
-                pageRequest, clientRoleSearchDTO, sourceId);
+                pageRequest, clientRoleSearchDTO, sourceId, param);
         Page<ClientWithRoleDTO> newPage = new Page<>();
         BeanUtils.copyProperties(page, newPage, "content");
         newPage.setContent(page.getContent().stream().map(clientDO -> {

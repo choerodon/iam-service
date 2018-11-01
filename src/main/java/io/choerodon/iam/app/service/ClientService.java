@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ClientDTO;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -21,4 +22,6 @@ public interface ClientService {
     Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String param);
 
     void check(ClientDTO client);
+
+    Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
 }
