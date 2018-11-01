@@ -103,10 +103,18 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
-        Page<ClientDO> clientDOS = clientRepository.pagingQueryClientsByRoleIdAndOptions(
-                pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
-        return ConvertPageHelper.convertPage(clientDOS, ClientDTO.class);
+    public Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
+        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, 0L, ResourceLevel.SITE.value()), ClientDTO.class);
+    }
+
+    @Override
+    public Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value()), ClientDTO.class);
+    }
+
+    @Override
+    public Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value()), ClientDTO.class);
     }
 
     private void checkName(ClientDTO client) {
