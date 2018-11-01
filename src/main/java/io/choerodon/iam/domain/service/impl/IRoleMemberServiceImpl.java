@@ -17,6 +17,7 @@ import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
@@ -184,46 +185,59 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
         }
     }
 
+    @Override
+    public void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType) {
+        deleteByView(roleAssignmentDeleteDTO, sourceType, null);
+    }
+
 
     private void deleteByView(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO,
                               String sourceType,
                               List<UserMemberEventPayload> userMemberEventPayloads) {
         boolean doSendEvent = userMemberEventPayloads != null;
+        // 默认的 member type 是 'user'
         String memberType =
-                roleAssignmentDeleteDTO.getMemberType() == null ? "user" : roleAssignmentDeleteDTO.getMemberType();
+                roleAssignmentDeleteDTO.getMemberType() == null ? MemberType.USER.value() : roleAssignmentDeleteDTO.getMemberType();
         String view = roleAssignmentDeleteDTO.getView();
         Long sourceId = roleAssignmentDeleteDTO.getSourceId();
         Map<Long, List<Long>> data = roleAssignmentDeleteDTO.getData();
         if (RoleAssignmentViewValidator.USER_VIEW.equalsIgnoreCase(view)) {
-            for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
-                Long userId = entry.getKey();
-                List<Long> roleIds = entry.getValue();
-                if (roleIds != null && !roleIds.isEmpty()) {
-                    roleIds.forEach(roleId -> {
-                        UserMemberEventPayload userMemberEventPayload =
-                                delete(roleId, userId, memberType, sourceId, sourceType, doSendEvent);
-                        if (userMemberEventPayload != null) {
-                            userMemberEventPayloads.add(userMemberEventPayload);
-                        }
-                    });
-                }
-            }
+            deleteFromMap(data, false, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads);
         } else if (RoleAssignmentViewValidator.ROLE_VIEW.equalsIgnoreCase(view)) {
-            for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
-                Long roleId = entry.getKey();
-                List<Long> userIds = entry.getValue();
-                if (userIds != null && !userIds.isEmpty()) {
-                    userIds.forEach(userId -> {
-                        UserMemberEventPayload payload =
-                                delete(roleId, userId, memberType, sourceId, sourceType, doSendEvent);
-                        if (payload != null) {
-                            userMemberEventPayloads.add(payload);
-                        }
-                    });
-                }
+            deleteFromMap(data, true, memberType, sourceId, sourceType, doSendEvent, userMemberEventPayloads);
+        }
+    }
+
+    /**
+     * 根据数据批量删除 member-role 记录
+     *
+     * @param data   数据
+     * @param isRole data的键是否是 roleId
+     */
+    private void deleteFromMap(Map<Long, List<Long>> data, boolean isRole, String memberType, Long sourceId, String sourceType, boolean doSendEvent, List<UserMemberEventPayload> userMemberEventPayloads) {
+        for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
+            Long key = entry.getKey();
+            List<Long> values = entry.getValue();
+            if (values != null && !values.isEmpty()) {
+                values.forEach(id -> {
+                    Long roleId, memberId;
+                    if (isRole) {
+                        roleId = key;
+                        memberId = id;
+                    } else {
+                        roleId = id;
+                        memberId = key;
+                    }
+                    UserMemberEventPayload userMemberEventPayload =
+                            delete(roleId, memberId, memberType, sourceId, sourceType, doSendEvent);
+                    if (userMemberEventPayload != null) {
+                        userMemberEventPayloads.add(userMemberEventPayload);
+                    }
+                });
             }
         }
     }
+
 
     private UserMemberEventPayload delete(Long roleId, Long memberId, String memberType,
                                           Long sourceId, String sourceType, boolean doSendEvent) {
@@ -258,7 +272,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleE> memberRoleEList,
                                                             List<MemberRoleE> returnList) {
-        String memberType = memberRoleEList.isEmpty() ? "user" : memberRoleEList.get(0).getMemberType();
+        String memberType = memberRoleEList.isEmpty() ? MemberType.USER.value() : memberRoleEList.get(0).getMemberType();
         MemberRoleE memberRoleE =
                 new MemberRoleE(null, null, memberId, memberType, sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);

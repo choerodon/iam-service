@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @author superlee
- * @data 2018/4/2
+ * @date 2018/4/2
  */
 public interface IRoleMemberService {
 
@@ -19,6 +19,14 @@ public interface IRoleMemberService {
             Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType);
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
+
+    /**
+     * 批量删除客户端及角色之间的关系
+     *
+     * @param roleAssignmentDeleteDTO 数据
+     * @param sourceType              sourceType
+     */
+    void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
     void insertAndSendEvent(MemberRoleDO memberRole, String loginName);
 }
