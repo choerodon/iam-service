@@ -29,5 +29,5 @@ public interface MemberRoleRepository {
                                 long sourceId, String sourceType);
 
     Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
 }

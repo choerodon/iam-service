@@ -100,7 +100,7 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
 
     @Override
     public Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, clientRoleSearchDTO));
+            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, "organization", clientRoleSearchDTO, param));
     }
 }
