@@ -222,6 +222,19 @@ public class RoleMemberController extends BaseController {
     }
 
     /**
+     * 查询site层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/site/role_members/clients/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnSiteLevel(
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithClientCountOnSiteLevel(clientRoleSearchDTO), HttpStatus.OK);
+    }
+
+    /**
      * 查询organization层角色,附带该角色下分配的用户数
      *
      * @return 查询结果
@@ -264,6 +277,21 @@ public class RoleMemberController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithUserCountOnProjectLevel(
                 roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
+     * 查询project层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnProjectLevel(
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithClientCountOnProjectLevel(
+                clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
 
     /**
