@@ -27,6 +27,11 @@ public interface RoleMemberService {
 
     Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
+
+    Page<ClientWithRoleDTO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO);
+
+    Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(
             Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
 

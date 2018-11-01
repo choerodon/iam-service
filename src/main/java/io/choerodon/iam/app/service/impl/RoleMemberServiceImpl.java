@@ -142,11 +142,34 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(
-                pageRequest, clientRoleSearchDTO, sourceId, param);
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
+        return convert(page);
+    }
+
+    @Override
+    public Page<ClientWithRoleDTO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO) {
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithSiteLevelRoles(pageRequest, clientRoleSearchDTO, param);
+        return convert(page);
+    }
+
+    @Override
+    public Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithProjectLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
+        return convert(page);
+    }
+
+    /**
+     * 转化 do 和 dto
+     *
+     * @param origin 被转化
+     * @return 转化后
+     */
+    private Page<ClientWithRoleDTO> convert(Page<ClientDO> origin) {
         Page<ClientWithRoleDTO> newPage = new Page<>();
-        BeanUtils.copyProperties(page, newPage, "content");
-        newPage.setContent(page.getContent().stream().map(clientDO -> {
+        BeanUtils.copyProperties(origin, newPage, "content");
+        newPage.setContent(origin.getContent().stream().map(clientDO -> {
             ClientWithRoleDTO dto = new ClientWithRoleDTO();
             BeanUtils.copyProperties(clientDO, dto, "roles");
             dto.setRoles(clientDO.getRoles());

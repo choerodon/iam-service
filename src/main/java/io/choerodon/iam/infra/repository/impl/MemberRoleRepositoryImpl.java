@@ -101,6 +101,16 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     @Override
     public Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
             PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, "organization", clientRoleSearchDTO, param));
+        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, ResourceLevel.ORGANIZATION.value(), clientRoleSearchDTO, param));
+    }
+
+    @Override
+    public Page<ClientDO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(0L, ResourceLevel.SITE.value(), clientRoleSearchDTO, param));
+    }
+
+    @Override
+    public Page<ClientDO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
+        return PageHelper.doPageAndSort(pageRequest, () -> memberRoleMapper.selectClientsWithRoles(sourceId, ResourceLevel.PROJECT.value(), clientRoleSearchDTO, param));
     }
 }
