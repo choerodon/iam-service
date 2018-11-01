@@ -131,10 +131,10 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<UserDO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
+    public Page<UserDO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long sourceId, boolean doPageAndSort) {
-        if (doPageAndSort) {
+                                                              Long sourceId, boolean doPage) {
+        if (doPage) {
             //TODO
             //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
             int page = pageRequest.getPage();
@@ -152,9 +152,11 @@ public class UserRepositoryImpl implements UserRepository {
             //筛选非空角色以及角色内部按id排序
             return new Page<>(userDOList, pageInfo, count);
         } else {
-            return mapper.selectUserWithRolesByOption(
-                    roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), null, null,
-                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            List<UserDO> users =
+                    mapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), null, null,
+                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            PageInfo pageInfo = new PageInfo(0, users.size());
+            return new Page<>(users, pageInfo, users.size());
         }
     }
 
