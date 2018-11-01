@@ -320,21 +320,24 @@ public class RoleMemberController extends BaseController {
 
     /**
      * 在site层查询用户，用户包含拥有的project层的角色
-     *
-     * @param roleAssignmentSearchDTO 搜索条件
+     * @param pageRequest 分页请求参数，解析url里的param生成
+     * @param sourceId 源id，即项目id
+     * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
+     * @param doPage 做不做分页，如果为false，返回一个page对象，context里为所有数据，没有做分页处理
+     * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
-    public ResponseEntity<List<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithProjectLevelRoles(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-            @RequestParam(defaultValue = "true") boolean doPageAndSort) {
+            @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
-                pageRequest, roleAssignmentSearchDTO, sourceId, doPageAndSort), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, sourceId, doPage), HttpStatus.OK);
     }
 
 
