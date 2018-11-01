@@ -65,7 +65,7 @@ public class RoleMemberController extends BaseController {
      * is_edit 是否是编辑，如果false就表示新建角色，true表示是在是编辑角色
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层批量分配给用户角色")
+    @ApiOperation(value = "全局层批量分配给用户/客户端角色")
     @PostMapping(value = "/site/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnSiteLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                          @RequestParam(name = "member_ids") List<Long> memberIds,
@@ -94,7 +94,7 @@ public class RoleMemberController extends BaseController {
      * 在project层分配角色
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
-    @ApiOperation(value = "项目层批量分配给用户角色")
+    @ApiOperation(value = "项目层批量分配给用户/客户端角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                             @PathVariable(name = "project_id") Long sourceId,

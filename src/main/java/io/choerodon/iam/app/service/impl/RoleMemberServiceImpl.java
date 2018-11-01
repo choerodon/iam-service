@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 /**
  * @author superlee
  * @author wuguokai
+ * @author zmf
  */
 @Component
 public class RoleMemberServiceImpl implements RoleMemberService {
@@ -79,6 +80,22 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+
+        // member type 为 'client' 时
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals("client")) {
+            for (Long memberId : memberIds) {
+                memberRoleDTOList.forEach(m ->
+                        m.setMemberId(memberId)
+                );
+                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                        iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, 0L, memberId,
+                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
+                                ResourceLevel.SITE.value()), MemberRoleDTO.class));
+            }
+            return memberRoleDTOS;
+        }
+
+        // member type 为 'user' 时
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
@@ -142,6 +159,21 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+        // member type 为 'client' 时
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals("client")) {
+            for (Long memberId : memberIds) {
+                memberRoleDTOList.forEach(m ->
+                        m.setMemberId(memberId)
+                );
+                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                        iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, projectId, memberId,
+                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
+                                ResourceLevel.PROJECT.value()), MemberRoleDTO.class));
+            }
+            return memberRoleDTOS;
+        }
+
+        // member type 为 'user' 时
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
