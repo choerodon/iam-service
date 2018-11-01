@@ -10,6 +10,7 @@ import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.mapper.ClientMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -25,8 +26,11 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     private ClientMapper clientMapper;
 
-    public ClientRepositoryImpl(ClientMapper clientMapper) {
+    private MemberRoleMapper memberRoleMapper;
+
+    public ClientRepositoryImpl(ClientMapper clientMapper, MemberRoleMapper memberRoleMapper) {
         this.clientMapper = clientMapper;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
 
@@ -49,6 +53,9 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public Boolean delete(Long clientId) {
+        // delete the member-role relationship before the client was deleted
+        memberRoleMapper.deleteMemberRoleByMemberIdAndMemberType(clientId, "client");
+
         int isDelete = clientMapper.deleteByPrimaryKey(clientId);
         if (isDelete != 1) {
             throw new CommonException("error.client.delete");

@@ -14,6 +14,7 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -48,6 +49,7 @@ public class ClientServiceImpl implements ClientService {
                 ClientDTO.class);
     }
 
+    @Transactional
     @Override
     public Boolean delete(Long orgId, Long clientId) {
         ClientDTO clientDTO = query(orgId, clientId);
