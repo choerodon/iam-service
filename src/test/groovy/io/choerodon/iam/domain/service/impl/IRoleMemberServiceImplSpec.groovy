@@ -6,6 +6,7 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.domain.iam.entity.MemberRoleE
 import io.choerodon.iam.domain.iam.entity.UserE
+import io.choerodon.iam.domain.repository.ClientRepository
 import io.choerodon.iam.domain.repository.LabelRepository
 import io.choerodon.iam.domain.repository.MemberRoleRepository
 import io.choerodon.iam.domain.repository.UserRepository
@@ -31,13 +32,13 @@ class IRoleMemberServiceImplSpec extends Specification {
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
     private LabelRepository labelRepository = Mock(LabelRepository)
     private SagaClient sagaClient = Mock(SagaClient)
+    private ClientRepository clientRepository = Mock(ClientRepository)
 
     private IRoleMemberService iRoleMemberService
     private int count = 3
 
     def setup() {
-        iRoleMemberService = new IRoleMemberServiceImpl(userRepository,
-                memberRoleRepository, labelRepository, sagaClient, memberRoleMapper)
+        iRoleMemberService = new IRoleMemberServiceImpl(userRepository, memberRoleRepository, labelRepository, sagaClient, memberRoleMapper, clientRepository)
 
         Field field = iRoleMemberService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)

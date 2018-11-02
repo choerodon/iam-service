@@ -44,11 +44,11 @@ class SystemSettingControllerSpec extends Specification {
         def httpEntity = new HttpEntity<Object>(settingDTO)
 
         when: "调用方法[成功]"
-        def entity = restTemplate.postForEntity(BASE_PATH, httpEntity, SystemSettingDTO)
+        def entity = restTemplate.postForEntity(BASE_PATH, httpEntity, ExceptionResponse)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getObjectVersionNumber() == 1
+        entity.getBody().getCode() == "error.system.setting.update.send.event"
 //        entity.getBody().getCode().equals("error.user.objectVersionNumber.null")
     }
 
@@ -127,11 +127,11 @@ class SystemSettingControllerSpec extends Specification {
         httpEntity = new HttpEntity<Object>(settingDTO)
 
         when: "调用方法"
-        def entity = restTemplate.exchange(BASE_PATH, HttpMethod.PUT, httpEntity, SystemSettingDTO)
+        def entity = restTemplate.exchange(BASE_PATH, HttpMethod.PUT, httpEntity, ExceptionResponse)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getObjectVersionNumber() == versionNumber + 1
+        entity.getBody().getCode() == "error.system.setting.update.send.event"
     }
 
     def "UpdateSetting with invalid input"() {
@@ -148,7 +148,6 @@ class SystemSettingControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getObjectVersionNumber() == versionNumber + 1
     }
 
     def "UpdateSetting when the db is empty"() {

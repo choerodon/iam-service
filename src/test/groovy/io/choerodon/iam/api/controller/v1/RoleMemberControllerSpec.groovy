@@ -7,10 +7,13 @@ import io.choerodon.iam.api.dto.ClientRoleSearchDTO
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
+import io.choerodon.iam.infra.dataobject.ClientDO
 import io.choerodon.iam.infra.dataobject.MemberRoleDO
 import io.choerodon.iam.infra.dataobject.ProjectDO
 import io.choerodon.iam.infra.dataobject.RoleDO
 import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.enums.MemberType
+import io.choerodon.iam.infra.mapper.ClientMapper
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import io.choerodon.iam.infra.mapper.RoleMapper
@@ -46,6 +49,8 @@ class RoleMemberControllerSpec extends Specification {
     private UserMapper userMapper
     @Autowired
     private ProjectMapper projectMapper
+    @Autowired
+    private ClientMapper clientMapper
     @Shared
     def needInit = true
     @Shared
@@ -56,6 +61,8 @@ class RoleMemberControllerSpec extends Specification {
     def roleDOList = new ArrayList<RoleDO>()
     @Shared
     def userDOList = new ArrayList<UserDO>()
+    @Shared
+    def clientDOList
     @Shared
     def projectDO = new ProjectDO()
 
@@ -100,6 +107,7 @@ class RoleMemberControllerSpec extends Specification {
                 memberRoleDOList.add(memberRoleDO)
             }
             count += memberRoleMapper.insertList(memberRoleDOList)
+            clientDOList = initClient()
 
             then: "校验结果"
             count == 10
@@ -122,12 +130,30 @@ class RoleMemberControllerSpec extends Specification {
             for (RoleDO roleDO : roleDOList) {
                 count += roleMapper.deleteByPrimaryKey(roleDO)
             }
+
+            for (ClientDO clientDO: clientDOList) {
+                clientMapper.deleteByPrimaryKey(clientDO)
+            }
             count += projectMapper.deleteByPrimaryKey(projectDO)
 
             then: "校验结果"
             count == 10
         }
     }
+
+    List<ClientDO> initClient() {
+        List<ClientDO> clientDOList = new ArrayList<>()
+        for (int i = 0; i < 3; i++) {
+            ClientDO clientDO = new ClientDO()
+            clientDO.setName("client" + i)
+            clientDO.setOrganizationId(1L)
+            clientMapper.insertSelective(clientDO)
+            clientDOList.add(clientDO)
+        }
+
+        return clientDOList
+    }
+
 
     def "CreateOrUpdateOnSiteLevel"() {
         given: "构造参数列表"
@@ -162,6 +188,44 @@ class RoleMemberControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         !entity.getBody().isEmpty()
+    }
+
+    def "CreateOrUpdateClientRoleOnSiteLevel"() {
+        given: "构造参数列表"
+        def paramsMap = new HashMap<String, Object>()
+        Long[] memberIds = new Long[2]
+        memberIds[0] = clientDOList.get(0).getId()
+        memberIds[1] = clientDOList.get(1).getId()
+        paramsMap.put("is_edit", true)
+        paramsMap.put("member_ids", memberIds)
+
+        when: "调用方法[异常-role id为空]"
+        def memberRoleDO = new MemberRoleDO()
+        memberRoleDO.setMemberType(MemberType.CLIENT.value())
+        def memberRoleDOList1 = new ArrayList<MemberRoleDO>()
+        memberRoleDOList1.add(memberRoleDO)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode().equals("error.roleId.null")
+
+        when: "调用方法[异常-role不存在]"
+        memberRoleDO.setRoleId(1000L)
+        entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode().equals("error.role.not.exist")
+
+        when: "调用方法"
+        memberRoleDO.setRoleId(roleDOList.get(0).getId())
+        memberRoleDO.setMemberType(MemberType.CLIENT.value())
+        entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList, String, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "CreateOrUpdateOnOrganizationLevel"() {
@@ -201,7 +265,7 @@ class RoleMemberControllerSpec extends Specification {
         memberRoleDOList1 = new ArrayList<MemberRoleDO>()
         MemberRoleDO memberRoleDO1 = new MemberRoleDO()
         memberRoleDO1.setMemberId(1L)
-        memberRoleDO1.setMemberType("client")
+        memberRoleDO1.setMemberType(MemberType.CLIENT.value())
         memberRoleDO1.setRoleId(2L)
         memberRoleDO1.setSourceId(1L)
         memberRoleDO1.setSourceType("organization")
@@ -212,6 +276,56 @@ class RoleMemberControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         !entity.getBody().isEmpty()
     }
+
+//    def "CreateOrUpdateClientRoleOnOrganizationLevel"() {
+//        given: "构造参数列表"
+//        def paramsMap = new HashMap<String, Object>()
+//        Long[] memberIds = new Long[1]
+//        memberIds[0] = 1L
+//        paramsMap.put("organization_id", 1L)
+//        paramsMap.put("is_edit", true)
+//        paramsMap.put("member_ids", memberIds)
+//        MemberRoleDO memberRoleDO = new MemberRoleDO()
+//        memberRoleDO.setSourceType("organization")
+//        memberRoleDO.setMemberType(MemberType.CLIENT.value())
+//        def memberRoleDOList1 = memberRoleMapper.select(memberRoleDO)
+//
+//        when: "调用方法"
+//        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList, ExceptionResponse, paramsMap)
+//
+//        then: "校验结果"
+//        entity.statusCode.is2xxSuccessful()
+//        entity.getBody().getCode() == "error.roles.in.same.level"
+//
+//        when: "调用方法"
+//        def memberIds1 = new Long[1]
+//        memberIds1[0] = 1L
+//        paramsMap.put("member_ids", memberIds1)
+//        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
+//
+//        then: "校验结果"
+//        entity.statusCode.is2xxSuccessful()
+//        !entity.getBody().isEmpty()
+//
+//        when: "调用方法"
+//        def memberIds2 = new Long[1]
+//        memberIds2[0] = 1L
+//        paramsMap.put("member_ids", memberIds2)
+//        paramsMap.put("organization_id", 1L)
+//        memberRoleDOList1 = new ArrayList<MemberRoleDO>()
+//        MemberRoleDO memberRoleDO1 = new MemberRoleDO()
+//        memberRoleDO1.setMemberId(1L)
+//        memberRoleDO1.setMemberType("client")
+//        memberRoleDO1.setRoleId(2L)
+//        memberRoleDO1.setSourceId(1L)
+//        memberRoleDO1.setSourceType("organization")
+//        memberRoleDOList1.add(memberRoleDO1)
+//        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
+//
+//        then: "校验结果"
+//        entity.statusCode.is2xxSuccessful()
+//        !entity.getBody().isEmpty()
+//    }
 
     def "CreateOrUpdateOnProjectLevel"() {
         given: "构造参数列表"
@@ -228,6 +342,13 @@ class RoleMemberControllerSpec extends Specification {
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, String, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+
+        when: "调用方法"
+        memberRoleDO.setMemberType(MemberType.CLIENT.value())
+        entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, String, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -248,6 +369,21 @@ class RoleMemberControllerSpec extends Specification {
         entity.getBody().size() != 0
     }
 
+    def "PagingQueryClientsByRoleIdOnSiteLevel"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        def roleId = roleDOList.get(0).getId()
+        paramsMap.put("role_id", roleId)
+        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
+    }
+
     def "PagingQueryUsersByRoleIdOnOrganizationLevel"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
@@ -264,6 +400,22 @@ class RoleMemberControllerSpec extends Specification {
         entity.getBody().isEmpty()
     }
 
+    def "PagingQueryClientsByRoleIdOnOrganizationLevel"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        def roleId = roleDOList.get(0).getId()
+        paramsMap.put("role_id", roleId)
+        paramsMap.put("organization_id", 1L)
+        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().isEmpty()
+    }
+
     def "PagingQueryUsersByRoleIdOnProjectLevel"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
@@ -274,6 +426,23 @@ class RoleMemberControllerSpec extends Specification {
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        //只有site用户
+        entity.getBody().isEmpty()
+    }
+
+    def "PagingQueryClientsByRoleIdOnProjectLevel"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        def roleId = roleDOList.get(0).getId()
+        paramsMap.put("role_id", roleId)
+        paramsMap.put("project_id", projectDO.getId())
+        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -369,6 +538,18 @@ class RoleMemberControllerSpec extends Specification {
         !entity.getBody().isEmpty()
     }
 
+    def "ListRolesWithClientCountOnSiteLevel"() {
+        given: "构造请求参数"
+        def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients/count", roleAssignmentSearchDTO, List)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        !entity.getBody().isEmpty()
+    }
+
     def "ListRolesWithUserCountOnOrganizationLevel"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
@@ -381,6 +562,19 @@ class RoleMemberControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().size() == 2
+    }
+    def "ListRolesWithClientCountOnOrganizationLevel"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("organization_id", 1L)
+        def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients/count", roleAssignmentSearchDTO, List, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "ListRolesWithUserCountOnProjectLevel"() {
@@ -397,6 +591,20 @@ class RoleMemberControllerSpec extends Specification {
         entity.getBody().size() == 4
     }
 
+    def "ListRolesWithClientCountOnProjectLevel"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("project_id", projectDO.getId())
+        def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients/count", roleAssignmentSearchDTO, List, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
+    }
+
     def "PagingQueryUsersWithSiteLevelRoles"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
@@ -408,6 +616,19 @@ class RoleMemberControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().size() != 0
+    }
+
+    def "PagingQueryClientsWithSiteLevelRoles"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients/roles", roleAssignmentSearchDTO, Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "PagingQueryUsersWithOrganizationLevelRoles"() {
@@ -448,11 +669,25 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/users/roles", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/users/roles", roleAssignmentSearchDTO, String, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().isEmpty()
+        entity.getBody() != null
+    }
+
+    def "PagingQueryClientsWithProjectLevelRoles"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("project_id", projectDO.getId())
+        def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients/roles", roleAssignmentSearchDTO, String, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "GetUserWithOrgLevelRolesByUserId"() {
