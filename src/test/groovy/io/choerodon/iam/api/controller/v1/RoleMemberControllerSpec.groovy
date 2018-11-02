@@ -277,55 +277,6 @@ class RoleMemberControllerSpec extends Specification {
         !entity.getBody().isEmpty()
     }
 
-//    def "CreateOrUpdateClientRoleOnOrganizationLevel"() {
-//        given: "构造参数列表"
-//        def paramsMap = new HashMap<String, Object>()
-//        Long[] memberIds = new Long[1]
-//        memberIds[0] = 1L
-//        paramsMap.put("organization_id", 1L)
-//        paramsMap.put("is_edit", true)
-//        paramsMap.put("member_ids", memberIds)
-//        MemberRoleDO memberRoleDO = new MemberRoleDO()
-//        memberRoleDO.setSourceType("organization")
-//        memberRoleDO.setMemberType(MemberType.CLIENT.value())
-//        def memberRoleDOList1 = memberRoleMapper.select(memberRoleDO)
-//
-//        when: "调用方法"
-//        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList, ExceptionResponse, paramsMap)
-//
-//        then: "校验结果"
-//        entity.statusCode.is2xxSuccessful()
-//        entity.getBody().getCode() == "error.roles.in.same.level"
-//
-//        when: "调用方法"
-//        def memberIds1 = new Long[1]
-//        memberIds1[0] = 1L
-//        paramsMap.put("member_ids", memberIds1)
-//        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
-//
-//        then: "校验结果"
-//        entity.statusCode.is2xxSuccessful()
-//        !entity.getBody().isEmpty()
-//
-//        when: "调用方法"
-//        def memberIds2 = new Long[1]
-//        memberIds2[0] = 1L
-//        paramsMap.put("member_ids", memberIds2)
-//        paramsMap.put("organization_id", 1L)
-//        memberRoleDOList1 = new ArrayList<MemberRoleDO>()
-//        MemberRoleDO memberRoleDO1 = new MemberRoleDO()
-//        memberRoleDO1.setMemberId(1L)
-//        memberRoleDO1.setMemberType("client")
-//        memberRoleDO1.setRoleId(2L)
-//        memberRoleDO1.setSourceId(1L)
-//        memberRoleDO1.setSourceType("organization")
-//        memberRoleDOList1.add(memberRoleDO1)
-//        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
-//
-//        then: "校验结果"
-//        entity.statusCode.is2xxSuccessful()
-//        !entity.getBody().isEmpty()
-//    }
 
     def "CreateOrUpdateOnProjectLevel"() {
         given: "构造参数列表"
