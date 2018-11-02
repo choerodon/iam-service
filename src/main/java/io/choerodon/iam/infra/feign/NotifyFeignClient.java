@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.feign;
 
 import javax.validation.Valid;
 
-import io.choerodon.iam.api.dto.NoticeSendDTO;
+import io.choerodon.core.notify.NoticeSendDTO;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
