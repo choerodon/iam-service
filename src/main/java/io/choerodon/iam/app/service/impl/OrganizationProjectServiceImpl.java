@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.domain.service.IUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +37,6 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
-import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**

@@ -6,7 +6,6 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.dto.NoticeSendDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
@@ -34,7 +33,6 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
