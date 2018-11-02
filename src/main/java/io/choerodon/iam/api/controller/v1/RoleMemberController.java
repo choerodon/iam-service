@@ -65,7 +65,7 @@ public class RoleMemberController extends BaseController {
      * is_edit 是否是编辑，如果false就表示新建角色，true表示是在是编辑角色
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层批量分配给用户角色")
+    @ApiOperation(value = "全局层批量分配给用户/客户端角色")
     @PostMapping(value = "/site/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnSiteLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                          @RequestParam(name = "member_ids") List<Long> memberIds,
@@ -94,7 +94,7 @@ public class RoleMemberController extends BaseController {
      * 在project层分配角色
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
-    @ApiOperation(value = "项目层批量分配给用户角色")
+    @ApiOperation(value = "项目层批量分配给用户/客户端角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                             @PathVariable(name = "project_id") Long sourceId,
@@ -166,6 +166,21 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId), HttpStatus.OK);
     }
 
+    /**
+     * 根据角色Id分页查询该角色被分配的客户端
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层分页查询角色下的客户端")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/clients")
+    public ResponseEntity<Page<ClientDTO>> pagingQueryClientsByRoleIdOnSiteLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryUsersByRoleIdOnSiteLevel(pageRequest, clientRoleSearchDTO, roleId), HttpStatus.OK);
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "组织层分页查询角色下的用户")
     @CustomPageRequest
@@ -190,7 +205,7 @@ public class RoleMemberController extends BaseController {
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "organization_id") Long sourceId,
             @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
+        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdOnOrganizationLevel(pageRequest, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
@@ -207,6 +222,19 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层分页查询角色下的客户端")
+    @CustomPageRequest
+    @PostMapping(value = "/projects/{project_id}/role_members/clients")
+    public ResponseEntity<Page<ClientDTO>> pagingQueryClientsByRoleIdOnProjectLevel(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdOnProjectLevel(pageRequest, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
+    }
+
     /**
      * 查询site层角色,附带该角色下分配的用户数
      *
@@ -219,6 +247,19 @@ public class RoleMemberController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithUserCountOnSiteLevel(
                 roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 查询site层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/site/role_members/clients/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnSiteLevel(
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithClientCountOnSiteLevel(clientRoleSearchDTO), HttpStatus.OK);
     }
 
     /**
@@ -267,6 +308,21 @@ public class RoleMemberController extends BaseController {
     }
 
     /**
+     * 查询project层角色,附带该角色下分配的客户端数
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
+    @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
+    public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnProjectLevel(
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleService.listRolesWithClientCountOnProjectLevel(
+                clientRoleSearchDTO, sourceId), HttpStatus.OK);
+    }
+
+    /**
      * 在site层查询用户，用户包含拥有的site层的角色
      *
      * @param roleAssignmentSearchDTO 搜索条件
@@ -281,6 +337,22 @@ public class RoleMemberController extends BaseController {
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
                 pageRequest, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询客户端，客户端包含拥有的site层的角色
+     *
+     * @param clientRoleSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层查询客户端列表以及该客户端拥有的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/clients/roles")
+    public ResponseEntity<Page<ClientWithRoleDTO>> pagingQueryClientsWithSiteLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithSiteLevelRoles(pageRequest, clientRoleSearchDTO), HttpStatus.OK);
     }
 
     /**
@@ -302,7 +374,7 @@ public class RoleMemberController extends BaseController {
     }
 
     /**
-     * 在site层查询用户，用户包含拥有的organization层的角色
+     * 在组织层层查询用户，用户包含拥有的organization层的角色
      *
      * @param clientRoleSearchDTO 搜索条件
      */
@@ -314,7 +386,7 @@ public class RoleMemberController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @PathVariable(name = "organization_id") Long sourceId,
-            @RequestBody(required = false) ClientRoleSearchDTO clientRoleSearchDTO) {
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
         return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithOrganizationLevelRoles(pageRequest, clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
 
@@ -338,6 +410,24 @@ public class RoleMemberController extends BaseController {
             @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
                 pageRequest, roleAssignmentSearchDTO, sourceId, doPage), HttpStatus.OK);
+    }
+
+
+    /**
+     * 在项目层查询客户端，客户端包含拥有的项目层的角色
+     *
+     * @param clientRoleSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @ApiOperation(value = "项目层查询客户端列表以及该客户端拥有的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/projects/{project_id}/role_members/clients/roles")
+    public ResponseEntity<Page<ClientWithRoleDTO>> pagingQueryClientsWithProjectLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithProjectLevelRoles(pageRequest, clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
 
 

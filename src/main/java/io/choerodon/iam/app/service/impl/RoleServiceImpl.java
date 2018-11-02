@@ -160,6 +160,21 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public List<RoleDTO> listRolesWithClientCountOnSiteLevel(ClientRoleSearchDTO clientRoleSearchDTO) {
+        RoleDO roleDO = new RoleDO();
+        roleDO.setName(clientRoleSearchDTO.getRoleName());
+        roleDO.setLevel(ResourceLevel.SITE.value());
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        roles.forEach(r -> {
+            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), 0L, ResourceLevel.SITE.value(), clientRoleSearchDTO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
+    @Override
     public List<RoleDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
         RoleDO roleDO = new RoleDO();
         roleDO.setName(roleAssignmentSearchDTO.getRoleName());
@@ -199,6 +214,21 @@ public class RoleServiceImpl implements RoleService {
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
                     r.getId(), "user", sourceId, ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param);
+            r.setUserCount(count);
+        });
+        return roles;
+    }
+
+    @Override
+    public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        RoleDO roleDO = new RoleDO();
+        roleDO.setName(clientRoleSearchDTO.getRoleName());
+        roleDO.setLevel(ResourceLevel.ORGANIZATION.value());
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        roles.forEach(r -> {
+            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), sourceId, ResourceLevel.PROJECT.value(), clientRoleSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;

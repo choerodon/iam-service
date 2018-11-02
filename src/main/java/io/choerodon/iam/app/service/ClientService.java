@@ -23,5 +23,9 @@ public interface ClientService {
 
     void check(ClientDTO client);
 
-    Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
+    Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId);
+
+    Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
+
+    Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
 }

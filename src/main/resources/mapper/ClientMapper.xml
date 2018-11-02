@@ -31,7 +31,7 @@
         </if>
         <if test="clientRoleSearchDTO != null">
             <if test="clientRoleSearchDTO.clientName != null">
-                AND client.NAME LIKE concat(concat('%',#{roleAssignmentSearchDTO.clientName}),'%')
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
             </if>
         </if>
         <if test="param != null">
@@ -56,7 +56,7 @@
         </if>
         <if test="clientRoleSearchDTO != null">
             <if test="clientRoleSearchDTO.clientName != null">
-                AND client.NAME LIKE concat(concat('%',#{roleAssignmentSearchDTO.clientName}),'%')
+                AND client.NAME LIKE concat(concat('%',#{clientRoleSearchDTO.clientName}),'%')
             </if>
         </if>
         <if test="param != null">

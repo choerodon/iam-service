@@ -18,6 +18,7 @@ import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
+import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 /**
  * @author superlee
  * @author wuguokai
+ * @author zmf
  */
 @Component
 public class RoleMemberServiceImpl implements RoleMemberService {
@@ -79,6 +81,22 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+
+        // member type 为 'client' 时
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
+            for (Long memberId : memberIds) {
+                memberRoleDTOList.forEach(m ->
+                        m.setMemberId(memberId)
+                );
+                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                        iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, 0L, memberId,
+                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
+                                ResourceLevel.SITE.value()), MemberRoleDTO.class));
+            }
+            return memberRoleDTOS;
+        }
+
+        // member type 为 'user' 时
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
@@ -96,7 +114,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
         // member type 为 'client' 时
-        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals("client")) {
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
             for (Long memberId : memberIds) {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
@@ -125,11 +143,34 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(
-                pageRequest, clientRoleSearchDTO, sourceId, param);
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
+        return convert(page);
+    }
+
+    @Override
+    public Page<ClientWithRoleDTO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO) {
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithSiteLevelRoles(pageRequest, clientRoleSearchDTO, param);
+        return convert(page);
+    }
+
+    @Override
+    public Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+        String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
+        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithProjectLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
+        return convert(page);
+    }
+
+    /**
+     * 转化 do 和 dto
+     *
+     * @param origin 被转化
+     * @return 转化后
+     */
+    private Page<ClientWithRoleDTO> convert(Page<ClientDO> origin) {
         Page<ClientWithRoleDTO> newPage = new Page<>();
-        BeanUtils.copyProperties(page, newPage, "content");
-        newPage.setContent(page.getContent().stream().map(clientDO -> {
+        BeanUtils.copyProperties(origin, newPage, "content");
+        newPage.setContent(origin.getContent().stream().map(clientDO -> {
             ClientWithRoleDTO dto = new ClientWithRoleDTO();
             BeanUtils.copyProperties(clientDO, dto, "roles");
             dto.setRoles(clientDO.getRoles());
@@ -142,6 +183,21 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Override
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+        // member type 为 'client' 时
+        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
+            for (Long memberId : memberIds) {
+                memberRoleDTOList.forEach(m ->
+                        m.setMemberId(memberId)
+                );
+                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                        iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, projectId, memberId,
+                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
+                                ResourceLevel.PROJECT.value()), MemberRoleDTO.class));
+            }
+            return memberRoleDTOS;
+        }
+
+        // member type 为 'user' 时
         for (Long memberId : memberIds) {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
@@ -157,17 +213,32 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public void deleteOnSiteLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
+        String memberType = roleAssignmentDeleteDTO.getMemberType();
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
+            iRoleMemberService.deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.SITE.value());
+            return;
+        }
         iRoleMemberService.delete(roleAssignmentDeleteDTO, ResourceLevel.SITE.value());
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public void deleteOnOrganizationLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
+        String memberType = roleAssignmentDeleteDTO.getMemberType();
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
+            iRoleMemberService.deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.ORGANIZATION.value());
+            return;
+        }
         iRoleMemberService.delete(roleAssignmentDeleteDTO, ResourceLevel.ORGANIZATION.value());
     }
 
     @Override
     public void deleteOnProjectLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
+        String memberType = roleAssignmentDeleteDTO.getMemberType();
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
+            iRoleMemberService.deleteClientAndRole(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
+            return;
+        }
         iRoleMemberService.delete(roleAssignmentDeleteDTO, ResourceLevel.PROJECT.value());
     }
 

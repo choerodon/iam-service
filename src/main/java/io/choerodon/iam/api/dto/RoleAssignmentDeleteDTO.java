@@ -1,18 +1,18 @@
 package io.choerodon.iam.api.dto;
 
-import java.util.List;
-import java.util.Map;
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author superlee
  */
 public class RoleAssignmentDeleteDTO {
 
-    @ApiModelProperty(value = "成员类型/非必填")
+    @ApiModelProperty(value = "成员类型/必填")
     private String memberType;
 
     @ApiModelProperty(value = "来源ID/必填")

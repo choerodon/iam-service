@@ -5,6 +5,7 @@ import io.choerodon.core.excel.ExcelReadHelper
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO
 import io.choerodon.iam.app.service.RoleMemberService
+import io.choerodon.iam.domain.repository.MemberRoleRepository
 import io.choerodon.iam.domain.repository.UploadHistoryRepository
 import io.choerodon.iam.domain.service.IRoleMemberService
 import io.choerodon.iam.infra.common.utils.SpockUtils
@@ -22,9 +23,6 @@ import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Specification
-
-import java.lang.reflect.Field
-
 /**
  * @author dengyouquan
  * */
@@ -38,6 +36,7 @@ class RoleMemberServiceImplSpec extends Specification {
     private OrganizationMapper organizationMapper = Mock(OrganizationMapper)
     private ProjectMapper projectMapper = Mock(ProjectMapper)
     private ExcelImportUserTask.FinishFallback finishFallback = Mock(ExcelImportUserTask.FinishFallback)
+    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
     private RoleMemberService roleMemberService
     private Long userId
 
@@ -45,7 +44,7 @@ class RoleMemberServiceImplSpec extends Specification {
         given: "构造 roleMemberService"
         roleMemberService = new RoleMemberServiceImpl(iRoleMemberService,
                 uploadHistoryRepository, excelImportUserTask, finishFallback,
-                organizationMapper, projectMapper)
+                organizationMapper, projectMapper, memberRoleRepository)
 
         and: "mock静态方法-CustomUserDetails"
         PowerMockito.mockStatic(DetailsHelper)
