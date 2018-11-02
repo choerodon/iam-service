@@ -1,7 +1,7 @@
 package io.choerodon.iam.domain.service.impl;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.NoticeSendDTO;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;

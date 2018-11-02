@@ -1,6 +1,6 @@
 package io.choerodon.iam.infra.feign.fallback;
 
-import io.choerodon.iam.api.dto.NoticeSendDTO;
+import io.choerodon.core.notify.NoticeSendDTO;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
