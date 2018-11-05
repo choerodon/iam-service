@@ -6,6 +6,7 @@ import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.asgard.schedule.annotation.TaskParam;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncReport;
@@ -41,14 +42,25 @@ public class LdapSyncUserQuartzTask {
         this.ldapHistoryRepository = ldapHistoryRepository;
     }
 
-    @JobTask(maxRetryCount = 2, code = "syncLdapUser", params = {
+    @JobTask(maxRetryCount = 2, code = "syncLdapUserSite", params = {
             @JobParam(name = "organizationCode", defaultValue = "hand", description = "组织编码")
-    }, description = "同步idap用户")
+    }, description = "全局层同步idap用户")
     @TimedTask(name = "同步LDAP用户", description = "自定义定时任务", oneExecution = true,
             repeatCount = 0, repeatInterval = 100, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
             @TaskParam(name = "organizationCode", value = "hand")
     })
-    public void syncLdapUser(Map<String, Object> map) {
+    public void syncLdapUserSite(Map<String, Object> map) {
+        syncLdapUser(map);
+    }
+
+    @JobTask(maxRetryCount = 2, code = "syncLdapUserOrganization", level = ResourceLevel.ORGANIZATION, params = {
+            @JobParam(name = "organizationCode", description = "组织编码")
+    }, description = "组织层同步idap用户")
+    public void syncLdapUserOrganization(Map<String, Object> map) {
+        syncLdapUser(map);
+    }
+
+    private void syncLdapUser(Map<String, Object> map) {
         String orgCode = Optional.ofNullable((String) map.get("organizationCode")).orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
         OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(orgCode);
