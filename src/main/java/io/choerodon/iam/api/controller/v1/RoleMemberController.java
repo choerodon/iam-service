@@ -109,7 +109,7 @@ public class RoleMemberController extends BaseController {
      * 在site层根据成员id和角色id删除角色
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "全局层批量移除用户的角色")
+    @ApiOperation(value = "全局层批量移除用户/客户端的角色")
     @PostMapping(value = "/site/role_members/delete")
     public ResponseEntity deleteOnSiteLevel(@RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
         RoleAssignmentViewValidator.validate(roleAssignmentDeleteDTO.getView());
@@ -122,7 +122,7 @@ public class RoleMemberController extends BaseController {
      * 在organization层根据成员id和角色id删除角色
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "组织层批量移除用户的角色")
+    @ApiOperation(value = "组织层批量移除用户/客户端的角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members/delete")
     public ResponseEntity deleteOnOrganizationLevel(@PathVariable(name = "organization_id") Long sourceId,
                                                     @RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
@@ -136,7 +136,7 @@ public class RoleMemberController extends BaseController {
      * 在project层根据id删除角色
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
-    @ApiOperation(value = "项目层批量移除用户的角色")
+    @ApiOperation(value = "项目层批量移除用户/客户端的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/delete")
     public ResponseEntity deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                @RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
