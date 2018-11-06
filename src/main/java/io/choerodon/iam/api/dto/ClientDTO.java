@@ -16,7 +16,7 @@ public class ClientDTO {
     @Size(min = 1, max = 32, message = "error.name.size")
     @NotNull(message = "error.clientName.null")
     private String name;
-    @ApiModelProperty(value = "客户端ID/必填")
+    @ApiModelProperty(value = "组织ID/必填")
     private Long organizationId;
     @ApiModelProperty(value = "客户端资源/非必填/默认：default")
     private String resourceIds;

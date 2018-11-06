@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.ClientCreateDTO;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -10,6 +11,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface ClientService {
     ClientDTO create(Long orgId, ClientDTO clientDTO);
+
+    ClientCreateDTO getDefaultCreatedata(Long orgId);
 
     ClientDTO update(Long orgId, Long clientId, ClientDTO clientDTO);
 

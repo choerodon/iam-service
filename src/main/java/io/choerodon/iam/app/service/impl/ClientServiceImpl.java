@@ -1,10 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Random;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.ClientCreateDTO;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.app.service.ClientService;
@@ -13,9 +20,6 @@ import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 /**
  * @author wuguokai
@@ -24,6 +28,8 @@ import org.springframework.util.StringUtils;
 public class ClientServiceImpl implements ClientService {
 
     private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
+    public static final String SOURCES =
+            "ABCDEFGHIJKLMNOPQISTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
     private OrganizationRepository organizationRepository;
     private ClientRepository clientRepository;
 
@@ -39,6 +45,27 @@ public class ClientServiceImpl implements ClientService {
         clientDTO.setOrganizationId(orgId);
         return ConvertHelper.convert(
                 clientRepository.create(ConvertHelper.convert(clientDTO, ClientE.class)), ClientDTO.class);
+    }
+
+    /**
+     * 创建客户端时生成随机的clientId和secret
+     */
+    @Override
+    public ClientCreateDTO getDefaultCreatedata(Long orgId) {
+        String name = "";
+        boolean flag = false;
+        while (!flag) {
+            name = generateString(new Random(), SOURCES, 12);
+            ClientDO clientDO = new ClientDO();
+            clientDO.setName(name);
+            ClientDO clientByName = clientRepository.selectOne(clientDO);
+            if (clientByName == null) {
+                flag = true;
+            }
+        }
+        String secret = generateString(new Random(), SOURCES, 16);
+        ClientCreateDTO clientCreateDTO = new ClientCreateDTO(name, secret);
+        return clientCreateDTO;
     }
 
     @Override
@@ -142,5 +169,13 @@ public class ClientServiceImpl implements ClientService {
         if (organizationRepository.selectByPrimaryKey(orgId) == null) {
             throw new CommonException("error.organization.notFound");
         }
+    }
+
+    private String generateString(Random random, String characters, int length) {
+        char[] text = new char[length];
+        for (int i = 0; i < length; i++) {
+            text[i] = characters.charAt(random.nextInt(characters.length()));
+        }
+        return new String(text);
     }
 }
