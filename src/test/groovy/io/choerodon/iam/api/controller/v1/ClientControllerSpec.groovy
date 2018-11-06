@@ -4,6 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
+import io.choerodon.iam.api.dto.ClientCreateDTO
 import io.choerodon.iam.api.dto.ClientDTO
 import io.choerodon.iam.infra.dataobject.ClientDO
 import io.choerodon.iam.infra.mapper.ClientMapper
@@ -137,6 +138,17 @@ class ClientControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.clientName.exist")
+    }
+
+    def "CreateInfo"() {
+        given: "准备参数"
+        def paramMap = new HashMap<String, Object>()
+        def organizationId = 1L
+        paramMap.put("organization_id", organizationId)
+        when: "调用createInfo方法"
+        def entity = restTemplate.getForEntity(BASE_PATH + "/createInfo", ClientCreateDTO, paramMap)
+        then:"校验结果"
+        entity.statusCode.is2xxSuccessful()
     }
 
     def "Update"() {

@@ -1,8 +1,17 @@
 package io.choerodon.iam.api.controller.v1;
 
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.ClientCreateDTO;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.validator.ClientValidator;
 import io.choerodon.iam.app.service.ClientService;
@@ -12,13 +21,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
 
 /**
  * @author wuguokai
@@ -48,6 +50,19 @@ public class ClientController extends BaseController {
     public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid ClientDTO clientDTO) {
         clientValidator.create(clientDTO);
         return new ResponseEntity<>(clientService.create(organizationId, clientDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 构造供创建使用的随机的客户端信息
+     *
+     * @param organizationId 组织id
+     * @return 客户端创建信息
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "随机的客户端创建信息生成")
+    @GetMapping(value = "/createInfo")
+    public ResponseEntity<ClientCreateDTO> createInfo(@PathVariable("organization_id") Long organizationId) {
+        return new ResponseEntity<>(clientService.getDefaultCreatedata(organizationId), HttpStatus.OK);
     }
 
     /**
