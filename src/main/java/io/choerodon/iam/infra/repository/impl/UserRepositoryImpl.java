@@ -206,9 +206,15 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId,
-                                                         String level) {
+    public Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        if (!doPage) {
+            List<UserDO> users =
+                    mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
+                            level, roleAssignmentSearchDTO, param);
+            PageInfo pageInfo = new PageInfo(0, users.size());
+            return new Page<>(users, pageInfo, users.size());
+        }
         Map<String, String> map = new HashMap<>();
         map.put("source_id", "imr.source_id");
         pageRequest.resetOrder("iu", map);
