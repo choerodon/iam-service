@@ -17,7 +17,7 @@
         SELECT
         client.NAME as name,
         client.ID as id,
-        role.IS_ENABLED as role_is_enable,
+        role.IS_ENABLED as role_is_enabled,
         role.ID as role_id,
         role.NAME as role_name,
         role.CODE as role_code,
