@@ -37,8 +37,10 @@ public class BookMarkRepositoryImpl implements BookMarkRepository {
     }
 
     @Override
-    public List<BookMarkDO> queryAll() {
-        return bookMarkMapper.selectAll();
+    public List<BookMarkDO> queryByUserId(Long userId) {
+        BookMarkDO bookMarkDO = new BookMarkDO();
+        bookMarkDO.setUserId(userId);
+        return bookMarkMapper.select(bookMarkDO);
     }
 
     @Override

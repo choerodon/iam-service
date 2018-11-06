@@ -12,7 +12,7 @@ public interface BookMarkRepository {
 
     BookMarkDO update(BookMarkDO bookMarkDO);
 
-    List<BookMarkDO> queryAll();
+    List<BookMarkDO> queryByUserId(Long userId);
 
     void delete(Long id);
 }

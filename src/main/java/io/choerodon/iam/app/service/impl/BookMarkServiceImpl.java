@@ -33,6 +33,7 @@ public class BookMarkServiceImpl implements BookMarkService {
 
     /**
      * 更新失败一个就回滚
+     *
      * @param bookMarkDTOS
      * @return
      */
@@ -46,8 +47,8 @@ public class BookMarkServiceImpl implements BookMarkService {
     }
 
     @Override
-    public List<BookMarkDTO> queryAll() {
-        return ConvertHelper.convertList(bookMarkRepository.queryAll(), BookMarkDTO.class);
+    public List<BookMarkDTO> queryByUserId(Long userId) {
+        return ConvertHelper.convertList(bookMarkRepository.queryByUserId(userId), BookMarkDTO.class);
     }
 
     @Override
