@@ -18,10 +18,10 @@ public interface BookMarkService {
     List<BookMarkDTO> updateAll(List<BookMarkDTO> bookMarkDTOS);
 
     /**
-     * 查询所有书签
+     * 查询用户下所有书签
      * @return
      */
-    List<BookMarkDTO> queryAll();
+    List<BookMarkDTO> queryByUserId(Long userId);
 
     void delete(Long id);
 }
