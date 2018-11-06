@@ -208,6 +208,14 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdOnOrganizationLevel(pageRequest, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
     }
 
+    /**
+     * @param pageRequest
+     * @param roleId
+     * @param sourceId
+     * @param roleAssignmentSearchDTO
+     * @param doPage                  是否分页，如果为false，则不分页
+     * @return
+     */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
@@ -217,9 +225,10 @@ public class RoleMemberController extends BaseController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+            @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnProjectLevel(
-                pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
@@ -392,10 +401,11 @@ public class RoleMemberController extends BaseController {
 
     /**
      * 在site层查询用户，用户包含拥有的project层的角色
-     * @param pageRequest 分页请求参数，解析url里的param生成
-     * @param sourceId 源id，即项目id
+     *
+     * @param pageRequest             分页请求参数，解析url里的param生成
+     * @param sourceId                源id，即项目id
      * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
-     * @param doPage 做不做分页，如果为false，返回一个page对象，context里为所有数据，没有做分页处理
+     * @param doPage                  做不做分页，如果为false，返回一个page对象，context里为所有数据，没有做分页处理
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)

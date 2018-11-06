@@ -55,7 +55,7 @@ public interface UserService {
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                         Long roleId, Long sourceId);
+                                                         Long roleId, Long sourceId, boolean doPage);
 
     String uploadPhoto(Long id, MultipartFile file);
 
