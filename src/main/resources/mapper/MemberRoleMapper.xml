@@ -224,9 +224,9 @@
 
     <delete id="deleteMemberRoleByMemberIdAndMemberType">
         DELETE
-        FROM iam_member_role imr
-        WHERE imr.MEMBER_ID = #{memberId}
-          AND imr.MEMBER_TYPE = #{memberType}
+        FROM iam_member_role
+        WHERE MEMBER_ID = #{memberId}
+          AND MEMBER_TYPE = #{memberType}
     </delete>
 
     <select id="selectDeleteList" resultType="java.lang.Long">
