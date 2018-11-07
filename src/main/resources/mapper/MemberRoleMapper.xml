@@ -13,15 +13,20 @@
         </collection>
     </resultMap>
 
-    <select id="selectClientsWithRoles" resultMap="clientWithRoles">
+    <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="mysql">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
+        ic.NAME as name,
+        ic.ID as id,
+        iam_role.IS_ENABLED as role_is_enabled,
+        iam_role.ID as role_id,
+        iam_role.NAME as role_name,
+        iam_role.CODE as role_code,
+        iam_role.IS_BUILT_IN as role_is_built_in
+        FROM
+        (SELECT DISTINCT
         client.NAME as name,
-        client.ID as id,
-        role.IS_ENABLED as role_is_enabled,
-        role.ID as role_id,
-        role.NAME as role_name,
-        role.CODE as role_code,
-        role.IS_BUILT_IN as role_is_built_in
+        client.ID as id
         FROM oauth_client client
         INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
         INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
@@ -47,6 +52,174 @@
             OR role.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>) ic
+        LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
+        LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
+        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+        WHERE iam_member_role.MEMBER_TYPE = 'client'
+        AND irt.lang = #{lang}
+        AND iam_member_role.source_id = #{sourceId}
+        AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.ID DESC
+    </select>
+
+    <select id="selectClientsWithRoles" resultMap="clientWithRoles">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        ic.NAME as name,
+        ic.ID as id,
+        iam_role.IS_ENABLED as role_is_enabled,
+        iam_role.ID as role_id,
+        iam_role.NAME as role_name,
+        iam_role.CODE as role_code,
+        iam_role.IS_BUILT_IN as role_is_built_in
+        FROM
+        (SELECT DISTINCT
+        client.NAME as name,
+        client.ID as id
+        FROM oauth_client client
+        INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
+        INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
+        WHERE imr.MEMBER_TYPE = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
+            </if>
+            <if test="clientRoleSearchDTO.roleName != null">
+                AND role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            OR role.name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>) ic
+        LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
+        LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
+        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+        WHERE iam_member_role.MEMBER_TYPE = 'client'
+        AND irt.lang = #{lang}
+        AND iam_member_role.source_id = #{sourceId}
+        AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.ID DESC
+    </select>
+
+    <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="oracle">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        ic.NAME as name,
+        ic.ID as id,
+        iam_role.IS_ENABLED as role_is_enabled,
+        iam_role.ID as role_id,
+        iam_role.NAME as role_name,
+        iam_role.CODE as role_code,
+        iam_role.IS_BUILT_IN as role_is_built_in
+        FROM
+        (
+        <if test="start != null and size != null">
+            SELECT *
+            FROM
+            (
+            SELECT TMP_PAGE.*, ROWNUM ROW_ID
+            FROM
+            (
+        </if>
+            SELECT * FROM oauth_client oc
+            JOIN (
+            SELECT DISTINCT imr.member_id
+            FROM oauth_client
+            LEFT JOIN iam_member_role imr ON imr.member_id = oauth_client.id
+            LEFT JOIN iam_role ir ON ir.id = imr.role_id
+            WHERE imr.member_type = 'client'
+            AND imr.source_id = #{sourceId}
+            AND imr.source_type = #{sourceType}
+            <if test="sourceId != null">
+                AND imr.source_id = #{sourceId}
+            </if>
+            <if test="sourceType != null">
+                AND imr.source_type = #{sourceType}
+            </if>
+            <if test="clientRoleSearchDTO != null">
+                <if test="clientRoleSearchDTO.clientName != null">
+                    AND oauth_client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
+                </if>
+                <if test="clientRoleSearchDTO.roleName != null">
+                    AND iam_role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
+                </if>
+            </if>
+            <if test="param != null">
+                AND ( oauth_client.NAME LIKE concat(concat('%',#{param}),'%')
+                OR oauth_client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+                OR oauth_client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+                OR iam_role.name LIKE concat(concat('%',#{param}),'%')
+                )
+            </if>
+            ) t
+            ON oc.ID = t.member_id
+        <if test="start != null and size != null">
+            ) TMP_PAGE
+            <![CDATA[
+                    WHERE ROWNUM <= ((#{start} + 1) * #{size})
+                    )
+                  WHERE ROW_ID > (#{start} * #{size})
+                ]]>
+        </if>
+        ) ic
+        LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
+        LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
+        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+        WHERE iam_member_role.MEMBER_TYPE = 'client'
+        AND irt.lang = #{lang}
+        AND iam_member_role.source_id = #{sourceId}
+        AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.ID DESC
+    </select>
+
+    <select id="selectCountClients" resultType="int">
+        SELECT COUNT(1)
+        FROM (
+        SELECT DISTINCT
+        client.NAME as name,
+        client.ID as id
+        FROM oauth_client client
+        INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
+        INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
+        WHERE imr.MEMBER_TYPE = 'client'
+        <if test="sourceId != null">
+            AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
+            AND imr.source_type = #{sourceType}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
+            </if>
+            <if test="clientRoleSearchDTO.roleName != null">
+                AND role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
+            </if>
+        </if>
+        <if test="param != null">
+            AND ( client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            OR role.name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        ) temp
     </select>
 
     <delete id="deleteMemberRoleByMemberIdAndMemberType">
@@ -68,11 +241,12 @@
         </foreach>
     </select>
 
-    <select id="selectCountBySourceId" resultType="java.lang.Integer">
+    <select id="selectCountBySourceId" resultType="java.lang.Integer" parameterType="java.lang.String">
         SELECT COUNT(DISTINCT source_id)
         FROM iam_member_role
         WHERE iam_member_role.member_id = #{id}
           AND iam_member_role.source_type = #{type}
+          AND iam_member_role.MEMBER_TYPE = #{memberType}
     </select>
 
 </mapper>
