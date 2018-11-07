@@ -25,8 +25,7 @@ public interface MemberRoleRepository {
 
     MemberRoleDO selectOne(MemberRoleDO memberRole);
 
-    List<Long> selectDeleteList(List<Long> deleteList, long memberId,
-                                long sourceId, String sourceType);
+    List<Long> selectDeleteList(final List<Long> deleteList, final long memberId, final String memberType, final long sourceId, final String sourceType);
 
     Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
             PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);

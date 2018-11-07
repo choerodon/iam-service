@@ -293,7 +293,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             returnList.add(memberRoleRepository.insertSelective(mr));
         });
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
-            memberRoleRepository.selectDeleteList(deleteList, memberId, sourceId, sourceType)
+            memberRoleRepository.selectDeleteList(deleteList, memberId, memberType, sourceId, sourceType)
                     .forEach(t -> {
                         if (t != null) {
                             memberRoleRepository.deleteById(t);

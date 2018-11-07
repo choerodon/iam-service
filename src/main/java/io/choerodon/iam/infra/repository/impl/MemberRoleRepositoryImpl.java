@@ -98,9 +98,8 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public List<Long> selectDeleteList(final List<Long> deleteList, final long memberId,
-                                       final long sourceId, final String sourceType) {
-        return memberRoleMapper.selectDeleteList(memberId, sourceId, sourceType, deleteList);
+    public List<Long> selectDeleteList(final List<Long> deleteList, final long memberId, final String memberType, final long sourceId, final String sourceType) {
+        return memberRoleMapper.selectDeleteList(memberId, sourceId, memberType, sourceType, deleteList);
     }
 
     @Override
@@ -119,7 +118,7 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
         return pageQueryingClientsWithRoles(pageRequest, clientRoleSearchDTO, sourceId, param, ResourceLevel.PROJECT.value());
     }
 
-    private Page<ClientDO> pageQueryingClientsWithRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType){
+    private Page<ClientDO> pageQueryingClientsWithRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
         //TODO
         //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
         int page = pageRequest.getPage();

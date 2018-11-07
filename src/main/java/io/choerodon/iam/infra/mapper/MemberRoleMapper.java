@@ -14,8 +14,7 @@ import java.util.List;
 public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
 
 
-    List<Long> selectDeleteList(@Param("mi") long memberId, @Param("si") long sourceId,
-                                @Param("st") String sourceType, @Param("list") List<Long> deleteList);
+    List<Long> selectDeleteList(@Param("memberId") long memberId, @Param("sourceId") long sourceId, @Param("memberType") String memberType, @Param("sourceType") String sourceType, @Param("list") List<Long> deleteList);
 
     int deleteMemberRoleByMemberIdAndMemberType(@Param("memberId") Long memberId,
                                                 @Param("memberType") String memberType);

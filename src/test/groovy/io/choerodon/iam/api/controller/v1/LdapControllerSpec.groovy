@@ -260,7 +260,7 @@ class LdapControllerSpec extends Specification {
         entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
-        paramsMap.put("organization_id", 3)
+        paramsMap.put("organization_id", 1)
         paramsMap.put("id", 2)
         entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, Boolean, paramsMap)
 
