@@ -13,7 +13,7 @@ public class ClientDTO {
     @ApiModelProperty(value = "客户端ID/非必填")
     private Long id;
     @ApiModelProperty(value = "客户端名称/必填")
-    @Size(min = 1, max = 32, message = "error.name.size")
+    @Size(min = 1, max = 12, message = "error.client.name.size")
     @NotNull(message = "error.clientName.null")
     private String name;
     @ApiModelProperty(value = "组织ID/必填")
@@ -21,6 +21,7 @@ public class ClientDTO {
     @ApiModelProperty(value = "客户端资源/非必填/默认：default")
     private String resourceIds;
     @ApiModelProperty(value = "客户端秘钥/必填")
+    @Size(min = 6, max = 16, message = "error.client.secret.size")
     @NotNull(message = "error.secret.null")
     private String secret;
     @ApiModelProperty(value = "作用域/非必填")
