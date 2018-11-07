@@ -74,6 +74,11 @@
             <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-eureka-event</artifactId>
+            <version>${choerodon.starters.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.openfeign.form</groupId>
             <artifactId>feign-form</artifactId>
             <version>3.0.3</version>

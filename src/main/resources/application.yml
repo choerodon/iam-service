@@ -12,11 +12,6 @@ spring:
     url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
     password: 123456
-  kafka: #使用原生spring kafka需要配置
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: iam-service
-      auto-offset-reset: earliest
   cloud:
     bus:
       enabled: true
@@ -32,6 +27,12 @@ spring:
 choerodon:
   devops:
     message: true
+  eureka:
+    event:
+      max-cache-size: 300
+      retry-time: 5
+      retry-interval: 3
+      skip-services: register-server, api-gateway, gateway-helper, oauth-server, config-server, event-store-service
   saga:
     consumer:
       enabled: true # 启动消费端

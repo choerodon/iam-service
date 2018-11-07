@@ -1,38 +1,31 @@
 package io.choerodon.iam.api.eventhandler;
 
+import io.choerodon.eureka.event.AbstractEurekaEventObserver;
+import io.choerodon.eureka.event.EurekaEventPayload;
 import io.choerodon.iam.domain.service.ParsePermissionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 /**
  * 根据接口解析权限
  *
  * @author superlee
- * @data 2018/4/3
  */
 @Component
-public class ParsePermissionListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParsePermissionListener.class);
-    private static final String SWAGGER_TOPIC_NAME = "manager-service";
+public class ParsePermissionListener extends AbstractEurekaEventObserver {
+
     private ParsePermissionService parsePermissionService;
 
     public ParsePermissionListener(ParsePermissionService parsePermissionService) {
         this.parsePermissionService = parsePermissionService;
     }
 
-    @KafkaListener(topics = SWAGGER_TOPIC_NAME)
-    public void parse(byte[] bytes) {
-        LOGGER.info("### begin to parse message");
-        try {
-            Observable.just(new String(bytes))
-                    .subscribeOn(Schedulers.computation())
-                    .subscribe(parsePermissionService::parser);
-        } catch (Exception e) {
-            LOGGER.info("rx.java observable exception: {}", e.getMessage());
-        }
+    @Override
+    public void receiveUpEvent(EurekaEventPayload payload) {
+        parsePermissionService.parser(payload);
+    }
+
+    @Override
+    public void receiveDownEvent(EurekaEventPayload payload) {
+        // do nothing
     }
 }

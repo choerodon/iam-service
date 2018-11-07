@@ -1,35 +1,36 @@
 package io.choerodon.iam.domain.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.iam.infra.dataobject.PermissionDO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
-import io.choerodon.iam.domain.iam.entity.InstanceE;
+import io.choerodon.eureka.event.EurekaEventPayload;
 import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.service.ParsePermissionService;
+import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author zhipeng.zuo
  * @author superlee
- * @date 2018/1/19
- * @date 2018/04/03
  */
 @Service
 public class ParsePermissionServiceImpl implements ParsePermissionService {
@@ -42,10 +43,16 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RolePermissionRepository rolePermissionRepository;
 
+    private RestTemplate restTemplate = new RestTemplate();
+
     private RoleRepository roleRepository;
 
     @Value("${choerodon.cleanRolePermission:true}")
     private boolean cleanErrorRolePermission;
+
+    public void setRestTemplate(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public ParsePermissionServiceImpl(PermissionRepository permissionRepository,
                                       RolePermissionRepository rolePermissionRepository,
@@ -55,19 +62,30 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         this.roleRepository = roleRepository;
     }
 
+    private void fetchSwaggerJsonByIp(final EurekaEventPayload payload) {
+        ResponseEntity<String> response = restTemplate.getForEntity("http://" + payload.getInstanceAddress() + "/v2/choerodon/api-docs",
+                String.class);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            payload.setApiData(response.getBody());
+        } else {
+            throw new CommonException("fetch swagger error, statusCode is not 2XX, serviceId: " + payload.getId());
+        }
+
+    }
+
     @Override
-    public void parser(String message) {
+    public void parser(EurekaEventPayload payload) {
         //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
         if (cleanErrorRolePermission) {
             logger.info("begin to clean the error role_permission");
             cleanRolePermission();
         }
         try {
-            InstanceE instanceE = objectMapper.readValue(message, InstanceE.class);
-            String serviceName = instanceE.getAppName();
+            fetchSwaggerJsonByIp(payload);
+            String serviceName = payload.getAppName();
             logger.info("receive message from manager-service, service: {}, version: {}, ip: {}",
-                    serviceName, instanceE.getVersion(), instanceE.getInstanceAddress());
-            String json = instanceE.getApiData();
+                    serviceName, payload.getVersion(), payload.getInstanceAddress());
+            String json = payload.getApiData();
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
@@ -79,7 +97,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 }
             }
         } catch (IOException e) {
-            logger.error("read message failed: {}", e);
+            throw new CommonException("error.parsePermissionService.parse.IOException", e);
         }
     }
 
