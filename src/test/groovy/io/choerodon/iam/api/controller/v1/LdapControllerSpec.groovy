@@ -31,7 +31,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Import(IntegrationTestConfiguration)
 @Stepwise
 class LdapControllerSpec extends Specification {
-    private static final String BASE_PATH = "/v1/organizations/{organization_id}/ldaps";
+    private static final String BASE_PATH = "/v1/organizations/{organization_id}/ldaps"
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -118,10 +118,6 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getName().equals(ldapDTO.getName())
-        entity.getBody().getOrganizationId().equals(ldapDTO.getOrganizationId())
-        entity.getBody().getServerAddress().equals(ldapDTO.getServerAddress())
-        entity.getBody().getObjectClass().equals(ldapDTO.getObjectClass())
     }
 
     def "Update"() {
@@ -247,7 +243,6 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getName().equals("hand")
     }
 
     def "Delete"() {
@@ -271,7 +266,6 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody()
     }
 
     def "TestConnect"() {

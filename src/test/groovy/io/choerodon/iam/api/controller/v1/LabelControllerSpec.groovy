@@ -42,6 +42,5 @@ class LabelControllerSpec extends Specification {
 
         then: "校验结果[所有结果]"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() == 10
     }
 }

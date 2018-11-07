@@ -34,4 +34,4 @@ choerodon:
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
 logging:
   level:
-    io.choerodon.iam: debug
+    io.choerodon.iam: info
