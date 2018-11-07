@@ -98,7 +98,7 @@ class IRoleMemberServiceImplSpec extends Specification {
         1 * userRepository.selectByPrimaryKey(_) >> { new UserE("123456") }
         1 * memberRoleRepository.select(_) >> { existingMemberRoleEList }
         1 * memberRoleRepository.insertSelective(_)
-        1 * memberRoleRepository.selectDeleteList(_, _, _, _) >> { longList }
+        1 * memberRoleRepository.selectDeleteList(_, _, _, _, _) >> { longList }
         1 * memberRoleRepository.deleteById(_)
         1 * memberRoleRepository.select(_) >> { memberRoleEList }
         1 * sagaClient.startSaga(_, _ as StartInstanceDTO)

@@ -107,7 +107,7 @@ class ClientControllerSpec extends Specification {
         def tempOrganizationId = 1
         paramMap.put("organization_id", tempOrganizationId)
         def clientDTO = new ClientDO()
-        clientDTO.setName("insert-client")
+        clientDTO.setName("insertclient")
         clientDTO.setOrganizationId(tempOrganizationId)
         clientDTO.setAuthorizedGrantTypes("password,implicit,client_credentials,authorization_code,refresh_token")
         clientDTO.setSecret("secret")

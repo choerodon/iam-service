@@ -231,22 +231,21 @@
 
     <select id="selectDeleteList" resultType="java.lang.Long">
         SELECT id FROM iam_member_role
-        WHERE member_id = #{mi}
-        AND member_type = 'user'
-        AND source_id = #{si}
-        AND source_type = #{st}
+        WHERE member_id = #{memberId}
+        AND member_type = #{memberType}
+        AND source_id = #{sourceId}
+        AND source_type = #{sourceType}
         AND role_id in
         <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
             #{item}
         </foreach>
     </select>
 
-    <select id="selectCountBySourceId" resultType="java.lang.Integer" parameterType="java.lang.String">
+    <select id="selectCountBySourceId" resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT source_id)
         FROM iam_member_role
         WHERE iam_member_role.member_id = #{id}
-          AND iam_member_role.source_type = #{type}
-          AND iam_member_role.MEMBER_TYPE = #{memberType}
+        AND iam_member_role.source_type = #{type}
     </select>
 
 </mapper>
