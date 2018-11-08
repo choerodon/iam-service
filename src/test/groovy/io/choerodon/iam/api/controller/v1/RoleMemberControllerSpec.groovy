@@ -7,17 +7,9 @@ import io.choerodon.iam.api.dto.ClientRoleSearchDTO
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
-import io.choerodon.iam.infra.dataobject.ClientDO
-import io.choerodon.iam.infra.dataobject.MemberRoleDO
-import io.choerodon.iam.infra.dataobject.ProjectDO
-import io.choerodon.iam.infra.dataobject.RoleDO
-import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.dataobject.*
 import io.choerodon.iam.infra.enums.MemberType
-import io.choerodon.iam.infra.mapper.ClientMapper
-import io.choerodon.iam.infra.mapper.MemberRoleMapper
-import io.choerodon.iam.infra.mapper.ProjectMapper
-import io.choerodon.iam.infra.mapper.RoleMapper
-import io.choerodon.iam.infra.mapper.UserMapper
+import io.choerodon.iam.infra.mapper.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -131,7 +123,7 @@ class RoleMemberControllerSpec extends Specification {
                 count += roleMapper.deleteByPrimaryKey(roleDO)
             }
 
-            for (ClientDO clientDO: clientDOList) {
+            for (ClientDO clientDO : clientDOList) {
                 clientMapper.deleteByPrimaryKey(clientDO)
             }
             count += projectMapper.deleteByPrimaryKey(projectDO)
@@ -514,6 +506,7 @@ class RoleMemberControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         entity.getBody().size() == 2
     }
+
     def "ListRolesWithClientCountOnOrganizationLevel"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
@@ -776,6 +769,34 @@ class RoleMemberControllerSpec extends Specification {
         when: "调用方法"
         needClean = true
         def entity = restTemplate.getForEntity(BASE_PATH + "/projects/{project_id}/member_role/users/{user_id}/upload/history", UploadHistoryDTO, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+    }
+
+    def "queryAllUsers"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("size", 10)
+        paramsMap.put("page", 0)
+
+        when: "调用方法"
+        needClean = true
+        def entity = restTemplate.getForEntity(BASE_PATH + "/all/clients", Page, paramsMap)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+    }
+
+    def "queryAllClients"() {
+        given: "构造请求参数"
+        def paramsMap = new HashMap<String, Object>()
+        paramsMap.put("size", 10)
+        paramsMap.put("page", 0)
+
+        when: "调用方法"
+        needClean = true
+        def entity = restTemplate.getForEntity(BASE_PATH + "/all/users", Page, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
