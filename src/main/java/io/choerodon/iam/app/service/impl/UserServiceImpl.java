@@ -639,4 +639,19 @@ public class UserServiceImpl implements UserService {
         }
         return userDO1.getOrganizationId();
     }
+
+    @Override
+    public OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId) {
+        OrganizationProjectDTO organizationProjectDTO = new OrganizationProjectDTO();
+        organizationProjectDTO.setOrganizationList(organizationRepository.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+                OrganizationProjectDTO.newInstanceOrganization(organizationDO.getId(), organizationDO.getName(), organizationDO.getCode())
+        ).collect(Collectors.toList()));
+        ProjectDO projectDO = new ProjectDO();
+        //查询启用的项目
+        projectDO.setEnabled(true);
+        organizationProjectDTO.setProjectList(projectRepository.selectProjectsFromMemberRoleByOptions(userId, projectDO)
+                .stream().map(projectDO1 ->
+                        OrganizationProjectDTO.newInstanceProject(projectDO1.getId(), projectDO1.getName(), projectDO1.getCode())).collect(Collectors.toList()));
+        return organizationProjectDTO;
+    }
 }
