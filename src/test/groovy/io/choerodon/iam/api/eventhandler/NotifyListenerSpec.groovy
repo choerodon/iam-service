@@ -32,7 +32,7 @@ class NotifyListenerSpec extends Specification {
         notifyListener.create(message)
 
         then: "校验结果"
-        1 * iUserService.sendNotice(_, _, _, _)
+        1 * iUserService.sendNotice(_, _, _, _, _)
         0 * _
     }
 }

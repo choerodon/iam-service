@@ -247,9 +247,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             Map<String, Object> params = new HashMap<>();
             params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
             if (PROJECT_DISABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "disableProject", params);
+                iUserService.sendNotice(userId, userIds, "disableProject", params, projectId);
             } else if (PROJECT_ENABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "enableProject", params);
+                iUserService.sendNotice(userId, userIds, "enableProject", params, projectId);
             }
         } else {
             project = projectRepository.updateSelective(projectDO);

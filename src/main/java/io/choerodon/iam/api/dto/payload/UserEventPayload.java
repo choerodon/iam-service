@@ -16,6 +16,16 @@ public class UserEventPayload {
 
     private Long fromUserId;
 
+    private Long organizationId;
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
     public Long getFromUserId() {
         return fromUserId;
     }

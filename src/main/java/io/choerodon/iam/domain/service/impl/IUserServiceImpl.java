@@ -57,9 +57,10 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
 
     @Override
     public void sendNotice(Long fromUserId, List<Long> userIds, String code,
-                           Map<String, Object> params) {
+                           Map<String, Object> params, Long sourceId) {
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
+        noticeSendDTO.setSourceId(sourceId);
         NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
         currentUser.setId(fromUserId);
         UserE currentUserE = userRepository.selectByPrimaryKey(fromUserId);
@@ -73,7 +74,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setId(id);
             UserE userE = userRepository.selectByPrimaryKey(id);
-            if (userE != null){
+            if (userE != null) {
                 //有角色分配，但是角色已经删除
                 user.setEmail(userE.getEmail());
                 user.setLoginName(userE.getLoginName());

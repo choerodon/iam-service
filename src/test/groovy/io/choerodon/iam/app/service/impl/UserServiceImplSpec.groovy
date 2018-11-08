@@ -199,7 +199,7 @@ class UserServiceImplSpec extends Specification {
         1 * passwordPolicyManager.passwordValidate(_, _, _)
         1 * userRepository.updateSelective(_)
         1 * passwordRecord.updatePassword(_, _)
-        1 * iUserService.sendNotice(_, _, _, _)
+        1 * iUserService.sendNotice(_, _, _, _, _)
         noExceptionThrown()
     }
 

@@ -99,6 +99,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 userEventPayload.setName(user.getRealName());
                 userEventPayload.setUsername(user.getLoginName());
                 userEventPayload.setFromUserId(DetailsHelper.getUserDetails().getUserId());
+                userEventPayload.setOrganizationId(organizationId);
                 //devop处理接受的是list
                 List<UserEventPayload> payloads = new ArrayList<>();
                 payloads.add(userEventPayload);

@@ -48,7 +48,7 @@ public class NotifyListener {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", 1);
         //发送的人和接受站内信的人是同一个人
-        iUserService.sendNotice(payload.getFromUserId(), userIds, ADD_USER, paramsMap);
+        iUserService.sendNotice(payload.getFromUserId(), userIds, ADD_USER, paramsMap, payload.getOrganizationId());
         LOGGER.info("NotifyListener create user send station letter.");
         return payloads;
     }

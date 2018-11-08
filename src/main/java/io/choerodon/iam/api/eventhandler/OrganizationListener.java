@@ -128,6 +128,6 @@ public class OrganizationListener {
         userIds.add(payload.getUserId());
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", userIds.size());
-        iUserService.sendNotice(fromUserId,userIds,"addUser", paramsMap);
+        iUserService.sendNotice(fromUserId, userIds, "addUser", paramsMap, 0L);
     }
 }

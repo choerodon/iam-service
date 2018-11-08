@@ -138,7 +138,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * iUserService.sendNotice(_, _, _, _)
+        1 * iUserService.sendNotice(_, _, _, _, _)
     }
 
     def "DisableProject"() {
@@ -159,6 +159,6 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
-        1 * iUserService.sendNotice(_, _, _, _)
+        1 * iUserService.sendNotice(_, _, _, _, _)
     }
 }
