@@ -554,6 +554,7 @@ public class RoleMemberController extends BaseController {
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "分页查询全平台层用户")
+    @CustomPageRequest
     @GetMapping(value = "/all/users")
     public ResponseEntity<Page<SimplifiedUserDTO>> queryAllUsers(@ApiIgnore
                                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
@@ -563,6 +564,7 @@ public class RoleMemberController extends BaseController {
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "分页查询全平台层客户端")
+    @CustomPageRequest
     @GetMapping(value = "/all/clients")
     public ResponseEntity<Page<SimplifiedClientDTO>> queryAllClients(@ApiIgnore
                                                                      @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
