@@ -96,16 +96,16 @@ public class ExcelImportUserTask {
         uploadHistory.setFailedCount(failedCount);
         uploadAndFallback(uploadHistory, fallback, errorUsers);
         if (successCount > 0) {
-            sendNotice(successCount, userId);
+            sendNotice(successCount, userId, organizationId);
         }
     }
 
-    private void sendNotice(Integer successCount, Long userId) {
+    private void sendNotice(Integer successCount, Long userId, Long organizationId) {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("addCount", successCount);
         List<Long> userIds = new ArrayList<>();
         userIds.add(userId);
-        iUserService.sendNotice(userId, userIds, ADD_USER, paramsMap);
+        iUserService.sendNotice(userId, userIds, ADD_USER, paramsMap, organizationId);
         logger.info("batch import user send station letter.");
     }
 

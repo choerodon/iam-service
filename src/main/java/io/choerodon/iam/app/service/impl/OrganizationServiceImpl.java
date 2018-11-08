@@ -174,9 +174,9 @@ public class OrganizationServiceImpl implements OrganizationService {
             Map<String, Object> params = new HashMap<>();
             params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
             if (ORG_DISABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "disableOrganization", params);
+                iUserService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId());
             } else if (ORG_ENABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "enableOrganization", params);
+                iUserService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
             }
         }
         return organizationRepository.selectByPrimaryKey(organizationDO.getId());

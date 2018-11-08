@@ -34,7 +34,7 @@ class IUserServiceImplSpec extends Specification {
         UserE userE = new UserE("123456")
 
         when: "调用方法"
-        iUserService.sendNotice(fromUserId, userIds, code, params)
+        iUserService.sendNotice(fromUserId, userIds, code, params, 0L)
 
         then: "校验结果"
         2 * userRepository.selectByPrimaryKey(_) >> userE

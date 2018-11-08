@@ -316,7 +316,7 @@ public class UserServiceImpl implements UserService {
         paramsMap.put("userName", user.getRealName());
         List<Long> userIds = new ArrayList<>();
         userIds.add(user.getId());
-        iUserService.sendNotice(user.getId(), userIds, "forgetPassword", paramsMap);
+        iUserService.sendNotice(user.getId(), userIds, "forgetPassword", paramsMap, 0L);
     }
 
     @Override
