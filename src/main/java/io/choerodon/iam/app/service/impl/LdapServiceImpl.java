@@ -18,11 +18,13 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 
+import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.naming.ldap.LdapContext;
+import java.util.Date;
 
 /**
  * @author wuguokai
@@ -192,5 +194,12 @@ public class LdapServiceImpl implements LdapService {
         }
         ldap.setEnabled(false);
         return ConvertHelper.convert(ldapRepository.update(ldap.getId(), ldap), LdapDTO.class);
+    }
+
+    @Override
+    public LdapHistoryDTO stop(Long id) {
+        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.queryLatestHistory(id);
+        ldapHistoryDO.setSyncEndTime(new Date(System.currentTimeMillis()));
+        return ConvertHelper.convert(ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO), LdapHistoryDTO.class);
     }
 }

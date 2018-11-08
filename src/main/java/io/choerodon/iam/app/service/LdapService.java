@@ -51,4 +51,6 @@ public interface LdapService {
     LdapDTO enableLdap(Long organizationId, Long id);
 
     LdapDTO disableLdap(Long organizationId, Long id);
+
+    LdapHistoryDTO stop(Long id);
 }

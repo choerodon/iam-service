@@ -6,8 +6,10 @@ import io.choerodon.iam.api.dto.LdapAccountDTO
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.api.dto.LdapDTO
 import io.choerodon.iam.api.dto.LdapHistoryDTO
+import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.dataobject.LdapDO
+import io.choerodon.iam.infra.dataobject.LdapHistoryDO
 import io.choerodon.iam.infra.dataobject.OrganizationDO
 import io.choerodon.iam.infra.mapper.LdapMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
@@ -18,6 +20,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -39,6 +42,8 @@ class LdapControllerSpec extends Specification {
     private OrganizationMapper organizationMapper
     @Autowired
     private LdapMapper ldapMapper
+    @Autowired
+    private LdapHistoryRepository ldapHistoryRepository
 
     private ILdapService iLdapService = Mock(ILdapService)
 
@@ -335,5 +340,22 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
+    }
+
+    @Transactional
+    def "stop"() {
+        given: "新建一个ldapHistory"
+        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
+        ldapHistoryDO.setLdapId(1L)
+        ldapHistoryDO.setSyncBeginTime(new Date(System.currentTimeMillis()))
+        LdapHistoryDO returnValue = ldapHistoryRepository.insertSelective(ldapHistoryDO)
+        long id = returnValue.getId()
+
+        when: "调用controller"
+        def entity = restTemplate.exchange("/v1/organizations/1/ldaps/" + id + "/stop", HttpMethod.PUT, HttpEntity.EMPTY, LdapHistoryDTO)
+
+        then: "校验"
+        entity.statusCode.is2xxSuccessful()
+        entity.body.syncEndTime != null
     }
 }
