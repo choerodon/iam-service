@@ -132,4 +132,17 @@ public class LdapController {
                                                         @PathVariable Long id) {
         return new ResponseEntity<>(ldapService.queryLatestHistory(id), HttpStatus.OK);
     }
+
+    /**
+     * 用于ldap同步过程中，因为不可控因素（iam服务挂掉）导致endTime为空一直在同步中的问题，该接口只是更新下endTime
+     * @param organizationId 组织id
+     * @param id             ldap id
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据ldap id更新历史记录的endTime")
+    @PutMapping("/{id}/stop")
+    public ResponseEntity<LdapHistoryDTO> stop(@PathVariable("organization_id") Long organizationId, @PathVariable Long id) {
+        return new ResponseEntity<>(ldapService.stop(id), HttpStatus.OK);
+    }
 }
