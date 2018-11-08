@@ -66,4 +66,22 @@
             )
         </if>
     </select>
+
+
+    <resultMap id="simplifiedClientDTO" type="io.choerodon.iam.api.dto.SimplifiedClientDTO">
+        <id property="id" column="id"/>
+        <result property="clientName" column="name"/>
+    </resultMap>
+
+    <select id="selectAllClientSimplifiedInfo" resultMap="simplifiedClientDTO">
+        SELECT
+        id,
+        name
+        FROM
+        oauth_client
+        WHERE 1=1
+        <if test="params != null">
+            AND name LIKE concat(concat('%',#{params}),'%')
+        </if>
+    </select>
 </mapper>

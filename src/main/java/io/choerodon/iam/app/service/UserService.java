@@ -1,12 +1,13 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 /**
  * @author superlee
@@ -94,4 +95,7 @@ public interface UserService {
     Long queryOrgIdByEmail(String email);
 
     OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId);
+
+
+    Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param);
 }

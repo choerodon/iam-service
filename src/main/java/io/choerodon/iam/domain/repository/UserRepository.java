@@ -1,13 +1,14 @@
 package io.choerodon.iam.domain.repository;
 
+import java.util.List;
+import java.util.Set;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedUserDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author dongfan117@gmail.com
@@ -78,4 +79,6 @@ public interface UserRepository {
     Set<String> matchEmail(Set<String> emailSet);
 
     Long[] listUserIds();
+
+    Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param);
 }

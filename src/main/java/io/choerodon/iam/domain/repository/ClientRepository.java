@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.repository;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -27,4 +28,8 @@ public interface ClientRepository {
     Integer selectClientCountFromMemberRoleByOptions(Long roleId, Long sourceId, String sourceType, ClientRoleSearchDTO clientRoleSearchDTO, String param);
 
     Page<ClientDO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType);
+
+    Page<SimplifiedClientDTO> pagingAllClientsByParams(PageRequest pageRequest, String params);
+
+
 }

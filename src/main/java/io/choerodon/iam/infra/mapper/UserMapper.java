@@ -1,12 +1,14 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedUserDTO;
+import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author wuguokai
@@ -62,4 +64,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
     Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
 
     Long[] listUserIds();
+
+
+    List<SimplifiedUserDTO> selectAllUsersSimplifiedInfo(@Param("params") String params);
 }
