@@ -92,4 +92,6 @@ public interface UserService {
     Long[] listUserIds();
 
     Long queryOrgIdByEmail(String email);
+
+    OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId);
 }

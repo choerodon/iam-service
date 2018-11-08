@@ -306,4 +306,11 @@ public class UserController extends BaseController {
         Long organizationId = userService.queryOrgIdByEmail(email);
         return new ResponseEntity<>(passwordPolicyService.queryByOrgId(organizationId), HttpStatus.OK);
     }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询用户id对应的组织和项目")
+    @GetMapping("/{id}/organization_project")
+    public ResponseEntity<OrganizationProjectDTO> queryByUserIdOrganizationProject(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.queryByUserIdWithRoleOrganizationAndProject(id), HttpStatus.OK);
+    }
 }
