@@ -1,5 +1,17 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -15,17 +27,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
 
 /**
  * @author superlee
@@ -551,4 +552,21 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "分页查询全平台层用户")
+    @GetMapping(value = "/all/users")
+    public ResponseEntity<Page<SimplifiedUserDTO>> queryAllUsers(@ApiIgnore
+                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                 @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(userService.pagingQueryAllUser(pageRequest, param), HttpStatus.OK);
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "分页查询全平台层客户端")
+    @GetMapping(value = "/all/clients")
+    public ResponseEntity<Page<SimplifiedClientDTO>> queryAllClients(@ApiIgnore
+                                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(clientService.pagingQueryAllClients(pageRequest, param), HttpStatus.OK);
+    }
 }

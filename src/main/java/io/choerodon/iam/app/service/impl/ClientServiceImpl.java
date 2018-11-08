@@ -14,6 +14,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientCreateDTO;
 import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
@@ -177,5 +178,10 @@ public class ClientServiceImpl implements ClientService {
             text[i] = characters.charAt(random.nextInt(characters.length()));
         }
         return new String(text);
+    }
+
+    @Override
+    public Page<SimplifiedClientDTO> pagingQueryAllClients(PageRequest pageRequest, String params) {
+        return clientRepository.pagingAllClientsByParams(pageRequest, params);
     }
 }

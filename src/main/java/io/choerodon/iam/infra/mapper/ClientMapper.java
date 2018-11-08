@@ -1,12 +1,14 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.api.dto.ClientWithRoleDTO;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.ClientWithRoleDTO;
+import io.choerodon.iam.api.dto.SimplifiedClientDTO;
+import io.choerodon.iam.infra.dataobject.ClientDO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author wuguokai
@@ -36,4 +38,7 @@ public interface ClientMapper extends BaseMapper<ClientDO> {
             @Param("sourceType") String sourceType,
             @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
             @Param("param") String param);
+
+    List<SimplifiedClientDTO> selectAllClientSimplifiedInfo(@Param("params") String params);
+
 }

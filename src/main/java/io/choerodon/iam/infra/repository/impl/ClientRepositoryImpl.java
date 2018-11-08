@@ -1,10 +1,16 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -13,10 +19,6 @@ import io.choerodon.iam.infra.mapper.ClientMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author wuguokai
@@ -109,5 +111,10 @@ public class ClientRepositoryImpl implements ClientRepository {
         String param = Optional.ofNullable(clientRoleSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
+    }
+
+    @Override
+    public Page<SimplifiedClientDTO> pagingAllClientsByParams(PageRequest pageRequest, String params) {
+        return PageHelper.doPageAndSort(pageRequest, () -> clientMapper.selectAllClientSimplifiedInfo(params));
     }
 }
