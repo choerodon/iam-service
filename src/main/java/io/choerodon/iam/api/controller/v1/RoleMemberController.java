@@ -553,7 +553,7 @@ public class RoleMemberController extends BaseController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "分页查询全平台层用户")
+    @ApiOperation(value = "分页查询全平台层用户（未禁用）")
     @CustomPageRequest
     @GetMapping(value = "/all/users")
     public ResponseEntity<Page<SimplifiedUserDTO>> queryAllUsers(@ApiIgnore
