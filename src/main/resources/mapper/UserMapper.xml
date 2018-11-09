@@ -441,7 +441,7 @@
         FROM
         iam_user
         WHERE
-        is_enabled = 0
+        is_enabled = 1
         <if test="params != null">
             AND (
             login_name LIKE concat(concat('%',#{params}),'%') OR
