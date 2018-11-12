@@ -52,6 +52,7 @@
             OR role.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
+        ORDER BY imr.LAST_UPDATE_DATE DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>) ic
@@ -104,6 +105,7 @@
             OR role.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
+        ORDER BY imr.LAST_UPDATE_DATE DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>) ic
@@ -167,6 +169,7 @@
                 OR iam_role.name LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
+            ORDER BY imr.LAST_UPDATE_DATE DESC
             ) t
             ON oc.ID = t.member_id
         <if test="start != null and size != null">
