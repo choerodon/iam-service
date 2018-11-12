@@ -1,17 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -27,6 +15,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author superlee
@@ -69,11 +68,12 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层批量分配给用户/客户端角色")
     @PostMapping(value = "/site/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnSiteLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
+                                                                         @RequestParam(name = "member_type", required = false) String memberType,
                                                                          @RequestParam(name = "member_ids") List<Long> memberIds,
                                                                          @RequestBody ValidList<MemberRoleDTO> memberRoleDTOList) {
         memberRoleValidator.distributionRoleValidator(ResourceLevel.SITE.value(), memberRoleDTOList);
         return new ResponseEntity<>(roleMemberService.createOrUpdateRolesByMemberIdOnSiteLevel(
-                isEdit, memberIds, memberRoleDTOList), HttpStatus.OK);
+                isEdit, memberIds, memberRoleDTOList, memberType), HttpStatus.OK);
     }
 
     /**
@@ -84,11 +84,12 @@ public class RoleMemberController extends BaseController {
     @PostMapping(value = "/organizations/{organization_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnOrganizationLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                                  @PathVariable(name = "organization_id") Long sourceId,
+                                                                                 @RequestParam(name = "member_type", required = false) String memberType,
                                                                                  @RequestParam(name = "member_ids") List<Long> memberIds,
                                                                                  @RequestBody ValidList<MemberRoleDTO> memberRoleDTOList) {
         memberRoleValidator.distributionRoleValidator(ResourceLevel.ORGANIZATION.value(), memberRoleDTOList);
         return new ResponseEntity<>(roleMemberService.createOrUpdateRolesByMemberIdOnOrganizationLevel(
-                isEdit, sourceId, memberIds, memberRoleDTOList), HttpStatus.OK);
+                isEdit, sourceId, memberIds, memberRoleDTOList, memberType), HttpStatus.OK);
     }
 
     /**
@@ -99,11 +100,12 @@ public class RoleMemberController extends BaseController {
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
                                                                             @PathVariable(name = "project_id") Long sourceId,
+                                                                            @RequestParam(name = "member_type", required = false) String memberType,
                                                                             @RequestParam(name = "member_ids") List<Long> memberIds,
                                                                             @RequestBody ValidList<MemberRoleDTO> memberRoleDTOList) {
         memberRoleValidator.distributionRoleValidator(ResourceLevel.PROJECT.value(), memberRoleDTOList);
         return new ResponseEntity<>(roleMemberService.createOrUpdateRolesByMemberIdOnProjectLevel(
-                isEdit, sourceId, memberIds, memberRoleDTOList), HttpStatus.OK);
+                isEdit, sourceId, memberIds, memberRoleDTOList, memberType), HttpStatus.OK);
     }
 
     /**
