@@ -116,6 +116,7 @@
                 )
             </if>
         </if>
+        ORDER BY imr.LAST_UPDATE_DATE DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -172,6 +173,7 @@
                 )
             </if>
         </if>
+        ORDER BY imr.LAST_UPDATE_DATE DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -237,6 +239,7 @@
                 imr.member_type LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
+            ORDER BY imr.LAST_UPDATE_DATE DESC
         </if>
         ) t
         ON iam_u.id = t.member_id
