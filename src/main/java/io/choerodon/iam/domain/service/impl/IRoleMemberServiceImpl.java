@@ -122,7 +122,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             userMemberEventMsg.setUsername(userE.getLoginName());
 
             List<Long> ownRoleIds = insertOrUpdateRolesByMemberIdExecute(
-                    isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList);
+                    isEdit, sourceId, memberId, sourceType, memberRoleEList, returnList, MemberType.USER.value());
             if (!ownRoleIds.isEmpty()) {
                 userMemberEventMsg.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(ownRoleIds));
             }
@@ -135,7 +135,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                     memberId,
                     sourceType,
                     memberRoleEList,
-                    returnList);
+                    returnList, MemberType.USER.value());
             return returnList;
         }
     }
@@ -152,7 +152,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 memberId,
                 sourceType,
                 memberRoleEList,
-                returnList);
+                returnList, MemberType.CLIENT.value());
         return returnList;
     }
 
@@ -271,8 +271,8 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
     private List<Long> insertOrUpdateRolesByMemberIdExecute(Boolean isEdit, Long sourceId,
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleE> memberRoleEList,
-                                                            List<MemberRoleE> returnList) {
-        String memberType = memberRoleEList.isEmpty() ? MemberType.USER.value() : memberRoleEList.get(0).getMemberType();
+                                                            List<MemberRoleE> returnList, String memberType) {
+//        String memberType = memberRoleEList.isEmpty() ? MemberType.USER.value() : memberRoleEList.get(0).getMemberType();
         MemberRoleE memberRoleE =
                 new MemberRoleE(null, null, memberId, memberType, sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);

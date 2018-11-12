@@ -20,10 +20,10 @@ import java.util.List;
 public interface RoleMemberService {
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(
-            Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
+            Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(
-            Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
+            Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);
 
     Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
@@ -33,7 +33,7 @@ public interface RoleMemberService {
     Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(
-            Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList);
+            Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);
 
     void deleteOnSiteLevel(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO);
 

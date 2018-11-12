@@ -79,11 +79,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
-    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
+    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
+        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
+            memberType = memberRoleDTOList.get(0).getMemberType();
+        }
+
         // member type 为 'client' 时
-        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
             for (Long memberId : memberIds) {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
@@ -110,11 +114,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
-    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
+    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
+        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
+            memberType = memberRoleDTOList.get(0).getMemberType();
+        }
+
         // member type 为 'client' 时
-        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
             for (Long memberId : memberIds) {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
@@ -181,10 +189,15 @@ public class RoleMemberServiceImpl implements RoleMemberService {
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
-    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList) {
+    public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
+
+        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
+            memberType = memberRoleDTOList.get(0).getMemberType();
+        }
+
         // member type 为 'client' 时
-        if (memberRoleDTOList != null && !memberRoleDTOList.isEmpty() && memberRoleDTOList.get(0).getMemberType().equals(MemberType.CLIENT.value())) {
+        if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
             for (Long memberId : memberIds) {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
