@@ -17,8 +17,7 @@ import io.choerodon.iam.infra.mapper.RoleMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * @author superlee
@@ -81,20 +80,6 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     @Override
     public void deleteById(Long id) {
         memberRoleMapper.deleteByPrimaryKey(id);
-    }
-
-    @Override
-    public void updateMemberRoleDatetime(Long memberId, String memberType, Long sourceId, String sourceType) {
-        updateMemberRoleDatetime(Collections.singleton(memberId), memberType, sourceId, sourceType);
-    }
-
-    @Override
-    public void updateMemberRoleDatetime(Set<Long> memberIds, String memberType, Long sourceId, String sourceType) {
-        List<Long> updateList = memberIds.stream()
-                .map(id -> memberRoleMapper.getOneLeftMemberRoleId(id, sourceId, memberType, sourceType))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        memberRoleMapper.updateDatetime(updateList, new Date(System.currentTimeMillis()));
     }
 
     @Override
