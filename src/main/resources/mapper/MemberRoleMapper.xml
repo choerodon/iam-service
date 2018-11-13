@@ -24,9 +24,11 @@
         iam_role.CODE as role_code,
         iam_role.IS_BUILT_IN as role_is_built_in
         FROM
-        (SELECT DISTINCT
+        (SELECT c.name, c.id
+        FROM (SELECT
         client.NAME as name,
-        client.ID as id
+        client.ID as id,
+        imr.LAST_UPDATE_DATE as newest_date
         FROM oauth_client client
         INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
         INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
@@ -52,10 +54,13 @@
             OR role.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY client.id, client.name
+        ) c
+        ORDER BY c.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
-        </if>) ic
+        </if>
+        ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
@@ -63,7 +68,6 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
-        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles">
@@ -77,9 +81,11 @@
         iam_role.CODE as role_code,
         iam_role.IS_BUILT_IN as role_is_built_in
         FROM
-        (SELECT DISTINCT
+        (SELECT c.name, c.id
+        FROM (SELECT
         client.NAME as name,
-        client.ID as id
+        client.ID as id,
+        imr.LAST_UPDATE_DATE as newest_date
         FROM oauth_client client
         INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
         INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
@@ -105,10 +111,13 @@
             OR role.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY client.id, client.name
+        ) c
+        ORDER BY c.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
-        </if>) ic
+        </if>
+        ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
@@ -116,7 +125,6 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
-        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="oracle">
@@ -141,7 +149,7 @@
         </if>
             SELECT * FROM oauth_client oc
             JOIN (
-            SELECT DISTINCT imr.member_id
+            SELECT imr.member_id, MAX(imr.LAST_UPDATE_DATE) as newest_date
             FROM oauth_client
             LEFT JOIN iam_member_role imr ON imr.member_id = oauth_client.id
             LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -169,9 +177,12 @@
                 OR iam_role.name LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
-            ORDER BY imr.LAST_UPDATE_DATE DESC
+            GROUP BY imr.id
             ) t
             ON oc.ID = t.member_id
+            <if test="start == null or size == null">
+                ORDER BY t.newest_date
+            </if>
         <if test="start != null and size != null">
             ) TMP_PAGE
             <![CDATA[
@@ -179,6 +190,7 @@
                     )
                   WHERE ROW_ID > (#{start} * #{size})
                 ]]>
+            ORDER BY TMP_PAGE.newest_date
         </if>
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
@@ -188,7 +200,6 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
-        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectCountClients" resultType="int">
@@ -248,7 +259,7 @@
         SELECT COUNT(DISTINCT source_id)
         FROM iam_member_role
         WHERE iam_member_role.member_id = #{id}
-        AND iam_member_role.source_type = #{type}
+          AND iam_member_role.source_type = #{type}
     </select>
 
 </mapper>
