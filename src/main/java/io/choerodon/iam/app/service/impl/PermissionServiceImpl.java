@@ -31,11 +31,11 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
@@ -89,7 +89,13 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin() != null && details.getAdmin()) {
-            checkPermissionDTOList.stream().filter(t -> permissionRepository.existByCode(t.getCode().trim())).forEach(cp -> cp.setApprove(true));
+            for (CheckPermissionDTO dto : checkPermissionDTOList) {
+                if (permissionRepository.existByCode(dto.getCode().trim())) {
+                    dto.setApprove(true);
+                } else {
+                    dto.setApprove(false);
+                }
+            }
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();
