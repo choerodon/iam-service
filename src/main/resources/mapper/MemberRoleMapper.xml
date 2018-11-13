@@ -28,7 +28,7 @@
         FROM (SELECT
         client.NAME as name,
         client.ID as id,
-        imr.LAST_UPDATE_DATE as newest_date
+        MAX(imr.LAST_UPDATE_DATE) as newest_date
         FROM oauth_client client
         INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
         INNER JOIN iam_role role ON imr.ROLE_ID = role.ID
@@ -86,7 +86,7 @@
         FROM (SELECT
         client.NAME as name,
         client.ID as id,
-        imr.LAST_UPDATE_DATE as newest_date
+        MAX(imr.LAST_UPDATE_DATE) as newest_date
         FROM oauth_client client
         INNER JOIN iam_member_role imr ON client.ID = imr.MEMBER_ID
         INNER JOIN iam_role role ON imr.ROLE_ID = role.ID

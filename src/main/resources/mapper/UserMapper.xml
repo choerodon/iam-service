@@ -118,7 +118,7 @@
                 )
             </if>
         </if>
-        GROUP BY imr.ID
+        GROUP BY imr.MEMBER_ID
         ) temp
         LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
         ORDER BY temp.newest_date DESC
@@ -180,7 +180,7 @@
                 )
             </if>
         </if>
-        GROUP BY imr.ID
+        GROUP BY imr.MEMBER_ID
         ) temp
         LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
         ORDER BY temp.newest_date DESC
@@ -250,7 +250,7 @@
                 )
             </if>
         </if>
-        GROUP BY imr.id
+        GROUP BY imr.MEMBER_ID
         ) t
         ON iam_u.id = t.member_id
         <if test="start == null or size == null">
