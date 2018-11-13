@@ -267,22 +267,4 @@
           AND iam_member_role.source_type = #{type}
     </select>
 
-    <select id="getOneLeftMemberRoleId" resultType="java.lang.Long">
-        SELECT imr.ID
-        FROM iam_member_role imr
-        WHERE imr.member_id = #{memberId}
-          AND imr.member_type = #{memberType}
-          AND imr.source_type = #{sourceType}
-          AND imr.source_id = #{sourceId}
-        LIMIT 1
-    </select>
-
-    <update id="updateDatetime">
-        UPDATE iam_member_role SET last_update_date = #{datetime}
-        WHERE 1 = 0
-        <foreach collection="ids" item="id" open="OR">
-            ID = #{id}
-        </foreach>
-    </update>
-
 </mapper>

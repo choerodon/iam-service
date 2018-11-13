@@ -25,7 +25,9 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_ROLE_DELETE;
@@ -213,7 +215,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
      * @param isRole data的键是否是 roleId
      */
     private void deleteFromMap(Map<Long, List<Long>> data, boolean isRole, String memberType, Long sourceId, String sourceType, boolean doSendEvent, List<UserMemberEventPayload> userMemberEventPayloads) {
-        Set<Long> memberIds = new HashSet<>();
         for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
             Long key = entry.getKey();
             List<Long> values = entry.getValue();
@@ -227,7 +228,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                         roleId = id;
                         memberId = key;
                     }
-                    memberIds.add(memberId);
                     UserMemberEventPayload userMemberEventPayload =
                             delete(roleId, memberId, memberType, sourceId, sourceType, doSendEvent);
                     if (userMemberEventPayload != null) {
@@ -236,7 +236,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                 });
             }
         }
-        memberRoleRepository.updateMemberRoleDatetime(memberIds, memberType, sourceId, sourceType);
     }
 
 
@@ -293,9 +292,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             MemberRoleE mr = new MemberRoleE(null, item, memberId, memberType, sourceId, sourceType);
             returnList.add(memberRoleRepository.insertSelective(mr));
         });
-        Set<Long> involvedMemberIds = new HashSet<>();
         if (isEdit != null && isEdit && !deleteList.isEmpty()) {
-            involvedMemberIds.add(memberId);
             memberRoleRepository.selectDeleteList(deleteList, memberId, memberType, sourceId, sourceType)
                     .forEach(t -> {
                         if (t != null) {
@@ -304,7 +301,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                         }
                     });
         }
-        memberRoleRepository.updateMemberRoleDatetime(involvedMemberIds, memberType, sourceId, sourceType);
         //查当前用户/客户端有那些角色
         return memberRoleRepository.select(memberRoleE)
                 .stream().map(MemberRoleE::getRoleId).collect(Collectors.toList());
