@@ -90,7 +90,9 @@
         imr.id
         FROM
         (
-        SELECT DISTINCT iam_user.*
+        SELECT temp_user.*
+        FROM (
+        SELECT imr.MEMBER_ID as ID, MAX(imr.last_update_date) AS newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -116,7 +118,10 @@
                 )
             </if>
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY imr.ID
+        ) temp
+        LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
+        ORDER BY temp.newest_date
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -128,7 +133,6 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
-        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="mysql" resultMap="userWithRoles">
@@ -147,7 +151,9 @@
         imr.id
         FROM
         (
-        SELECT DISTINCT iam_user.*
+        SELECT temp_user.*
+        FROM (
+        SELECT imr.MEMBER_ID as ID, MAX(imr.last_update_date) AS newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -173,7 +179,10 @@
                 )
             </if>
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY imr.ID
+        ) temp
+        LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
+        ORDER BY temp.newest_date
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -185,7 +194,6 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
-        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="oracle" resultMap="userWithRoles">
@@ -214,7 +222,7 @@
         </if>
         SELECT * FROM iam_user iam_u
         JOIN (
-        SELECT DISTINCT imr.member_id
+        SELECT imr.member_id, MAX(imr.LAST_UPDATE_DATE) as newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -241,8 +249,12 @@
             </if>
             ORDER BY imr.LAST_UPDATE_DATE DESC
         </if>
+        GROUP BY imr.id
         ) t
         ON iam_u.id = t.member_id
+        <if test="start == null or size == null">
+            ORDER BY t.newest_date
+        </if>
         <if test="start != null and size != null">
             ) TMP_PAGE
             <![CDATA[
@@ -250,6 +262,7 @@
                     )
                   WHERE ROW_ID > (#{start} * #{size})
                 ]]>
+            ORDER BY TMP_PAGE.newest_date
         </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
@@ -259,7 +272,6 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
-        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectCountUsers" resultType="int">
