@@ -6,23 +6,19 @@ import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.api.dto.ClientWithRoleDTO;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
-import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -85,6 +81,20 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     @Override
     public void deleteById(Long id) {
         memberRoleMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public void updateMemberRoleDatetime(Long memberId, String memberType, Long sourceId, String sourceType) {
+        updateMemberRoleDatetime(Collections.singleton(memberId), memberType, sourceId, sourceType);
+    }
+
+    @Override
+    public void updateMemberRoleDatetime(Set<Long> memberIds, String memberType, Long sourceId, String sourceType) {
+        List<Long> updateList = memberIds.stream()
+                .map(id -> memberRoleMapper.getOneLeftMemberRoleId(id, sourceId, memberType, sourceType))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        memberRoleMapper.updateDatetime(updateList, new Date(System.currentTimeMillis()));
     }
 
     @Override

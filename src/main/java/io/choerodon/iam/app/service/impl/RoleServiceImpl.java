@@ -223,7 +223,7 @@ public class RoleServiceImpl implements RoleService {
     public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         RoleDO roleDO = new RoleDO();
         roleDO.setName(clientRoleSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.ORGANIZATION.value());
+        roleDO.setLevel(ResourceLevel.PROJECT.value());
         List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {

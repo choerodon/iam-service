@@ -87,10 +87,13 @@
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
-        imr.id
+        imr.id,
+        imr.LAST_UPDATE_DATE as duplicated
         FROM
         (
-        SELECT DISTINCT iam_user.*
+        SELECT temp_user.*
+        FROM (
+        SELECT imr.MEMBER_ID as ID, MAX(imr.last_update_date) AS newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -116,7 +119,10 @@
                 )
             </if>
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY imr.MEMBER_ID
+        ) temp
+        LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
+        ORDER BY temp.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -144,10 +150,13 @@
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
-        imr.id
+        imr.id,
+        imr.LAST_UPDATE_DATE as duplicated
         FROM
         (
-        SELECT DISTINCT iam_user.*
+        SELECT temp_user.*
+        FROM (
+        SELECT imr.MEMBER_ID as ID, MAX(imr.last_update_date) AS newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -173,7 +182,10 @@
                 )
             </if>
         </if>
-        ORDER BY imr.LAST_UPDATE_DATE DESC
+        GROUP BY imr.MEMBER_ID
+        ) temp
+        LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
+        ORDER BY temp.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -214,7 +226,7 @@
         </if>
         SELECT * FROM iam_user iam_u
         JOIN (
-        SELECT DISTINCT imr.member_id
+        SELECT imr.member_id, MAX(imr.LAST_UPDATE_DATE) as newest_date
         FROM iam_user
         LEFT JOIN iam_member_role imr ON imr.member_id = iam_user.id
         LEFT JOIN iam_role ir ON ir.id = imr.role_id
@@ -239,10 +251,13 @@
                 imr.member_type LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
-            ORDER BY imr.LAST_UPDATE_DATE DESC
         </if>
+        GROUP BY imr.MEMBER_ID
         ) t
         ON iam_u.id = t.member_id
+        <if test="start == null or size == null">
+            ORDER BY t.newest_date DESC
+        </if>
         <if test="start != null and size != null">
             ) TMP_PAGE
             <![CDATA[
@@ -250,6 +265,7 @@
                     )
                   WHERE ROW_ID > (#{start} * #{size})
                 ]]>
+            ORDER BY TMP_PAGE.newest_date DESC
         </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
