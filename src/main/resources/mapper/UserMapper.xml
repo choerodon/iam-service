@@ -121,7 +121,7 @@
         GROUP BY imr.ID
         ) temp
         LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
-        ORDER BY temp.newest_date
+        ORDER BY temp.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -183,7 +183,7 @@
         GROUP BY imr.ID
         ) temp
         LEFT JOIN iam_user temp_user ON temp.ID = temp_user.ID
-        ORDER BY temp.newest_date
+        ORDER BY temp.newest_date DESC
         <if test="start != null and size != null">
             limit #{start}, #{size}
         </if>
@@ -249,13 +249,12 @@
                 imr.member_type LIKE concat(concat('%',#{param}),'%')
                 )
             </if>
-            ORDER BY imr.LAST_UPDATE_DATE DESC
         </if>
         GROUP BY imr.id
         ) t
         ON iam_u.id = t.member_id
         <if test="start == null or size == null">
-            ORDER BY t.newest_date
+            ORDER BY t.newest_date DESC
         </if>
         <if test="start != null and size != null">
             ) TMP_PAGE
@@ -264,7 +263,7 @@
                     )
                   WHERE ROW_ID > (#{start} * #{size})
                 ]]>
-            ORDER BY TMP_PAGE.newest_date
+            ORDER BY TMP_PAGE.newest_date DESC
         </if>
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
