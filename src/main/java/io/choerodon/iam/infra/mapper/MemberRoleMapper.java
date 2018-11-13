@@ -6,6 +6,7 @@ import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,4 +34,8 @@ public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
             @Param("param") String param,
             @Param("start") Integer start,
             @Param("size") Integer size);
+
+    Long getOneLeftMemberRoleId(@Param("memberId") long memberId, @Param("sourceId") long sourceId, @Param("memberType") String memberType, @Param("sourceType") String sourceType);
+
+    void updateDatetime(@Param("ids") List<Long> ids, @Param("datetime") Date date);
 }

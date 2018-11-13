@@ -87,7 +87,8 @@
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
-        imr.id
+        imr.id,
+        imr.LAST_UPDATE_DATE as duplicated
         FROM
         (
         SELECT temp_user.*
@@ -149,7 +150,8 @@
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
-        imr.id
+        imr.id,
+        imr.LAST_UPDATE_DATE as duplicated
         FROM
         (
         SELECT temp_user.*

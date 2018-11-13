@@ -22,9 +22,10 @@
         iam_role.ID as role_id,
         iam_role.NAME as role_name,
         iam_role.CODE as role_code,
-        iam_role.IS_BUILT_IN as role_is_built_in
+        iam_role.IS_BUILT_IN as role_is_built_in,
+        iam_member_role.LAST_UPDATE_DATE as duplicated
         FROM
-        (SELECT c.name, c.id
+        (SELECT c.name, c.id, c.newest_date
         FROM (SELECT
         client.NAME as name,
         client.ID as id,
@@ -80,9 +81,10 @@
         iam_role.ID as role_id,
         iam_role.NAME as role_name,
         iam_role.CODE as role_code,
-        iam_role.IS_BUILT_IN as role_is_built_in
+        iam_role.IS_BUILT_IN as role_is_built_in,
+        iam_member_role.LAST_UPDATE_DATE as duplicated
         FROM
-        (SELECT c.name, c.id
+        (SELECT c.name, c.id, c.newest_date
         FROM (SELECT
         client.NAME as name,
         client.ID as id,
@@ -264,5 +266,23 @@
         WHERE iam_member_role.member_id = #{id}
           AND iam_member_role.source_type = #{type}
     </select>
+
+    <select id="getOneLeftMemberRoleId" resultType="java.lang.Long">
+        SELECT imr.ID
+        FROM iam_member_role imr
+        WHERE imr.member_id = #{memberId}
+          AND imr.member_type = #{memberType}
+          AND imr.source_type = #{sourceType}
+          AND imr.source_id = #{sourceId}
+        LIMIT 1
+    </select>
+
+    <update id="updateDatetime">
+        UPDATE iam_member_role SET last_update_date = #{datetime}
+        WHERE 1 = 0
+        <foreach collection="ids" item="id" open="OR">
+            ID = #{id}
+        </foreach>
+    </update>
 
 </mapper>
