@@ -68,6 +68,7 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles">
@@ -125,6 +126,7 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="oracle">
@@ -200,6 +202,7 @@
         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
+        ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectCountClients" resultType="int">

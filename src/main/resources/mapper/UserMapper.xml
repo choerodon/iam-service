@@ -133,6 +133,7 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
+        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="mysql" resultMap="userWithRoles">
@@ -194,6 +195,7 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
+        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="oracle" resultMap="userWithRoles">
@@ -272,6 +274,7 @@
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
+        ORDER BY imr.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectCountUsers" resultType="int">
