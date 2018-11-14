@@ -288,7 +288,12 @@ class LdapControllerSpec extends Specification {
         entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
-        paramsMap.put("organization_id", 3)
+        OrganizationDO organizationDO2 = new OrganizationDO()
+        organizationDO2.setCode("tets-org123sd1")
+        organizationDO2.setName("name")
+        organizationDO2.setEnabled(true)
+        organizationMapper.insertSelective(organizationDO2)
+        paramsMap.put("organization_id", organizationDO2.getId())
         paramsMap.put("id", 1)
         entity = restTemplate.postForEntity(BASE_PATH + "/{id}/test_connect", ldapAccountDTO, ExceptionResponse, paramsMap)
 
@@ -342,7 +347,6 @@ class LdapControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    @Transactional
     def "stop"() {
         given: "新建一个ldapHistory"
         LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
