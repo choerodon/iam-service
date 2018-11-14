@@ -132,11 +132,24 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             JsonNode tags = methodNode.getValue().get("tags");
             SwaggerExtraData extraData = null;
             String resourceCode = null;
+            boolean illegal = true;
+            List<String> illegalTags = new ArrayList<>();
             for (int i = 0; i < tags.size(); i++) {
                 String tag = tags.get(i).asText();
+                //添加choerodon-eureka例外的以-endpoint结尾的tag，
                 if (tag.endsWith("-controller")) {
+                    illegal = false;
                     resourceCode = tag.substring(0, tag.length() - "-controller".length());
+                } else if (tag.endsWith("-endpoint")) {
+                    illegal = false;
+                    resourceCode = tag.substring(0, tag.length() - "-endpoint".length());
                 }
+                else {
+                    illegalTags.add(tag);
+                }
+            }
+            if(logger.isDebugEnabled() && illegal) {
+                logger.debug("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
             }
             try {
                 JsonNode extraDataNode = methodNode.getValue().get("description");
@@ -161,13 +174,13 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         }
     }
 
+    /**
+     * 关于permission目前只有插入和更新操作，没有删除废弃的permission。因为目前的从swagger拿到的permission json无法判断是否与数据库中已存在的permission一致
+     * 后续如果想通过parse的方式删除废弃的permission，目前的想法是只能在每个接口上加一个不变且各不相同的唯一标识，通过标识判断到底是删除了接口还是更新了接口
+     */
     private void processPermission(SwaggerExtraData extraData, String path, String method,
                                    String serviceName, String resourceCode, String description,
                                    Map<String, RoleDO> initRoleMap, String[] roles) {
-        /**
-         * 关于permission目前只有插入和更新操作，没有删除废弃的permission。因为目前的从swagger拿到的permission json无法判断是否与数据库中已存在的permission一致
-         * 后续如果想通过parse的方式删除废弃的permission，目前的想法是只能在每个接口上加一个不变且各不相同的唯一标识，通过标识判断到底是删除了接口还是更新了接口
-         */
         PermissionData permission = extraData.getPermission();
         String action = permission.getAction();
         String code = serviceName + "." + resourceCode + "." + action;
@@ -228,15 +241,15 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         }
     }
 
+    /**
+     * 先根据permission level关联相应层级的管理员角色
+     * level=site -> SITE_ADMINISTRATOR
+     * level=organization -> ORGANIZATION_ADMINISTRATOR
+     * level=project -> PROJECT_ADMINISTRATOR
+     */
     private void insertRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();
         String level = permission.getLevel();
-        /**
-         * 先根据permission level关联相应层级的管理员角色
-         * level=site -> SITE_ADMINISTRATOR
-         * level=organization -> ORGANIZATION_ADMINISTRATOR
-         * level=project -> PROJECT_ADMINISTRATOR
-         */
         RoleDO role = getRoleByLevel(initRoleMap, level);
         if (role != null) {
             rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
