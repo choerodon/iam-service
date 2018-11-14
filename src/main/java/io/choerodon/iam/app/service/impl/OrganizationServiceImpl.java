@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -45,6 +46,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private ProjectRepository projectRepository;
     private RoleRepository roleRepository;
     private UserRepository userRepository;
+    private AsgardFeignClient asgardFeignClient;
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -65,13 +67,15 @@ public class OrganizationServiceImpl implements OrganizationService {
                                    ProjectRepository projectRepository,
                                    RoleRepository roleRepository,
                                    UserRepository userRepository,
-                                   IUserService iUserService) {
+                                   IUserService iUserService,
+                                   AsgardFeignClient asgardFeignClient) {
         this.organizationRepository = organizationRepository;
         this.sagaClient = sagaClient;
         this.projectRepository = projectRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.iUserService = iUserService;
+        this.asgardFeignClient = asgardFeignClient;
     }
 
     @Override
@@ -169,6 +173,8 @@ public class OrganizationServiceImpl implements OrganizationService {
             } catch (Exception e) {
                 throw new CommonException("error.organizationService.enableOrDisable.event", e);
             }
+            //给asgard发送禁用定时任务通知
+            asgardFeignClient.disable(organization.getId());
             // 给组织下所有用户发送通知
             List<Long> userIds = organizationRepository.listMemberIds(organization.getId());
             Map<String, Object> params = new HashMap<>();
