@@ -80,11 +80,13 @@ public class DashboardController extends BaseController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String level,
+            @RequestParam(required = false) Boolean enable,
             @RequestParam(required = false) String[] params) {
 
         DashboardDTO dashboardDTO = new DashboardDTO();
         dashboardDTO.setName(name);
         dashboardDTO.setCode(code);
+        dashboardDTO.setEnabled(enable);
         dashboardDTO.setLevel(level);
 
         return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);

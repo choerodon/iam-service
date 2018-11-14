@@ -6,8 +6,9 @@
     <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.DashboardE">
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
-        <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN" />
-        <collection property="roleIds" ofType="java.lang.Long" select="selectRoleIds" column="{dashboardId=id, fdLevel=fd_level}"></collection>
+        <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
+        <collection property="roleIds" ofType="java.lang.Long" select="selectRoleIds"
+                    column="{dashboardId=id, fdLevel=fd_level}"></collection>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
@@ -21,6 +22,9 @@
         </if>
         <if test="dashboard.level != null">
             AND FD_LEVEL = #{dashboard.level}
+        </if>
+        <if test="dashboard.enabled != null">
+            AND IS_ENABLED = #{dashboard.enabled}
         </if>
         <if test="param != null">
             AND
