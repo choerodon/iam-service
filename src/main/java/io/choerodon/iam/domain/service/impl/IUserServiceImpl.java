@@ -64,9 +64,11 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
         NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
         currentUser.setId(fromUserId);
         UserE currentUserE = userRepository.selectByPrimaryKey(fromUserId);
-        currentUser.setEmail(currentUserE.getEmail());
-        currentUser.setLoginName(currentUserE.getLoginName());
-        currentUser.setRealName(currentUserE.getRealName());
+        if (currentUserE != null) {
+            currentUser.setEmail(currentUserE.getEmail());
+            currentUser.setLoginName(currentUserE.getLoginName());
+            currentUser.setRealName(currentUserE.getRealName());
+        }
         noticeSendDTO.setFromUser(currentUser);
         noticeSendDTO.setParams(params);
         List<NoticeSendDTO.User> users = new LinkedList<>();

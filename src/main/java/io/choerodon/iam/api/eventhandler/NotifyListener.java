@@ -41,6 +41,8 @@ public class NotifyListener {
         if (payloads == null || payloads.size() == 0) {
             throw new CommonException("error.sagaTask.sendPm.payloadsIsEmpty");
         }
+        //暂时区分创建单个用户还是批量创建用户（批量创建一条会有问题）
+        if (payloads.size() > 1) return payloads;
         //发送通知
         UserEventPayload payload = payloads.get(0);
         List<Long> userIds = new ArrayList<>();
