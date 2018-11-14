@@ -32,7 +32,7 @@ choerodon:
       max-cache-size: 300
       retry-time: 5
       retry-interval: 3
-      skip-services: register-server, api-gateway, gateway-helper, oauth-server, config-server, event-store-service
+      skip-services: config**, **register-server, **gateway**, zipkin**, hystrix**, oauth**
   saga:
     consumer:
       enabled: true # 启动消费端

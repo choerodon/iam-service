@@ -8,7 +8,6 @@ import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author superlee
@@ -21,26 +20,6 @@ public interface MemberRoleRepository {
     List<MemberRoleE> select(MemberRoleE memberRoleE);
 
     void deleteById(Long id);
-
-    /**
-     * 只用于保持member和role之间关系修改的时间，当删除某个member的role时调用，会将操作时间
-     * 更新到剩余的member-role关系中的一个的last_update_date上
-     * @param memberId memberId
-     * @param memberType member类型，(user, client)
-     * @param sourceId sourceId
-     * @param sourceType sourceType
-     */
-    void updateMemberRoleDatetime(Long memberId, String memberType, Long sourceId, String sourceType);
-
-    /**
-     * 只用于保持member和role之间关系修改的时间，当删除某个member的role时调用，会将操作时间
-     * 更新到剩余的member-role关系中的一个的last_update_date上
-     * @param memberIds 多个 member id
-     * @param memberType member类型，(user, client)
-     * @param sourceId sourceId
-     * @param sourceType sourceType
-     */
-    void updateMemberRoleDatetime(Set<Long> memberIds, String memberType, Long sourceId, String sourceType);
 
     MemberRoleE selectByPrimaryKey(Long id);
 

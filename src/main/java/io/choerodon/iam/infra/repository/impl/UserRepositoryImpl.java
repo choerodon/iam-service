@@ -157,7 +157,7 @@ public class UserRepositoryImpl implements UserRepository {
             List<UserDO> users =
                     mapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), null, null,
                             ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            PageInfo pageInfo = new PageInfo(0, users.size());
+            PageInfo pageInfo = new PageInfo(0, users.size() == 0 ? 1 : users.size());
             return new Page<>(users, pageInfo, users.size());
         }
     }
@@ -214,7 +214,7 @@ public class UserRepositoryImpl implements UserRepository {
             List<UserDO> users =
                     mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                             level, roleAssignmentSearchDTO, param);
-            PageInfo pageInfo = new PageInfo(0, users.size());
+            PageInfo pageInfo = new PageInfo(0, users.size() == 0 ? 1 : users.size());
             return new Page<>(users, pageInfo, users.size());
         }
         Map<String, String> map = new HashMap<>();
