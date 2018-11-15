@@ -209,4 +209,16 @@
         AND imr.source_type ='organization'
         AND ir.id=imr.role_id)
     </select>
+
+    <select id="fuzzySearchRolesByName" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT ir.*
+        FROM iam_role ir
+        LEFT JOIN iam_role_tl irt ON ir.id = irt.id
+        WHERE irt.lang = #{lang}
+        AND ir.FD_LEVEL = #{sourceType}
+        <if test="roleName != null">
+            AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
+        </if>
+    </select>
 </mapper>
