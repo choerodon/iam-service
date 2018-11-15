@@ -4,9 +4,9 @@ import io.choerodon.iam.domain.iam.entity.RoleE;
 
 /**
  * @author superlee
- * @data 2018/3/27
  */
 public interface IRoleService {
+
     RoleE create(RoleE roleE);
 
     RoleE update(RoleE roleE);
