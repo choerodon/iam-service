@@ -210,7 +210,7 @@
         AND ir.id=imr.role_id)
     </select>
 
-    <select id="fuzzySearchRolesByName" resultType="io.choerodon.iam.infra.dataobject.RoleDO">
+    <select id="fuzzySearchRolesByName" resultMap="RoleDO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT ir.*
         FROM iam_role ir
