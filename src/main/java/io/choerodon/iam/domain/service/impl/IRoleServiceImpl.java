@@ -114,11 +114,12 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
     }
 
 
+    /**
+     * skip validate(role, t.getId());
+     */
     private void insertRolePermission(RoleE role) {
-        Long roleId = role.getId();
-        //validate(role, t.getId());
         role.getPermissions().parallelStream()
-                .forEach(t -> rolePermissionRepository.insert(new RolePermissionE(null, roleId, t.getId())););
+                .forEach(t -> rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), t.getId())));
     }
 
     @Override
