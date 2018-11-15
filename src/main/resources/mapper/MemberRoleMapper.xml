@@ -151,42 +151,42 @@
             FROM
             (
         </if>
-            SELECT * FROM oauth_client oc
-            JOIN (
-            SELECT imr.member_id, MAX(imr.LAST_UPDATE_DATE) as newest_date
-            FROM oauth_client
-            LEFT JOIN iam_member_role imr ON imr.member_id = oauth_client.id
-            LEFT JOIN iam_role ir ON ir.id = imr.role_id
-            WHERE imr.member_type = 'client'
+        SELECT * FROM oauth_client oc
+        JOIN (
+        SELECT imr.member_id, MAX(imr.LAST_UPDATE_DATE) as newest_date
+        FROM oauth_client
+        LEFT JOIN iam_member_role imr ON imr.member_id = oauth_client.id
+        LEFT JOIN iam_role ir ON ir.id = imr.role_id
+        WHERE imr.member_type = 'client'
+        AND imr.source_id = #{sourceId}
+        AND imr.source_type = #{sourceType}
+        <if test="sourceId != null">
             AND imr.source_id = #{sourceId}
+        </if>
+        <if test="sourceType != null">
             AND imr.source_type = #{sourceType}
-            <if test="sourceId != null">
-                AND imr.source_id = #{sourceId}
+        </if>
+        <if test="clientRoleSearchDTO != null">
+            <if test="clientRoleSearchDTO.clientName != null">
+                AND oauth_client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
             </if>
-            <if test="sourceType != null">
-                AND imr.source_type = #{sourceType}
+            <if test="clientRoleSearchDTO.roleName != null">
+                AND iam_role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
             </if>
-            <if test="clientRoleSearchDTO != null">
-                <if test="clientRoleSearchDTO.clientName != null">
-                    AND oauth_client.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.clientName}, '%'))
-                </if>
-                <if test="clientRoleSearchDTO.roleName != null">
-                    AND iam_role.NAME LIKE CONCAT('%', CONCAT(#{clientRoleSearchDTO.roleName}, '%'))
-                </if>
-            </if>
-            <if test="param != null">
-                AND ( oauth_client.NAME LIKE concat(concat('%',#{param}),'%')
-                OR oauth_client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
-                OR oauth_client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
-                OR iam_role.name LIKE concat(concat('%',#{param}),'%')
-                )
-            </if>
-            GROUP BY imr.id
-            ) t
-            ON oc.ID = t.member_id
-            <if test="start == null or size == null">
-                ORDER BY t.newest_date
-            </if>
+        </if>
+        <if test="param != null">
+            AND ( oauth_client.NAME LIKE concat(concat('%',#{param}),'%')
+            OR oauth_client.ADDITIONAL_INFORMATION LIKE concat(concat('%',#{param}),'%')
+            OR oauth_client.AUTHORIZED_GRANT_TYPES LIKE concat(concat('%',#{param}),'%')
+            OR iam_role.name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+        GROUP BY imr.id
+        ) t
+        ON oc.ID = t.member_id
+        <if test="start == null or size == null">
+            ORDER BY t.newest_date
+        </if>
         <if test="start != null and size != null">
             ) TMP_PAGE
             <![CDATA[

@@ -1,12 +1,12 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-import java.util.Set;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -47,4 +47,6 @@ public interface RoleRepository {
     List<RoleDO> queryRoleByOrgId(Long orgId);
 
     List<RoleDO> selectAll();
+
+    List<RoleDO> fuzzySearchRolesByName(String roleName, String sourceType);
 }
