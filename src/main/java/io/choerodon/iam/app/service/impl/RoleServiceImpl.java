@@ -146,10 +146,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnSiteLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(roleAssignmentSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.SITE.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.SITE.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -161,10 +158,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnSiteLevel(ClientRoleSearchDTO clientRoleSearchDTO) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(clientRoleSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.SITE.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.SITE.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
@@ -176,10 +170,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(roleAssignmentSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.ORGANIZATION.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -191,10 +182,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(clientRoleSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.ORGANIZATION.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
@@ -206,10 +194,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(roleAssignmentSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.PROJECT.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.PROJECT.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -221,10 +206,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setName(clientRoleSearchDTO.getRoleName());
-        roleDO.setLevel(ResourceLevel.PROJECT.value());
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.select(roleDO), RoleDTO.class);
+        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.PROJECT.value()), RoleDTO.class);
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
