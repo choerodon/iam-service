@@ -146,8 +146,6 @@ public class MenuServiceImpl implements MenuService {
         boolean createCheck = menu.getId() == null;
         MenuDO menuDO = new MenuDO();
         menuDO.setCode(menu.getCode());
-        menuDO.setLevel(menu.getLevel());
-        menuDO.setType(menu.getType());
         if (createCheck) {
             Boolean existed = menuRepository.selectOne(menuDO) != null;
             if (existed) {
