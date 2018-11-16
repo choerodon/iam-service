@@ -1,6 +1,6 @@
 default: &default
   docker:
-  - image: choerodon/cibase:0.6.0
+  - image: choerodon/cibase:0.7.0
 
 version: 2
 jobs:
@@ -16,7 +16,7 @@ jobs:
             keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
             - v1-dependencies-
-        - run: mvn package -U -DskipTests=true
+        - run: mvn -s .circleci.settings.xml package -U -DskipTests=true
 
   maven_build:
     <<: *default
@@ -30,7 +30,7 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
-      - run: mvn package -U -DskipTests=true
+      - run: mvn -s .circleci.settings.xml package -U -DskipTests=true
       - save_cache:
           paths:
             - ~/.m2
