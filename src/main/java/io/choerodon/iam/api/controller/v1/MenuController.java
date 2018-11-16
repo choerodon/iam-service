@@ -67,7 +67,7 @@ public class MenuController {
      */
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation("修改目录")
-    @PostMapping("/{menu_id}")
+    @PostMapping("/{menu_id:[\\d]+}")
     public ResponseEntity<MenuDTO> update(@PathVariable("menu_id") Long menuId, @RequestBody MenuDTO menuDTO) {
         menuDTO = menuValidator.update(menuId, menuDTO);
         return new ResponseEntity<>(menuService.update(menuId, menuDTO), HttpStatus.OK);

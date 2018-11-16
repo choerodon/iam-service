@@ -1,10 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -14,6 +9,10 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -124,5 +123,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<RoleDO> selectUsersRolesBySourceIdAndType(String sourceType, Long sourceId, Long userId) {
         return mapper.queryRolesInfoByUser(sourceType, sourceId, userId);
+    }
+
+    public List<RoleDO> fuzzySearchRolesByName(String roleName, String sourceType) {
+        return mapper.fuzzySearchRolesByName(roleName, sourceType);
     }
 }

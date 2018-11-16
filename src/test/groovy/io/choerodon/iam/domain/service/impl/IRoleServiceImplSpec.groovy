@@ -88,7 +88,6 @@ class IRoleServiceImplSpec extends Specification {
         then: "校验结果"
         1 * roleRepository.selectByCode(_)
         1 * roleRepository.insertSelective(_) >> { roleE }
-        1 * permissionRepository.selectByPrimaryKey(_) >> { permissionE }
         1 * rolePermissionRepository.insert(_)
         1 * labelRepository.selectByPrimaryKey(_) >> { new LabelDO() }
         1 * roleLabelRepository.insert(_)

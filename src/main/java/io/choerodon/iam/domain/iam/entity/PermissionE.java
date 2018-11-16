@@ -131,4 +131,22 @@ public class PermissionE {
         result = 31 * result + (objectVersionNumber != null ? objectVersionNumber.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "PermissionE{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", path='" + path + '\'' +
+                ", method='" + method + '\'' +
+                ", level='" + level + '\'' +
+                ", description='" + description + '\'' +
+                ", action='" + action + '\'' +
+                ", resource='" + resource + '\'' +
+                ", publicAccess=" + publicAccess +
+                ", loginAccess=" + loginAccess +
+                ", within=" + within +
+                ", serviceName='" + serviceName + '\'' +
+                '}';
+    }
 }

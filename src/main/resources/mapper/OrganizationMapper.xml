@@ -78,14 +78,12 @@
         DISTINCT fd_organization.*
         FROM
         fd_organization
-        JOIN
-        iam_member_role
-        ON
-        fd_organization.id = iam_member_role.source_id
-        AND
-        iam_member_role.source_type = 'organization'
-        WHERE
-        iam_member_role.member_id = #{memberId}
+        INNER JOIN iam_member_role
+        ON fd_organization.id = iam_member_role.source_id
+        AND iam_member_role.source_type = 'organization'
+        INNER JOIN iam_role
+        ON iam_role.is_enabled = 1 and iam_role.id = iam_member_role.role_id
+        WHERE iam_member_role.member_id = #{memberId}
         <if test="!includedDisabled">
             AND fd_organization.is_enabled = 1
         </if>
@@ -99,8 +97,10 @@
         (
         SELECT DISTINCT fp.organization_id
         FROM fd_project fp
-        LEFT JOIN iam_member_role imr
+        INNER JOIN iam_member_role imr
         ON imr.source_id=fp.id
+        INNER JOIN iam_role
+        ON iam_role.is_enabled = 1 and iam_role.id = imr.role_id
         AND imr.source_type='project'
         WHERE imr.member_id=#{memberId}
         )
