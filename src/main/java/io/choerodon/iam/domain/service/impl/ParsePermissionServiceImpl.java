@@ -83,9 +83,12 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         try {
             fetchSwaggerJsonByIp(payload);
             String serviceName = payload.getAppName();
-            logger.info("receive message from manager-service, service: {}, version: {}, ip: {}",
-                    serviceName, payload.getVersion(), payload.getInstanceAddress());
             String json = payload.getApiData();
+            if (logger.isDebugEnabled()) {
+                logger.debug("receive message from manager-service, service: {}, version: {}, ip: {}, ###swagger json###  {}", serviceName, payload.getVersion(), payload.getInstanceAddress(), json);
+            } else {
+                logger.info("receive message from manager-service, service: {}, version: {}, ip: {}", serviceName, payload.getVersion(), payload.getInstanceAddress());
+            }
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
@@ -143,12 +146,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 } else if (tag.endsWith("-endpoint")) {
                     illegal = false;
                     resourceCode = tag.substring(0, tag.length() - "-endpoint".length());
-                }
-                else {
+                } else {
                     illegalTags.add(tag);
                 }
             }
-            if(logger.isDebugEnabled() && illegal) {
+            if (logger.isDebugEnabled() && illegal) {
                 logger.debug("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
             }
             try {
@@ -187,31 +189,25 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         PermissionE permissionE = permissionRepository.selectByCode(code);
         if (permissionE == null) {
             //插入操作
-            PermissionE p =
+            PermissionE newPermission =
                     new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
                             resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, null);
-            PermissionE permissionE1 = permissionRepository.insertSelective(p);
-            if (permissionE1 != null) {
-                insertRolePermission(permissionE1, initRoleMap, roles);
-                logger.debug("url: {} method: {} permission: {}",
-                        path,
-                        method,
-                        permissionE1.getCode());
+            PermissionE returnPermission = permissionRepository.insertSelective(newPermission);
+            if (returnPermission != null) {
+                insertRolePermission(returnPermission, initRoleMap, roles);
+                logger.debug("###insert permission, {}", newPermission);
             }
         } else {
             //更新操作
-            PermissionE p =
+            PermissionE newPermission =
                     new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
                             resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, permissionE.getObjectVersionNumber());
-            p.setId(permissionE.getId());
-            if (!permissionE.equals(p)) {
-                permissionRepository.updateSelective(p);
+            newPermission.setId(permissionE.getId());
+            if (!permissionE.equals(newPermission)) {
+                permissionRepository.updateSelective(newPermission);
             }
-            updateRolePermission(p, initRoleMap, roles);
-            logger.debug("url: {} method: {} permission: {}",
-                    path,
-                    method,
-                    p.getCode());
+            updateRolePermission(newPermission, initRoleMap, roles);
+            logger.debug("###update permission, {}", newPermission);
         }
     }
 
