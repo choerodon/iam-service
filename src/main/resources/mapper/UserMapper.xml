@@ -450,13 +450,15 @@
         <id property="id" column="id"/>
         <result property="loginName" column="login_name"/>
         <result property="realName" column="real_name"/>
+        <result property="imageUrl" column="image_url"/>
     </resultMap>
 
     <select id="selectAllUsersSimplifiedInfo" resultMap="simplifiedUserDTO">
         SELECT
         id,
         login_name,
-        real_name
+        real_name,
+        image_url
         FROM
         iam_user
         WHERE
