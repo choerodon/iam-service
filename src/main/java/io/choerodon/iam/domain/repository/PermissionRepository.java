@@ -13,6 +13,12 @@ import java.util.Set;
  * @author wuguokai
  */
 public interface PermissionRepository {
+    /**
+     * 根据permissionDO的值进行全匹配查询
+     * @param permissionDO 查询条件
+     * @return List<PermissionDO>
+     */
+    List<PermissionDO> select(PermissionDO permissionDO);
 
     boolean existByCode(String code);
 
