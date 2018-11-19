@@ -134,10 +134,6 @@
             <artifactId>spring-cloud-netflix-hystrix-stream</artifactId>
         </dependency>
 
-        <dependency><!-- 如果服务需要zipkin监控功能则需要此依赖 -->
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-stream</artifactId>
-        </dependency>
         <!-- 添加cpu监控 -->
         <dependency>
             <groupId>io.choerodon</groupId>
