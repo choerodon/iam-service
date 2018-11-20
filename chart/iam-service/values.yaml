@@ -49,7 +49,15 @@ env:
     # 清理role_permission表中角色和权限层级不匹配的脏数据
     CHOERODON_CLEAN_ROLE_PERMISSION: true
 
-    JAVA_OPTS: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
+
+    # skywalking 代理端配置
+    SKYWLKING_OPS: >-
+      -javaagent:/agent/skywalking-agent.jar
+      -Dskywalking.agent.application_code=iam-service
+      -Dskywalking.agent.sample_n_per_3_secs=-1
+      -Dskywalking.collector.backend_service=oap.skywalking:11800
+
+
 service:
   enable: false
   type: ClusterIP
