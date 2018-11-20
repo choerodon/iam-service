@@ -10,6 +10,7 @@ import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,10 +60,22 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
                            Map<String, Object> params, Long sourceId) {
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
-        noticeSendDTO.setSourceId(sourceId);
-        noticeSendDTO.setFromUserId(fromUserId);
-        noticeSendDTO.setTargetUsersIds(userIds);
+        NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
+        currentUser.setId(fromUserId);
+        noticeSendDTO.setFromUser(currentUser);
         noticeSendDTO.setParams(params);
+        List<NoticeSendDTO.User> users = new LinkedList<>();
+        userIds.forEach(id -> {
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setId(id);
+            UserE userE = userRepository.selectByPrimaryKey(id);
+            if (userE != null){
+                //有角色分配，但是角色已经删除
+                user.setEmail(userE.getEmail());
+                users.add(user);
+            }
+        });
+        noticeSendDTO.setTargetUsers(users);
         notifyFeignClient.postNotice(noticeSendDTO);
     }
 }
