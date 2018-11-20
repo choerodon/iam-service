@@ -11,20 +11,20 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface SystemSettingService {
     /**
-     * 上传平台徽标
+     * 上传平台徽标(支持裁剪，旋转，并保存)
      *
      * @param file 徽标图片
      * @return 图片的地址
      */
-    String uploadFavicon(MultipartFile file);
+    String uploadFavicon(MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
     /**
-     * 上传平台导航栏图形标
+     * 上传平台导航栏图形标(支持裁剪，旋转，并保存)
      *
      * @param file 图片
      * @return 图片的地址
      */
-    String uploadSystemLogo(MultipartFile file);
+    String uploadSystemLogo(MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
     /**
      * 增加系统设置

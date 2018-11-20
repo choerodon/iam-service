@@ -9,6 +9,7 @@ import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.api.dto.payload.SystemSettingEventPayload;
 import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
+import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.SystemSettingDO;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * @author zmf
@@ -43,13 +45,19 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     }
 
     @Override
-    public String uploadFavicon(MultipartFile file) {
+    public String uploadFavicon(MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
+        try {
+            file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
+        } catch (IOException e) {
+            throw new CommonException("error.image.cut");
+        }
         return uploadFile(file);
     }
 
     @Override
-    public String uploadSystemLogo(MultipartFile file) {
+    public String uploadSystemLogo(MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
         try {
+            file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Thumbnails.of(file.getInputStream()).forceSize(80, 80).toOutputStream(outputStream);
             file = new MockMultipartFile(file.getName(), file.getOriginalFilename(), file.getContentType(), outputStream.toByteArray());
