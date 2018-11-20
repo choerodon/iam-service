@@ -54,9 +54,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 15000
-  stream:
-    queue:
-      enabled: false
 ribbon:
   ReadTimeout: 5000
   ConnectTimeout: 5000
