@@ -51,7 +51,7 @@ env:
 
 
     # skywalking 代理端配置
-    SKYWLKING_OPS: >-
+    SKYWALKING_OPTS: >-
       -javaagent:/agent/skywalking-agent.jar
       -Dskywalking.agent.application_code=iam-service
       -Dskywalking.agent.sample_n_per_3_secs=-1
