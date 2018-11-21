@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.iam.entity;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author dongfan117@gmail.com
@@ -75,6 +75,11 @@ public class UserE {
         this.timeZone = timeZone;
         this.objectVersionNumber = objectVersionNumber;
         this.admin = admin;
+    }
+
+    public UserE(Long id, String loginName) {
+        this.id = id;
+        this.loginName = loginName;
     }
 
     public UserE(Long id, String loginName, String email, Long organizationId,
