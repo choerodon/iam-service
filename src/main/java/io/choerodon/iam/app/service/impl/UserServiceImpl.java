@@ -2,15 +2,12 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.coobird.thumbnailator.Thumbnails;
+import io.choerodon.iam.infra.common.utils.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -41,7 +38,6 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
@@ -230,23 +226,7 @@ public class UserServiceImpl implements UserService {
     public String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
         checkLoginUser(id);
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            if (rotate != null) {
-                Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).rotate(rotate).toOutputStream(outputStream);
-            }
-            if (axisX != null && axisY != null && width != null && height != null) {
-                if (outputStream.size() > 0) {
-                    final InputStream rotateInputStream = parse(outputStream);
-                    outputStream.reset();
-                    Thumbnails.of(rotateInputStream).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
-                } else {
-                    Thumbnails.of(file.getInputStream()).scale(1.0, 1.0).sourceRegion(axisX, axisY, width, height).toOutputStream(outputStream);
-                }
-            }
-            if (outputStream.size() > 0) {
-                file = new MockMultipartFile(file.getName(), file.getOriginalFilename(),
-                        file.getContentType(), outputStream.toByteArray());
-            }
+            file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
             String photoUrl = fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
             userRepository.updatePhoto(id, photoUrl);
             return photoUrl;
@@ -255,11 +235,6 @@ public class UserServiceImpl implements UserService {
             throw new CommonException("error.user.photo.save");
         }
     }
-
-    private ByteArrayInputStream parse(ByteArrayOutputStream out) {
-        return new ByteArrayInputStream(out.toByteArray());
-    }
-
 
     @Override
     public List<OrganizationDTO> queryOrganizationWithProjects() {

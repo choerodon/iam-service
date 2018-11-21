@@ -1,13 +1,4 @@
 spring:
-  sleuth:
-    integration:
-      enabled: false
-    scheduled:
-      enabled: false
-    sampler:
-      percentage: 1.0
-    stream:
-      enabled: true
   datasource:
     url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
@@ -63,9 +54,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 15000
-  stream:
-    queue:
-      enabled: false
 ribbon:
   ReadTimeout: 5000
   ConnectTimeout: 5000

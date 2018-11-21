@@ -29,6 +29,11 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
+    public List<PermissionDO> select(PermissionDO permissionDO) {
+        return permissionMapper.select(permissionDO);
+    }
+
+    @Override
     public boolean existByCode(String code) {
         return permissionMapper.selectOne(new PermissionDO(code)) != null;
     }

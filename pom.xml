@@ -11,7 +11,7 @@
 
     <artifactId>iam-service</artifactId>
     <properties>
-        <choerodon.starters.version>0.7.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.8.0.RELEASE</choerodon.starters.version>
         <powermock.version>1.7.4</powermock.version>
     </properties>
     <dependencies>
@@ -123,28 +123,13 @@
             <version>2.1.0</version>
         </dependency>
 
-        <!--监控相关依赖 -->
-        <dependency><!-- 如果服务需要监控功能则需要此依赖 -->
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream-binder-kafka</artifactId>
-        </dependency>
-
-        <dependency><!-- 如果服务需要hystrix监控功能则需要此依赖 -->
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-netflix-hystrix-stream</artifactId>
-        </dependency>
-
-        <dependency><!-- 如果服务需要zipkin监控功能则需要此依赖 -->
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-stream</artifactId>
-        </dependency>
         <!-- 添加cpu监控 -->
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-hitoa</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -259,6 +244,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
+                    <argLine>-Xmx1024m</argLine>
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Spec.java</include>

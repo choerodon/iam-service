@@ -93,15 +93,34 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
                 Map<String, RoleDO> initRoleMap = queryInitRoleByCode();
+                List<String> permissionCodes = new ArrayList<>();
                 while (pathIterator.hasNext()) {
                     Map.Entry<String, JsonNode> pathNode = pathIterator.next();
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
-                    parserMethod(methodIterator, pathNode, serviceName, initRoleMap);
+                    parserMethod(methodIterator, pathNode, serviceName, initRoleMap, permissionCodes);
                 }
+                deleteDeprecatedPermission(permissionCodes, serviceName);
             }
         } catch (IOException e) {
             throw new CommonException("error.parsePermissionService.parse.IOException", e);
         }
+    }
+
+    private void deleteDeprecatedPermission(List<String> permissionCodes, String serviceName) {
+        PermissionDO permissionDO = new PermissionDO();
+        permissionDO.setServiceName(serviceName);
+        List<PermissionDO> permissions = permissionRepository.select(permissionDO);
+        int count = 0;
+        for (PermissionDO permission : permissions) {
+            if (!permissionCodes.contains(permission.getCode())) {
+                permissionRepository.deleteById(permission.getId());
+                RolePermissionE rolePermissionE = new RolePermissionE(null, null, permission.getId());
+                rolePermissionRepository.delete(rolePermissionE);
+                logger.debug("service {} delete deprecated permission {}", serviceName, permission.getCode());
+                count++;
+            }
+        }
+        logger.info("service {} delete deprecated permission, total {}", serviceName, count);
     }
 
     private void cleanRolePermission() {
@@ -129,60 +148,32 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      */
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
                               Map.Entry<String, JsonNode> pathNode, String serviceName,
-                              Map<String, RoleDO> initRoleMap) {
+                              Map<String, RoleDO> initRoleMap, List<String> permissionCode) {
         while (methodIterator.hasNext()) {
             Map.Entry<String, JsonNode> methodNode = methodIterator.next();
             JsonNode tags = methodNode.getValue().get("tags");
-            SwaggerExtraData extraData = null;
-            String resourceCode = null;
-            boolean illegal = true;
-            List<String> illegalTags = new ArrayList<>();
-            for (int i = 0; i < tags.size(); i++) {
-                String tag = tags.get(i).asText();
-                //添加choerodon-eureka例外的以-endpoint结尾的tag，
-                if (tag.endsWith("-controller")) {
-                    illegal = false;
-                    resourceCode = tag.substring(0, tag.length() - "-controller".length());
-                } else if (tag.endsWith("-endpoint")) {
-                    illegal = false;
-                    resourceCode = tag.substring(0, tag.length() - "-endpoint".length());
-                } else {
-                    illegalTags.add(tag);
-                }
-            }
-            if (logger.isDebugEnabled() && illegal) {
-                logger.debug("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
-            }
+            String resourceCode = processResourceCode(tags);
             try {
                 JsonNode extraDataNode = methodNode.getValue().get("description");
-                if (extraDataNode == null) {
+                if (resourceCode == null || extraDataNode == null) {
                     continue;
                 }
-                extraData = objectMapper.readValue(extraDataNode.asText(), SwaggerExtraData.class);
+                SwaggerExtraData extraData = objectMapper.readValue(extraDataNode.asText(), SwaggerExtraData.class);
+                permissionCode.add(processPermission(extraData, pathNode.getKey(), methodNode, serviceName, resourceCode, initRoleMap));
             } catch (IOException e) {
                 logger.info("extraData read failed.", e);
             }
-            if (extraData == null || resourceCode == null) {
-                continue;
-            }
-            String description = methodNode.getValue().get("summary").asText();
-            String[] roles = null;
-            if (extraData.getPermission() != null) {
-                roles = extraData.getPermission().getRoles();
-            }
-            processPermission(extraData, pathNode.getKey(),
-                    methodNode.getKey(), serviceName, resourceCode, description, initRoleMap, roles);
-
         }
     }
 
-    /**
-     * 关于permission目前只有插入和更新操作，没有删除废弃的permission。因为目前的从swagger拿到的permission json无法判断是否与数据库中已存在的permission一致
-     * 后续如果想通过parse的方式删除废弃的permission，目前的想法是只能在每个接口上加一个不变且各不相同的唯一标识，通过标识判断到底是删除了接口还是更新了接口
-     */
-    private void processPermission(SwaggerExtraData extraData, String path, String method,
-                                   String serviceName, String resourceCode, String description,
-                                   Map<String, RoleDO> initRoleMap, String[] roles) {
+    private String processPermission(SwaggerExtraData extraData, String path, Map.Entry<String, JsonNode> methodNode,
+                                     String serviceName, String resourceCode, Map<String, RoleDO> initRoleMap) {
+        String[] roles = null;
+        if (extraData.getPermission() != null) {
+            roles = extraData.getPermission().getRoles();
+        }
+        String method = methodNode.getKey();
+        String description = methodNode.getValue().get("summary").asText();
         PermissionData permission = extraData.getPermission();
         String action = permission.getAction();
         String code = serviceName + "." + resourceCode + "." + action;
@@ -209,7 +200,32 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             updateRolePermission(newPermission, initRoleMap, roles);
             logger.debug("###update permission, {}", newPermission);
         }
+        return code;
     }
+
+    private String processResourceCode(JsonNode tags) {
+        String resourceCode = null;
+        boolean illegal = true;
+        List<String> illegalTags = new ArrayList<>();
+        for (int i = 0; i < tags.size(); i++) {
+            String tag = tags.get(i).asText();
+            //添加choerodon-eureka例外的以-endpoint结尾的tag，
+            if (tag.endsWith("-controller")) {
+                illegal = false;
+                resourceCode = tag.substring(0, tag.length() - "-controller".length());
+            } else if (tag.endsWith("-endpoint")) {
+                illegal = false;
+                resourceCode = tag.substring(0, tag.length() - "-endpoint".length());
+            } else {
+                illegalTags.add(tag);
+            }
+        }
+        if (logger.isDebugEnabled() && illegal) {
+            logger.debug("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
+        }
+        return resourceCode;
+    }
+
 
     private void updateRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();

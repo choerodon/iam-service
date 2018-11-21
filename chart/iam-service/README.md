@@ -83,3 +83,4 @@ env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS | kafka地址
 env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES | zookeeper地址
 env.open.SPRING_KAFKA_BOOTSTRAP_SERVERS | spring kafka 地址
 env.open.CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS | 事件服务kafka地址
+env.open.SKYWALKING_OPTS | skywalking 代理端配置
