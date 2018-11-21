@@ -37,7 +37,7 @@ class IUserServiceImplSpec extends Specification {
         iUserService.sendNotice(fromUserId, userIds, code, params, 0L)
 
         then: "校验结果"
-        2 * userRepository.selectByPrimaryKey(_) >> userE
+        1 * userRepository.selectByPrimaryKey(_) >> userE
         1 * notifyFeignClient.postNotice(_)
         0 * _
     }
