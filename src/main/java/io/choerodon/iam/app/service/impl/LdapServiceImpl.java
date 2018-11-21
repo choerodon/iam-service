@@ -2,8 +2,6 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.ldap.Ldap;
-import io.choerodon.core.ldap.LdapUtil;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
@@ -20,12 +18,9 @@ import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.naming.ldap.LdapContext;
 import java.util.Date;
 import java.util.Map;
 
@@ -135,36 +130,6 @@ public class LdapServiceImpl implements LdapService {
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
         ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
-    }
-
-    @Override
-    public LdapContext getLdapContext(LdapDO ldapDO) {
-        //匿名用户
-        boolean anonymous = StringUtils.isEmpty(ldapDO.getAccount()) || StringUtils.isEmpty(ldapDO.getPassword());
-        LdapContext ldapContext = null;
-        LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
-        Ldap ldap = new Ldap();
-        BeanUtils.copyProperties(ldapDO, ldap);
-        if (anonymous) {
-            //匿名用户只连接
-            ldapContext = LdapUtil.ldapConnect(ldap);
-            if (ldapContext == null) {
-                throw new CommonException("error.ldap.connect");
-            }
-            iLdapService.anonymousUserMatchAttributeTesting(ldapContext, ldapConnectionDTO, ldapDO);
-        } else {
-            //非匿名用户登陆
-            ldapContext = LdapUtil.authenticate(ldap);
-            if (ldapContext == null) {
-                throw new CommonException("error.ldap.connect");
-            }
-            //匹配属性
-            iLdapService.matchAttributeTesting(ldapContext, ldapConnectionDTO, ldapDO);
-        }
-        if (ldapConnectionDTO.getMatchAttribute() != null && !ldapConnectionDTO.getMatchAttribute()) {
-            throw new CommonException("error.ldap.attribute.match");
-        }
-        return ldapContext;
     }
 
     @Override
