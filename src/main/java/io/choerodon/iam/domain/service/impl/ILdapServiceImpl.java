@@ -1,8 +1,6 @@
 package io.choerodon.iam.domain.service.impl;
 
 import io.choerodon.core.ldap.DirectoryType;
-import io.choerodon.core.ldap.Ldap;
-import io.choerodon.core.ldap.LdapUtil;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.validator.LdapValidator;
@@ -10,7 +8,6 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.ldap.AuthenticationException;
 import org.springframework.ldap.CommunicationException;
 import org.springframework.ldap.InvalidNameException;
@@ -27,8 +24,6 @@ import org.springframework.util.StringUtils;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -266,69 +261,6 @@ public class ILdapServiceImpl implements ILdapService {
                 }
                 fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
             }
-    }
-
-    @Override
-    public void matchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
-                                      LdapDO ldap) {
-        Map<String, String> attributeMap = initAttributeMap(ldap);
-        Set<String> attributeSet = new HashSet<>(attributeMap.values());
-        //default attribute 处理
-        attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
-        //移除null对象的情况
-        if (attributeSet.contains(null)) {
-            attributeSet.remove(null);
-        }
-        if (attributeSet.contains("")) {
-            attributeSet.remove("");
-        }
-        Set<String> keySet = new HashSet<>();
-        NamingEnumeration namingEnumeration = LdapUtil.getNamingEnumeration(ldapContext, ldap.getAccount(), attributeSet);
-        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-            //maybe more than one element
-            Object obj = namingEnumeration.nextElement();
-            if (obj instanceof SearchResult) {
-                SearchResult searchResult = (SearchResult) obj;
-                Attributes attributes = searchResult.getAttributes();
-                NamingEnumeration attributesIDs = attributes.getIDs();
-                while (attributesIDs != null && attributesIDs.hasMoreElements()) {
-                    keySet.add(attributesIDs.nextElement().toString());
-                }
-            }
-        }
-        fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
-    }
-
-    /**
-     * 匿名匹配字段只能匹配loginNameField和emailField
-     *
-     * @param ldapContext
-     * @param ldapConnectionDTO
-     * @param ldapDO
-     */
-    @Override
-    public void anonymousUserMatchAttributeTesting(LdapContext ldapContext, LdapConnectionDTO ldapConnectionDTO,
-                                                   LdapDO ldapDO) {
-        Ldap ldap = new Ldap();
-        BeanUtils.copyProperties(ldapDO, ldap);
-        Attributes attributes = LdapUtil.anonymousUserGetByObjectClass(ldap, ldapContext);
-        Map<String, String> attributeMap = new HashMap<>(10);
-        attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldapDO.getLoginNameField());
-        attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldapDO.getEmailField());
-        Set<String> keySet = new HashSet<>();
-        if (attributes != null) {
-            NamingEnumeration attributesIDs = attributes.getIDs();
-            while (attributesIDs != null && attributesIDs.hasMoreElements()) {
-                keySet.add(attributesIDs.nextElement().toString());
-            }
-            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
-        } else {
-            ldapConnectionDTO.setMatchAttribute(false);
-            ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
-            ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
-            ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
-            ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
-        }
     }
 
     private void fullMathAttribute(LdapConnectionDTO ldapConnectionDTO, Map<String, String> attributeMap, Set<String> keySet) {
