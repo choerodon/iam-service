@@ -64,6 +64,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
         currentUser.setId(fromUserId);
         noticeSendDTO.setFromUser(currentUser);
         noticeSendDTO.setParams(params);
+        noticeSendDTO.setSourceId(sourceId);
         List<NoticeSendDTO.User> users = new LinkedList<>();
         userIds.forEach(id -> {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
