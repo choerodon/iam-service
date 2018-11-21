@@ -8,13 +8,13 @@ import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.ldap.core.LdapTemplate
 import spock.lang.Specification
 
 import javax.naming.NamingEnumeration
 import javax.naming.directory.Attribute
 import javax.naming.directory.Attributes
 import javax.naming.directory.SearchResult
-import javax.naming.ldap.LdapContext
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -37,19 +37,23 @@ class LdapSyncUserTaskSpec extends Specification {
         given: "构造请求参数"
         LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
         NamingEnumeration enumeration = null
-        LdapContext ldapContext = Mock(LdapContext)
+        LdapTemplate ldapTemplate = Mock(LdapTemplate)
         LdapDO ldap = new LdapDO()
         ldap.setId(1L)
         ldap.setOrganizationId(1L)
         LdapSyncUserTask.FinishFallback fallback = Mock(LdapSyncUserTask.FinishFallback)
+        Attributes attributes = Mock(Attributes)
+        List<Attribute> attributesList = new ArrayList<>()
+
+        attributesList << attributes
 
         when: "调用方法"
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, fallback)
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback)
 
         then: "校验结果"
-        1 * ldapContext.search(_, _, _)
+        1 * ldapTemplate.search(_, _,) >> attributesList
+
         1 * ldapHistoryRepository.insertSelective(_) >> { ldapHistoryDO }
-        1 * ldapContext.close()
         1 * fallback.callback(_, _)
         0 * _
     }
@@ -63,7 +67,7 @@ class LdapSyncUserTaskSpec extends Specification {
         Attribute loginNameAttribute = Mock(Attribute)
         Attribute emailAttribute = Mock(Attribute)
         Attribute employeeTypeAttribute = Mock(Attribute)
-        LdapContext ldapContext = Mock(LdapContext)
+        LdapTemplate ldapTemplate = Mock(LdapTemplate)
         LdapDO ldap = new LdapDO()
         ldap.setId(1L)
         ldap.setDirectoryType("OpenLDAP")
@@ -80,17 +84,17 @@ class LdapSyncUserTaskSpec extends Specification {
         matchEmail.add("youquan.deng1@hand-china.com")
         matchEmail.add("youquan.deng2@hand-china.com")
 
+        List<Attributes> attributesList = new ArrayList<>()
+        attributesList << attributes
+
+
         when: "调用方法"
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, fallback)
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback)
 
         then: "校验结果"
-        1 * ldapContext.search(_, _, _) >> { enumeration }
+        1 * ldapTemplate.search(_, _) >> attributesList
         1 * ldapHistoryRepository.updateByPrimaryKeySelective(_)
         1 * ldapHistoryRepository.insertSelective(_) >> { ldapHistoryDO }
-        1 * ldapContext.close()
-        enumeration.hasMoreElements() >>> [true, false]
-        1 * enumeration.nextElement() >> { searchResult }
-        1 * searchResult.getAttributes() >> { attributes }
         attributes.get(_) >> {
             String str ->
                 if (str.equals("employeeType")) return employeeTypeAttribute
