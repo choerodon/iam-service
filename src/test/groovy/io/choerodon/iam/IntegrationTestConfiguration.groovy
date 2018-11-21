@@ -5,6 +5,7 @@ import com.netflix.appinfo.InstanceInfo
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.domain.service.ILdapService
+import io.choerodon.iam.domain.service.impl.ILdapServiceImpl
 import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
@@ -25,6 +26,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.ldap.core.LdapTemplate
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
@@ -61,7 +63,14 @@ class IntegrationTestConfiguration {
     ILdapService iLdapService() {
         ILdapService iLdapService = Mockito.mock(ILdapService)
         LdapConnectionDTO dto = new LdapConnectionDTO()
-        Mockito.doReturn(dto).when(iLdapService).testConnect(Mockito.any(LdapDO.class))
+        dto.setMatchAttribute(true)
+        dto.setCanLogin(true)
+        dto.setCanConnectServer(true)
+        LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate)
+        Map<String, Object> map = new HashMap<>(2)
+        map.put(ILdapServiceImpl.LDAP_CONNECTION_DTO, dto)
+        map.put(ILdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
+        Mockito.doReturn(map).when(iLdapService).testConnect(Mockito.any(LdapDO.class))
         return iLdapService
     }
 

@@ -7,8 +7,11 @@ import io.choerodon.asgard.schedule.annotation.TaskParam;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
+import io.choerodon.iam.domain.service.ILdapService;
+import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncReport;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
@@ -17,9 +20,9 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.naming.ldap.LdapContext;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -34,12 +37,16 @@ public class LdapSyncUserQuartzTask {
     private OrganizationMapper organizationMapper;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapHistoryRepository ldapHistoryRepository;
+    private ILdapService iLdapService;
 
-    public LdapSyncUserQuartzTask(LdapService ldapService, OrganizationMapper organizationMapper, LdapSyncUserTask ldapSyncUserTask, LdapHistoryRepository ldapHistoryRepository) {
+    public LdapSyncUserQuartzTask(LdapService ldapService, OrganizationMapper organizationMapper,
+                                  LdapSyncUserTask ldapSyncUserTask, LdapHistoryRepository ldapHistoryRepository,
+                                  ILdapService iLdapService) {
         this.ldapService = ldapService;
         this.organizationMapper = organizationMapper;
         this.ldapSyncUserTask = ldapSyncUserTask;
         this.ldapHistoryRepository = ldapHistoryRepository;
+        this.iLdapService = iLdapService;
     }
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserSite", params = {
@@ -70,9 +77,21 @@ public class LdapSyncUserQuartzTask {
         long startTime = System.currentTimeMillis();
         logger.info("LdapSyncUserQuartzTask starting sync idap user,id:{},organizationId:{}", ldapId, organizationId);
         LdapDO ldap = ldapService.validateLdap(organizationId, ldapId);
-        LdapContext ldapContext = ldapService.getLdapContext(ldap);
+        Map<String, Object> returnMap = iLdapService.testConnect(ldap);
+        LdapConnectionDTO ldapConnectionDTO =
+                (LdapConnectionDTO) returnMap.get(ILdapServiceImpl.LDAP_CONNECTION_DTO);
+        if (!ldapConnectionDTO.getCanConnectServer()) {
+            throw new CommonException("error.ldap.connect");
+        }
+        if (!ldapConnectionDTO.getCanLogin()) {
+            throw new CommonException("error.ldap.authenticate");
+        }
+        if (!ldapConnectionDTO.getMatchAttribute()) {
+            throw new CommonException("error.ldap.attribute.match");
+        }
+        LdapTemplate ldapTemplate = (LdapTemplate) returnMap.get(ILdapServiceImpl.LDAP_TEMPLATE);
         CountDownLatch latch = new CountDownLatch(1);
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, (LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) -> {
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, (LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) -> {
             latch.countDown();
             ldapHistoryDO.setSyncEndTime(ldapSyncReport.getEndTime());
             ldapHistoryDO.setNewUserCount(ldapSyncReport.getInsert());

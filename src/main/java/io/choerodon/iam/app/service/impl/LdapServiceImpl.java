@@ -15,16 +15,19 @@ import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.service.ILdapService;
+import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.naming.ldap.LdapContext;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author wuguokai
@@ -112,14 +115,26 @@ public class LdapServiceImpl implements LdapService {
         ldap.setAccount(ldapAccount.getAccount());
         //todo ldap password 加密解密
         ldap.setPassword(ldapAccount.getPassword());
-        return iLdapService.testConnect(ldap);
+        return (LdapConnectionDTO) iLdapService.testConnect(ldap).get(ILdapServiceImpl.LDAP_CONNECTION_DTO);
     }
 
     @Override
     public void syncLdapUser(Long organizationId, Long id) {
         LdapDO ldap = validateLdap(organizationId, id);
-        LdapContext ldapContext = getLdapContext(ldap);
-        ldapSyncUserTask.syncLDAPUser(ldapContext, ldap, finishFallback);
+        Map<String, Object> map = iLdapService.testConnect(ldap);
+        LdapConnectionDTO ldapConnectionDTO =
+                (LdapConnectionDTO) map.get(ILdapServiceImpl.LDAP_CONNECTION_DTO);
+        if (!ldapConnectionDTO.getCanConnectServer()) {
+            throw new CommonException("error.ldap.connect");
+        }
+        if (!ldapConnectionDTO.getCanLogin()) {
+            throw new CommonException("error.ldap.authenticate");
+        }
+        if (!ldapConnectionDTO.getMatchAttribute()) {
+            throw new CommonException("error.ldap.attribute.match");
+        }
+        LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
     }
 
     @Override

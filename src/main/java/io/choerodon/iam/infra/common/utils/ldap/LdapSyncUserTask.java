@@ -1,18 +1,18 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
 
 import io.choerodon.core.ldap.DirectoryType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.SearchScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -25,6 +25,8 @@ import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
+
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 
 /**
@@ -54,37 +56,43 @@ public class LdapSyncUserTask {
     }
 
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapContext ldapContext, LdapDO ldap, FinishFallback fallback) {
+    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
         ldapSyncReport.setLdapId(ldap.getId());
-        SearchControls constraints = new SearchControls();
-        // 设置搜索范围
-        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration namingEnumeration = null;
-        try {
-            namingEnumeration = ldapContext.search("",
-                    "objectClass=*", constraints);
-        } catch (NamingException e) {
-            logger.info("ldap search fail: {}", e);
-        }
+
+
         logger.info("@@@ start async user");
         ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
         LdapHistoryDO ldapHistory = new LdapHistoryDO();
         ldapHistory.setLdapId(ldap.getId());
         ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
-        List<UserDO> users = new ArrayList<>();
-        while (namingEnumeration != null && namingEnumeration.hasMoreElements()) {
-            //maybe more than one element
-            SearchResult searchResult = (SearchResult) namingEnumeration.nextElement();
-            Attributes attributes = searchResult.getAttributes();
-            UserDO user = extractUser(attributes, organizationId, ldap);
-            if (user == null) {
-                continue;
-            }
-            ldapSyncReport.incrementCount();
-            users.add(user);
+
+        List<Attributes> attributesList =
+                ldapTemplate.search(
+                        query()
+                                .searchScope(SearchScope.SUBTREE)
+                                .where("objectclass")
+                                .is(ldap.getObjectClass()),
+                        new AttributesMapper() {
+                            @Override
+                            public Object mapFromAttributes(Attributes attributes) throws NamingException {
+                                return attributes;
+                            }
+                        });
+        List<UserDO> users = new CopyOnWriteArrayList<>();
+        if (attributesList.isEmpty()) {
+            logger.info("can not find attributes where objectclass = {}", ldap.getObjectClass());
+        } else {
+            attributesList.parallelStream().forEach(attributes -> {
+                UserDO user = extractUser(attributes, organizationId, ldap);
+                if (user == null) {
+                    return;
+                }
+                users.add(user);
+            });
+            ldapSyncReport.setCount(Long.valueOf(users.size()));
         }
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
@@ -93,11 +101,6 @@ public class LdapSyncUserTask {
         }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
-        try {
-            ldapContext.close();
-        } catch (NamingException e) {
-            logger.warn("error.close.ldap.connect");
-        }
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 

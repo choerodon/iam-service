@@ -23,6 +23,22 @@ public class LdapSyncReport {
         this.count = 0L;
     }
 
+    public void setInsert(Long insert) {
+        this.insert = insert;
+    }
+
+    public void setUpdate(Long update) {
+        this.update = update;
+    }
+
+    public void setError(Long error) {
+        this.error = error;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
+
 
     public void incrementNewInsert() {
         this.insert++;

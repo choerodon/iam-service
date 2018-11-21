@@ -32,7 +32,7 @@ class ILdapServiceImplSpec extends Specification {
         ldapDO.setPhoneField("mobile")
 
         when: "调用方法[异常-连接失败]"
-        LdapConnectionDTO ldapConnectionDTO = iLdapService.testConnect(ldapDO)
+        LdapConnectionDTO ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(ILdapServiceImpl.LDAP_CONNECTION_DTO)
 
         then: "校验结果"
         !ldapConnectionDTO.getCanConnectServer()
@@ -41,7 +41,7 @@ class ILdapServiceImplSpec extends Specification {
 
         when: "调用方法[匿名登录]"
         ldapDO.setBaseDn("ou=employee,dc=hand-china,dc=com")
-        ldapConnectionDTO = iLdapService.testConnect(ldapDO)
+        ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(ILdapServiceImpl.LDAP_CONNECTION_DTO)
 
         then: "校验结果"
         ldapConnectionDTO.getCanConnectServer()

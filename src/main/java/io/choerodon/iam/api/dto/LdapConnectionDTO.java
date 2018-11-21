@@ -17,8 +17,6 @@ public class LdapConnectionDTO {
     private String loginNameField;
     @ApiModelProperty(value = "用户名属性是否成功")
     private String realNameField;
-    @ApiModelProperty(value = "密码字段是否成功")
-    private String passwordField;
     @ApiModelProperty(value = "手机号属性是否成功")
     private String phoneField;
     @ApiModelProperty(value = "邮箱属性是否成功")
@@ -62,14 +60,6 @@ public class LdapConnectionDTO {
 
     public void setRealNameField(String realNameField) {
         this.realNameField = realNameField;
-    }
-
-    public String getPasswordField() {
-        return passwordField;
-    }
-
-    public void setPasswordField(String passwordField) {
-        this.passwordField = passwordField;
     }
 
     public String getPhoneField() {

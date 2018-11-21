@@ -6,6 +6,7 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapDTO
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
+import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
 import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
@@ -28,12 +29,14 @@ class LdapSyncUserQuartzTaskSpec extends Specification {
     private OrganizationMapper organizationMapper
     @Autowired
     private LdapSyncUserTask ldapSyncUserTask
+    @Autowired
+    private ILdapService iLdapService
     private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapSyncUserQuartzTask ldapSyncUserQuartzTask
 
     def setup() {
         ldapSyncUserQuartzTask = new LdapSyncUserQuartzTask(ldapService,
-                organizationMapper, ldapSyncUserTask, ldapHistoryRepository)
+                organizationMapper, ldapSyncUserTask, ldapHistoryRepository, iLdapService)
     }
 
     def "SyncLdapUser"() {
@@ -56,11 +59,9 @@ class LdapSyncUserQuartzTaskSpec extends Specification {
         ldapSyncUserQuartzTask.syncLdapUser(map)
 
         then: "校验结果"
-        exception = thrown(CommonException)
-        exception.message.equals("error.LdapContext.null")
+//        exception = thrown(CommonException)
+        exception.message.equals("error.ldapSyncUserTask.organizationNotNull")
         1 * ldapService.queryByOrganizationId(_ as Long) >> { ldapDTO }
         1 * ldapService.validateLdap(_ as Long, _ as Long) >> { ConvertHelper.convert(ldapDTO, LdapDO) }
-        //接下来的代码有CountDownLatch,会卡死，提前抛出异常
-        1 * ldapService.getLdapContext(_ as LdapDO) >> { throw new CommonException("error.LdapContext.null") }
     }
 }
