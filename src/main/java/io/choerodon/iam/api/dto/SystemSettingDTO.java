@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
@@ -43,6 +44,14 @@ public class SystemSettingDTO implements Serializable {
     @ApiModelProperty(value = "平台默认语言，必填字段")
     @NotEmpty(message = "error.setting.default.language.null")
     private String defaultLanguage;
+
+    @ApiModelProperty(value = "不启用组织层密码策略时的密码最小长度，非必填字段，默认0")
+    @Range(min = 0, max = 65535, message = "error.minLength")
+    private Integer minPasswordLength;
+
+    @ApiModelProperty(value = "不启用组织层密码策略时的密码最大长度, 非必填字段，默认65535")
+    @Range(min = 0, max = 65535, message = "error.maxLength")
+    private Integer maxPasswordLength;
 
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;

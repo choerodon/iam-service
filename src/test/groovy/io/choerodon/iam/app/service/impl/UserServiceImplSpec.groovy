@@ -5,11 +5,8 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
-import io.choerodon.iam.api.dto.OrganizationDTO
-import io.choerodon.iam.api.dto.ProjectDTO
-import io.choerodon.iam.api.dto.UserDTO
-import io.choerodon.iam.api.dto.UserPasswordDTO
+import io.choerodon.iam.api.dto.*
+import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.UserService
 import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.repository.OrganizationRepository
@@ -18,13 +15,8 @@ import io.choerodon.iam.domain.repository.RoleRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dataobject.MemberRoleDO
-import io.choerodon.iam.infra.dataobject.OrganizationDO
-import io.choerodon.iam.infra.dataobject.ProjectDO
-import io.choerodon.iam.infra.dataobject.RoleDO
-import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.dataobject.*
 import io.choerodon.iam.infra.feign.FileFeignClient
-import io.choerodon.iam.infra.feign.NotifyFeignClient
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO
@@ -40,13 +32,12 @@ import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.mock.web.MockMultipartFile
 import spock.lang.Specification
 
 import java.lang.reflect.Field
-
 /**
  * @author dengyouquan
  * */
@@ -65,6 +56,7 @@ class UserServiceImplSpec extends Specification {
     private RoleRepository roleRepository = Mock(RoleRepository)
     private SagaClient sagaClient = Mock(SagaClient)
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
+    private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
     private UserService userService
     private Long userId
 
@@ -72,7 +64,7 @@ class UserServiceImplSpec extends Specification {
         given: "构造userService"
         userService = new UserServiceImpl(userRepository, organizationRepository,
                 projectRepository, iUserService, passwordRecord, fileFeignClient,
-                sagaClient, basePasswordPolicyMapper, passwordPolicyManager, roleRepository,
+                sagaClient, basePasswordPolicyMapper, userPasswordValidator,passwordPolicyManager, roleRepository,
                 memberRoleMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)

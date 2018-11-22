@@ -43,4 +43,10 @@ public class SystemSettingDO extends AuditDomain {
 
     @Column(name = "DEFAULT_LANGUAGE")
     private String defaultLanguage;
+
+    @Column(name = "MIN_PASSWORD_LENGTH")
+    private Integer minPasswordLength;
+
+    @Column(name = "MAX_PASSWORD_LENGTH")
+    private Integer maxPasswordLength;
 }

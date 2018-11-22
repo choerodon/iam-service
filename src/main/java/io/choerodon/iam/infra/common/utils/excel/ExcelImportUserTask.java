@@ -2,7 +2,10 @@ package io.choerodon.iam.infra.common.utils.excel;
 
 import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.ErrorUserDTO;
+import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
+import io.choerodon.iam.api.dto.UserDTO;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
@@ -17,8 +20,6 @@ import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.feign.NotifyFeignClient;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +55,11 @@ public class ExcelImportUserTask {
     private OrganizationUserService organizationUserService;
     private FileFeignClient fileFeignClient;
     private IUserService iUserService;
+    private UserPasswordValidator userPasswordValidator;
     private final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
 
-    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, IUserService iUserService) {
+    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, IUserService iUserService, UserPasswordValidator userPasswordValidator) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.memberRoleRepository = memberRoleRepository;
@@ -65,6 +67,7 @@ public class ExcelImportUserTask {
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
         this.iUserService = iUserService;
+        this.userPasswordValidator = userPasswordValidator;
     }
 
     @Async("excel-executor")
@@ -522,6 +525,11 @@ public class ExcelImportUserTask {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
             errorUser.setCause("手机号格式不正确");
+            errorUsers.add(errorUser);
+        } else if (!userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), false)) {
+            ErrorUserDTO errorUser = new ErrorUserDTO();
+            BeanUtils.copyProperties(user, errorUser);
+            errorUser.setCause("用户密码长度不符合系统设置中的范围");
             errorUsers.add(errorUser);
         } else {
             ok = true;

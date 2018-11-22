@@ -1,7 +1,9 @@
 package io.choerodon.iam.infra.common.utils.excel
 
+import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO
+import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.OrganizationUserService
 import io.choerodon.iam.domain.repository.MemberRoleRepository
 import io.choerodon.iam.domain.repository.RoleRepository
@@ -13,6 +15,7 @@ import io.choerodon.iam.infra.dataobject.RoleDO
 import io.choerodon.iam.infra.dataobject.UploadHistoryDO
 import io.choerodon.iam.infra.dataobject.UserDO
 import io.choerodon.iam.infra.feign.FileFeignClient
+import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
@@ -36,10 +39,93 @@ class ExcelImportUserTaskSpec extends Specification {
     private IUserService iUserService = Mock(IUserService)
     private ExcelImportUserTask excelImportUserTask
     private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
+    private UserPasswordValidator userPasswordValidator = Mockito.mock(UserPasswordValidator)
     private int count = 3
 
     def setup() {
-        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService)
+        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService, userPasswordValidator)
+    }
+
+    def "import users with invalid password"() {
+        given: "构造请求参数"
+        UserPasswordValidator userPasswordValidator2 = Mockito.mock(UserPasswordValidator)
+        Mockito.when(userPasswordValidator.validate(Mockito.anyString(), Mockito.any(Long), Mockito.anyBoolean())).thenReturn(false)
+        ExcelImportUserTask excelImportUserTask2 = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService, userPasswordValidator2)
+        Long userId = 1L
+        List<UserDO> users = new ArrayList<>()
+        for (int i = 0; i < count; i++) {
+            UserDO userDO = new UserDO()
+            userDO.setLoginName("20631")
+            userDO.setEmail("youquan.deng@hand-china.com")
+            userDO.setRealName("dengyouquan")
+            userDO.setPhone("17729888888")
+            userDO.setPassword("123")
+            users << userDO
+        }
+        for (int i = 0; i < count; i++) {
+            UserDO userDO = new UserDO()
+            userDO.setLoginName("20632")
+            userDO.setEmail("youquan.deng1@hand-china.com")
+            userDO.setRealName("dengyouquan1")
+            userDO.setPhone("17729888889")
+            users << userDO
+        }
+        UserDO loginNameUserDO = new UserDO()
+        loginNameUserDO.setEmail("youquan.deng2@hand-china.com")
+        loginNameUserDO.setRealName("dengyouquan2")
+        loginNameUserDO.setPhone("17729888889")
+        users << loginNameUserDO
+        UserDO loginNameLengthUserDO = new UserDO()
+        StringBuilder sb = new StringBuilder()
+        for (int i = 0; i < 10; i++) {
+            sb.append("012345678910")
+        }
+        loginNameLengthUserDO.setLoginName(sb.toString())
+        loginNameLengthUserDO.setEmail("youquan.deng2@hand-china.com")
+        loginNameLengthUserDO.setRealName("dengyouquan2")
+        loginNameLengthUserDO.setPhone("17729888889")
+        users << loginNameLengthUserDO
+        UserDO emailUserDO = new UserDO()
+        emailUserDO.setLoginName("20631")
+        emailUserDO.setEmail("youquan.deng")
+        emailUserDO.setRealName("dengyouquan2")
+        emailUserDO.setPhone("17729888889")
+        users << emailUserDO
+        UserDO realNameUserDO = new UserDO()
+        realNameUserDO.setLoginName("20631")
+        realNameUserDO.setEmail("youquan.deng2@hand-china.com")
+        realNameUserDO.setPhone("17729888889")
+        users << realNameUserDO
+        UserDO phoneUserDO = new UserDO()
+        phoneUserDO.setLoginName("20631")
+        phoneUserDO.setRealName("dengyouquan")
+        phoneUserDO.setEmail("youquan.deng2@hand-china.com")
+        phoneUserDO.setPhone("11111")
+        users << phoneUserDO
+        Mockito.when(userPasswordValidator.validate(Mockito.anyString(), Mockito.any(Long), Mockito.anyBoolean())).thenReturn(true)
+        UserDO passwordUserDO = new UserDO()
+        passwordUserDO.setLoginName("zmf")
+        passwordUserDO.setRealName("zhengmofang")
+        passwordUserDO.setEmail("zmfble@aliyun.com")
+        passwordUserDO.setPassword("111")
+
+        Long organizationId = 1L
+        UploadHistoryDO uploadHistory = new UploadHistoryDO()
+        ExcelImportUserTask.FinishFallback fallback = Mock(ExcelImportUserTask.FinishFallback)
+        Set<String> matchLoginName = new HashSet<>()
+        matchLoginName.add("dengyouquan")
+        matchLoginName.add("dengyouquan1")
+        matchLoginName.add("dengyouquan2")
+        Set<String> matchEmail = new HashSet<>()
+        matchEmail.add("youquan.deng@hand-china.com")
+        matchEmail.add("youquan.deng1@hand-china.com")
+        matchEmail.add("youquan.deng2@hand-china.com")
+
+        when: "调用方法"
+        excelImportUserTask2.importUsers(userId, users, organizationId, uploadHistory, fallback)
+
+        then: "校验结果"
+        thrown(CommonException)
     }
 
     def "ImportUsers"() {
@@ -94,6 +180,12 @@ class ExcelImportUserTaskSpec extends Specification {
         phoneUserDO.setEmail("youquan.deng2@hand-china.com")
         phoneUserDO.setPhone("11111")
         users << phoneUserDO
+        Mockito.when(userPasswordValidator.validate(Mockito.anyString(), Mockito.any(Long), Mockito.anyBoolean())).thenReturn(true)
+        UserDO passwordUserDO = new UserDO()
+        passwordUserDO.setLoginName("zmf")
+        passwordUserDO.setRealName("zhengmofang")
+        passwordUserDO.setEmail("zmfble@aliyun.com")
+        passwordUserDO.setPassword("111")
 
         Long organizationId = 1L
         UploadHistoryDO uploadHistory = new UploadHistoryDO()
