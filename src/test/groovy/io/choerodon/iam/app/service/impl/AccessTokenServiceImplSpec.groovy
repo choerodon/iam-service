@@ -77,51 +77,8 @@ class AccessTokenServiceImplSpec extends Specification {
                 refreshTokenDO.setAuthentication((i + "" + i).bytes)
                 refreshTokenList.add(refreshTokenDO)
             }
-//
-//            when: "插入数据"
-//
-//            def userResult = userMapper.insert(userE)
-//            userE = userMapper.selectOne(userE)
-//            def clientResult = clientMapper.insertSelective(clientDO)
-//            clientDO = clientMapper.selectOne(clientDO)
-////            def accessTokenResult = accessTokenMapper.insertList(accessTokenList)
-////            def refreshTokenResult = refreshTokenMapper.insertList(refreshTokenList)
-//
-//            then: "校验参数"
-//            userResult == 1
-//            clientResult == 1
-////            accessTokenResult == count
-////            refreshTokenResult == count
         }
     }
-//
-//    def cleanup() {
-//        if (needClean) {
-//            given: ""
-//            needClean = false
-//
-//            when: "删除数据"
-//            int userResult = userMapper.delete(userE)
-//            int clientResult = clientMapper.delete(clientDO)
-//
-////            int accessTokenResult = 0
-////            for (AccessTokenDO accessTokenDO : accessTokenList) {
-////                accessTokenResult += accessTokenMapper.deleteByPrimaryKey(accessTokenDO)
-////            }
-//
-////            int refreshTokenResult = 0
-////            for (RefreshTokenDO refreshTokenDO : refreshTokenList) {
-////                refreshTokenResult += refreshTokenMapper.deleteByPrimaryKey(refreshTokenDO)
-////            }
-//
-//            then: "校验参数"
-//            userResult == 1
-//            clientResult == 1
-////            accessTokenResult == count - 1
-////            refreshTokenResult == count - 1
-//        }
-//    }
-
     def "PagingTokensByUserIdAndClient"() {
         given: "数据准备"
         def pageRequest = new PageRequest()
@@ -150,10 +107,16 @@ class AccessTokenServiceImplSpec extends Specification {
         usertokenE.setClientId(accessTokenList.get(0).getClientId())
         usertokenE.setToken(accessTokenList.get(0).getToken())
         usertokenE.setAccessTokenValidity(new Long(300))
+        def usertokenE2 = new UserAccessTokenE()
+        usertokenE2.setTokenId(accessTokenList.get(1).getTokenId())
+        usertokenE2.setClientId(accessTokenList.get(1).getClientId())
+        usertokenE2.setToken(accessTokenList.get(1).getToken())
+        usertokenE2.setAccessTokenValidity(new Long(300))
         userList.add(usertokenE)
+        userList.add(usertokenE2)
         pageBack.setContent(userList)
         when: "用户不存在"
-        accessTokenService.pageConvert(pageBack, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(0).getToken())).getValue())
+        accessTokenService.pageConvert(pageBack, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(1).getToken())).getValue())
         then: "结果分析"
         noExceptionThrown()
     }

@@ -62,7 +62,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
                             ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(tokenE.getToken())).getExpiration(),
                             tokenE.getAccessTokenValidity(), currentToken)
             ).collect(Collectors.toList());
-            pageBack.setContent(userAccessTokenDTOS);
+            List<UserAccessTokenDTO> result = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
+            result.addAll(userAccessTokenDTOS.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
+            pageBack.setContent(result);
             return pageBack;
         }
     }
