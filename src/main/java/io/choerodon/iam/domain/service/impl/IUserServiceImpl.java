@@ -8,6 +8,7 @@ import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.service.BaseServiceImpl;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -56,6 +57,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     }
 
     @Override
+    @Async("notify-executor")
     public void sendNotice(Long fromUserId, List<Long> userIds, String code,
                            Map<String, Object> params, Long sourceId) {
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
