@@ -37,16 +37,16 @@ public class AccessTokenController {
                                                          @SortDefault(value = "tokenId", direction = Sort.Direction.ASC) PageRequest pageRequest,
                                                          @RequestParam(name = "userId", required = false) Long userId,
                                                          @RequestParam(value = "clientName", required = false) String clientName,
-                                                         @RequestParam(value = "currentToken", required = false) String currentToken) {
+                                                         @RequestParam(value = "currentToken") String currentToken) {
         userId = DetailsHelper.getUserDetails().getUserId();
-        return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(pageRequest, userId, clientName,currentToken), HttpStatus.OK);
+        return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(pageRequest, userId, clientName, currentToken), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "根据tokenId删除token")
     @DeleteMapping
-    public void delete(@RequestParam(name = "tokenId", required = false) String tokenId,
-                       @RequestParam(value = "currentToken", required = false) String currentToken) {
-        accessTokenService.delete(tokenId,currentToken);
+    public void delete(@RequestParam(name = "tokenId") String tokenId,
+                       @RequestParam(value = "currentToken") String currentToken) {
+        accessTokenService.delete(tokenId, currentToken);
     }
 }
