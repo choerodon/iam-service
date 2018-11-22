@@ -186,8 +186,7 @@ class UserServiceImplSpec extends Specification {
             return userE
         }
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
-        1 * basePasswordPolicyMapper.selectByPrimaryKey(_) >> { new BasePasswordPolicyDO() }
-        1 * basePasswordPolicyMapper.findByOrgId(_) >> { new BasePasswordPolicyDO() }
+        1 * basePasswordPolicyMapper.selectOne(_) >> { new BasePasswordPolicyDO() }
         1 * passwordPolicyManager.passwordValidate(_, _, _)
         1 * userRepository.updateSelective(_)
         1 * passwordRecord.updatePassword(_, _)
@@ -336,7 +335,7 @@ class UserServiceImplSpec extends Specification {
         }
         1 * userRepository.selectByLoginName(_)
         1 * userRepository.selectOne(_)
-        1 * basePasswordPolicyMapper.findByOrgId(_) >> {
+        1 * basePasswordPolicyMapper.selectOne(_) >> {
             BasePasswordPolicyDO basePasswordPolicyDO = new BasePasswordPolicyDO()
             basePasswordPolicyDO.setOriginalPassword("123456")
             return basePasswordPolicyDO
