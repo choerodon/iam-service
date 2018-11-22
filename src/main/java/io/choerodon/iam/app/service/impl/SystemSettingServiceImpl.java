@@ -69,6 +69,9 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     @Override
     public SystemSettingDTO addSetting(SystemSettingDTO systemSettingDTO) {
+        addDefaultLengthValue(systemSettingDTO);
+        validateLength(systemSettingDTO);
+
         // 执行业务代码
         SystemSettingDTO dto = systemSettingRepository.addSetting(convert(systemSettingDTO));
 
@@ -80,6 +83,9 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     @Override
     public SystemSettingDTO updateSetting(SystemSettingDTO systemSettingDTO) {
+        addDefaultLengthValue(systemSettingDTO);
+        validateLength(systemSettingDTO);
+
         // 执行业务代码
         SystemSettingDTO dto = systemSettingRepository.updateSetting(convert(systemSettingDTO));
 
@@ -130,5 +136,30 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         SystemSettingDO systemSettingDO = new SystemSettingDO();
         BeanUtils.copyProperties(systemSettingDTO, systemSettingDO);
         return systemSettingDO;
+    }
+
+    /**
+     * If the value is empty, default value is to be set.
+     *
+     * @param systemSettingDTO the dto
+     */
+    private void addDefaultLengthValue(SystemSettingDTO systemSettingDTO) {
+        if (systemSettingDTO.getMinPasswordLength() == null) {
+            systemSettingDTO.setMinPasswordLength(0);
+        }
+        if (systemSettingDTO.getMaxPasswordLength() == null) {
+            systemSettingDTO.setMaxPasswordLength(65535);
+        }
+    }
+
+    /**
+     * validate the value of min length and max length
+     *
+     * @param systemSettingDTO dto
+     */
+    private void validateLength(SystemSettingDTO systemSettingDTO) {
+        if (systemSettingDTO.getMinPasswordLength() > systemSettingDTO.getMaxPasswordLength()) {
+            throw new CommonException("error.maxLength.lessThan.minLength");
+        }
     }
 }

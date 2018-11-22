@@ -23,6 +23,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             column(name: 'DEFAULT_LANGUAGE', type: 'VARCHAR(50)', remarks: '平台默认语言') {
                 constraints(nullable: false)
             }
+            column(name: 'MIN_PASSWORD_LENGTH', type: 'INT', remarks: '不启用组织层密码策略时的密码最小长度')
+            column(name: 'MAX_PASSWORD_LENGTH', type: 'INT', remarks: '不启用组织层密码策略时的密码最大长度')
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)
             }

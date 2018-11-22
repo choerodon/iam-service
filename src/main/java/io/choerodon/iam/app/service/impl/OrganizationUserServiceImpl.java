@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -57,12 +58,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
     private PasswordPolicyManager passwordPolicyManager;
+    private UserPasswordValidator userPasswordValidator;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
 
     public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
                                        UserRepository userRepository,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
+                                       UserPasswordValidator userPasswordValidator,
                                        IUserService iUserService,
                                        SagaClient sagaClient) {
         this.organizationRepository = organizationRepository;
@@ -71,6 +74,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
+        this.userPasswordValidator = userPasswordValidator;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -87,6 +91,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
         if (checkPassword) {
             validatePasswordPolicy(userDTO, password, organizationId);
+            // 校验用户密码
+            userPasswordValidator.validate(password, organizationId, true);
         }
         UserDTO dto = new UserDTO();
         UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));

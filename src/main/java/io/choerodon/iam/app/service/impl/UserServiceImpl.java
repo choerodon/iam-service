@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public class UserServiceImpl implements UserService {
     private FileFeignClient fileFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
+    private UserPasswordValidator userPasswordValidator;
     private RoleRepository roleRepository;
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
@@ -86,6 +88,7 @@ public class UserServiceImpl implements UserService {
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
+                           UserPasswordValidator userPasswordValidator,
                            PasswordPolicyManager passwordPolicyManager,
                            RoleRepository roleRepository,
                            MemberRoleMapper memberRoleMapper) {
@@ -98,6 +101,7 @@ public class UserServiceImpl implements UserService {
         this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
+        this.userPasswordValidator = userPasswordValidator;
         this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
     }
@@ -280,6 +284,8 @@ public class UserServiceImpl implements UserService {
                 if (userPasswordDTO.getPassword() != null) {
                     passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), baseUserDO, basePasswordPolicyDO);
                 }
+                // 校验用户密码
+                userPasswordValidator.validate(userPasswordDTO.getPassword(), organizationDO.getId(), true);
             }
         }
         user.resetPassword(userPasswordDTO.getPassword());
