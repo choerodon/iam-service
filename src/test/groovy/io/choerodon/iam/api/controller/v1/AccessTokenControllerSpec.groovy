@@ -31,17 +31,22 @@ class AccessTokenControllerSpec extends Specification {
     AccessTokenController accessTokenController = new AccessTokenController(accessTokenService)
 
     def "List"() {
+        given: "参数准备"
+        def currentToken = "currentToken"
         when: "调用方法"
-        def entity = restTemplate.getForEntity(BASE_PATH, Page)
+        def entity = restTemplate.getForEntity(BASE_PATH + "?currentToken={currentToken}", Page, currentToken)
         then: "结果比对"
         entity.statusCode.is2xxSuccessful()
     }
 
     def "Delete"() {
+        given: "参数准备"
         HttpEntity<Object> httpEntity = new HttpEntity<>()
+        def tokenId = "tokenId"
+        def currentToken = "currentToken"
 
         when: "调用方法"
-        def entity = restTemplate.exchange(BASE_PATH, HttpMethod.DELETE, httpEntity, Void)
+        def entity = restTemplate.exchange(BASE_PATH + "?tokenId={tokenId}&currentToken={currentToken}", HttpMethod.DELETE, httpEntity, Void, tokenId, currentToken)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
