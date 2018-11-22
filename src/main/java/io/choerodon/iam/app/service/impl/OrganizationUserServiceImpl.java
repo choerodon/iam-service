@@ -150,7 +150,9 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {
         BaseUserDO baseUserDO = new BaseUserDO();
         BeanUtils.copyProperties(userDTO, baseUserDO);
-        BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.findByOrgId(organizationId);
+        BasePasswordPolicyDO example = new BasePasswordPolicyDO();
+        example.setOrganizationId(organizationId);
+        BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.selectOne(example);
         Optional.ofNullable(basePasswordPolicyDO)
                 .map(passwordPolicy -> {
                     if (!password.equals(passwordPolicy.getOriginalPassword())) {

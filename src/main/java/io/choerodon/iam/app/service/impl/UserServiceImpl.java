@@ -278,9 +278,9 @@ public class UserServiceImpl implements UserService {
             BeanUtils.copyProperties(user, baseUserDO);
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
             if (organizationDO != null) {
-                BasePasswordPolicyDO basePasswordPolicyDO =
-                        basePasswordPolicyMapper.selectByPrimaryKey(
-                                basePasswordPolicyMapper.findByOrgId(organizationDO.getId()));
+                BasePasswordPolicyDO example = new BasePasswordPolicyDO();
+                example.setOrganizationId(organizationDO.getId());
+                BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.selectOne(example);
                 if (userPasswordDTO.getPassword() != null) {
                     passwordPolicyManager.passwordValidate(userPasswordDTO.getPassword(), baseUserDO, basePasswordPolicyDO);
                 }
@@ -552,7 +552,9 @@ public class UserServiceImpl implements UserService {
         Long organizationId = user.getOrganizationId();
         BaseUserDO userDO = new BaseUserDO();
         BeanUtils.copyProperties(user, userDO);
-        Optional.ofNullable(basePasswordPolicyMapper.findByOrgId(organizationId))
+        BasePasswordPolicyDO example = new BasePasswordPolicyDO();
+        example.setOrganizationId(organizationId);
+        Optional.ofNullable(basePasswordPolicyMapper.selectOne(example))
                 .ifPresent(passwordPolicy -> {
                     if (!password.equals(passwordPolicy.getOriginalPassword())) {
                         passwordPolicyManager.passwordValidate(password, userDO, passwordPolicy);
