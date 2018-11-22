@@ -8,7 +8,6 @@ import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.SystemNoticesService;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -81,11 +80,11 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
             allUsersId = Arrays.asList(userRepository.listUserIds());
         }
         //发送人
-        Long createUserId = DetailsHelper.getUserDetails().getUserId();
+//        Long createUserId = DetailsHelper.getUserDetails().getUserId();
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        iUserService.sendNotice(createUserId, allUsersId, code, params, sourceId);
+        iUserService.sendNotice(null, allUsersId, code, params, sourceId);
     }
 
 }
