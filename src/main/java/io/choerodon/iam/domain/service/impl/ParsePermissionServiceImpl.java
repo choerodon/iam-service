@@ -116,7 +116,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 permissionRepository.deleteById(permission.getId());
                 RolePermissionE rolePermissionE = new RolePermissionE(null, null, permission.getId());
                 rolePermissionRepository.delete(rolePermissionE);
-                logger.debug("service {} delete deprecated permission {}", serviceName, permission.getCode());
+                logger.info("@@@ service {} delete deprecated permission {}", serviceName, permission.getCode());
                 count++;
             }
         }
