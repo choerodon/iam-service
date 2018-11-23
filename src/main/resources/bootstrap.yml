@@ -17,4 +17,6 @@ management:
   security:
     enabled: false
 security:
-  ignored: /choerodon/config
+  basic:
+    enabled: false
+#  ignored: /choerodon/config,/v2/choerodon/api-docs

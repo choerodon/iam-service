@@ -70,16 +70,10 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         } else {
             throw new CommonException("fetch swagger error, statusCode is not 2XX, serviceId: " + payload.getId());
         }
-
     }
 
     @Override
     public void parser(EurekaEventPayload payload) {
-        //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
-        if (cleanErrorRolePermission) {
-            logger.info("begin to clean the error role_permission");
-            cleanRolePermission();
-        }
         try {
             fetchSwaggerJsonByIp(payload);
             String serviceName = payload.getAppName();
@@ -90,6 +84,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 logger.info("receive message from manager-service, service: {}, version: {}, ip: {}", serviceName, payload.getVersion(), payload.getInstanceAddress());
             }
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
+                //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
+                if (cleanErrorRolePermission) {
+                    logger.info("begin to clean the error role_permission");
+                    cleanRolePermission();
+                }
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
                 Map<String, RoleDO> initRoleMap = queryInitRoleByCode();
