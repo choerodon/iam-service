@@ -35,6 +35,15 @@
         </foreach>
     </select>
 
+    <select id="listUsersByEmails" resultMap="userDO">
+        SELECT * FROM iam_user
+        WHERE email IN
+        <foreach item="email" index="index" collection="emails"
+                 open="(" separator="," close=")">
+            #{email}
+        </foreach>
+    </select>
+
     <select id="fulltextSearch" resultMap="userDO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userDO.loginName!= null">

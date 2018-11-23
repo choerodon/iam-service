@@ -454,6 +454,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDTO> listUsersByEmails(String[] emails) {
+        if (emails.length == 0) {
+            return new ArrayList<>();
+        } else {
+            return ConvertHelper.convertList(userRepository.listUsersByEmails(emails), UserDTO.class);
+        }
+    }
+
+    @Override
     public Page<OrganizationWithRoleDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest, Long id, String params) {
         return ConvertPageHelper.convertPage(organizationRepository.pagingQueryOrganizationAndRoleById(
                 pageRequest, id, params), OrganizationWithRoleDTO.class);

@@ -250,10 +250,17 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ApiOperation(value = "批量查询用户信息列表")
+    @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids) {
         return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据email批量查询用户信息列表")
+    @PostMapping(value = "/emails")
+    public ResponseEntity<List<UserDTO>> listUsersByEmails(@RequestBody String[] emails) {
+        return new ResponseEntity<>(userService.listUsersByEmails(emails), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)

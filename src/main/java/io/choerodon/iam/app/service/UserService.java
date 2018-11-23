@@ -76,6 +76,14 @@ public interface UserService {
      */
     List<UserDTO> listUsersByIds(Long[] ids);
 
+    /**
+     * 根据用户emails集合查询用户的集合
+     *
+     * @param ids 用户email数组
+     * @return List<UserDTO> 用户集合
+     */
+    List<UserDTO> listUsersByEmails(String[] emails);
+
     Page<OrganizationWithRoleDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest,
                                                                     Long id, String params);
 

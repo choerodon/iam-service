@@ -269,6 +269,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<UserDO> listUsersByEmails(String[] emails) {
+        return mapper.listUsersByEmails(emails);
+    }
+
+    @Override
     public int selectCount(UserDO user) {
         return mapper.selectCount(user);
     }
