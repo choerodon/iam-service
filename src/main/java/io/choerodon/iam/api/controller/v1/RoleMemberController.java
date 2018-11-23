@@ -164,9 +164,10 @@ public class RoleMemberController extends BaseController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+            @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnSiteLevel(
-                pageRequest, roleAssignmentSearchDTO, roleId), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, doPage), HttpStatus.OK);
     }
 
     /**
@@ -193,9 +194,10 @@ public class RoleMemberController extends BaseController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "organization_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+            @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnOrganizationLevel(
-                pageRequest, roleAssignmentSearchDTO, roleId, sourceId), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
