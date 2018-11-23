@@ -50,4 +50,6 @@ public interface RoleService {
     List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
 
     List<RoleDTO> listRolesBySourceIdAndTypeAndUserId(String sourceType, Long sourceId, Long userId);
+
+    RoleDTO queryByCode(String code);
 }
