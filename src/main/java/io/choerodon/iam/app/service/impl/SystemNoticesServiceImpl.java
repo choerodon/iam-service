@@ -84,7 +84,7 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        iUserService.sendNotice(null, allUsersId, code, params, sourceId);
+        Boolean aBoolean = iUserService.sendNotice(null, allUsersId, code, params, sourceId);
     }
 
 }
