@@ -8,6 +8,7 @@ import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.UserDTO
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.OrganizationUserService
+import io.choerodon.iam.app.service.SystemSettingService
 import io.choerodon.iam.domain.iam.entity.OrganizationE
 import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.repository.OrganizationRepository
@@ -45,14 +46,15 @@ class OrganizationUserServiceImplSpec extends Specification {
     private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
     private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
     private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
+    private SystemSettingService systemSettingService = Mock(SystemSettingService)
     private OrganizationUserService organizationUserService
     private Long userId
 
     def setup() {
         given: "构造organizationUserService"
         organizationUserService = new OrganizationUserServiceImpl(
-                organizationRepository, userRepository, passwordPolicyManager,
-                basePasswordPolicyMapper, userPasswordValidator, iUserService, sagaClient)
+                organizationRepository, userRepository, passwordRecord, passwordPolicyManager,
+                basePasswordPolicyMapper, userPasswordValidator, iUserService, systemSettingService, sagaClient)
         Field field = organizationUserService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationUserService, true)

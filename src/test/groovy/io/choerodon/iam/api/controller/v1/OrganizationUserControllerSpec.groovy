@@ -336,4 +336,54 @@ class OrganizationUserControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
     }
+
+    def "resetUserPassword"() {
+        given: "构造请求参数"
+        def httpEntity = new HttpEntity<Object>()
+
+        when: "调用方法[异常-用户不存在]"
+        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, ExceptionResponse, 1, 10000L)
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode() == "error.user.not.exist"
+
+        and: "插入用户模拟LDAP用户"
+        def userDO = new UserDO()
+        userDO.setLoginName("zmf2")
+        userDO.setRealName("zhengmofang2")
+        userDO.setEmail("zmfblu2@aliyun.com")
+        userDO.setOrganizationId(1)
+        userDO.setEnabled(true)
+        userDO.setAdmin(true)
+        userDO.setLdap(true)
+        userMapper.insertSelective(userDO)
+
+        when: "调用方法[异常-LDAP用户不能重置密码]"
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, ExceptionResponse, userDO.getOrganizationId(), userDO.getId())
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+        entity.getBody().getCode() == "error.ldap.user.can.not.update.password"
+
+        and: "插入用于重置的用户"
+        def user2 = new UserDO()
+        user2.setLoginName("zmf3")
+        user2.setRealName("zhengmofang3")
+        user2.setEmail("zmfblu3@aliyun.com")
+        user2.setOrganizationId(1)
+        user2.setEnabled(true)
+        user2.setAdmin(true)
+        userMapper.insertSelective(user2)
+
+        when: "调用方法"
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, UserDTO, userDO.getOrganizationId(), userDO.getId())
+
+        then: "校验结果"
+        entity.statusCode.is2xxSuccessful()
+
+        and: "删除插入的用户"
+        userMapper.deleteByPrimaryKey(userDO)
+        userMapper.deleteByPrimaryKey(user2)
+    }
 }

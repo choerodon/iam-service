@@ -1,20 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -23,10 +9,13 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
@@ -40,6 +29,18 @@ import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
@@ -54,19 +55,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private String serviceName;
     private OrganizationRepository organizationRepository;
     private UserRepository userRepository;
+    private PasswordRecord passwordRecord;
     private IUserService iUserService;
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
     private PasswordPolicyManager passwordPolicyManager;
     private UserPasswordValidator userPasswordValidator;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
+    @Value("${choerodon.site.default.password:abcd1234}")
+    private String siteDefaultPassword;
+    private SystemSettingService systemSettingService;
 
     public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
                                        UserRepository userRepository,
+                                       PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
                                        UserPasswordValidator userPasswordValidator,
                                        IUserService iUserService,
+                                       SystemSettingService systemSettingService,
                                        SagaClient sagaClient) {
         this.organizationRepository = organizationRepository;
         this.userRepository = userRepository;
@@ -75,6 +82,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
         this.userPasswordValidator = userPasswordValidator;
+        this.passwordRecord = passwordRecord;
+        this.systemSettingService = systemSettingService;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -200,6 +209,52 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             dto = ConvertHelper.convert(organizationE.updateUser(userE), UserDTO.class);
         }
         return dto;
+    }
+
+    @Override
+    public UserDTO resetUserPassword(Long organizationId, Long userId) {
+        UserE user = userRepository.selectByPrimaryKey(userId);
+        if (user == null) {
+            throw new CommonException("error.user.not.exist", userId);
+        }
+
+        if (user.getLdap()) {
+            throw new CommonException("error.ldap.user.can.not.update.password");
+        }
+
+        user.resetPassword(getDefaultPassword(organizationId));
+        userRepository.updateSelective(user);
+        passwordRecord.updatePassword(user.getId(), user.getPassword());
+
+        // send siteMsg
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("userName", user.getRealName());
+        List<Long> userIds = Collections.singletonList(userId);
+        iUserService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
+
+        return ConvertHelper.convert(user, UserDTO.class);
+    }
+
+    /**
+     * get password to reset
+     *
+     * @param organizationId organization id
+     * @return the password
+     */
+    private String getDefaultPassword(Long organizationId) {
+        BasePasswordPolicyDO basePasswordPolicyDO = new BasePasswordPolicyDO();
+        basePasswordPolicyDO.setOrganizationId(organizationId);
+        basePasswordPolicyDO = basePasswordPolicyMapper.selectOne(basePasswordPolicyDO);
+        if (basePasswordPolicyDO != null && basePasswordPolicyDO.getEnablePassword() && !StringUtils.isEmpty(basePasswordPolicyDO.getOriginalPassword())) {
+            return basePasswordPolicyDO.getOriginalPassword();
+        }
+
+        SystemSettingDTO setting = systemSettingService.getSetting();
+        if (setting != null && !StringUtils.isEmpty(setting.getDefaultPassword())) {
+            return setting.getDefaultPassword();
+        }
+
+        return siteDefaultPassword;
     }
 
     @Transactional(rollbackFor = CommonException.class)
