@@ -20,6 +20,8 @@ public interface OrganizationUserService {
 
     UserDTO update(UserDTO userDTO);
 
+    UserDTO resetUserPassword(Long organizationId, Long userId);
+
     void delete(Long organizationId, Long id);
 
     UserDTO query(Long organizationId, Long id);
