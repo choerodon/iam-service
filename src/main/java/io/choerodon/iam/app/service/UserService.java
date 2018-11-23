@@ -48,11 +48,11 @@ public interface UserService {
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
-                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId);
+                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long roleId, Long sourceId);
+                                                              Long roleId, Long sourceId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO,
