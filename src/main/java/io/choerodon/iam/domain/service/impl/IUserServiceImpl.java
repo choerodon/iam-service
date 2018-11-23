@@ -1,5 +1,12 @@
 package io.choerodon.iam.domain.service.impl;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
@@ -8,12 +15,6 @@ import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.service.BaseServiceImpl;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author superlee
@@ -58,8 +59,8 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
 
     @Override
     @Async("notify-executor")
-    public void sendNotice(Long fromUserId, List<Long> userIds, String code,
-                           Map<String, Object> params, Long sourceId) {
+    public Boolean sendNotice(Long fromUserId, List<Long> userIds, String code,
+                              Map<String, Object> params, Long sourceId) {
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
         NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
@@ -72,7 +73,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setId(id);
             UserE userE = userRepository.selectByPrimaryKey(id);
-            if (userE != null){
+            if (userE != null) {
                 //有角色分配，但是角色已经删除
                 user.setEmail(userE.getEmail());
                 users.add(user);
@@ -80,5 +81,6 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
         });
         noticeSendDTO.setTargetUsers(users);
         notifyFeignClient.postNotice(noticeSendDTO);
+        return true;
     }
 }
