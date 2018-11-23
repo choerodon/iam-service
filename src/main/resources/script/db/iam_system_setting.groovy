@@ -23,8 +23,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             column(name: 'DEFAULT_LANGUAGE', type: 'VARCHAR(50)', remarks: '平台默认语言') {
                 constraints(nullable: false)
             }
-            column(name: 'MIN_PASSWORD_LENGTH', type: 'INT', remarks: '不启用组织层密码策略时的密码最小长度')
-            column(name: 'MAX_PASSWORD_LENGTH', type: 'INT', remarks: '不启用组织层密码策略时的密码最大长度')
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
                 constraints(nullable: true)
             }
@@ -36,6 +34,17 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
                 constraints(nullable: true)
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
+
+    changeSet(author: 'zmfblue@qq.com', id: '2018-11-23-iam-system-setting-add-columns') {
+        addColumn(tableName: 'IAM_SYSTEM_SETTING') {
+            column(name: 'MIN_PASSWORD_LENGTH', type: 'INT UNSIGNED', remarks: '不启用组织层密码策略时的密码最小长度', afterColumn: 'DEFAULT_LANGUAGE', defaultValue: 0) {
+                constraints(nullable: false)
+            }
+            column(name: 'MAX_PASSWORD_LENGTH', type: 'INT UNSIGNED', remarks: '不启用组织层密码策略时的密码最大长度', afterColumn: 'MIN_PASSWORD_LENGTH', defaultValue: 65535) {
+                constraints(nullable: false)
+            }
         }
     }
 }
