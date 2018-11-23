@@ -48,11 +48,11 @@ public interface UserService {
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
-                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId);
+                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long roleId, Long sourceId);
+                                                              Long roleId, Long sourceId, boolean doPage);
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO,
@@ -75,6 +75,14 @@ public interface UserService {
      * @return List<UserDTO> 用户集合
      */
     List<UserDTO> listUsersByIds(Long[] ids);
+
+    /**
+     * 根据用户emails集合查询用户的集合
+     *
+     * @param ids 用户email数组
+     * @return List<UserDTO> 用户集合
+     */
+    List<UserDTO> listUsersByEmails(String[] emails);
 
     Page<OrganizationWithRoleDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest,
                                                                     Long id, String params);

@@ -70,6 +70,14 @@ public interface UserRepository {
      */
     List<UserDO> listUsersByIds(Long[] ids);
 
+    /**
+     * 根据用户emails集合查询用户的集合
+     *
+     * @param emails 用户email数组
+     * @return List<UserDO> 用户集合
+     */
+    List<UserDO> listUsersByEmails(String[] emails);
+
     Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
 
     List<UserDO> insertList(List<UserDO> insertUsers);

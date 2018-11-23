@@ -199,17 +199,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId) {
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage) {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersByRoleIdAndLevel(
-                        pageRequest, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value(), true), UserDTO.class);
+                        pageRequest, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value(), doPage), UserDTO.class);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId) {
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersByRoleIdAndLevel(
-                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value(), true), UserDTO.class);
+                        pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value(), doPage), UserDTO.class);
     }
 
     @Override
@@ -450,6 +450,15 @@ public class UserServiceImpl implements UserService {
             return new ArrayList<>();
         } else {
             return ConvertHelper.convertList(userRepository.listUsersByIds(ids), UserDTO.class);
+        }
+    }
+
+    @Override
+    public List<UserDTO> listUsersByEmails(String[] emails) {
+        if (emails.length == 0) {
+            return new ArrayList<>();
+        } else {
+            return ConvertHelper.convertList(userRepository.listUsersByEmails(emails), UserDTO.class);
         }
     }
 

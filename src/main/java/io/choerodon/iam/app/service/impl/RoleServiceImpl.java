@@ -256,4 +256,11 @@ public class RoleServiceImpl implements RoleService {
         return ConvertHelper.convertList(
                 roleRepository.selectUsersRolesBySourceIdAndType(sourceType, sourceId, userId), RoleDTO.class);
     }
+
+    @Override
+    public RoleDTO queryByCode(String code) {
+        RoleDO roleDO = new RoleDO();
+        roleDO.setCode(code);
+        return ConvertHelper.convert(roleRepository.selectOne(roleDO), RoleDTO.class);
+    }
 }

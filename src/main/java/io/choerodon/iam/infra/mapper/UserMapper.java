@@ -57,6 +57,8 @@ public interface UserMapper extends BaseMapper<UserDO> {
 
     List<UserDO> listUsersByIds(@Param("ids") Long[] ids);
 
+    List<UserDO> listUsersByEmails(@Param("emails") String[] emails);
+
     List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO, @Param("params") String params);
 
     Set<String> matchLoginName(@Param("nameSet") Set<String> nameSet);
