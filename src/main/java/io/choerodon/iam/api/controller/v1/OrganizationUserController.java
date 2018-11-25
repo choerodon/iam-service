@@ -87,7 +87,7 @@ public class OrganizationUserController extends BaseController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重置用户密码")
-    @PutMapping(value = "/users/{id}", params = "type=reset_password")
+    @PutMapping(value = "/users/{id}/reset")
     public ResponseEntity<UserDTO> resetUserPassword(@PathVariable(name = "organization_id") Long organizationId, @PathVariable Long id) {
         return new ResponseEntity<>(organizationUserService.resetUserPassword(organizationId, id), HttpStatus.OK);
     }
