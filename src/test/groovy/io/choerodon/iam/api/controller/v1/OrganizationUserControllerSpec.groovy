@@ -342,7 +342,7 @@ class OrganizationUserControllerSpec extends Specification {
         def httpEntity = new HttpEntity<Object>()
 
         when: "调用方法[异常-用户不存在]"
-        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, ExceptionResponse, 1, 10000L)
+        def entity = restTemplate.exchange(BASE_PATH + "/users/{id}/reset", HttpMethod.PUT, httpEntity, ExceptionResponse, 1, 10000L)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -360,7 +360,7 @@ class OrganizationUserControllerSpec extends Specification {
         userMapper.insertSelective(userDO)
 
         when: "调用方法[异常-LDAP用户不能重置密码]"
-        entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, ExceptionResponse, userDO.getOrganizationId(), userDO.getId())
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/reset", HttpMethod.PUT, httpEntity, ExceptionResponse, userDO.getOrganizationId(), userDO.getId())
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -377,7 +377,7 @@ class OrganizationUserControllerSpec extends Specification {
         userMapper.insertSelective(user2)
 
         when: "调用方法"
-        entity = restTemplate.exchange(BASE_PATH + "/users/{id}?type=reset_password", HttpMethod.PUT, httpEntity, UserDTO, userDO.getOrganizationId(), userDO.getId())
+        entity = restTemplate.exchange(BASE_PATH + "/users/{id}/reset", HttpMethod.PUT, httpEntity, UserDTO, userDO.getOrganizationId(), userDO.getId())
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
