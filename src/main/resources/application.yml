@@ -44,7 +44,7 @@ choerodon:
       enabled: true # 启用任务调度消费端
       thread-num: 1 # 任务调度消费线程数
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-  cleanRolePermission: true
+  cleanPermission: false
 eureka:
   instance:
     preferIpAddress: true

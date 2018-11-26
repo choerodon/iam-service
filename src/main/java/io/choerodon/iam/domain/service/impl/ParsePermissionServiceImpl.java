@@ -47,8 +47,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     private RoleRepository roleRepository;
 
-    @Value("${choerodon.cleanRolePermission:true}")
-    private boolean cleanErrorRolePermission;
+    @Value("${choerodon.cleanPermission:false}")
+    private boolean cleanPermission;
 
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -75,11 +75,6 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
 
     @Override
     public void parser(EurekaEventPayload payload) {
-        //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
-        if (cleanErrorRolePermission) {
-            logger.info("begin to clean the error role_permission");
-            cleanRolePermission();
-        }
         try {
             fetchSwaggerJsonByIp(payload);
             String serviceName = payload.getAppName();
@@ -99,7 +94,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
                     parserMethod(methodIterator, pathNode, serviceName, initRoleMap, permissionCodes);
                 }
-                deleteDeprecatedPermission(permissionCodes, serviceName);
+                if (cleanPermission) {
+                    deleteDeprecatedPermission(permissionCodes, serviceName);
+                    //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
+                    cleanRolePermission();
+                }
             }
         } catch (IOException e) {
             throw new CommonException("error.parsePermissionService.parse.IOException", e);
@@ -116,7 +115,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 permissionRepository.deleteById(permission.getId());
                 RolePermissionE rolePermissionE = new RolePermissionE(null, null, permission.getId());
                 rolePermissionRepository.delete(rolePermissionE);
-                logger.debug("service {} delete deprecated permission {}", serviceName, permission.getCode());
+                logger.info("@@@ service {} delete deprecated permission {}", serviceName, permission.getCode());
                 count++;
             }
         }
@@ -131,7 +130,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             for (PermissionDO permission : permissions) {
                 RolePermissionE rp = new RolePermissionE(null, role.getId(), permission.getId());
                 rolePermissionRepository.delete(rp);
-                logger.debug("delete error role_permission, role id: {}, code: {}, level: {} ## permission id: {}, code:{}, level: {}",
+                logger.info("delete error role_permission, role id: {}, code: {}, level: {} ## permission id: {}, code:{}, level: {}",
                         role.getId(), role.getCode(), role.getLevel(), permission.getId(), permission.getCode(), permission.getLevel());
                 count++;
             }
@@ -143,7 +142,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      * 解析文档树某个路径的所有方法
      *
      * @param methodIterator 所有方法
-     * @param pathNode       路径
+     * @param pathNode       路径delete deprecated permission
      * @param serviceName    服务名
      */
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
