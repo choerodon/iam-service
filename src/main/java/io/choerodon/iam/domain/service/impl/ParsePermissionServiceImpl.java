@@ -142,7 +142,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      * 解析文档树某个路径的所有方法
      *
      * @param methodIterator 所有方法
-     * @param pathNode       路径delete deprecated permission
+     * @param pathNode       路径
      * @param serviceName    服务名
      */
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
