@@ -61,7 +61,7 @@
 		FROM
 			iam_dashboard d
 		WHERE
-			d.fd_level IN ( 'site', #{userDashboard.level} )
+			d.fd_level = #{userDashboard.level}
 			AND d.is_enabled = 1
 	</select>
 </mapper>
