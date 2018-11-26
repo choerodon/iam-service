@@ -47,6 +47,10 @@ public interface UserRepository {
 
     Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
 
+    Page<UserDO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, PageRequest pageRequest, String param);
+
+    Page<UserDO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
+
     Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId,
                                                    String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                    String param);
