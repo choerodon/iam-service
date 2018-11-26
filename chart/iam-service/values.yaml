@@ -44,9 +44,10 @@ env:
     SPRING_DATASOURCE_USERNAME: username
     SPRING_DATASOURCE_PASSWORD: password
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.io-choerodon:8000/eureka/
-    # 清理role_permission表中角色和权限层级不匹配的脏数据
-    CHOERODON_CLEAN_ROLE_PERMISSION: true
-
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181
+    # 清理permission表中的旧接口和role_permission表中角色和权限层级不匹配的脏数据
+    CHOERODON_CLEAN_PERMISSION: false
     # skywalking 代理端配置
     SKYWALKING_OPTS: >-
       -javaagent:/agent/skywalking-agent.jar
