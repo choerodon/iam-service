@@ -36,7 +36,7 @@
 			iam_user_dashboard ud
 		WHERE
 			d.id = ud.dashboard_id
-			AND ud.fd_level IN ( 'site', #{userDashboard.level} )
+			AND ud.fd_level = #{userDashboard.level}
 			AND ud.user_id = #{userDashboard.userId}
 			AND source_id = #{userDashboard.sourceId}
 			AND d.is_enabled = 1
