@@ -3,8 +3,10 @@ package io.choerodon.iam.domain.service.impl;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
@@ -59,8 +61,9 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
 
     @Override
     @Async("notify-executor")
-    public Boolean sendNotice(Long fromUserId, List<Long> userIds, String code,
-                              Map<String, Object> params, Long sourceId) {
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
+                                     Map<String, Object> params, Long sourceId) {
+        long begintime = System.currentTimeMillis();
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
         NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
@@ -81,6 +84,6 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
         });
         noticeSendDTO.setTargetUsers(users);
         notifyFeignClient.postNotice(noticeSendDTO);
-        return true;
+        return new AsyncResult<>((System.currentTimeMillis() - begintime) / 1000 + "s");
     }
 }

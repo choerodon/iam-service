@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import io.choerodon.iam.domain.iam.entity.UserE;
 
@@ -26,5 +27,5 @@ public interface IUserService {
      * @param params     渲染参数
      * @param sourceId   触发发送通知对应的组织/项目id，如果是site层，可以为0或null
      */
-    Boolean sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
 }

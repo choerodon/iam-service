@@ -1,13 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.eventhandler.OrganizationListener;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.SystemNoticesService;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -26,6 +30,7 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
     private OrganizationUserService organizationUserService;
     public static final String ORG_NOTYFICATION_CODE = "organizationNotification";
     public static final String SITE_NOTYFICATION_CODE = "systemNotification";
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationListener.class);
 
     public SystemNoticesServiceImpl(UserRepository userRepository, IUserService iUserService, OrganizationUserService organizationUserService) {
         this.userRepository = userRepository;
@@ -84,7 +89,22 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        Boolean aBoolean = iUserService.sendNotice(null, allUsersId, code, params, sourceId);
+        Future<String> future = iUserService.sendNotice(null, allUsersId, code, params, sourceId);
+        while (true) {  // 这里使用了循环判断，等待获取结果信息
+            try {
+                if (future.isDone()) {  // 判断是否执行完毕
+                    logger.info("The system notification has been sent out", future.get());
+                    break;
+                }
+                if (future.isCancelled()) {  // 判断是否取消
+                    logger.info("The system notification has been cancelled", future.get());
+                    break;
+                }
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                throw new CommonException("error.send.system.notification,{}", e);
+            }
+        }
     }
 
 }
