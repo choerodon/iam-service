@@ -6,6 +6,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
@@ -196,6 +197,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         } else {
             checkCode(organization);
         }
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
+        return ConvertPageHelper.convertPage(
+                userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, pageRequest, param), UserDTO.class);
     }
 
     private void checkCode(OrganizationDTO organization) {

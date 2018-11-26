@@ -106,4 +106,6 @@ public interface UserService {
 
 
     Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param);
+
+    Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
 }

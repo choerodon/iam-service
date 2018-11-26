@@ -277,6 +277,23 @@ public class RoleMemberController extends BaseController {
     }
 
     /**
+     * 分页查询site层有角色的用户
+     *
+     * @return 查询结果
+     */
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "全局层分页查询site层有角色的用户")
+    @GetMapping(value = "/site/role_members/users")
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnSiteLevel(@ApiIgnore
+                                                                     @SortDefault(value = "id", direction = Sort.Direction.ASC)
+                                                                             PageRequest pageRequest,
+                                                                     @RequestParam(required = false, name = "id") Long userId,
+                                                                     @RequestParam(required = false) String email,
+                                                                     @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(userService.pagingQueryUsersOnSiteLevel(userId, email, pageRequest, param), HttpStatus.OK);
+    }
+
+    /**
      * 查询organization层角色,附带该角色下分配的用户数
      *
      * @return 查询结果

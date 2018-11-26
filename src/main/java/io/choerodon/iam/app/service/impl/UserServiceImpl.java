@@ -652,4 +652,10 @@ public class UserServiceImpl implements UserService {
     public Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param) {
         return userRepository.pagingAllUsersByParams(pageRequest, param);
     }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param) {
+        return ConvertPageHelper.convertPage(
+                userRepository.pagingQueryUsersOnSiteLevel(userId, email, pageRequest, param), UserDTO.class);
+    }
 }

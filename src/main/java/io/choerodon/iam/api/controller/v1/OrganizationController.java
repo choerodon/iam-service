@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -118,4 +119,25 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    /**
+     * 根据organizationId和param模糊查询loginName和realName两列
+     *
+     * @param id
+     * @param pageRequest
+     * @param param
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页模糊查询组织下的用户")
+    @CustomPageRequest
+    @GetMapping(value = "/{organization_id}/users")
+    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "organization_id") Long id,
+                                              @ApiIgnore
+                                              @SortDefault(value = "id", direction = Sort.Direction.ASC)
+                                                      PageRequest pageRequest,
+                                              @RequestParam(required = false, name = "id") Long userId,
+                                              @RequestParam(required = false) String email,
+                                              @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
+    }
 }

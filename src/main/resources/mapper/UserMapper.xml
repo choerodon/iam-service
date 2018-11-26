@@ -406,6 +406,35 @@
         </if>
     </select>
 
+    <select id="selectUsersByLevelAndOptions" resultMap="userDO">
+        SELECT iam_user.*
+        FROM iam_user
+        JOIN
+        (
+        SELECT
+        DISTINCT member_id
+        FROM
+        iam_member_role
+        WHERE
+        source_id = #{sourceId}
+        AND source_type = #{sourceType}
+        AND member_type = 'user'
+        ) t
+        ON iam_user.id = t.member_id
+        WHERE 1=1
+        <if test="userId != null">
+            AND iam_user.id = #{userId}
+        </if>
+        <if test="email != null">
+            AND iam_user.email LIKE concat(concat('%',#{email}),'%')
+        </if>
+        <if test="param != null">
+            AND (
+            iam_user.login_name LIKE concat(concat('%',#{param}),'%') OR
+            iam_user.real_name LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
 
     <select id="selectAdminUserPage" resultMap="userDO">
         SELECT * FROM iam_user WHERE is_admin = 1
