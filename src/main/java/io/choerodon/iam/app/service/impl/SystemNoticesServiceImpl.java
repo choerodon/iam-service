@@ -56,7 +56,7 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
             @JobParam(name = "orgId", type = Long.class, description = "组织Id")
     }, description = "组织层发送系统通知")
     public void organizationNotification(Map<String, Object> map) {
-        Long orgId = Optional.ofNullable((Long) map.get("orgId")).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
+        Long orgId = Optional.ofNullable(new Long(map.get("orgId").toString())).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
         String content = Optional.ofNullable((String) map.get("content")).orElseThrow(() -> new CommonException("error.organizationNotification.content.empty"));
         sendSystemNotification(ResourceLevel.ORGANIZATION, orgId, content);
     }
