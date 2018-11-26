@@ -76,7 +76,6 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     @Override
     public void parser(EurekaEventPayload payload) {
         try {
-            logger.info("*** cleanPermission {}", cleanPermission);
             fetchSwaggerJsonByIp(payload);
             String serviceName = payload.getAppName();
             String json = payload.getApiData();
