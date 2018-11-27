@@ -9,7 +9,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
- * @date 2018/3/26
  */
 public interface ProjectService {
 

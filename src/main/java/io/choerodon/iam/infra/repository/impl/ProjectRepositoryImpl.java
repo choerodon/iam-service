@@ -1,9 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -11,11 +7,16 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.dataobject.ProjectTypeDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author flyleft
@@ -29,12 +30,16 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     private MemberRoleMapper memberRoleMapper;
 
+    private ProjectTypeMapper projectTypeMapper;
 
-    public ProjectRepositoryImpl(ProjectMapper projectMapper, OrganizationMapper organizationMapper,
-                                 MemberRoleMapper memberRoleMapper) {
+    public ProjectRepositoryImpl(ProjectMapper projectMapper,
+                                 OrganizationMapper organizationMapper,
+                                 MemberRoleMapper memberRoleMapper,
+                                 ProjectTypeMapper projectTypeMapper) {
         this.projectMapper = projectMapper;
         this.organizationMapper = organizationMapper;
         this.memberRoleMapper = memberRoleMapper;
+        this.projectTypeMapper = projectTypeMapper;
     }
 
     @Override
@@ -51,6 +56,9 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         }
         if (projectMapper.insertSelective(projectDO) != 1) {
             throw new CommonException("error.project.create");
+        }
+        if (projectDO.getType() != null && projectTypeMapper.selectCount(new ProjectTypeDO(projectDO.getType())) != 1) {
+            throw new CommonException("error.project.type.notExist");
         }
         return ConvertHelper.convert(projectMapper.selectByPrimaryKey(projectDO.getId()), ProjectE.class);
     }
@@ -84,6 +92,9 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         ProjectDO project = projectMapper.selectByPrimaryKey(projectDO.getId());
         if (project == null) {
             throw new CommonException("error.project.not.exist");
+        }
+        if (projectDO.getType() != null && projectTypeMapper.selectCount(new ProjectTypeDO(projectDO.getType())) != 1) {
+            throw new CommonException("error.project.type.notExist");
         }
         if (projectMapper.updateByPrimaryKeySelective(projectDO) != 1) {
             throw new CommonException("error.project.update");

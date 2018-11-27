@@ -20,7 +20,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author flyleft
- * @date 2018/3/26
  */
 @RestController
 @RequestMapping(value = "/v1/projects")
@@ -47,11 +46,6 @@ public class ProjectController extends BaseController {
 
     /**
      * 根据projectId和param模糊查询loginName和realName两列
-     *
-     * @param id
-     * @param pageRequest
-     * @param param
-     * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页模糊查询项目下的用户")
@@ -69,10 +63,6 @@ public class ProjectController extends BaseController {
 
     /**
      * 项目层更新项目，code和organizationId都不可更改
-     *
-     * @param id
-     * @param projectDTO
-     * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "修改项目")

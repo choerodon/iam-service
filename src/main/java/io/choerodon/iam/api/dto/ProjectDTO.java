@@ -12,7 +12,6 @@ import io.choerodon.core.exception.CommonException;
 
 /**
  * @author flyleft
- * @date 2018/3/22
  */
 public class ProjectDTO {
 
@@ -42,6 +41,9 @@ public class ProjectDTO {
 
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
+
+    @ApiModelProperty(value = "项目类型code/非必填")
+    private String type;
 
     public Long getId() {
         return id;
@@ -89,6 +91,14 @@ public class ProjectDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void updateCheck() {
