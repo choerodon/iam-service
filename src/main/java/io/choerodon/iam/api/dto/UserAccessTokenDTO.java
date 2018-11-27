@@ -4,6 +4,10 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.util.SerializationUtils;
+
+import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE;
 
 public class UserAccessTokenDTO {
 
@@ -97,18 +101,16 @@ public class UserAccessTokenDTO {
         isCurrentToken = currentToken;
     }
 
-    public UserAccessTokenDTO(String tokenId, String clientId, String redirectUri, String accesstoken, Date expirationTime, Long accessTokenValidity, String currentToken) {
-        this.tokenId = tokenId;
-        this.clientId = clientId;
-        this.accesstoken = accesstoken;
-        this.redirectUri = redirectUri;
-        this.expirationTime = expirationTime;
-        this.isExpire = false;
-        if (expirationTime.getTime() < new Date().getTime()) {
-            this.isExpire = true;
-        }
-        this.createTime = new Date(expirationTime.getTime() - accessTokenValidity * 1000);
-        this.isCurrentToken = currentToken.equalsIgnoreCase(accesstoken);
+    public UserAccessTokenDTO(UserAccessTokenE tokenE, String currentToken) {
+        this.tokenId = tokenE.getTokenId();
+        this.clientId = tokenE.getClientId();
+        this.redirectUri = tokenE.getRedirectUri();
+        DefaultOAuth2AccessToken token = SerializationUtils.deserialize(tokenE.getToken());
+        this.accesstoken = token.getValue();
+        this.expirationTime = token.getExpiration();
+        this.isExpire = token.isExpired();
+        this.createTime =(Date) token.getAdditionalInformation().get("createTime");
+        this.isCurrentToken = currentToken.equalsIgnoreCase(this.accesstoken);
     }
 
     public UserAccessTokenDTO() {
