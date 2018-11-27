@@ -1,14 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.UserAccessTokenDTO;
 import io.choerodon.iam.app.service.AccessTokenService;
 import io.choerodon.iam.domain.iam.entity.UserE;
@@ -25,7 +31,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  **/
 @Service
 public class AccessTokenServiceImpl implements AccessTokenService {
-
+    private static final Logger logger = LoggerFactory.getLogger(AccessTokenServiceImpl.class);
     private AccessTokenMapper accessTokenMapper;
     private RefreshTokenMapper refreshTokenMapper;
     private UserRepository userRepository;
@@ -80,5 +86,18 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         }
         accessTokenMapper.deleteByPrimaryKey(tokenId);
         refreshTokenMapper.deleteByPrimaryKey(accessTokenDO.getRefreshToken());
+    }
+
+    @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
+    @Override
+    public void deleteAllExpiredToken(Map<String, Object> map) {
+        List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectAll();
+        //过滤出所有失效token
+        List<AccessTokenDO> allExpired = accessTokenDOS.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getExpiration().getTime() < new Date().getTime()).collect(Collectors.toList());
+        allExpired.forEach(t -> {
+            accessTokenMapper.deleteByPrimaryKey(t.getTokenId());
+            refreshTokenMapper.deleteByPrimaryKey(t.getRefreshToken());
+        });
+        logger.info("All expired tokens have been cleared.");
     }
 }
