@@ -80,7 +80,7 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "分页查询组织")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<OrganizationDTO>> list(@ApiIgnore
+    public ResponseEntity<Page<OrganizationDTO>> pagingQuery(@ApiIgnore
                                                       @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                               PageRequest pageRequest,
                                                       @RequestParam(required = false) String name,
@@ -131,7 +131,7 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{organization_id}/users")
-    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "organization_id") Long id,
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
                                               @ApiIgnore
                                               @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                       PageRequest pageRequest,
