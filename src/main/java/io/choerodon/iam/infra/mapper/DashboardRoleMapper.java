@@ -12,10 +12,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DashboardRoleMapper extends BaseMapper<DashboardRoleE> {
 
-//    void insertWithRoleId(@Param("dashboardId") Long dashboardId,
-//                          @Param("roleId") Long roleId,
-//                          @Param("level") String level);
-
     List<Long> selectRoleIds(@Param("dashboardId") Long dashboardId);
 
     void deleteByDashboardId(@Param("dashboardId") Long dashboardId);

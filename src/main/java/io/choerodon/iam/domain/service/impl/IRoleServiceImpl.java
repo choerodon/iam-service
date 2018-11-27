@@ -20,6 +20,7 @@ import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,6 +80,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     }
 
+    @Transactional(rollbackFor = CommonException.class)
     @Override
     public RoleE create(RoleE roleE) {
         roleE.createInit();

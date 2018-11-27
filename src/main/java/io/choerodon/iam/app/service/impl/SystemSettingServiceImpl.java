@@ -34,7 +34,7 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     private final SystemSettingRepository systemSettingRepository;
     private final SagaClient sagaClient;
     private final ObjectMapper objectMapper;
-    private final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
+    private static final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
 
     @Autowired
     public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository, SagaClient sagaClient) {

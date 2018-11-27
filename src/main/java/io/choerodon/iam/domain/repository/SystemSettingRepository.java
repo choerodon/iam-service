@@ -3,8 +3,6 @@ package io.choerodon.iam.domain.repository;
 import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.infra.dataobject.SystemSettingDO;
 
-import java.util.Optional;
-
 /**
  * @author zmf
  * @since 2018-10-15

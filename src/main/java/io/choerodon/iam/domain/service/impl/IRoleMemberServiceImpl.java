@@ -220,7 +220,8 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             List<Long> values = entry.getValue();
             if (values != null && !values.isEmpty()) {
                 values.forEach(id -> {
-                    Long roleId, memberId;
+                    Long roleId;
+                    Long memberId;
                     if (isRole) {
                         roleId = key;
                         memberId = id;
@@ -272,7 +273,6 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
                                                             Long memberId, String sourceType,
                                                             List<MemberRoleE> memberRoleEList,
                                                             List<MemberRoleE> returnList, String memberType) {
-//        String memberType = memberRoleEList.isEmpty() ? MemberType.USER.value() : memberRoleEList.get(0).getMemberType();
         MemberRoleE memberRoleE =
                 new MemberRoleE(null, null, memberId, memberType, sourceId, sourceType);
         List<MemberRoleE> existingMemberRoleEList = memberRoleRepository.select(memberRoleE);

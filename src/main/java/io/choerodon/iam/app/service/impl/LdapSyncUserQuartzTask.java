@@ -102,6 +102,7 @@ public class LdapSyncUserQuartzTask {
         try {
             latch.await();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new CommonException("error.ldapSyncUserTask.countDownLatch", e);
         }
         long entTime = System.currentTimeMillis();

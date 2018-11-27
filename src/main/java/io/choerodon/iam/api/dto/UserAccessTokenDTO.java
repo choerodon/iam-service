@@ -108,7 +108,7 @@ public class UserAccessTokenDTO {
             this.isExpire = true;
         }
         this.createTime = new Date(expirationTime.getTime() - accessTokenValidity * 1000);
-        this.isCurrentToken = currentToken.equalsIgnoreCase(accesstoken) ? true : false;
+        this.isCurrentToken = currentToken.equalsIgnoreCase(accesstoken);
     }
 
     public UserAccessTokenDTO() {

@@ -21,9 +21,6 @@ public class DashboardRoleE extends AuditDomain {
     private Long dashboardId;
     private Long roleId;
 
-    public DashboardRoleE() {
-    }
-
     public Long getId() {
         return id;
     }

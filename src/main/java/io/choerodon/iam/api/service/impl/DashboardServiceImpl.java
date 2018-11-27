@@ -9,7 +9,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.DashboardDTO;
-import io.choerodon.iam.api.dto.DashboardRoleDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.domain.iam.entity.DashboardE;
 import io.choerodon.iam.domain.iam.entity.DashboardRoleE;

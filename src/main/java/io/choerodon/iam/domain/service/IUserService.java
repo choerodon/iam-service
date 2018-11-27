@@ -20,7 +20,6 @@ public interface IUserService {
     /**
      * 异步
      * 向用户发送通知（包括邮件和站内信）
-     *
      * @param fromUserId 发送通知的用户
      * @param userIds    接受通知的目标用户
      * @param code       业务code
