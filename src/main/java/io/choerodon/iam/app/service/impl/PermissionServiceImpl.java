@@ -194,11 +194,7 @@ public class PermissionServiceImpl implements PermissionService {
                             String serviceName = p.getServiceName();
                             String json = fetchLatestSwaggerJson(serviceName);
                             Set<String> permissionCodes = parseCodeFromJson(json, serviceName);
-                            if (permissionCodes.contains(code)) {
-                                return false;
-                            } else {
-                                return true;
-                            }
+                            return !permissionCodes.contains(code);
                         })
                         .orElseThrow(() -> new CommonException("error.permission.does.not.exist"));
         if (deleted) {

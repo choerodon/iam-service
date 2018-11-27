@@ -35,6 +35,7 @@ import java.util.List;
 @RequestMapping(value = "/v1")
 public class RoleMemberController extends BaseController {
 
+    public static final String MEMBER_ROLE = "member-role";
     private RoleMemberService roleMemberService;
 
     private UserService userService;
@@ -554,7 +555,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation("查site层的历史")
     @GetMapping("/site/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnSite(@PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", 0L, ResourceLevel.SITE.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, 0L, ResourceLevel.SITE.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -562,7 +563,7 @@ public class RoleMemberController extends BaseController {
     @GetMapping("/organizations/{organization_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
                                                       @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
@@ -570,7 +571,7 @@ public class RoleMemberController extends BaseController {
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,
                                                  @PathVariable(name = "user_id") Long userId) {
-        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, "member-role", projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
+        return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, projectId, ResourceLevel.PROJECT.value()), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)

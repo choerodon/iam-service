@@ -38,7 +38,7 @@ public class NotifyListener {
     public List<UserEventPayload> create(String message) throws IOException {
         JavaType javaType = mapper.getTypeFactory().constructCollectionType(List.class, UserEventPayload.class);
         List<UserEventPayload> payloads = mapper.readValue(message, javaType);
-        if (payloads == null || payloads.size() == 0) {
+        if (payloads == null || payloads.isEmpty()) {
             throw new CommonException("error.sagaTask.sendPm.payloadsIsEmpty");
         }
         //暂时区分创建单个用户还是批量创建用户（批量创建一条会有问题）

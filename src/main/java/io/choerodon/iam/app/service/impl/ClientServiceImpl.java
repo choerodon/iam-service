@@ -65,8 +65,7 @@ public class ClientServiceImpl implements ClientService {
             }
         }
         String secret = generateString(new Random(), SOURCES, 16);
-        ClientCreateDTO clientCreateDTO = new ClientCreateDTO(name, secret);
-        return clientCreateDTO;
+        return new ClientCreateDTO(name, secret);
     }
 
     @Override

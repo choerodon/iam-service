@@ -293,7 +293,6 @@ public class UserServiceImpl implements UserService {
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
         // send siteMsg
-        //this.sendSiteMsg(user.getId(), user.getRealName());
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("userName", user.getRealName());
         List<Long> userIds = new ArrayList<>();

@@ -7,6 +7,10 @@ import java.util.*;
  */
 public class CollectionUtils {
 
+    private CollectionUtils() {
+        throw new IllegalStateException("cann`t instantiation class");
+    }
+
     public static <T> List<List<T>> subList(List<T> originalList, int volume) {
         List<List<T>> list = new ArrayList<>();
         if (volume < 1) {

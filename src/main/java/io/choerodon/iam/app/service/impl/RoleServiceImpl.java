@@ -79,7 +79,7 @@ public class RoleServiceImpl implements RoleService {
         return roleDTOPage;
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+
     @Override
     public RoleDTO create(RoleDTO roleDTO) {
         return ConvertHelper.convert(

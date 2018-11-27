@@ -286,22 +286,16 @@ public class ExcelImportUserTask {
                     emailExisted = true;
                 }
                 if (loginNameExisted && emailExisted) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(user, dto);
+                    ErrorUserDTO dto = getErrorUserDTO(user, "邮箱和登录名都已存在");
                     dto.setPassword(user.getOriginalPassword());
-                    dto.setCause("邮箱和登录名都已存在");
                     errorUsers.add(dto);
                 } else if (!loginNameExisted && emailExisted) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(user, dto);
+                    ErrorUserDTO dto = getErrorUserDTO(user, "邮箱已存在");
                     dto.setPassword(user.getOriginalPassword());
-                    dto.setCause("邮箱已存在");
                     errorUsers.add(dto);
                 } else if (loginNameExisted && !emailExisted) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(user, dto);
+                    ErrorUserDTO dto = getErrorUserDTO(user, "登录名已存在");
                     dto.setPassword(user.getOriginalPassword());
-                    dto.setCause("登录名已存在");
                     errorUsers.add(dto);
                 } else {
                     insertList.add(user);
@@ -325,9 +319,7 @@ public class ExcelImportUserTask {
                 for (UserDO user : list) {
                     String email = user.getEmail();
                     if (emailMap.get(email).size() > 1) {
-                        ErrorUserDTO dto = new ErrorUserDTO();
-                        BeanUtils.copyProperties(user, dto);
-                        dto.setCause("Excel中存在重复的登录名和密码");
+                        ErrorUserDTO dto = getErrorUserDTO(user, "Excel中存在重复的登录名和密码");
                         errorUsers.add(dto);
                     } else {
                         distinct.add(user);
@@ -353,9 +345,7 @@ public class ExcelImportUserTask {
             distinctNameList.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(list.get(i), dto);
-                    dto.setCause("Excel中存在重复的登录名");
+                    ErrorUserDTO dto = getErrorUserDTO(list.get(i), "Excel中存在重复的登录名");
                     errorUsers.add(dto);
                 }
             }
@@ -372,9 +362,7 @@ public class ExcelImportUserTask {
             returnList.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(list.get(i), dto);
-                    dto.setCause("Excel中存在重复的邮箱");
+                    ErrorUserDTO dto = getErrorUserDTO(list.get(i), "Excel中存在重复的邮箱");
                     errorUsers.add(dto);
                 }
             }
@@ -403,9 +391,7 @@ public class ExcelImportUserTask {
             distinctNameAndEmail.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
-                    ErrorUserDTO dto = new ErrorUserDTO();
-                    BeanUtils.copyProperties(list.get(i), dto);
-                    dto.setCause("Excel中存在重复的登录名和邮箱");
+                    ErrorUserDTO dto = getErrorUserDTO(list.get(i), "Excel中存在重复的登录名和邮箱");
                     errorUsers.add(dto);
                 }
             }
@@ -502,29 +488,19 @@ public class ExcelImportUserTask {
         Boolean ok = false;
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
             //乐观认为大多数是正确的，所以new 对象放到了if 里面
-            ErrorUserDTO errorUser = new ErrorUserDTO();
-            BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("登录名或邮箱为空");
+            ErrorUserDTO errorUser = getErrorUserDTO(user, "登录名或邮箱为空");
             errorUsers.add(errorUser);
         } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
-            ErrorUserDTO errorUser = new ErrorUserDTO();
-            BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("登录名只能使用字母和数字，长度在1-128位之间");
+            ErrorUserDTO errorUser = getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-128位之间");
             errorUsers.add(errorUser);
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
-            ErrorUserDTO errorUser = new ErrorUserDTO();
-            BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("非法的邮箱格式");
+            ErrorUserDTO errorUser = getErrorUserDTO(user, "非法的邮箱格式");
             errorUsers.add(errorUser);
         } else if (!StringUtils.isEmpty(realName) && realName.length() > 32) {
-            ErrorUserDTO errorUser = new ErrorUserDTO();
-            BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("用户名超过32位");
+            ErrorUserDTO errorUser = getErrorUserDTO(user, "用户名超过32位");
             errorUsers.add(errorUser);
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
-            ErrorUserDTO errorUser = new ErrorUserDTO();
-            BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("手机号格式不正确");
+            ErrorUserDTO errorUser = getErrorUserDTO(user, "手机号格式不正确");
             errorUsers.add(errorUser);
         } else if (!userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), false)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
@@ -541,20 +517,31 @@ public class ExcelImportUserTask {
             errorUsers.add(errorUser);
         } else {
             ok = true;
-            user.setLoginName(user.getLoginName().trim());
-            if (!StringUtils.isEmpty(user.getRealName())) {
-                user.setRealName(user.getRealName().trim());
-            }
-            user.setEmail(user.getEmail().trim());
-            if (!StringUtils.isEmpty(user.getPhone())) {
-                user.setPhone(user.getPhone().trim());
-            }
-            if (!StringUtils.isEmpty(user.getPassword())) {
-                user.setPassword(user.getPassword().trim());
-            }
+            setUserField(user);
             insertUsers.add(user);
         }
         return ok;
+    }
+
+    private void setUserField(UserDO user) {
+        user.setLoginName(user.getLoginName().trim());
+        if (!StringUtils.isEmpty(user.getRealName())) {
+            user.setRealName(user.getRealName().trim());
+        }
+        user.setEmail(user.getEmail().trim());
+        if (!StringUtils.isEmpty(user.getPhone())) {
+            user.setPhone(user.getPhone().trim());
+        }
+        if (!StringUtils.isEmpty(user.getPassword())) {
+            user.setPassword(user.getPassword().trim());
+        }
+    }
+
+    private ErrorUserDTO getErrorUserDTO(final UserDO user, final String cause) {
+        ErrorUserDTO errorUser = new ErrorUserDTO();
+        BeanUtils.copyProperties(user, errorUser);
+        errorUser.setCause(cause);
+        return errorUser;
     }
 
 

@@ -59,7 +59,7 @@ public class SystemSettingRepositoryImpl implements SystemSettingRepository {
     @Override
     public SystemSettingDTO getSetting() {
         List<SystemSettingDO> records = queryAll();
-        return records.size() == 0 ? null : convert(records.get(0));
+        return records.isEmpty() ? null : convert(records.get(0));
     }
 
     private List<SystemSettingDO> queryAll() {

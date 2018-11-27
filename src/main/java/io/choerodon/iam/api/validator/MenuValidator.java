@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.validator;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.infra.dataobject.MenuDO;

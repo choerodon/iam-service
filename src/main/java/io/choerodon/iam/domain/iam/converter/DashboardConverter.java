@@ -22,23 +22,23 @@ public class DashboardConverter implements ConvertorI<DashboardE, Object, Dashbo
 
     @Override
     public DashboardDTO entityToDto(DashboardE entity) {
-        DashboardDTO DashboardDTO = new DashboardDTO();
-        BeanUtils.copyProperties(entity, DashboardDTO);
-        return DashboardDTO;
+        DashboardDTO dashboardDTO = new DashboardDTO();
+        BeanUtils.copyProperties(entity, dashboardDTO);
+        return dashboardDTO;
     }
 
     @Override
     public DashboardE entityToDo(DashboardE entity) {
-        DashboardE Dashboard = new DashboardE();
-        BeanUtils.copyProperties(entity, Dashboard);
-        return Dashboard;
+        DashboardE dashboard = new DashboardE();
+        BeanUtils.copyProperties(entity, dashboard);
+        return dashboard;
     }
 
     @Override
     public DashboardE dtoToDo(DashboardDTO dto) {
-        DashboardE Dashboard = new DashboardE();
-        BeanUtils.copyProperties(dto, Dashboard);
-        return Dashboard;
+        DashboardE dashboard = new DashboardE();
+        BeanUtils.copyProperties(dto, dashboard);
+        return dashboard;
     }
 
 }

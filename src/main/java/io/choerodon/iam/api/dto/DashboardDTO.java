@@ -40,9 +40,6 @@ public class DashboardDTO {
     @ApiModelProperty(value = "是否启用/非必填")
     private Boolean enabled;
 
-    public DashboardDTO() {
-    }
-
     public Long getId() {
         return id;
     }

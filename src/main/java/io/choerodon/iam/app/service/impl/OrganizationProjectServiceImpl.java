@@ -45,6 +45,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 @RefreshScope
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    public static final String PROJECT = "project";
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -123,7 +124,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setOrganizationName(organizationDO.getName());
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
-            sagaClient.startSaga(PROJECT_CREATE, new StartInstanceDTO(input, "project", newProjectE.getId() + ""));
+            sagaClient.startSaga(PROJECT_CREATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + ""));
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.createProject.event", e);
         }
@@ -198,7 +199,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             BeanUtils.copyProperties(newProjectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", newProjectE.getId() + ""));
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + ""));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.updateProject.event", e);
             }
@@ -231,7 +232,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //saga
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, "project", "" + payload.getProjectId()));
+                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }

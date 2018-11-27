@@ -83,7 +83,7 @@ public class NamingRuleTransHandler implements HandlerMethodArgumentResolver {
             // 不含下划线，仅将首字母小写
             return name.substring(0, 1).toLowerCase() + name.substring(1);
         }
-        String camels[] = name.split("_");
+        String[] camels = name.split("_");
         for (String camel : camels) {
             if (camel.isEmpty()) {
                 continue;
