@@ -529,7 +529,15 @@ public class ExcelImportUserTask {
         } else if (!userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), false)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
-            errorUser.setCause("用户密码长度不符合系统设置中的范围");
+            String cause = "用户密码长度不符合系统设置中的范围";
+            // 为了获取报错的密码长度，再进行一次校验，从Exception中拿到报错信息，乐观认为犯错是少数，所以这样处理
+            try {
+                userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), true);
+            } catch (CommonException c) {
+                if (c.getParameters().length >= 2)
+                cause += "，长度应为" + c.getParameters()[0] + "-" + c.getParameters()[1];
+            }
+            errorUser.setCause(cause);
             errorUsers.add(errorUser);
         } else {
             ok = true;

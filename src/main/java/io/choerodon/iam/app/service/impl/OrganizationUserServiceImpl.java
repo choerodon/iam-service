@@ -22,8 +22,11 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import io.choerodon.iam.infra.dataobject.AccessTokenDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.mapper.AccessTokenMapper;
+import io.choerodon.iam.infra.mapper.RefreshTokenMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -62,6 +65,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private PasswordPolicyManager passwordPolicyManager;
     private UserPasswordValidator userPasswordValidator;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
+    private AccessTokenMapper accessTokenMapper;
+    private RefreshTokenMapper refreshTokenMapper;
     @Value("${choerodon.site.default.password:abcd1234}")
     private String siteDefaultPassword;
     private SystemSettingService systemSettingService;
@@ -71,6 +76,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
+                                       AccessTokenMapper accessTokenMapper,
+                                       RefreshTokenMapper refreshTokenMapper,
                                        UserPasswordValidator userPasswordValidator,
                                        IUserService iUserService,
                                        SystemSettingService systemSettingService,
@@ -84,6 +91,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userPasswordValidator = userPasswordValidator;
         this.passwordRecord = passwordRecord;
         this.systemSettingService = systemSettingService;
+        this.accessTokenMapper = accessTokenMapper;
+        this.refreshTokenMapper = refreshTokenMapper;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -211,6 +220,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return dto;
     }
 
+    @Transactional
     @Override
     public UserDTO resetUserPassword(Long organizationId, Long userId) {
         UserE user = userRepository.selectByPrimaryKey(userId);
@@ -222,13 +232,26 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
 
-        user.resetPassword(getDefaultPassword(organizationId));
+        String defaultPassword = getDefaultPassword(organizationId);
+
+        user.resetPassword(defaultPassword);
         userRepository.updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
+
+        // clear all the tokens of the user after resetting his password
+        AccessTokenDO accessTokenDO = new AccessTokenDO();
+        accessTokenDO.setUserName(user.getLoginName());
+        List<AccessTokenDO> accessTokenDOList = accessTokenMapper.select(accessTokenDO);
+        // delete access tokens
+        accessTokenMapper.delete(accessTokenDO);
+        // delete refresh tokens
+        accessTokenDOList.stream().filter(token -> token.getRefreshToken() != null).forEach(token -> refreshTokenMapper.deleteByPrimaryKey(token.getRefreshToken()));
+
 
         // send siteMsg
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("userName", user.getRealName());
+        paramsMap.put("defaultPassword", defaultPassword);
         List<Long> userIds = Collections.singletonList(userId);
         iUserService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
 
