@@ -80,7 +80,7 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "分页查询组织")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<OrganizationDTO>> list(@ApiIgnore
+    public ResponseEntity<Page<OrganizationDTO>> pagingQuery(@ApiIgnore
                                                       @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                               PageRequest pageRequest,
                                                       @RequestParam(required = false) String name,
