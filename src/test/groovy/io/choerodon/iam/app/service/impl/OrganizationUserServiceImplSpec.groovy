@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service.impl
 
-
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.convertor.ConvertHelper
@@ -17,6 +16,8 @@ import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dataobject.OrganizationDO
 import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.mapper.AccessTokenMapper
+import io.choerodon.iam.infra.mapper.RefreshTokenMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
 import io.choerodon.oauth.core.password.record.PasswordRecord
@@ -45,6 +46,8 @@ class OrganizationUserServiceImplSpec extends Specification {
     private SagaClient sagaClient = Mock(SagaClient)
     private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
     private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
+    private AccessTokenMapper accessTokenMapper = Mockito.mock(AccessTokenMapper)
+    private RefreshTokenMapper refreshTokenMapper = Mockito.mock(RefreshTokenMapper)
     private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
     private SystemSettingService systemSettingService = Mock(SystemSettingService)
     private OrganizationUserService organizationUserService
@@ -54,7 +57,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         given: "构造organizationUserService"
         organizationUserService = new OrganizationUserServiceImpl(
                 organizationRepository, userRepository, passwordRecord, passwordPolicyManager,
-                basePasswordPolicyMapper, userPasswordValidator, iUserService, systemSettingService, sagaClient)
+                basePasswordPolicyMapper, accessTokenMapper, refreshTokenMapper, userPasswordValidator, iUserService, systemSettingService, sagaClient)
         Field field = organizationUserService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationUserService, true)
