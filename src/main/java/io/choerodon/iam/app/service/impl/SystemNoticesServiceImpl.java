@@ -43,7 +43,7 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
      *
      * @param map 参数map
      */
-    @JobTask(maxRetryCount = 2, code = "systemNotification", level = ResourceLevel.SITE, params = {
+    @JobTask(maxRetryCount = 0, code = "systemNotification", level = ResourceLevel.SITE, params = {
             @JobParam(name = "content", defaultValue = "系统公告", description = "系统公告内容")
     }, description = "平台层发送系统通知")
     public void systemNotification(Map<String, Object> map) {
@@ -56,7 +56,7 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
      *
      * @param map 参数map
      */
-    @JobTask(maxRetryCount = 2, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
+    @JobTask(maxRetryCount = 0, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
             @JobParam(name = "content", defaultValue = "组织公告", description = "组织公告内容"),
             @JobParam(name = "orgId", type = Long.class, description = "组织Id")
     }, description = "组织层发送系统通知")
