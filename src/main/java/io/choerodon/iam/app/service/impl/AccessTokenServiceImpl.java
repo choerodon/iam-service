@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Date;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,14 +62,19 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         if (pageOri.getContent().isEmpty()) {
             return pageBack;
         } else {
+            //todo 此处还需优化修改
+            //1.提取tokenDTO
             List<UserAccessTokenDTO> userAccessTokenDTOS = pageOri.getContent().stream().map(tokenE ->
-                    new UserAccessTokenDTO(tokenE.getTokenId(), tokenE.getClientId(), tokenE.getRedirectUri(),
-                            ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(tokenE.getToken())).getValue(),
-                            ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(tokenE.getToken())).getExpiration(),
-                            tokenE.getAccessTokenValidity(), currentToken)
+                            new UserAccessTokenDTO(tokenE, currentToken)
             ).collect(Collectors.toList());
+            //2.过滤老token（没有createTime）
+            List<UserAccessTokenDTO> oldTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() == null).collect(Collectors.toList());
+            //3.过滤并按创建时间将新token排序（有createTime）
+            List<UserAccessTokenDTO> newAndSortedTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() != null).sorted(Comparator.comparing(UserAccessTokenDTO::getCreateTime).reversed()).collect(Collectors.toList());
+            //4.排序：当前token + newAndSortedTokens + oldTokens
             List<UserAccessTokenDTO> result = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
-            result.addAll(userAccessTokenDTOS.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
+            result.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
+            result.addAll(oldTokens);
             pageBack.setContent(result);
             return pageBack;
         }
@@ -93,7 +98,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     public void deleteAllExpiredToken(Map<String, Object> map) {
         List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectAll();
         //过滤出所有失效token
-        List<AccessTokenDO> allExpired = accessTokenDOS.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getExpiration().getTime() < new Date().getTime()).collect(Collectors.toList());
+        List<AccessTokenDO> allExpired = accessTokenDOS.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).isExpired()).collect(Collectors.toList());
         allExpired.forEach(t -> {
             accessTokenMapper.deleteByPrimaryKey(t.getTokenId());
             refreshTokenMapper.deleteByPrimaryKey(t.getRefreshToken());
