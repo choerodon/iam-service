@@ -1,7 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
 import java.util.*;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,22 +88,23 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        Future<String> future = iUserService.sendNotice(null, allUsersId, code, params, sourceId);
-        while (true) {  // 这里使用了循环判断，等待获取结果信息
-            try {
-                if (future.isDone()) {  // 判断是否执行完毕
-                    logger.info("The system notification has been sent out", future.get());
-                    break;
-                }
-                if (future.isCancelled()) {  // 判断是否取消
-                    logger.info("The system notification has been cancelled", future.get());
-                    break;
-                }
-                Thread.sleep(2000);
-            } catch (Exception e) {
-                throw new CommonException("error.send.system.notification,{}", e);
-            }
-        }
+//        Future<String> future =
+        iUserService.sendNotice(null, allUsersId, code, params, sourceId);
+//        while (true) {  // 这里使用了循环判断，等待获取结果信息
+//            try {
+//                if (future.isDone()) {  // 判断是否执行完毕
+//                    logger.info("The system notification has been sent out", future.get());
+//                    break;
+//                }
+//                if (future.isCancelled()) {  // 判断是否取消
+//                    logger.info("The system notification has been cancelled", future.get());
+//                    break;
+//                }
+//                Thread.sleep(2000);
+//            } catch (Exception e) {
+//                throw new CommonException("error.send.system.notification,{}", e);
+//            }
+//        }
     }
 
 }
