@@ -51,7 +51,17 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
     }
 
     @Override
-    public List<Long> queryPermissionIdsByRoles(List<Long> roles) {
-        return rolePermissionMapper.queryPermissionIdByRoles(roles);
+    public List<Long> queryExistingPermissionIdsByRoleIds(List<Long> roles) {
+        return rolePermissionMapper.queryExistingPermissionIdsByRoleIds(roles);
+    }
+
+    @Override
+    public void insertList(List<RolePermissionDO> rolePermissionDOList) {
+        if (rolePermissionDOList == null || rolePermissionDOList.isEmpty()) {
+            return;
+        }
+        if (rolePermissionMapper.insertList(rolePermissionDOList) != rolePermissionDOList.size()) {
+            throw new CommonException("error.rolePermission.insert");
+        }
     }
 }

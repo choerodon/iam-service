@@ -9,15 +9,9 @@ import io.choerodon.iam.domain.iam.entity.LabelE
 import io.choerodon.iam.domain.iam.entity.PermissionE
 import io.choerodon.iam.domain.iam.entity.RoleE
 import io.choerodon.iam.domain.iam.entity.RolePermissionE
-import io.choerodon.iam.domain.repository.LabelRepository
-import io.choerodon.iam.domain.repository.PermissionRepository
-import io.choerodon.iam.domain.repository.RoleLabelRepository
-import io.choerodon.iam.domain.repository.RolePermissionRepository
-import io.choerodon.iam.domain.repository.RoleRepository
-import io.choerodon.iam.domain.repository.UserRepository
+import io.choerodon.iam.domain.repository.*
 import io.choerodon.iam.domain.service.IRoleService
 import io.choerodon.iam.infra.dataobject.LabelDO
-import io.choerodon.iam.infra.dataobject.RoleDO
 import io.choerodon.iam.infra.dataobject.RoleLabelDO
 import io.choerodon.iam.infra.dataobject.UserDO
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,7 +21,6 @@ import spock.lang.Specification
 import java.lang.reflect.Field
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-
 /**
  * @author dengyouquan
  * */
@@ -88,9 +81,9 @@ class IRoleServiceImplSpec extends Specification {
         then: "校验结果"
         1 * roleRepository.selectByCode(_)
         1 * roleRepository.insertSelective(_) >> { roleE }
-        1 * rolePermissionRepository.insert(_)
+        1 * rolePermissionRepository.insertList(_)
         1 * labelRepository.selectByPrimaryKey(_) >> { new LabelDO() }
-        1 * roleLabelRepository.insert(_)
+        1 * roleLabelRepository.insertList(_)
         0 * _
     }
 

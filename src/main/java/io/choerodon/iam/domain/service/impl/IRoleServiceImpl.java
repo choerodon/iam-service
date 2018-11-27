@@ -12,10 +12,7 @@ import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
-import io.choerodon.iam.infra.dataobject.LabelDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.iam.infra.dataobject.RoleLabelDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -99,7 +96,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
     private void insertRoleLabel(RoleE role) {
         List<LabelE> labels = role.getLabels();
         if (labels != null) {
-            labels.forEach(l -> {
+            List<RoleLabelDO> roleLabelDOList = labels.stream().map(l -> {
                 Long labelId = l.getId();
                 if (labelId == null) {
                     throw new CommonException("error.label.id.null");
@@ -110,8 +107,9 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                 RoleLabelDO roleLabelDO = new RoleLabelDO();
                 roleLabelDO.setLabelId(l.getId());
                 roleLabelDO.setRoleId(role.getId());
-                roleLabelRepository.insert(roleLabelDO);
-            });
+                return roleLabelDO;
+            }).collect(Collectors.toList());
+            roleLabelRepository.insertList(roleLabelDOList);
         }
     }
 
@@ -120,8 +118,14 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
      * skip validate(role, t.getId());
      */
     private void insertRolePermission(RoleE role) {
-        role.getPermissions().parallelStream()
-                .forEach(t -> rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), t.getId())));
+        List<RolePermissionDO> rolePermissionDOList = role.getPermissions().parallelStream().map(permission -> {
+            RolePermissionDO rolePermissionDO = new RolePermissionDO();
+            rolePermissionDO.setPermissionId(permission.getId());
+            rolePermissionDO.setRoleId(role.getId());
+            return rolePermissionDO;
+        }).collect(Collectors.toList());
+
+        rolePermissionRepository.insertList(rolePermissionDOList);
     }
 
     @Override

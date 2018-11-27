@@ -10,6 +10,8 @@ import java.util.List;
 public interface RoleLabelRepository {
     void insert(RoleLabelDO roleLabelDO);
 
+    void insertList(List<RoleLabelDO> roleLabelDOList);
+
     List<RoleLabelDO> select(RoleLabelDO roleLabelDO);
 
     void delete(RoleLabelDO rl);
