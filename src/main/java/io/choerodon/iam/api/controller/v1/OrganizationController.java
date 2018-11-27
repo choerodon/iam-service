@@ -131,7 +131,7 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{organization_id}/users")
-    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "organization_id") Long id,
+    public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
                                               @ApiIgnore
                                               @SortDefault(value = "id", direction = Sort.Direction.ASC)
                                                       PageRequest pageRequest,
