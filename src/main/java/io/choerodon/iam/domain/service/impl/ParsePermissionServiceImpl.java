@@ -93,6 +93,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
                     parserMethod(methodIterator, pathNode, serviceName, initRoleMap, permissionCodes);
                 }
+                logger.info("¥¥¥ cleanPermission : {}", cleanPermission);
                 if (cleanPermission) {
                     deleteDeprecatedPermission(permissionCodes, serviceName);
                     //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
