@@ -60,10 +60,16 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     }
 
     @Override
-    @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
                                      Map<String, Object> params, Long sourceId) {
-        long begintime = System.currentTimeMillis();
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false);
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
+        if (userIds == null || userIds.isEmpty()) return new AsyncResult<>("userId is null");
+        long beginTime = System.currentTimeMillis();
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
         NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
@@ -75,15 +81,20 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
         userIds.forEach(id -> {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setId(id);
-            UserE userE = userRepository.selectByPrimaryKey(id);
-            if (userE != null) {
-                //有角色分配，但是角色已经删除
-                user.setEmail(userE.getEmail());
+            //如果是发送给所有人，我们无需查看是否有角色分配，全部发送，避免查表
+            if (!sendAll) {
+                UserE userE = userRepository.selectByPrimaryKey(id);
+                if (userE != null) {
+                    //有角色分配，但是角色已经删除
+                    user.setEmail(userE.getEmail());
+                    users.add(user);
+                }
+            } else {
                 users.add(user);
             }
         });
         noticeSendDTO.setTargetUsers(users);
         notifyFeignClient.postNotice(noticeSendDTO);
-        return new AsyncResult<>((System.currentTimeMillis() - begintime) / 1000 + "s");
+        return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 }
