@@ -52,7 +52,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
-                userRepository, organizationRepository, iProjectService, roleRepository,
+                userRepository, organizationRepository, roleRepository,
                 memberRoleRepository, labelRepository, sagaClient, iUserService)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)

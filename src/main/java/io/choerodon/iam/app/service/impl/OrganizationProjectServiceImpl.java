@@ -1,19 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.domain.service.IUserService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -31,13 +18,24 @@ import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.*;
-import io.choerodon.iam.domain.service.IProjectService;
+import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -60,8 +58,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private OrganizationRepository organizationRepository;
 
-    private IProjectService iProjectService;
-
     private RoleRepository roleRepository;
 
     private MemberRoleRepository memberRoleRepository;
@@ -77,7 +73,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
                                           UserRepository userRepository,
                                           OrganizationRepository organizationRepository,
-                                          IProjectService iProjectService,
                                           RoleRepository roleRepository,
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
@@ -86,7 +81,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
-        this.iProjectService = iProjectService;
         this.roleRepository = roleRepository;
         this.memberRoleRepository = memberRoleRepository;
         this.labelRepository = labelRepository;
@@ -98,7 +92,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO createProject(ProjectDTO projectDTO) {
-
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
@@ -253,7 +246,6 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             }
         } else {
             project = projectRepository.updateSelective(projectDO);
-            //project = iProjectService.updateProjectEnabled(projectId);
         }
         return project;
     }

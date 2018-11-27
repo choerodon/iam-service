@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * @author flyleft
- * @date 2018/3/26
  */
 public interface OrganizationProjectService {
 
