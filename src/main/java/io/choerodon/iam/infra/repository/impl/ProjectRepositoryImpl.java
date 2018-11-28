@@ -110,7 +110,12 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         if (projectMapper.updateByPrimaryKey(project) != 1) {
             throw new CommonException("error.project.update");
         }
-        return ConvertHelper.convert(projectMapper.selectByPrimaryKey(projectDO.getId()), ProjectE.class);
+        ProjectDO returnProject = projectMapper.selectByPrimaryKey(projectDO.getId());
+        if (returnProject.getType() != null) {
+            ProjectTypeDO projectTypeDO = projectTypeMapper.selectOne(new ProjectTypeDO(project.getType()));
+            returnProject.setTypeName(projectTypeDO.getName());
+        }
+        return ConvertHelper.convert(returnProject, ProjectE.class);
     }
 
 
