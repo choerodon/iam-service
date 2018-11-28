@@ -19,6 +19,8 @@ public class ProjectE {
 
     private String typeName;
 
+    private String type;
+
     public Long getId() {
         return id;
     }
@@ -65,6 +67,14 @@ public class ProjectE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getTypeName() {
