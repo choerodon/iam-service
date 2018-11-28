@@ -117,6 +117,7 @@ public class UserServiceImpl implements UserService {
         if (userDTO != null && userDTO.getOrganizationId() != null) {
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
             userDTO.setOrganizationName(organizationDO.getName());
+            userDTO.setOrganizationCode(organizationDO.getCode());
         }
         return userDTO;
     }

@@ -1,14 +1,13 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.Pattern;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.UserValidator;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.validator.UserValidator;
+import javax.validation.constraints.Pattern;
 
 /**
  * @author superlee
@@ -30,6 +29,10 @@ public class UserDTO {
 
     @ApiModelProperty(value = "组织名称/非必填")
     private String organizationName;
+
+    // 只用于返回该数据，不读入
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String organizationCode;
 
     @ApiModelProperty(value = "登录名/必填")
     @Pattern(regexp = LOGIN_NAME_REG, message = "error.user.loginName.regex")
@@ -224,6 +227,14 @@ public class UserDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getOrganizationCode() {
+        return organizationCode;
+    }
+
+    public void setOrganizationCode(String organizationCode) {
+        this.organizationCode = organizationCode;
     }
 
 }
