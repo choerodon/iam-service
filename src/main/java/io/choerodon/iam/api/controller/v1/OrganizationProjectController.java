@@ -66,6 +66,7 @@ public class OrganizationProjectController extends BaseController {
                                                          PageRequest pageRequest,
                                                  @RequestParam(required = false) String name,
                                                  @RequestParam(required = false) String code,
+                                                 @RequestParam(required = false) String typeName,
                                                  @RequestParam(required = false) Boolean enabled,
                                                  @RequestParam(required = false) String[] params) {
         ProjectDTO project = new ProjectDTO();
@@ -73,6 +74,7 @@ public class OrganizationProjectController extends BaseController {
         project.setName(name);
         project.setCode(code);
         project.setEnabled(enabled);
+        project.setTypeName(typeName);
         return new ResponseEntity<>(organizationProjectService.pagingQuery(project, pageRequest, ParamUtils.arrToStr(params)),
                 HttpStatus.OK);
     }

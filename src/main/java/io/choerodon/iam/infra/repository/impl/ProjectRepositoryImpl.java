@@ -110,7 +110,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public List<ProjectDO> selectAll() {
-        return projectMapper.selectAll();
+        return projectMapper.selectAllWithProjectType();
     }
 
     @Override
