@@ -70,6 +70,14 @@ public class ProjectE {
         this.objectVersionNumber = objectVersionNumber;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getTypeName() {
         return typeName;
     }

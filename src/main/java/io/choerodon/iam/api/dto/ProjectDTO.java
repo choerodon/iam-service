@@ -1,14 +1,13 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import io.choerodon.core.exception.CommonException;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * @author flyleft
