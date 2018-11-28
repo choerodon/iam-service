@@ -34,6 +34,11 @@ public class ProjectDO extends AuditDomain {
     @Transient
     private List<RoleDO> roles;
 
+    private String type;
+
+    @Transient
+    private String typeName;
+
     public ProjectDO() {
     }
 
@@ -97,6 +102,22 @@ public class ProjectDO extends AuditDomain {
         this.roles = roles;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
     @Override
     public String toString() {
         return "ProjectDO{" +
@@ -104,8 +125,11 @@ public class ProjectDO extends AuditDomain {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", organizationId=" + organizationId +
+                ", organizationName='" + organizationName + '\'' +
                 ", enabled=" + enabled +
                 ", roles=" + roles +
+                ", type='" + type + '\'' +
+                ", typeName='" + typeName + '\'' +
                 '}';
     }
 }

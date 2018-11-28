@@ -2,7 +2,6 @@ package io.choerodon.iam.domain.iam.entity;
 
 /**
  * @author flyleft
- * @date 2018/3/22
  */
 public class ProjectE {
 
@@ -17,6 +16,8 @@ public class ProjectE {
     private Boolean enabled;
 
     private Long objectVersionNumber;
+
+    private String typeName;
 
     public Long getId() {
         return id;
@@ -64,5 +65,13 @@ public class ProjectE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 }
