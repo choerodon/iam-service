@@ -22,11 +22,9 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dataobject.AccessTokenDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.iam.infra.mapper.AccessTokenMapper;
-import io.choerodon.iam.infra.mapper.RefreshTokenMapper;
+import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
@@ -64,9 +62,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     private final ObjectMapper mapper = new ObjectMapper();
     private PasswordPolicyManager passwordPolicyManager;
     private UserPasswordValidator userPasswordValidator;
+    private OauthTokenFeignClient oauthTokenFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
-    private AccessTokenMapper accessTokenMapper;
-    private RefreshTokenMapper refreshTokenMapper;
     @Value("${choerodon.site.default.password:abcd1234}")
     private String siteDefaultPassword;
     private SystemSettingService systemSettingService;
@@ -76,8 +73,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                                        PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
-                                       AccessTokenMapper accessTokenMapper,
-                                       RefreshTokenMapper refreshTokenMapper,
+                                       OauthTokenFeignClient oauthTokenFeignClient,
                                        UserPasswordValidator userPasswordValidator,
                                        IUserService iUserService,
                                        SystemSettingService systemSettingService,
@@ -91,8 +87,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.userPasswordValidator = userPasswordValidator;
         this.passwordRecord = passwordRecord;
         this.systemSettingService = systemSettingService;
-        this.accessTokenMapper = accessTokenMapper;
-        this.refreshTokenMapper = refreshTokenMapper;
+        this.oauthTokenFeignClient = oauthTokenFeignClient;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -238,15 +233,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userRepository.updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
-        // clear all the tokens of the user after resetting his password
-        AccessTokenDO accessTokenDO = new AccessTokenDO();
-        accessTokenDO.setUserName(user.getLoginName());
-        List<AccessTokenDO> accessTokenDOList = accessTokenMapper.select(accessTokenDO);
-        // delete access tokens
-        accessTokenMapper.delete(accessTokenDO);
-        // delete refresh tokens
-        accessTokenDOList.stream().filter(token -> token.getRefreshToken() != null).forEach(token -> refreshTokenMapper.deleteByPrimaryKey(token.getRefreshToken()));
-
+        // delete access tokens, refresh tokens and sessions of the user after resetting his password
+        oauthTokenFeignClient.deleteTokens(user.getLoginName());
 
         // send siteMsg
         Map<String, Object> paramsMap = new HashMap<>();
