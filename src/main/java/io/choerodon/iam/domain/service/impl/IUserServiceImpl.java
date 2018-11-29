@@ -60,6 +60,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     }
 
     @Override
+    @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
                                      Map<String, Object> params, Long sourceId) {
         return sendNotice(fromUserId, userIds, code, params, sourceId, false);
