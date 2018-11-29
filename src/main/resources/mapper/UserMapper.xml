@@ -33,6 +33,7 @@
                  open="(" separator="," close=")">
             #{id}
         </foreach>
+        AND is_enabled = 1
     </select>
 
     <select id="listUsersByEmails" resultMap="userDO">
@@ -42,6 +43,7 @@
                  open="(" separator="," close=")">
             #{email}
         </foreach>
+        AND is_enabled = 1
     </select>
 
     <select id="fulltextSearch" resultMap="userDO">
