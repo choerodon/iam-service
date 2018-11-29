@@ -2,7 +2,6 @@ package io.choerodon.iam.domain.iam.entity;
 
 /**
  * @author flyleft
- * @date 2018/3/22
  */
 public class ProjectE {
 
@@ -84,13 +83,5 @@ public class ProjectE {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }
