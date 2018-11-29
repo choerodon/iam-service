@@ -15,6 +15,7 @@ import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -96,10 +97,25 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         if (projectDO.getType() != null && projectTypeMapper.selectCount(new ProjectTypeDO(projectDO.getType())) != 1) {
             throw new CommonException("error.project.type.notExist");
         }
-        if (projectMapper.updateByPrimaryKeySelective(projectDO) != 1) {
+        if (!StringUtils.isEmpty(projectDO.getName())) {
+            project.setName(projectDO.getName());
+        }
+        if (!StringUtils.isEmpty(projectDO.getCode())) {
+            project.setCode(projectDO.getCode());
+        }
+        if (projectDO.getEnabled() != null) {
+            project.setEnabled(projectDO.getEnabled());
+        }
+        project.setType(projectDO.getType());
+        if (projectMapper.updateByPrimaryKey(project) != 1) {
             throw new CommonException("error.project.update");
         }
-        return ConvertHelper.convert(projectMapper.selectByPrimaryKey(projectDO.getId()), ProjectE.class);
+        ProjectDO returnProject = projectMapper.selectByPrimaryKey(projectDO.getId());
+        if (returnProject.getType() != null) {
+            ProjectTypeDO projectTypeDO = projectTypeMapper.selectOne(new ProjectTypeDO(project.getType()));
+            returnProject.setTypeName(projectTypeDO.getName());
+        }
+        return ConvertHelper.convert(returnProject, ProjectE.class);
     }
 
 
@@ -110,7 +126,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public List<ProjectDO> selectAll() {
-        return projectMapper.selectAll();
+        return projectMapper.selectAllWithProjectType();
     }
 
     @Override

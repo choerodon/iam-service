@@ -1,14 +1,13 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import io.choerodon.core.exception.CommonException;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * @author flyleft
@@ -41,6 +40,9 @@ public class ProjectDTO {
 
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
+
+    @ApiModelProperty(value = "项目类型名称/非必填")
+    private String typeName;
 
     @ApiModelProperty(value = "项目类型code/非必填")
     private String type;
@@ -91,6 +93,14 @@ public class ProjectDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     public String getType() {

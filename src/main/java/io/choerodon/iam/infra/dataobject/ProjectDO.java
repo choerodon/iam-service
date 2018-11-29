@@ -36,6 +36,9 @@ public class ProjectDO extends AuditDomain {
 
     private String type;
 
+    @Transient
+    private String typeName;
+
     public ProjectDO() {
     }
 
@@ -107,6 +110,14 @@ public class ProjectDO extends AuditDomain {
         this.type = type;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
     @Override
     public String toString() {
         return "ProjectDO{" +
@@ -118,6 +129,7 @@ public class ProjectDO extends AuditDomain {
                 ", enabled=" + enabled +
                 ", roles=" + roles +
                 ", type='" + type + '\'' +
+                ", typeName='" + typeName + '\'' +
                 '}';
     }
 }

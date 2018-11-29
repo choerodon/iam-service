@@ -27,7 +27,8 @@ public class ProjectTypeController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @GetMapping
     public List<ProjectTypeDTO> list() {
-      return projectTypeService.list();
+        return projectTypeService.list();
     }
 
- }
+}
+

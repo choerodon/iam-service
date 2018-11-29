@@ -17,6 +17,8 @@ public class ProjectE {
 
     private Long objectVersionNumber;
 
+    private String typeName;
+
     private String type;
 
     public Long getId() {
@@ -73,5 +75,13 @@ public class ProjectE {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 }

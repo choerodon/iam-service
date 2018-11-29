@@ -40,6 +40,12 @@
     ) t ON iam_user.id = t.member_id
     </select>
 
+    <select id="selectAllWithProjectType" resultMap="projectDO">
+        SELECT fp.*, fpt.name AS type_name
+        FROM fd_project fp
+        LEFT JOIN fd_project_type fpt ON fp.type = fpt.code
+    </select>
+
     <select id="selectUserProjectsUnderOrg" resultMap="projectDO">
         SELECT DISTINCT fp.*
         FROM fd_project fp
@@ -52,31 +58,36 @@
     </select>
 
     <select id="fulltextSearch" resultMap="projectDO">
-        SELECT *
-        FROM fd_project
-        WHERE organization_id = #{project.organizationId}
+        SELECT fp.*, fpt.name AS type_name
+        FROM fd_project fp
+        LEFT JOIN fd_project_type fpt ON fp.type = fpt.code
+        WHERE fp.organization_id = #{project.organizationId}
         <if test="project.name != null">
-            AND name LIKE concat(concat('%',#{project.name}),'%')
+            AND fp.name LIKE concat(concat('%',#{project.name}),'%')
         </if>
         <if test="project.code != null">
-            AND code LIKE concat(concat('%',#{project.code}),'%')
+            AND fp.code LIKE concat(concat('%',#{project.code}),'%')
         </if>
         <if test="project.enabled != null">
-            AND is_enabled = #{project.enabled}
+            AND fp.is_enabled = #{project.enabled}
+        </if>
+        <if test="project.typeName != null">
+            AND fpt.name LIKE concat(concat('%',#{project.typeName}),'%')
         </if>
         <if test="param != null">
             AND(
-            name LIKE concat(concat('%',#{param}),'%') OR
-            code LIKE concat(concat('%',#{param}),'%')
+            fp.name LIKE concat(concat('%',#{param}),'%') OR
+            fp.code LIKE concat(concat('%',#{param}),'%') OR
+            fpt.name LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>
 
     <select id="selectProjectsByUserIdWithParam" resultMap="projectDO">
-        SELECT DISTINCT fd_project.*
+        SELECT DISTINCT fd_project.*, fpt.name AS type_name
         FROM fd_project
-        JOIN iam_member_role
-        ON iam_member_role.source_id = fd_project.id
+        LEFT JOIN fd_project_type fpt ON fd_project.type = fpt.code
+        JOIN iam_member_role ON iam_member_role.source_id = fd_project.id
         AND iam_member_role.source_type = 'project'
         WHERE iam_member_role.member_id = #{userId}
         <if test="projectDO != null">
@@ -102,13 +113,11 @@
     </select>
 
     <select id="selectProjectsByUserId" resultMap="projectDO">
-        SELECT DISTINCT fd_project.*
+        SELECT DISTINCT fd_project.*, fpt.name AS type_name
         FROM fd_project
-        INNER JOIN iam_member_role
-        ON iam_member_role.source_id = fd_project.id
-        INNER JOIN iam_role
-        ON iam_role.is_enabled = 1 and iam_role.id = iam_member_role.role_id
-        AND iam_member_role.source_type = 'project'
+        INNER JOIN iam_member_role ON iam_member_role.source_id = fd_project.id
+        INNER JOIN iam_role ON iam_role.is_enabled = 1 and iam_role.id = iam_member_role.role_id AND iam_member_role.source_type = 'project'
+        LEFT JOIN fd_project_type fpt ON fd_project.type = fpt.code
         WHERE iam_member_role.member_id = #{userId}
         <if test="projectDO != null">
             <if test="projectDO.organizationId != null">

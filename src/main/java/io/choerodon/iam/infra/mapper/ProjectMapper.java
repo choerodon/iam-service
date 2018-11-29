@@ -34,4 +34,9 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
 
 
     List<Long> listUserIds(@Param("projectId") Long projectId);
+
+    /**
+     * 获取所有项目，附带项目类型名
+     */
+    List<ProjectDO> selectAllWithProjectType();
 }
