@@ -332,6 +332,9 @@ public class UserServiceImpl implements UserService {
         } else {
             dto = ConvertHelper.convert(iUserService.updateUserInfo(userE), UserDTO.class);
         }
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(dto.getOrganizationId());
+        dto.setOrganizationName(organizationDO.getName());
+        dto.setOrganizationCode(organizationDO.getCode());
         return dto;
     }
 
