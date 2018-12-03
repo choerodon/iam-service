@@ -52,10 +52,6 @@ public class LdapSyncUserQuartzTask {
     @JobTask(maxRetryCount = 2, code = "syncLdapUserSite", params = {
             @JobParam(name = "organizationCode", defaultValue = "hand", description = "组织编码")
     }, description = "全局层同步LDAP用户")
-    @TimedTask(name = "同步LDAP用户", description = "自定义定时任务", oneExecution = true,
-            repeatCount = 0, repeatInterval = 100, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
-            @TaskParam(name = "organizationCode", value = "hand")
-    })
     public void syncLdapUserSite(Map<String, Object> map) {
         syncLdapUser(map);
     }
