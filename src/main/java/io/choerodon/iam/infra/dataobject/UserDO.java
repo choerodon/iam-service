@@ -27,6 +27,8 @@ public class UserDO extends AuditDomain {
     private String originalPassword;
     private String password;
     private String realName;
+    @Column(name = "international_tel_code")
+    private String internationalTelCode;
     private String phone;
     private String imageUrl;
     private String profilePhoto;
@@ -230,5 +232,13 @@ public class UserDO extends AuditDomain {
 
     public void setOriginalPassword(String originalPassword) {
         this.originalPassword = originalPassword;
+    }
+
+    public String getInternationalTelCode() {
+        return internationalTelCode;
+    }
+
+    public void setInternationalTelCode(String internationalTelCode) {
+        this.internationalTelCode = internationalTelCode;
     }
 }

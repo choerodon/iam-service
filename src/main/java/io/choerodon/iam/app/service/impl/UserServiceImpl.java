@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import io.choerodon.iam.infra.common.utils.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +30,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
@@ -39,6 +38,7 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
@@ -118,6 +118,9 @@ public class UserServiceImpl implements UserService {
             OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
             userDTO.setOrganizationName(organizationDO.getName());
             userDTO.setOrganizationCode(organizationDO.getCode());
+            if (userDTO.getPhone() == null || userDTO.getPhone().isEmpty()) {
+                userDTO.setInternationalTelCode("");
+            }
         }
         return userDTO;
     }

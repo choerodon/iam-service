@@ -1,13 +1,14 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.Pattern;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.validator.UserValidator;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.Pattern;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.validator.UserValidator;
 
 /**
  * @author superlee
@@ -53,6 +54,9 @@ public class UserDTO {
     @Pattern(regexp = PHONE_REG, message = "error.phone.illegal",
             groups = {UserValidator.UserGroup.class, UserValidator.UserInfoGroup.class})
     private String phone;
+
+    @ApiModelProperty(value = "国际电话区号/非必填")
+    private String internationalTelCode;
 
     @ApiModelProperty(value = "头像/非必填")
     private String imageUrl;
@@ -219,6 +223,14 @@ public class UserDTO {
         if (this.objectVersionNumber == null) {
             throw new CommonException("error.user.objectVersionNumber.null");
         }
+    }
+
+    public String getInternationalTelCode() {
+        return internationalTelCode;
+    }
+
+    public void setInternationalTelCode(String internationalTelCode) {
+        this.internationalTelCode = internationalTelCode;
     }
 
     public String getPassword() {

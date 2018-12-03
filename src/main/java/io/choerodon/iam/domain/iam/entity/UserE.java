@@ -28,6 +28,8 @@ public class UserE {
 
     private String realName;
 
+    private String internationalTelCode;
+
     private String phone;
 
     private String imageUrl;
@@ -88,7 +90,7 @@ public class UserE {
                  String language, String timeZone, Date lastPasswordUpdatedAt,
                  Date lastLoginAt, Boolean enabled, Boolean locked, Boolean ldap,
                  Date lockedUntilAt, Integer passwordAttempt,
-                 Long objectVersionNumber, Boolean admin) {
+                 Long objectVersionNumber, Boolean admin, String internationalTelCode) {
         this.id = id;
         this.loginName = loginName;
         this.email = email;
@@ -109,6 +111,7 @@ public class UserE {
         this.passwordAttempt = passwordAttempt;
         this.objectVersionNumber = objectVersionNumber;
         this.admin = admin;
+        this.internationalTelCode = internationalTelCode;
     }
 
     public Long getId() {
@@ -197,6 +200,14 @@ public class UserE {
 
     public void lockUtilAt(Date date) {
         this.lockedUntilAt = date;
+    }
+
+    public String getInternationalTelCode() {
+        return internationalTelCode;
+    }
+
+    public void setInternationalTelCode(String internationalTelCode) {
+        this.internationalTelCode = internationalTelCode;
     }
 
     public void encodePassword() {
