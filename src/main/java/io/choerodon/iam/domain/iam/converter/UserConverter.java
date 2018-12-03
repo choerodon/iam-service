@@ -24,7 +24,7 @@ public class UserConverter implements ConvertorI<UserE, UserDO, UserDTO> {
                 dto.getRealName(), dto.getPhone(), dto.getImageUrl(), null,
                 dto.getLanguage(), dto.getTimeZone(), null, null,
                 dto.getEnabled(), dto.getLocked(), dto.getLdap(), null,
-                null, dto.getObjectVersionNumber(), dto.getAdmin());
+                null, dto.getObjectVersionNumber(), dto.getAdmin(),dto.getInternationalTelCode());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class UserConverter implements ConvertorI<UserE, UserDO, UserDTO> {
                 dataObject.getLastPasswordUpdatedAt(), dataObject.getLastLoginAt(),
                 dataObject.getEnabled(), dataObject.getLocked(), dataObject.getLdap(),
                 dataObject.getLockedUntilAt(),
-                dataObject.getPasswordAttempt(), dataObject.getObjectVersionNumber(), dataObject.getAdmin());
+                dataObject.getPasswordAttempt(), dataObject.getObjectVersionNumber(), dataObject.getAdmin(),dataObject.getInternationalTelCode());
         userE.setRoles(ConvertHelper.convertList(dataObject.getRoles(), RoleE.class));
         return userE;
     }

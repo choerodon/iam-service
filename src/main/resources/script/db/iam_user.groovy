@@ -2,8 +2,8 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
     changeSet(author: 'jcalaz@163.com', id: '2018-03-21-iam-iam') {
-        if(helper.dbType().isSupportSequence()){
-            createSequence(sequenceName: 'IAM_USER_S', startValue:"1")
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'IAM_USER_S', startValue: "1")
         }
         createTable(tableName: "IAM_USER") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
@@ -71,6 +71,12 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
         dropColumn(tableName: 'IAM_USER', ColumnName: 'IS_ADMIN')
         addColumn(tableName: 'IAM_USER') {
             column(name: 'IS_ADMIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为管理员用户。1表示是，0表示不是', afterColumn: 'IS_LDAP')
+        }
+    }
+
+    changeSet(author: 'longhe1996@icloud.com', id: '2018-12-03-add_column_international_tel_code') {
+        addColumn(tableName: 'IAM_USER') {
+            column(name: 'INTERNATIONAL_TEL_CODE', type: 'VARCHAR(16)', defaultValue: "+86", remarks: '国际电话区号。',afterColumn: 'PHONE')
         }
     }
 }
