@@ -37,4 +37,7 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
     @Select("SELECT DISTINCT member_id FROM iam_member_role WHERE source_id = #{orgId} AND source_type = #{orgName}")
     List<Long> listMemberIds(@Param("orgId") Long orgId,
                              @Param("orgName") String orgName);
+
+
+    Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 }

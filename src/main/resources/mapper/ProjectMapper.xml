@@ -255,4 +255,8 @@
             )
         </if>
     </select>
+
+    <select id="projectEnabled" resultType="java.lang.Boolean">
+        SELECT is_enabled FROM fd_project WHERE id = #{sourceId}
+    </select>
 </mapper>

@@ -23,6 +23,8 @@ import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
 import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
 import io.choerodon.iam.infra.dataobject.PermissionDO;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,16 +59,24 @@ public class PermissionServiceImpl implements PermissionService {
 
     private MenuPermissionRepository menuPermissionRepository;
 
+    private OrganizationMapper organizationMapper;
+
+    private ProjectMapper projectMapper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PermissionServiceImpl(PermissionRepository permissionRepository,
                                  DiscoveryClient discoveryClient,
                                  RolePermissionRepository rolePermissionRepository,
-                                 MenuPermissionRepository menuPermissionRepository) {
+                                 MenuPermissionRepository menuPermissionRepository,
+                                 OrganizationMapper organizationMapper,
+                                 ProjectMapper projectMapper) {
         this.permissionRepository = permissionRepository;
         this.discoveryClient = discoveryClient;
         this.rolePermissionRepository = rolePermissionRepository;
         this.menuPermissionRepository = menuPermissionRepository;
+        this.organizationMapper = organizationMapper;
+        this.projectMapper = projectMapper;
     }
 
 
@@ -136,6 +146,10 @@ public class PermissionServiceImpl implements PermissionService {
         Set<String> organizationCodes = new HashSet<>();
         for (Map.Entry<Long, List<CheckPermissionDTO>> entry : orgPermissionMaps.entrySet()) {
             Long orgId = entry.getKey();
+            if (orgId != null) {
+                Boolean orgEnabled = organizationMapper.organizationEnabled(orgId);
+                if (orgEnabled != null && !orgEnabled) continue;
+            }
             Set<String> searchOrganizationCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchOrganizationCodes = permissionRepository.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes);
             organizationCodes.addAll(searchOrganizationCodes);
@@ -159,6 +173,10 @@ public class PermissionServiceImpl implements PermissionService {
         Set<String> projectCodes = new HashSet<>();
         for (Map.Entry<Long, List<CheckPermissionDTO>> entry : projectMaps.entrySet()) {
             Long projectId = entry.getKey();
+            if (projectId != null) {
+                Boolean projectEnabled = projectMapper.projectEnabled(projectId);
+                if (projectEnabled != null && !projectEnabled) continue;
+            }
             Set<String> searchProjectCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchProjectCodes = permissionRepository.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes);
             projectCodes.addAll(searchProjectCodes);

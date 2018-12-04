@@ -39,4 +39,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
      * 获取所有项目，附带项目类型名
      */
     List<ProjectDO> selectAllWithProjectType();
+
+    Boolean projectEnabled(@Param("sourceId") Long sourceId);
 }

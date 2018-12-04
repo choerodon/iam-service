@@ -11,6 +11,8 @@ import io.choerodon.iam.domain.repository.MenuPermissionRepository
 import io.choerodon.iam.domain.repository.PermissionRepository
 import io.choerodon.iam.domain.repository.RolePermissionRepository
 import io.choerodon.iam.infra.common.utils.SpockUtils
+import io.choerodon.iam.infra.mapper.OrganizationMapper
+import io.choerodon.iam.infra.mapper.ProjectMapper
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
@@ -35,6 +37,8 @@ class PermissionServiceImplSpec extends Specification {
     private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
     private DiscoveryClient discoveryClient = Mockito.mock(DiscoveryClient)
     private MenuPermissionRepository menuPermissionRepository = Mock(MenuPermissionRepository)
+    private OrganizationMapper organizationMapper = Mock(OrganizationMapper)
+    private ProjectMapper projectMapper = Mock(ProjectMapper)
     private PermissionService permissionService
     final ObjectMapper objectMapper = new ObjectMapper()
     private Long userId
@@ -42,7 +46,8 @@ class PermissionServiceImplSpec extends Specification {
     def setup() {
         given: "构造userService"
         permissionService = PowerMockito.spy(new PermissionServiceImpl(permissionRepository,
-                discoveryClient, rolePermissionRepository, menuPermissionRepository))
+                discoveryClient, rolePermissionRepository, menuPermissionRepository,
+                organizationMapper, projectMapper))
 
         def file = new File(this.class.getResource('/templates/swagger.json').toURI())
         PowerMockito.doReturn(file.getText("UTF-8")).when(permissionService, "fetchSwaggerJson", Mockito.any())
