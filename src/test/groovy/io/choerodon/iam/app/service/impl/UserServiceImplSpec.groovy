@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile
 import spock.lang.Specification
 
 import java.lang.reflect.Field
+
 /**
  * @author dengyouquan
  * */
@@ -64,7 +65,7 @@ class UserServiceImplSpec extends Specification {
         given: "构造userService"
         userService = new UserServiceImpl(userRepository, organizationRepository,
                 projectRepository, iUserService, passwordRecord, fileFeignClient,
-                sagaClient, basePasswordPolicyMapper, userPasswordValidator,passwordPolicyManager, roleRepository,
+                sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager, roleRepository,
                 memberRoleMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
@@ -241,6 +242,7 @@ class UserServiceImplSpec extends Specification {
         userService.updateInfo(userDTO)
 
         then: "校验结果"
+        1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDO()
         1 * iUserService.updateUserInfo(_) >> {
             UserE userE = new UserE("123456")
             Field field = userE.getClass().getDeclaredField("id")
