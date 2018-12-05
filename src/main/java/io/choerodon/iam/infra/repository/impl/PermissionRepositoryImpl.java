@@ -68,7 +68,6 @@ public class PermissionRepositoryImpl implements PermissionRepository {
         if (permissionMapper.insertSelective(permissionDO) != 1) {
             throw new CommonException("error.permission.insert");
         }
-        permissionDO = permissionMapper.selectByPrimaryKey(permissionDO.getId());
         return ConvertHelper.convert(permissionMapper.selectByPrimaryKey(permissionDO.getId()), PermissionE.class);
     }
 
