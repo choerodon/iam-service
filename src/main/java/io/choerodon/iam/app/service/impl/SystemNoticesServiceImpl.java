@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service.impl;
 
 import java.util.*;
 
+import io.choerodon.iam.api.dto.SystemAnnouncementDTO;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,14 +29,17 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
     private UserRepository userRepository;
     private IUserService iUserService;
     private OrganizationUserService organizationUserService;
+    private NotifyFeignClient notifyFeignClient;
     public static final String ORG_NOTYFICATION_CODE = "organizationNotification";
     public static final String SITE_NOTYFICATION_CODE = "systemNotification";
     private static final Logger logger = LoggerFactory.getLogger(OrganizationListener.class);
 
-    public SystemNoticesServiceImpl(UserRepository userRepository, IUserService iUserService, OrganizationUserService organizationUserService) {
+    public SystemNoticesServiceImpl(UserRepository userRepository, IUserService iUserService, OrganizationUserService organizationUserService
+            , NotifyFeignClient notifyFeignClient) {
         this.userRepository = userRepository;
         this.iUserService = iUserService;
         this.organizationUserService = organizationUserService;
+        this.notifyFeignClient = notifyFeignClient;
     }
 
     /**
@@ -88,6 +93,8 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
+        //创建系统公告
+        createSystemAnnouncement(content);
 //        Future<String> future =
         iUserService.sendNotice(null, allUsersId, code, params, sourceId, true);
 //        while (true) {  // 这里使用了循环判断，等待获取结果信息
@@ -105,6 +112,15 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
 //                throw new CommonException("error.send.system.notification,{}", e);
 //            }
 //        }
+    }
+
+    private void createSystemAnnouncement(String content) {
+        SystemAnnouncementDTO announcementDTO = new SystemAnnouncementDTO();
+        announcementDTO.setContent(content);
+        //TODO 公告时间和标题需要从定时任务传过来
+        announcementDTO.setTitle("系统公告");
+        announcementDTO.setSendDate(new Date());
+        notifyFeignClient.create(announcementDTO);
     }
 
 }
