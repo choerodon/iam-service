@@ -8,6 +8,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
@@ -102,7 +103,7 @@ public class ProjectServiceImpl implements ProjectService {
             BeanUtils.copyProperties(projectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId()));
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId(),ResourceLevel.PROJECT.value(),projectDTO.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.projectService.update.event", e);
             }
@@ -132,7 +133,7 @@ public class ProjectServiceImpl implements ProjectService {
             BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE);
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId()));
+                sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId(),ResourceLevel.PROJECT.value(),project.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.projectService.disableProject.event", e);
             }
