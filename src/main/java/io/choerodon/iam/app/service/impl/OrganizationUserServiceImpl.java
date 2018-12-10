@@ -8,6 +8,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.api.dto.UserDTO;
@@ -123,7 +124,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 List<UserEventPayload> payloads = new ArrayList<>();
                 payloads.add(userEventPayload);
                 String input = mapper.writeValueAsString(payloads);
-                sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+                sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.createUser.event", e);
             }
@@ -151,7 +152,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             try {
                 String input = mapper.writeValueAsString(payloads);
                 String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
-                sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds));
+                sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds,ResourceLevel.ORGANIZATION.value(),insertUsers.get(0).getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
             }
@@ -205,7 +206,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(user, dto);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),userDTO.getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
@@ -331,7 +332,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+                sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.enableUser.event", e);
             }
@@ -360,7 +361,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId()));
+                sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }

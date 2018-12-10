@@ -1,6 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -25,17 +37,6 @@ import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -124,7 +125,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setOrganizationName(organizationDO.getName());
         try {
             String input = mapper.writeValueAsString(projectEventMsg);
-            sagaClient.startSaga(PROJECT_CREATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + ""));
+            sagaClient.startSaga(PROJECT_CREATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + "", ResourceLevel.ORGANIZATION.value(), newProjectE.getOrganizationId()));
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.createProject.event", e);
         }
@@ -199,7 +200,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             BeanUtils.copyProperties(newProjectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + ""));
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, PROJECT, newProjectE.getId() + "", ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.updateProject.event", e);
             }
@@ -232,7 +233,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //saga
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId()));
+                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(),ResourceLevel.ORGANIZATION.value(),projectDO.getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }

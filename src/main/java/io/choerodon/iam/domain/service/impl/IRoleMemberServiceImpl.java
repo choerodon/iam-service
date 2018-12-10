@@ -160,7 +160,9 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
         try {
             String input = mapper.writeValueAsString(userMemberEventPayloads);
             String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
-            sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds));
+            String level=userMemberEventPayloads.get(0).getResourceType();
+            Long sourceId=userMemberEventPayloads.get(0).getResourceId();
+            sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds,level,sourceId));
         } catch (Exception e) {
             throw new CommonException("error.iRoleMemberServiceImpl.updateMemberRole.event", e);
         }
@@ -176,7 +178,7 @@ public class IRoleMemberServiceImpl extends BaseServiceImpl<MemberRoleDO> implem
             try {
                 String input = mapper.writeValueAsString(userMemberEventPayloads);
                 String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
-                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds));
+                sagaClient.startSaga(MEMBER_ROLE_DELETE, new StartInstanceDTO(input, "users", refIds,sourceType,roleAssignmentDeleteDTO.getSourceId()));
             } catch (Exception e) {
                 throw new CommonException("error.iRoleMemberServiceImpl.deleteMemberRole.event", e);
             }
