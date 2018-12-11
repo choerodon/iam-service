@@ -79,8 +79,28 @@ env.open.SPRING_DATASOURCE_PASSWORD | 数据库密码
 env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE | 注册服务地址
 env.open.SPRING_CLOUD_CONFIG_ENABLED | 启用配置中心
 env.open.SPRING_CLOUD_CONFIG_URI | 配置中心地址
-env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS | kafka地址
-env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES | zookeeper地址
-env.open.SPRING_KAFKA_BOOTSTRAP_SERVERS | spring kafka 地址
-env.open.CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS | 事件服务kafka地址
 env.open.SKYWALKING_OPTS | skywalking 代理端配置
+
+### skywalking 代理端配置参数对照表
+skywalking 代理端配置 | 含义 
+--- |  --- 
+javaagent | skywalking代理jar包(添加则开启skywalking，删除则关闭)
+skywalking.agent.application_code | skywalking应用名称
+skywalking.agent.sample_n_per_3_secs | skywalking采样率配置
+skywalking.agent.namespace | skywalking跨进程链路中的header配置
+skywalking.agent.authentication | skywalking认证token配置
+skywalking.agent.span_limit_per_segment | skywalking每segment中的最大span数配置
+skywalking.agent.ignore_suffix | skywalking需要忽略的调用配置
+skywalking.agent.is_open_debugging_class | skywalking是否保存增强后的字节码文件
+skywalking.collector.backend_service | oap服务地址和端口配置
+
+#### skywalking 代理端配置示例
+```yaml
+env:
+  open:
+    SKYWALKING_OPTS: >-
+      -javaagent:/agent/skywalking-agent.jar
+      -Dskywalking.agent.application_code=iam-service
+      -Dskywalking.agent.sample_n_per_3_secs=-1
+      -Dskywalking.collector.backend_service=oap.skywalking:11800
+```
