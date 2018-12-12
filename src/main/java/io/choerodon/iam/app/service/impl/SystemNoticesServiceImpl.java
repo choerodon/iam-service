@@ -55,20 +55,20 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         sendSystemNotification(ResourceLevel.SITE, 0L, content);
     }
 
-    /**
-     * 组织公告JobTask
-     *
-     * @param map 参数map
-     */
-    @JobTask(maxRetryCount = 0, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
-            @JobParam(name = "content", defaultValue = "组织公告", description = "组织公告内容"),
-            @JobParam(name = "orgId", type = Long.class, description = "组织Id")
-    }, description = "组织层发送系统通知")
-    public void organizationNotification(Map<String, Object> map) {
-        Long orgId = Optional.ofNullable(new Long(map.get("orgId").toString())).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
-        String content = Optional.ofNullable((String) map.get("content")).orElseThrow(() -> new CommonException("error.organizationNotification.content.empty"));
-        sendSystemNotification(ResourceLevel.ORGANIZATION, orgId, content);
-    }
+//    /**
+//     * 组织公告JobTask
+//     *
+//     * @param map 参数map
+//     */
+//    @JobTask(maxRetryCount = 0, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
+//            @JobParam(name = "content", defaultValue = "组织公告", description = "组织公告内容"),
+//            @JobParam(name = "orgId", type = Long.class, description = "组织Id")
+//    }, description = "组织层发送系统通知")
+//    public void organizationNotification(Map<String, Object> map) {
+//        Long orgId = Optional.ofNullable(new Long(map.get("orgId").toString())).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
+//        String content = Optional.ofNullable((String) map.get("content")).orElseThrow(() -> new CommonException("error.organizationNotification.content.empty"));
+//        sendSystemNotification(ResourceLevel.ORGANIZATION, orgId, content);
+//    }
 
     /**
      * 发送组织/系统公告
