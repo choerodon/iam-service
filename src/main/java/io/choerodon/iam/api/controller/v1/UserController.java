@@ -252,8 +252,9 @@ public class UserController extends BaseController {
 
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
-    public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids) {
-        return new ResponseEntity<>(userService.listUsersByIds(ids), HttpStatus.OK);
+    public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids,
+                                                        @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
+        return new ResponseEntity<>(userService.listUsersByIds(ids, onlyEnabled), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)

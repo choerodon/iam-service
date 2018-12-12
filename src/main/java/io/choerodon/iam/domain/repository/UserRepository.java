@@ -69,10 +69,11 @@ public interface UserRepository {
     /**
      * 根据用户id集合查询用户的集合
      *
-     * @param ids 用户id数组
+     * @param ids         用户id数组
+     * @param onlyEnabled 是否只查询启用的用户
      * @return List<UserDO> 用户集合
      */
-    List<UserDO> listUsersByIds(Long[] ids);
+    List<UserDO> listUsersByIds(Long[] ids, Boolean onlyEnabled);
 
     /**
      * 根据用户emails集合查询用户的集合

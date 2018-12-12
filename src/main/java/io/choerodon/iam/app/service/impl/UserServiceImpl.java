@@ -451,11 +451,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> listUsersByIds(Long[] ids) {
+    public List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         if (ids.length == 0) {
             return new ArrayList<>();
         } else {
-            return ConvertHelper.convertList(userRepository.listUsersByIds(ids), UserDTO.class);
+            return ConvertHelper.convertList(userRepository.listUsersByIds(ids, onlyEnabled), UserDTO.class);
         }
     }
 

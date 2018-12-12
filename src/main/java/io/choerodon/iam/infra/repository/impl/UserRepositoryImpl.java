@@ -277,8 +277,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<UserDO> listUsersByIds(Long[] ids) {
-        return mapper.listUsersByIds(ids);
+    public List<UserDO> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
+        return mapper.listUsersByIds(ids, onlyEnabled);
     }
 
     @Override
