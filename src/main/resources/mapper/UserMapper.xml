@@ -60,7 +60,7 @@
             AND is_ldap = #{userDO.ldap}
         </if>
         <if test="userDO.realName != null">
-            AND real_name = #{userDO.realName}
+            AND real_name LIKE concat(concat('%',#{userDO.realName}),'%')
         </if>
         <if test="userDO.enabled != null">
             AND is_enabled = #{userDO.enabled}
