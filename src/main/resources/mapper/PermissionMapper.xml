@@ -61,8 +61,8 @@
         AND member_id = #{member_id}
         AND source_type = #{source_type}
         AND source_id = #{source_id}
-        ))
         AND r.is_enabled = 1
+        ))
         <if test="codes != null and !codes.isEmpty()">
             AND p.CODE IN
             <foreach collection="codes" item="item" index="index" open="(" separator="," close=")">
