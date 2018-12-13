@@ -93,10 +93,10 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        //创建系统公告
-        createSystemAnnouncement(content);
 //        Future<String> future =
         iUserService.sendNotice(null, allUsersId, code, params, sourceId, true);
+        //创建系统公告
+        createSystemAnnouncement(content);
 //        while (true) {  // 这里使用了循环判断，等待获取结果信息
 //            try {
 //                if (future.isDone()) {  // 判断是否执行完毕

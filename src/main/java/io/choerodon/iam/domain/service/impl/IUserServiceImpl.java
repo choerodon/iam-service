@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
 
     private UserRepository userRepository;
     private NotifyFeignClient notifyFeignClient;
+    private static final Logger logger = LoggerFactory.getLogger(IUserServiceImpl.class);
 
     public IUserServiceImpl(UserRepository userRepository, NotifyFeignClient notifyFeignClient) {
         this.userRepository = userRepository;
@@ -69,6 +72,7 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     @Override
     @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
+        logger.info("ready : send Notice to " + userIds.size() + " users");
         if (userIds == null || userIds.isEmpty()) return new AsyncResult<>("userId is null");
         long beginTime = System.currentTimeMillis();
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
@@ -95,7 +99,9 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
             }
         });
         noticeSendDTO.setTargetUsers(users);
+        logger.info("start : send Notice to " + userIds.size() + " users");
         notifyFeignClient.postNotice(noticeSendDTO);
+        logger.info("end : send Notice to " + userIds.size() + " users");
         return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 }

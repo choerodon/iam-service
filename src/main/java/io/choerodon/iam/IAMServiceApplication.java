@@ -54,9 +54,9 @@ public class IAMServiceApplication {
     public AsyncTaskExecutor asyncSendNoticeExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("send-notify-executor");
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(100);
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(99999);
         return executor;
     }
 }
