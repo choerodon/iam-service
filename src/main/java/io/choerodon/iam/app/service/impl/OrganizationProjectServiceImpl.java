@@ -36,6 +36,7 @@ import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -70,6 +71,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private IUserService iUserService;
 
+    private AsgardFeignClient asgardFeignClient;
+
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
@@ -79,7 +83,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           MemberRoleRepository memberRoleRepository,
                                           LabelRepository labelRepository,
                                           SagaClient sagaClient,
-                                          IUserService iUserService) {
+                                          IUserService iUserService,
+                                          AsgardFeignClient asgardFeignClient) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -88,6 +93,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.labelRepository = labelRepository;
         this.sagaClient = sagaClient;
         this.iUserService = iUserService;
+        this.asgardFeignClient = asgardFeignClient;
     }
 
     @Transactional
@@ -233,10 +239,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //saga
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(),ResourceLevel.ORGANIZATION.value(),projectDO.getOrganizationId()));
+                sagaClient.startSaga(consumerType, new StartInstanceDTO(input, PROJECT, "" + payload.getProjectId(), ResourceLevel.ORGANIZATION.value(), projectDO.getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }
+            //给asgard发送禁用定时任务通知
+            asgardFeignClient.disableProj(projectId);
             // 给项目下所有用户发送通知
             List<Long> userIds = projectRepository.listUserIds(projectId);
             Map<String, Object> params = new HashMap<>();
