@@ -115,17 +115,21 @@ public class ILdapServiceImpl implements ILdapService {
             contextSource.setUserDn(userDn);
             contextSource.setPassword(ldapDO.getPassword());
 
-            ldapConnectionDTO.setCanLogin(true);
+            ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
             try {
                 LdapTemplate newLdapTemplate = new LdapTemplate(contextSource);
                 matchAttributes(ldapDO, ldapConnectionDTO, newLdapTemplate);
+                ldapConnectionDTO.setCanLogin(true);
                 return newLdapTemplate;
             } catch (InvalidNameException e) {
-                if (e.getRootCause() instanceof javax.naming.InvalidNameException) {
-                    ldapConnectionDTO.setCanLogin(false);
-                }
                 LOGGER.error("userDn = {} or password is invalid, login failed, exception: {}", userDn, e);
+                return null;
+            } catch (AuthenticationException e) {
+                LOGGER.error("userDn = {} or password is invalid, login failed, exception: {}", userDn, e);
+                return null;
+            } catch (Exception e) {
+                LOGGER.error("unexpected exception: {} ", e);
                 return null;
             }
         }
@@ -231,36 +235,36 @@ public class ILdapServiceImpl implements ILdapService {
     }
 
     private void anonymousUserMatchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
-            List<Attributes> attributes =
-                    ldapTemplate.search(
-                            query()
-                                    .searchScope(SearchScope.SUBTREE)
-                                    .countLimit(1)
-                                    .where("objectclass")
-                                    .is(ldapDO.getObjectClass()),
-                            new AttributesMapper() {
-                                @Override
-                                public Object mapFromAttributes(Attributes attributes) throws NamingException {
-                                    return attributes;
-                                }
-                            });
-            if (attributes.isEmpty()) {
-                LOGGER.warn("can not get any attributes where objectclass = {}", ldapDO.getObjectClass());
-                ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
-                ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
-                ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
-                ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
-            } else {
-                Map<String, String> attributeMap = new HashMap<>(5);
-                attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldapDO.getLoginNameField());
-                attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldapDO.getEmailField());
-                Set<String> keySet = new HashSet<>();
-                NamingEnumeration attributesIDs = attributes.get(0).getIDs();
-                while (attributesIDs != null && attributesIDs.hasMoreElements()) {
-                    keySet.add(attributesIDs.nextElement().toString());
-                }
-                fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
+        List<Attributes> attributes =
+                ldapTemplate.search(
+                        query()
+                                .searchScope(SearchScope.SUBTREE)
+                                .countLimit(1)
+                                .where("objectclass")
+                                .is(ldapDO.getObjectClass()),
+                        new AttributesMapper() {
+                            @Override
+                            public Object mapFromAttributes(Attributes attributes) throws NamingException {
+                                return attributes;
+                            }
+                        });
+        if (attributes.isEmpty()) {
+            LOGGER.warn("can not get any attributes where objectclass = {}", ldapDO.getObjectClass());
+            ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
+            ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
+            ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
+            ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
+        } else {
+            Map<String, String> attributeMap = new HashMap<>(5);
+            attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldapDO.getLoginNameField());
+            attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldapDO.getEmailField());
+            Set<String> keySet = new HashSet<>();
+            NamingEnumeration attributesIDs = attributes.get(0).getIDs();
+            while (attributesIDs != null && attributesIDs.hasMoreElements()) {
+                keySet.add(attributesIDs.nextElement().toString());
             }
+            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
+        }
     }
 
     private void fullMathAttribute(LdapConnectionDTO ldapConnectionDTO, Map<String, String> attributeMap, Set<String> keySet) {
