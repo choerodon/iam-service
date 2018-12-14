@@ -12,5 +12,8 @@ import org.springframework.web.bind.annotation.PutMapping;
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
     @PutMapping("/v1/schedules/organizations/{organization_id}/tasks/disable")
-    void disable(@PathVariable("organization_id") long orgId);
+    void disableOrg(@PathVariable("organization_id") long orgId);
+
+    @PutMapping("/v1/schedules/projects/{project_id}/tasks/disable")
+    void disableProj(@PathVariable("project_id") long projectId);
 }
