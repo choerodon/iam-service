@@ -17,4 +17,12 @@ public interface OauthTokenFeignClient {
      */
     @DeleteMapping("/all")
     void deleteTokens(@RequestParam(value = "loginName") String loginName);
+
+    /**
+     * 根据 tokenId 删除 token
+     *
+     * @param tokenId tokenId
+     */
+    @DeleteMapping("/one")
+    void deleteToken(@RequestParam(value = "tokenId") String tokenId);
 }
