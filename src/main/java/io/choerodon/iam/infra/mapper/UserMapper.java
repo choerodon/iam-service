@@ -56,7 +56,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                             @Param("param") String param);
 
 
-    List<UserDO> listUsersByIds(@Param("ids") Long[] ids);
+    List<UserDO> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
     List<UserDO> listUsersByEmails(@Param("emails") String[] emails);
 

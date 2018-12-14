@@ -15,4 +15,9 @@ public class OauthTokenFeignClientFallback implements OauthTokenFeignClient {
     public void deleteTokens(String loginName) {
         throw new CommonException(TOKEN_DELETE_ERROR, loginName);
     }
+
+    @Override
+    public void deleteToken(String tokenId) {
+        throw new CommonException(TOKEN_DELETE_ERROR, tokenId);
+    }
 }

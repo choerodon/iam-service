@@ -71,15 +71,16 @@ public interface UserService {
     /**
      * 根据用户id集合查询用户的集合
      *
-     * @param ids 用户id数组
+     * @param ids         用户id数组
+     * @param onlyEnabled 默认为true，只查询启用的用户
      * @return List<UserDTO> 用户集合
      */
-    List<UserDTO> listUsersByIds(Long[] ids);
+    List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled);
 
     /**
      * 根据用户emails集合查询用户的集合
      *
-     * @param ids 用户email数组
+     * @param emails 用户email数组
      * @return List<UserDTO> 用户集合
      */
     List<UserDTO> listUsersByEmails(String[] emails);

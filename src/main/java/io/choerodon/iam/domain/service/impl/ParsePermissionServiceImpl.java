@@ -78,11 +78,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             fetchSwaggerJsonByIp(payload);
             String serviceName = payload.getAppName();
             String json = payload.getApiData();
-            if (logger.isDebugEnabled()) {
-                logger.debug("receive service: {} message, version: {}, ip: {}, ###swagger json###  {}", serviceName, payload.getVersion(), payload.getInstanceAddress(), json);
-            } else {
-                logger.info("receive service: {} message, version: {}, ip: {}", serviceName, payload.getVersion(), payload.getInstanceAddress());
-            }
+            logger.info("receive service: {} message, version: {}, ip: {}", serviceName, payload.getVersion(), payload.getInstanceAddress());
             if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
@@ -93,7 +89,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
                     parserMethod(methodIterator, pathNode, serviceName, initRoleMap, permissionCodes);
                 }
-                logger.info("¥¥¥ cleanPermission : {}", cleanPermission);
+                logger.info("cleanPermission : {}", cleanPermission);
                 if (cleanPermission) {
                     deleteDeprecatedPermission(permissionCodes, serviceName);
                     //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
@@ -219,8 +215,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                 illegalTags.add(tag);
             }
         }
-        if (logger.isDebugEnabled() && illegal) {
-            logger.debug("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
+        if (illegal) {
+            logger.warn("skip the controller/endpoint because of the illegal tags {}, please ensure the controller is end with ##Controller## or ##EndPoint##", illegalTags);
         }
         return resourceCode;
     }
@@ -285,7 +281,7 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                         rolePermissionRepository.insert(rp);
                     }
                 } else {
-                    logger.info("init role level do not match the permission level, permission id: {}, level: {}, @@ role code: {}, level: {}",
+                    logger.info("init role level does not match the permission level, permission id: {}, level: {}, @@ role code: {}, level: {}",
                             permissionId, level, role.getCode(), role.getLevel());
                 }
             }

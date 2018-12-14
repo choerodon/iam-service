@@ -55,20 +55,20 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         sendSystemNotification(ResourceLevel.SITE, 0L, content);
     }
 
-    /**
-     * 组织公告JobTask
-     *
-     * @param map 参数map
-     */
-    @JobTask(maxRetryCount = 0, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
-            @JobParam(name = "content", defaultValue = "组织公告", description = "组织公告内容"),
-            @JobParam(name = "orgId", type = Long.class, description = "组织Id")
-    }, description = "组织层发送系统通知")
-    public void organizationNotification(Map<String, Object> map) {
-        Long orgId = Optional.ofNullable(new Long(map.get("orgId").toString())).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
-        String content = Optional.ofNullable((String) map.get("content")).orElseThrow(() -> new CommonException("error.organizationNotification.content.empty"));
-        sendSystemNotification(ResourceLevel.ORGANIZATION, orgId, content);
-    }
+//    /**
+//     * 组织公告JobTask
+//     *
+//     * @param map 参数map
+//     */
+//    @JobTask(maxRetryCount = 0, code = "organizationNotification", level = ResourceLevel.ORGANIZATION, params = {
+//            @JobParam(name = "content", defaultValue = "组织公告", description = "组织公告内容"),
+//            @JobParam(name = "orgId", type = Long.class, description = "组织Id")
+//    }, description = "组织层发送系统通知")
+//    public void organizationNotification(Map<String, Object> map) {
+//        Long orgId = Optional.ofNullable(new Long(map.get("orgId").toString())).orElseThrow(() -> new CommonException("error.organizationNotification.orgId.empty"));
+//        String content = Optional.ofNullable((String) map.get("content")).orElseThrow(() -> new CommonException("error.organizationNotification.content.empty"));
+//        sendSystemNotification(ResourceLevel.ORGANIZATION, orgId, content);
+//    }
 
     /**
      * 发送组织/系统公告
@@ -93,10 +93,10 @@ public class SystemNoticesServiceImpl implements SystemNoticesService {
         //发送内容
         Map<String, Object> params = new HashMap<>();
         params.put("content", content);
-        //创建系统公告
-        createSystemAnnouncement(content);
 //        Future<String> future =
         iUserService.sendNotice(null, allUsersId, code, params, sourceId, true);
+        //创建系统公告
+        createSystemAnnouncement(content);
 //        while (true) {  // 这里使用了循环判断，等待获取结果信息
 //            try {
 //                if (future.isDone()) {  // 判断是否执行完毕
