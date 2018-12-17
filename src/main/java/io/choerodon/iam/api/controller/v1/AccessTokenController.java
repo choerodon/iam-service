@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.UserAccessTokenDTO;
 import io.choerodon.iam.app.service.AccessTokenService;
@@ -29,7 +30,7 @@ public class AccessTokenController {
         this.accessTokenService = accessTokenService;
     }
 
-    @Permission(permissionLogin = true)
+    @Permission(permissionLogin = true, level = ResourceLevel.SITE)
     @ApiOperation(value = "分页查询当前用户token")
     @CustomPageRequest
     @GetMapping
@@ -42,7 +43,7 @@ public class AccessTokenController {
         return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(pageRequest, userId, clientName, currentToken), HttpStatus.OK);
     }
 
-    @Permission(permissionLogin = true)
+    @Permission(permissionLogin = true, level = ResourceLevel.SITE)
     @ApiOperation(value = "根据tokenId删除token")
     @DeleteMapping
     public void delete(@RequestParam(name = "tokenId") String tokenId,
