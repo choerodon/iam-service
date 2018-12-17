@@ -74,26 +74,28 @@
                 LEFT JOIN iam_role r
                 ON r.id = rp.role_id
                 WHERE
-                p.login_access = 1
-                OR p.public_access = 1
-                OR
                 (
-                    r.is_enabled = 1
-                    AND rp.role_id
-                    IN
+                    p.login_access = 1
+                    OR p.public_access = 1
+                    OR
                     (
-                        SELECT DISTINCT mr.role_id
-                        FROM iam_member_role mr
-                        WHERE mr.member_type = #{memberType}
-                        AND mr.member_id = #{memberId}
-                        <if test="sourceType != null">
-                            AND mr.source_type = #{sourceType}
-                            AND mr.source_id = #{sourceId}
-                        </if>
-                        <if test="
-                                sourceId != null">
-                            AND mr.source_id = #{sourceId}
-                        </if>
+                        r.is_enabled = 1
+                        AND rp.role_id
+                        IN
+                        (
+                            SELECT DISTINCT mr.role_id
+                            FROM iam_member_role mr
+                            WHERE mr.member_type = #{memberType}
+                            AND mr.member_id = #{memberId}
+                            <if test="sourceType != null">
+                                AND mr.source_type = #{sourceType}
+                                AND mr.source_id = #{sourceId}
+                            </if>
+                            <if test="
+                                    sourceId != null">
+                                AND mr.source_id = #{sourceId}
+                            </if>
+                        )
                     )
                 )
             )
