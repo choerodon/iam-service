@@ -360,11 +360,28 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR, InitRoleCode.SITE_DEVELOPER})
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles")
     public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
+                pageRequest, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的site层的角色 (可供平台开发者调用)
+     *
+     * @param roleAssignmentSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR, InitRoleCode.SITE_DEVELOPER})
+    @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/users/roles/for_all")
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRolesWithDeveloper(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
