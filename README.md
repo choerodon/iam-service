@@ -90,11 +90,6 @@ sh init-local-database.sh
 
 * [Change Log](./CHANGELOG.zh-CN.md)
 
-## Reporting Issues
-
-If you find any shortcomings or bugs, please describe them in the [issue](https://github.com/choerodon/choerodon/issues/new?template=issue_template.md).
-    
 ## How to Contribute
 
 Pull requests are welcome! [Follow](https://github.com/choerodon/choerodon/blob/master/CONTRIBUTING.md) to know for more information on how to contribute.
-
