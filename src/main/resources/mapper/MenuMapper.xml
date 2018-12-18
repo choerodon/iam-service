@@ -60,48 +60,55 @@
 
     <select id="queryMenusWithPermissionByTestPermission" resultMap="menusWithPermissions">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT DISTINCT
-        im.*
+        SELECT DISTINCT im.*
         FROM iam_menu im
         LEFT JOIN iam_menu_permission imp
         ON im.id = imp.menu_id
-        WHERE imp.permission_code IN
-        (
-        SELECT p.code
-        FROM iam_role_permission rp
-        LEFT JOIN iam_permission p
-        ON p.id=rp.permission_id
-        LEFT JOIN iam_role r
-        ON r.id = rp.role_id
-        WHERE r.is_enabled = 1
-        AND ( p.login_access=1
-        OR p.public_access=1
-        OR rp.role_id IN
-        (
-        SELECT DISTINCT mr.role_id
-        FROM iam_member_role mr
-        WHERE mr.member_type=#{memberType}
-        AND mr.member_id=#{memberId}
-        <if test="sourceType != null">AND mr.source_type = #{sourceType}
-            AND mr.source_id=#{sourceId}
-        </if>
-        <if test="
-        sourceId != null">
-            AND mr.source_id=#{sourceId}
-        </if>
-        )
-        )
-        )
-        <if test="level != null">
-            AND im.fd_level = #{level}
-        </if>
-        UNION
-        SELECT DISTINCT * FROM iam_menu
-        WHERE
-        <if test="level != null">
-            fd_level = #{level} AND
-        </if>
-        (type = 'root' OR type = 'dir')
+        WHERE imp.permission_code
+        IN
+            (
+                SELECT p.code
+                FROM iam_role_permission rp
+                LEFT JOIN iam_permission p
+                ON p.id = rp.permission_id
+                LEFT JOIN iam_role r
+                ON r.id = rp.role_id
+                WHERE
+                (
+                    p.login_access = 1
+                    OR p.public_access = 1
+                    OR
+                    (
+                        r.is_enabled = 1
+                        AND rp.role_id
+                        IN
+                        (
+                            SELECT DISTINCT mr.role_id
+                            FROM iam_member_role mr
+                            WHERE mr.member_type = #{memberType}
+                            AND mr.member_id = #{memberId}
+                            <if test="sourceType != null">
+                                AND mr.source_type = #{sourceType}
+                                AND mr.source_id = #{sourceId}
+                            </if>
+                            <if test="
+                                    sourceId != null">
+                                AND mr.source_id = #{sourceId}
+                            </if>
+                        )
+                    )
+                )
+            )
+            <if test="level != null">
+                AND im.fd_level = #{level}
+            </if>
+            UNION
+            SELECT DISTINCT * FROM iam_menu
+            WHERE
+            <if test="level != null">
+                fd_level = #{level} AND
+            </if>
+            (type = 'root' OR type = 'dir')
     </select>
 
     <delete id="deleteMenusById">

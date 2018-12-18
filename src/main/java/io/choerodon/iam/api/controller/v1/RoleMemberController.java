@@ -1,5 +1,17 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -15,17 +27,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
 
 /**
  * @author superlee
@@ -359,11 +360,28 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles")
     public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRoles(
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
+                pageRequest, roleAssignmentSearchDTO), HttpStatus.OK);
+    }
+
+    /**
+     * 在site层查询用户，用户包含拥有的site层的角色 (可供平台开发者调用)
+     *
+     * @param roleAssignmentSearchDTO 搜索条件
+     */
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR, InitRoleCode.SITE_DEVELOPER})
+    @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
+    @CustomPageRequest
+    @PostMapping(value = "/site/role_members/users/roles/for_all")
+    public ResponseEntity<Page<UserWithRoleDTO>> pagingQueryUsersWithSiteLevelRolesWithDeveloper(
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
