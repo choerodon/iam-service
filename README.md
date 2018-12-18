@@ -74,29 +74,22 @@ java -Dspring.datasource.url="jdbc:mysql://localhost/iam_service?useUnicode=true
  -jar target/choerodon-tool-liquibase.jar
 ```
 
-And executed in the root directory of the manager-service project：
+And executed in the root directory of the iam-service project：
 
 ```sh
 sh init-local-database.sh
 ```
 
-3. Start up kafka
 4. Go to the project directory and run `mvn spring-boot:run` or run `IAMServiceApplication` in idea.
 
 ## Dependencies
 - `go-register-server`
 - `config-server`
-- `kafka`
 
 ## Links
 
 * [Change Log](./CHANGELOG.zh-CN.md)
 
-## Reporting Issues
-
-If you find any shortcomings or bugs, please describe them in the [issue](https://github.com/choerodon/choerodon/issues/new?template=issue_template.md).
-    
 ## How to Contribute
 
 Pull requests are welcome! [Follow](https://github.com/choerodon/choerodon/blob/master/CONTRIBUTING.md) to know for more information on how to contribute.
-
