@@ -16,7 +16,7 @@ jobs:
             keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
             - v1-dependencies-
-        - run: mvn -s .circleci.settings.xml package -U -DskipTests=true
+        - run: mvn -s ./mvn_settings.xml package -U -DskipTests=true
 
   maven_build:
     <<: *default
@@ -30,7 +30,7 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
-      - run: mvn -s .circleci.settings.xml package -U -DskipTests=true
+      - run: mvn -s ./mvn_settings.xml package -U -DskipTests=true
       - save_cache:
           paths:
             - ~/.m2
