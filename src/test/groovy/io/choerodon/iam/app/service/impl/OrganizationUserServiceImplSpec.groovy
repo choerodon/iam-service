@@ -30,6 +30,7 @@ import org.spockframework.runtime.Sputnik
 import spock.lang.Specification
 
 import java.lang.reflect.Field
+
 /**
  * @author dengyouquan
  * */
@@ -72,10 +73,10 @@ class OrganizationUserServiceImplSpec extends Specification {
         userDTO.setId(userId)
         userDTO.setOrganizationId(1L)
         userDTO.setPassword("123456")
-        OrganizationE organizationE = new OrganizationE(1, "name", "code",
-                1L, userRepository, true, passwordRecord, userId, "address")
+        UserE userE = new UserE(1, "kangkang")
+        userE.setPassword("password")
         PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(organizationE).thenReturn(new UserE("123456"))
+        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userE).thenReturn(new UserDTO())
 
         when: "调用方法"
         organizationUserService.create(userDTO, checkPassword)
@@ -83,14 +84,8 @@ class OrganizationUserServiceImplSpec extends Specification {
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
-        1 * userRepository.selectByLoginName(_)
-        1 * userRepository.insertSelective(_) >> {
-            UserE userE = new UserE("password")
-            Field field = userE.getClass().getDeclaredField("id")
-            field.setAccessible(true)
-            field.set(userE, 1L)
-            return userE
-        }
+        1 * userRepository.selectByLoginName(_) >> null
+        1 * userRepository.insertSelective(_) >> userE
         1 * passwordRecord.updatePassword(_, _)
     }
 
@@ -112,16 +107,12 @@ class OrganizationUserServiceImplSpec extends Specification {
 
     def "Update"() {
         given: "构造请求参数"
-        UserE userE = new UserE("password")
-        Field field = userE.getClass().getDeclaredField("id")
-        field.setAccessible(true)
-        field.set(userE, 1L)
+        UserE userE = new UserE(1, "kangkang")
+        userE.setPassword("password")
 
         and: "mock ConvertHelper"
-        OrganizationE organizationE = new OrganizationE(1, "name", "code",
-                1L, userRepository, true, passwordRecord, userId, "address")
         PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(organizationE).thenReturn(userE).thenReturn(new UserDTO())
+        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userE).thenReturn(userE).thenReturn(new UserDTO())
 
         when: "调用方法"
         organizationUserService.update(new UserDTO())
@@ -142,7 +133,7 @@ class OrganizationUserServiceImplSpec extends Specification {
 
         and: "mock ConvertHelper"
         OrganizationE organizationE = new OrganizationE(1, "name", "code",
-                1L, userRepository, true, passwordRecord, userId, "address")
+                1L, true, userId, "address")
         PowerMockito.mockStatic(ConvertHelper)
         PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(organizationE).thenReturn(userE).thenReturn(new UserDTO())
 
@@ -165,8 +156,6 @@ class OrganizationUserServiceImplSpec extends Specification {
         field.set(userE, 1L)
 
         and: "mock ConvertHelper"
-        OrganizationE organizationE = new OrganizationE(1, "name", "code",
-                1L, userRepository, true, passwordRecord, userId, "address")
         PowerMockito.mockStatic(ConvertHelper)
         PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserDTO())
 
@@ -189,8 +178,6 @@ class OrganizationUserServiceImplSpec extends Specification {
         field.set(userE, 1L)
 
         and: "mock ConvertHelper"
-        OrganizationE organizationE = new OrganizationE(1, "name", "code",
-                1L, userRepository, true, passwordRecord, userId, "address")
         PowerMockito.mockStatic(ConvertHelper)
         PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserDTO())
 

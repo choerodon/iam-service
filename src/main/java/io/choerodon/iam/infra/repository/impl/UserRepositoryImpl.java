@@ -92,8 +92,6 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<UserDO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
                                                            RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        //TODO
-        //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
         int start = page * size;
@@ -115,8 +113,6 @@ public class UserRepositoryImpl implements UserRepository {
     public Page<UserDO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                    Long sourceId) {
-        //TODO
-        //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
         int start = page * size;
@@ -138,8 +134,6 @@ public class UserRepositoryImpl implements UserRepository {
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                               Long sourceId, boolean doPage) {
         if (doPage) {
-            //TODO
-            //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
             int page = pageRequest.getPage();
             int size = pageRequest.getSize();
             int start = page * size;

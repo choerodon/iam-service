@@ -27,6 +27,8 @@ public class OrganizationDO extends AuditDomain {
 
     private String address;
 
+    private String imageUrl;
+
     @Column(name = "is_enabled")
     private Boolean enabled;
 
@@ -116,5 +118,13 @@ public class OrganizationDO extends AuditDomain {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

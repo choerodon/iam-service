@@ -36,6 +36,9 @@ public class OrganizationDTO {
     @ApiModelProperty(value = "项目数量")
     private Integer projectCount;
 
+    @ApiModelProperty(value = "组织图标url")
+    private String imageUrl;
+
     private String ownerLoginName;
 
     private String ownerRealName;
@@ -172,5 +175,13 @@ public class OrganizationDTO {
 
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

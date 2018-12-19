@@ -20,6 +20,7 @@ import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dataobject.OrganizationDO
 import io.choerodon.iam.infra.dataobject.ProjectDO
 import io.choerodon.iam.infra.dataobject.RoleDO
+import io.choerodon.iam.infra.feign.AsgardFeignClient
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
@@ -47,13 +48,14 @@ class OrganizationProjectServiceImplSpec extends Specification {
     private LabelRepository labelRepository = Mock(LabelRepository)
     private SagaClient sagaClient = Mock(SagaClient)
     private IUserService iUserService = Mock(IUserService)
+    private AsgardFeignClient asgardFeignClient = Mock(AsgardFeignClient)
     private OrganizationProjectService organizationProjectService
 
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, iUserService)
+                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)

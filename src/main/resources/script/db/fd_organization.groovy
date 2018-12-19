@@ -41,4 +41,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: 'ADDRESS', type: "VARCHAR(128)", remarks: '组织的地址', afterColumn: 'USER_ID')
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-12-18-fd-organization-add') {
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'IMAGE_URL', type: 'VARCHAR(255)', remarks: '组织图标url', afterColumn: 'ADDRESS')
+        }
+    }
 }
