@@ -36,14 +36,18 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-05-24-drop-unique') {
-//        if (helper.isMysql()) {
         dropUniqueConstraint(constraintName: "UK_FD_PROJECT_U1", tableName: "FD_PROJECT")
-//        }
     }
 
     changeSet(author: 'jcalaz@163.com', id: '2018-11-27-fd-project-add-type') {
         addColumn(tableName: 'FD_PROJECT') {
             column(name: 'TYPE', type: 'VARCHAR(64)', remarks: '项目类型')
+        }
+    }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2018-12-18-fd-project-add') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'IMAGE_URL', type: 'VARCHAR(255)', remarks: '项目图标url', afterColumn: 'IS_ENABLED')
         }
     }
 }

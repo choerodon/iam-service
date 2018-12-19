@@ -25,6 +25,8 @@ public class ProjectDO extends AuditDomain {
 
     private Long organizationId;
 
+    private String imageUrl;
+
     @Transient
     private String organizationName;
 
@@ -118,6 +120,14 @@ public class ProjectDO extends AuditDomain {
         this.typeName = typeName;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "ProjectDO{" +
@@ -125,6 +135,7 @@ public class ProjectDO extends AuditDomain {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", organizationId=" + organizationId +
+                ", imageUrl='" + imageUrl + '\'' +
                 ", organizationName='" + organizationName + '\'' +
                 ", enabled=" + enabled +
                 ", roles=" + roles +

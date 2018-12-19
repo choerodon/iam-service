@@ -47,6 +47,9 @@ public class ProjectDTO {
     @ApiModelProperty(value = "项目类型code/非必填")
     private String type;
 
+    @ApiModelProperty(value = "项目图标url")
+    private String imageUrl;
+
     public Long getId() {
         return id;
     }
@@ -109,6 +112,14 @@ public class ProjectDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public void updateCheck() {

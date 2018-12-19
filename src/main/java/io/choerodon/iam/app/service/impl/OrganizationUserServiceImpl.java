@@ -17,7 +17,6 @@ import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.SystemSettingService;
-import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -102,15 +101,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 Optional.ofNullable(organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId()))
                         .orElseThrow(() -> new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION));
         Long organizationId = organizationDO.getId();
-        OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
         if (checkPassword) {
             validatePasswordPolicy(userDTO, password, organizationId);
             // 校验用户密码
             userPasswordValidator.validate(password, organizationId, true);
         }
-        UserDTO dto = new UserDTO();
-        UserE user = organizationE.addUser(ConvertHelper.convert(userDTO, UserE.class));
-        BeanUtils.copyProperties(user, dto);
+        UserE user = createUser(userDTO);
         if (devopsMessage) {
             try {
                 UserEventPayload userEventPayload = new UserEventPayload();
@@ -129,7 +125,20 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.createUser.event", e);
             }
         }
-        return dto;
+        return ConvertHelper.convert(user, UserDTO.class);
+    }
+
+    private UserE createUser(UserDTO userDTO) {
+        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
+        if (userRepository.selectByLoginName(userE.getLoginName()) != null) {
+            throw new CommonException("error.user.loginName.exist");
+        }
+        userE.unlocked();
+        userE.enable();
+        userE.encodePassword();
+        userE = userRepository.insertSelective(userE);
+        passwordRecord.updatePassword(userE.getId(), userE.getPassword());
+        return userE.hiddenPassword();
     }
 
     @Override
@@ -192,13 +201,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
         UserE userE = ConvertHelper.convert(userDTO, UserE.class);
         UserDTO dto;
         if (devopsMessage) {
             dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
-            UserE user = organizationE.updateUser(userE);
+            UserE user = updateUser(userE);
             userEventPayload.setEmail(user.getEmail());
             userEventPayload.setId(user.getId().toString());
             userEventPayload.setName(user.getRealName());
@@ -211,9 +219,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
         } else {
-            dto = ConvertHelper.convert(organizationE.updateUser(userE), UserDTO.class);
+            dto = ConvertHelper.convert(updateUser(userE), UserDTO.class);
         }
         return dto;
+    }
+
+    private UserE updateUser(UserE userE) {
+        if (userE.getPassword() != null) {
+            userE.encodePassword();
+        }
+        return userRepository.updateSelective(userE).hiddenPassword();
     }
 
     @Transactional
@@ -277,11 +292,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
         UserE user = userRepository.selectByPrimaryKey(id);
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setUsername(user.getLoginName());
-        organizationE.removeUserById(id);
+        userRepository.deleteById(id);
         if (devopsMessage) {
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
@@ -299,8 +313,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
-        return ConvertHelper.convert(organizationE.queryById(id), UserDTO.class);
+        return ConvertHelper.convert(userRepository.selectByPrimaryKey(id), UserDTO.class);
     }
 
     @Override
@@ -309,8 +322,18 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        OrganizationE organizationE = ConvertHelper.convert(organizationDO, OrganizationE.class);
-        return ConvertHelper.convert(organizationE.unlock(userId), UserDTO.class);
+        return ConvertHelper.convert(unlockUser(userId), UserDTO.class);
+    }
+
+    private UserE unlockUser(Long userId) {
+        UserE userE = userRepository.selectByPrimaryKey(userId);
+        if (userE == null) {
+            throw new CommonException("error.user.not.exist");
+        }
+        userE.unlocked();
+        userE = userRepository.updateSelective(userE).hiddenPassword();
+        passwordRecord.unLockUser(userE.getId());
+        return userE;
     }
 
     @Transactional(rollbackFor = CommonException.class)

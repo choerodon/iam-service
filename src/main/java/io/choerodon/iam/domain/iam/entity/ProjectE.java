@@ -21,6 +21,8 @@ public class ProjectE {
 
     private String type;
 
+    private String imageUrl;
+
     public Long getId() {
         return id;
     }
@@ -83,5 +85,13 @@ public class ProjectE {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

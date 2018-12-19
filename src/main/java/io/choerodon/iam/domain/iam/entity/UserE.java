@@ -254,4 +254,8 @@ public class UserE {
     public void becomeNotAdminUser() {
         this.admin = false;
     }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

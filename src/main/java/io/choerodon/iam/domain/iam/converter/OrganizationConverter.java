@@ -3,7 +3,6 @@ package io.choerodon.iam.domain.iam.converter;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
-import io.choerodon.iam.domain.iam.factory.OrganizationEFactory;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -15,10 +14,9 @@ import org.springframework.stereotype.Component;
 public class OrganizationConverter implements ConvertorI<OrganizationE, OrganizationDO, OrganizationDTO> {
     @Override
     public OrganizationE dtoToEntity(OrganizationDTO dto) {
-        return OrganizationEFactory.createOrganizationE(
-                dto.getId(), dto.getName(), dto.getCode(),
-                dto.getObjectVersionNumber(), dto.getEnabled(),
-                dto.getUserId(), dto.getAddress());
+        OrganizationE organizationE = new OrganizationE();
+        BeanUtils.copyProperties(dto, organizationE);
+        return organizationE;
     }
 
     @Override
@@ -30,10 +28,9 @@ public class OrganizationConverter implements ConvertorI<OrganizationE, Organiza
 
     @Override
     public OrganizationE doToEntity(OrganizationDO dataObject) {
-        return OrganizationEFactory.createOrganizationE(
-                dataObject.getId(), dataObject.getName(), dataObject.getCode(),
-                dataObject.getObjectVersionNumber(), dataObject.getEnabled(),
-                dataObject.getUserId(), dataObject.getAddress());
+        OrganizationE organizationE = new OrganizationE();
+        BeanUtils.copyProperties(dataObject, organizationE);
+        return organizationE;
     }
 
     @Override
