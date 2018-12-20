@@ -27,6 +27,7 @@ public class UserDashboardE extends AuditDomain {
     @Column(name = "FD_LEVEL")
     private String level;
     private Long sourceId;
+    private String position;
 
     public UserDashboardE() {
     }
@@ -110,5 +111,13 @@ public class UserDashboardE extends AuditDomain {
 
     public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

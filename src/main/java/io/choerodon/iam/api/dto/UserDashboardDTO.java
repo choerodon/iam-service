@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.dto;
 
-import javax.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author dongfan117@gmail.com
@@ -33,7 +34,12 @@ public class UserDashboardDTO {
     private String dashboardNamespace;
     private String dashboardDescription;
     private String dashboardIcon;
-    @ApiModelProperty(value = "是否需要角色控制")
+    @JsonIgnore
+    private String position;
+
+    @ApiModelProperty("卡片位置、宽高")
+    private DashboardPositionDTO positionDTO;
+
     private Boolean needRoles;
 
     public UserDashboardDTO() {
@@ -173,5 +179,21 @@ public class UserDashboardDTO {
 
     public void setNeedRoles(Boolean needRoles) {
         this.needRoles = needRoles;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public DashboardPositionDTO getPositionDTO() {
+        return positionDTO;
+    }
+
+    public void setPositionDTO(DashboardPositionDTO positionDTO) {
+        this.positionDTO = positionDTO;
     }
 }

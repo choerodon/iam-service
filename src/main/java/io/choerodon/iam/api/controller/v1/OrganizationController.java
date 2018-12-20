@@ -121,11 +121,6 @@ public class OrganizationController extends BaseController {
 
     /**
      * 根据organizationId和param模糊查询loginName和realName两列
-     *
-     * @param id
-     * @param pageRequest
-     * @param param
-     * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询组织下的用户")

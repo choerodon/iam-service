@@ -3,12 +3,12 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.UserDashboardMapper">
 
-	<resultMap id="UserDashboardDTO" type="io.choerodon.iam.api.dto.UserDashboardDTO">
-		<id column="id" property="id"></id>
-		<result column="fd_level" property="level" jdbcType="VARCHAR"/>
-	</resultMap>
+    <resultMap id="UserDashboardDTO" type="io.choerodon.iam.api.dto.UserDashboardDTO">
+        <id column="id" property="id"></id>
+        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
+    </resultMap>
 
-	<select id="selectWithDashboard" resultMap="UserDashboardDTO">
+    <select id="selectWithDashboard" resultMap="UserDashboardDTO">
 		SELECT
 			CASE
 				WHEN
@@ -17,6 +17,7 @@
 				ELSE ud.is_visible
 			END
 			AS visible,
+			ud.position,
 			ud.id,
 			ud.user_id,
 			ud.source_id,
@@ -42,7 +43,7 @@
 			AND d.is_enabled = 1
 	</select>
 
-	<select id="selectWithDashboardNotExist" resultMap="UserDashboardDTO">
+    <select id="selectWithDashboardNotExist" resultMap="UserDashboardDTO">
 		SELECT
 			#{userDashboard.userId} user_id,
 			#{userDashboard.sourceId} source_id,
@@ -64,6 +65,13 @@
 			d.fd_level = #{userDashboard.level}
 			AND d.is_enabled = 1
 	</select>
+
+    <delete id="deleteWithDashboard">
+		DELETE FROM iam_user_dashboard
+		WHERE user_id = #{userDashboard.userId}
+		AND source_id = #{userDashboard.sourceId}
+		AND fd_level = #{userDashboard.level}
+	</delete>
 </mapper>
 
 
