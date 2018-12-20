@@ -1,19 +1,18 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.UserDashboardDTO;
 import io.choerodon.iam.api.service.UserDashboardService;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author dongfan117@gmail.com
@@ -33,7 +32,6 @@ public class UserDashboardController {
      *
      * @param level    dashboard层级
      * @param sourceId 组织或项目id
-     * @return
      */
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation("根据层级获取用户首页dashboard")
@@ -68,4 +66,14 @@ public class UserDashboardController {
         }
         return new ResponseEntity<>(userDashboardService.update(level, sourceId, dashboardList), HttpStatus.OK);
     }
+
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @ApiOperation("根据用户、层级、sourceId重置dashboard")
+    @PutMapping("/dashboard/reset")
+    public void reset(@RequestParam(name = "level") String level,
+                      @RequestParam(name = "source_id", defaultValue = "0") Long sourceId) {
+        userDashboardService.reset(level, sourceId);
+    }
+
 }

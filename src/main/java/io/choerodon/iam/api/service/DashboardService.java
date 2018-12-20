@@ -14,4 +14,6 @@ public interface DashboardService {
     DashboardDTO query(Long dashboardId);
 
     Page<DashboardDTO> list(DashboardDTO dashboardDTO, PageRequest pageRequest, String param);
+
+    void reset(Long dashboardId);
 }

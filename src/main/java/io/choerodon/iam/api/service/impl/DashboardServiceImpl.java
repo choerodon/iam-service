@@ -1,10 +1,5 @@
 package io.choerodon.iam.api.service.impl;
 
-import java.util.List;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -12,10 +7,18 @@ import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.domain.iam.entity.DashboardE;
 import io.choerodon.iam.domain.iam.entity.DashboardRoleE;
+import io.choerodon.iam.domain.iam.entity.UserDashboardE;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardRoleMapper;
+import io.choerodon.iam.infra.mapper.UserDashboardMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author dongfan117@gmail.com
@@ -23,13 +26,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service("dashboardService")
 public class DashboardServiceImpl implements DashboardService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DashboardService.class);
+
     private DashboardMapper dashboardMapper;
     private DashboardRoleMapper dashboardRoleMapper;
+    private UserDashboardMapper userDashboardMapper;
     private final ModelMapper modelMapper = new ModelMapper();
 
-    public DashboardServiceImpl(DashboardMapper dashboardMapper, DashboardRoleMapper dashboardRoleMapper) {
+    public DashboardServiceImpl(DashboardMapper dashboardMapper,
+                                DashboardRoleMapper dashboardRoleMapper,
+                                UserDashboardMapper userDashboardMapper) {
         this.dashboardMapper = dashboardMapper;
         this.dashboardRoleMapper = dashboardRoleMapper;
+        this.userDashboardMapper = userDashboardMapper;
     }
 
     @Override
@@ -87,5 +96,13 @@ public class DashboardServiceImpl implements DashboardService {
 
         return ConvertPageHelper.convertPage(
                 dashboardPage, DashboardDTO.class);
+    }
+
+    @Override
+    public void reset(Long dashboardId) {
+        UserDashboardE deleteCondition = new UserDashboardE();
+        deleteCondition.setSourceId(dashboardId);
+        long num = userDashboardMapper.delete(deleteCondition);
+        LOGGER.info("reset userDashboard by dashboardId: {}, delete num: {}", dashboardId, num);
     }
 }

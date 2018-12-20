@@ -2,8 +2,8 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/iam_user_dashboard.groovy') {
     changeSet(author: 'fan@choerodon.io', id: '2018-07-23-iam-user-dashboard') {
-        if(helper.dbType().isSupportSequence()){
-            createSequence(sequenceName: 'IAM_USER_DASHBOARD_S', startValue:"1")
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'IAM_USER_DASHBOARD_S', startValue: "1")
         }
         createTable(tableName: "IAM_USER_DASHBOARD") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
@@ -42,5 +42,11 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user_dashboard.groovy') {
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-08-28-rename') {
         renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '层级：site / organization / project', tableName: 'IAM_USER_DASHBOARD')
+    }
+
+    changeSet(author: 'jcalaz@163.com', id: '2018-12-20-add-column-positionDTO') {
+        addColumn(tableName: 'IAM_USER_DASHBOARD') {
+            column(name: 'POSITION', type: "VARCHAR(128)", remarks: '仪表盘位置')
+        }
     }
 }

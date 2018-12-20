@@ -91,4 +91,12 @@ public class DashboardController extends BaseController {
 
         return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation("重置仪表盘配置数据")
+    @PutMapping("/reset")
+    public void reset(@RequestParam(value = "dashboard_id", required = false) Long dashboardId) {
+        dashboardService.reset(dashboardId);
+    }
+
 }
