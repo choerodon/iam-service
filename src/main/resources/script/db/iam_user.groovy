@@ -68,6 +68,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-05-30-drop-is-admin') {
+        dropDefaultValue(tableName: 'IAM_USER', columnName: 'IS_ADMIN', columnDataType: 'TINYINT UNSIGNED')
         dropColumn(tableName: 'IAM_USER', ColumnName: 'IS_ADMIN')
         addColumn(tableName: 'IAM_USER') {
             column(name: 'IS_ADMIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为管理员用户。1表示是，0表示不是', afterColumn: 'IS_LDAP')
