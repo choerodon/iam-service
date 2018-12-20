@@ -86,6 +86,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
     }
 
     changeSet(author: 'superleader8@gmail.com', id: '2018-06-07-oauth-ldap-drop-column') {
+        dropDefaultValue(tableName: 'OAUTH_LDAP', columnName: 'IS_SYNCING', columnDataType: 'BIGINT UNSIGNED')
+        dropDefaultValue(tableName: 'OAUTH_LDAP', columnName: 'SYNC_BEGIN_TIME', columnDataType: 'DATETIME')
         dropColumn(tableName: 'OAUTH_LDAP', ColumnName: 'IS_SYNCING')
         dropColumn(tableName: 'OAUTH_LDAP', ColumnName: 'PASSWORD_FIELD')
         dropColumn(tableName: 'OAUTH_LDAP', ColumnName: 'TOTAL_SYNC_COUNT')
