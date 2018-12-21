@@ -32,7 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -146,5 +148,14 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Long> listUserIds(Long projectId) {
         return projectRepository.listUserIds(projectId);
+    }
+
+    @Override
+    public List<ProjectDTO> queryByIds(Set<Long> ids) {
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return projectRepository.queryByIds(ids);
+        }
     }
 }

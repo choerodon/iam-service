@@ -205,6 +205,15 @@ public class OrganizationServiceImpl implements OrganizationService {
                 userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, pageRequest, param), UserDTO.class);
     }
 
+    @Override
+    public List<OrganizationDTO> queryByIds(Set<Long> ids) {
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return ConvertHelper.convertList(organizationRepository.queryByIds(ids), OrganizationDTO.class);
+        }
+    }
+
     private void checkCode(OrganizationDTO organization) {
         Boolean createCheck = StringUtils.isEmpty(organization.getId());
         String code = organization.getCode();

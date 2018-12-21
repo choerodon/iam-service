@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -81,12 +83,12 @@ public class OrganizationController extends BaseController {
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<OrganizationDTO>> pagingQuery(@ApiIgnore
-                                                      @SortDefault(value = "id", direction = Sort.Direction.DESC)
-                                                              PageRequest pageRequest,
-                                                      @RequestParam(required = false) String name,
-                                                      @RequestParam(required = false) String code,
-                                                      @RequestParam(required = false) Boolean enabled,
-                                                      @RequestParam(required = false) String[] params) {
+                                                             @SortDefault(value = "id", direction = Sort.Direction.DESC)
+                                                                     PageRequest pageRequest,
+                                                             @RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String code,
+                                                             @RequestParam(required = false) Boolean enabled,
+                                                             @RequestParam(required = false) String[] params) {
         OrganizationDTO organization = new OrganizationDTO();
         organization.setName(name);
         organization.setCode(code);
@@ -94,6 +96,19 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.pagingQuery(organization, pageRequest,
                 ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
+
+    /**
+     * 根据id集合查询组织
+     * @param ids id集合，去重
+     * @return 组织集合
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据id集合查询组织")
+    @PostMapping("/ids")
+    public ResponseEntity<List<OrganizationDTO>> queryByIds(@RequestBody Set<Long> ids) {
+        return new ResponseEntity<>(organizationService.queryByIds(ids), HttpStatus.OK);
+    }
+
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "启用组织")
@@ -127,12 +142,12 @@ public class OrganizationController extends BaseController {
     @CustomPageRequest
     @GetMapping(value = "/{organization_id}/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
-                                              @ApiIgnore
-                                              @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                      PageRequest pageRequest,
-                                              @RequestParam(required = false, name = "id") Long userId,
-                                              @RequestParam(required = false) String email,
-                                              @RequestParam(required = false) String param) {
+                                                                        @ApiIgnore
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.ASC)
+                                                                                PageRequest pageRequest,
+                                                                        @RequestParam(required = false, name = "id") Long userId,
+                                                                        @RequestParam(required = false) String email,
+                                                                        @RequestParam(required = false) String param) {
         return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
     }
 }

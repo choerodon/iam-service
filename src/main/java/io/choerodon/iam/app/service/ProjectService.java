@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ProjectDTO;
@@ -21,4 +22,6 @@ public interface ProjectService {
     ProjectDTO disableProject(Long id);
 
     List<Long> listUserIds(Long projectId);
+
+    List<ProjectDTO> queryByIds(Set<Long> ids);
 }

@@ -1,7 +1,9 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
+import io.choerodon.iam.api.dto.ProjectDTO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.infra.dataobject.ProjectDO;
@@ -41,4 +43,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     List<ProjectDO> selectAllWithProjectType();
 
     Boolean projectEnabled(@Param("sourceId") Long sourceId);
+
+    List<ProjectDTO> selectByIds(@Param("ids") Set<Long> ids);
 }

@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.repository.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -123,5 +124,10 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override
     public List<Long> listMemberIds(Long organizationId) {
         return organizationMapper.listMemberIds(organizationId, "organization");
+    }
+
+    @Override
+    public List<OrganizationDO> queryByIds(Set<Long> ids) {
+        return organizationMapper.selectByIds(ids);
     }
 }
