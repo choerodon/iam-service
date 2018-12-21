@@ -1,8 +1,10 @@
 package io.choerodon.iam.domain.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,4 +44,6 @@ public interface ProjectRepository {
     Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params);
 
     List<Long> listUserIds(Long id);
+
+    List<ProjectDTO> queryByIds(Set<Long> ids);
 }

@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ProjectDTO
+import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.infra.dataobject.ProjectDO
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import org.springframework.beans.BeanUtils
@@ -32,6 +33,8 @@ class ProjectControllerSpec extends Specification {
     private TestRestTemplate restTemplate
     @Autowired
     private ProjectMapper projectMapper
+    @Autowired
+    private ProjectService projectService
     @Shared
     def needInit = true
     @Shared
@@ -139,5 +142,16 @@ class ProjectControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         !entity.getBody().getEnabled()
+    }
+
+    def "queryByIds"() {
+        given:
+        ProjectController controller = new ProjectController(projectService)
+        def ids = new HashSet()
+        ids << 1L
+        when:
+        def value = controller.queryByIds(ids)
+        then:
+        value.body.size() == 0
     }
 }

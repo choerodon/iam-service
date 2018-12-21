@@ -253,7 +253,7 @@
         WHERE imr.source_type = 'organization'
         AND imr.member_type = 'user'
         <if test="userId != null">
-          AND imr.member_id = #{userId}
+            AND imr.member_id = #{userId}
         </if>
         <if test="organizationDO != null">
             <if test="organizationDO.id != null">
@@ -279,5 +279,21 @@
 
     <select id="organizationEnabled" resultType="java.lang.Boolean">
         SELECT is_enabled FROM fd_organization WHERE id = #{sourceId}
+    </select>
+
+    <select id="selectByIds" resultMap="OrganizationDO">
+        select * from fd_organization
+        where id in
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="listMemberIds" resultType="java.lang.Long">
+        SELECT DISTINCT member_id
+        FROM iam_member_role
+        WHERE source_id = #{orgId}
+        AND source_type = #{orgName}
     </select>
 </mapper>

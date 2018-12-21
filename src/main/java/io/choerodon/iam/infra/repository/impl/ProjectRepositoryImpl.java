@@ -4,6 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -162,5 +164,10 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     public List<Long> listUserIds(Long id) {
         return projectMapper.listUserIds(id);
 
+    }
+
+    @Override
+    public List<ProjectDTO> queryByIds(Set<Long> ids) {
+        return projectMapper.selectByIds(ids);
     }
 }

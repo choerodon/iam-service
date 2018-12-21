@@ -259,4 +259,13 @@
     <select id="projectEnabled" resultType="java.lang.Boolean">
         SELECT is_enabled FROM fd_project WHERE id = #{sourceId}
     </select>
+
+    <select id="selectByIds" resultMap="projectDO">
+        select * from fd_project
+        where id in
+        <foreach item="id" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

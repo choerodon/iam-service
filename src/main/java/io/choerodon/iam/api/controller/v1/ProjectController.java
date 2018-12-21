@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author flyleft
  */
@@ -42,6 +45,18 @@ public class ProjectController extends BaseController {
     @ApiOperation(value = "通过id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.queryProjectById(id), HttpStatus.OK);
+    }
+
+    /**
+     * 根据id集合查询项目
+     * @param ids id集合，去重
+     * @return 项目集合
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据id集合查询项目")
+    @PostMapping("/ids")
+    public ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids) {
+        return new ResponseEntity<>(projectService.queryByIds(ids), HttpStatus.OK);
     }
 
     /**

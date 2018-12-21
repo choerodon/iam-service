@@ -1,9 +1,9 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -34,10 +34,11 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
                                                      @Param("organizationDO") OrganizationDO organizationDO,
                                                      @Param("params") String params);
 
-    @Select("SELECT DISTINCT member_id FROM iam_member_role WHERE source_id = #{orgId} AND source_type = #{orgName}")
     List<Long> listMemberIds(@Param("orgId") Long orgId,
                              @Param("orgName") String orgName);
 
 
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
+
+    List<OrganizationDO> selectByIds(@Param("ids") Set<Long> ids);
 }

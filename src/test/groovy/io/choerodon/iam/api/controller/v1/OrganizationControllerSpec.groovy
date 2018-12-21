@@ -5,6 +5,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.OrganizationDTO
+import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.infra.dataobject.OrganizationDO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import org.springframework.beans.BeanUtils
@@ -30,6 +31,8 @@ class OrganizationControllerSpec extends Specification {
     private TestRestTemplate restTemplate
     @Autowired
     private OrganizationMapper organizationMapper
+    @Autowired
+    private OrganizationService organizationService
     @Shared
     def needInit = true
     @Shared
@@ -228,5 +231,17 @@ class OrganizationControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
+    }
+
+    def "queryByIds"() {
+        given:
+        OrganizationController controller = new OrganizationController(organizationService)
+        def ids = new HashSet()
+        ids << 1L
+
+        when:
+        def value = controller.queryByIds(ids)
+        then:
+        value.body.size() > 0
     }
 }

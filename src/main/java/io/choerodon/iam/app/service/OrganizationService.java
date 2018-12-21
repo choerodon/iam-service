@@ -5,6 +5,9 @@ import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author wuguokai
  */
@@ -26,4 +29,6 @@ public interface OrganizationService {
 
     Page<UserDTO> pagingQueryUsersInOrganization(Long organizationId,
                                                  Long userId, String email, PageRequest pageRequest, String param);
+
+    List<OrganizationDTO> queryByIds(Set<Long> ids);
 }

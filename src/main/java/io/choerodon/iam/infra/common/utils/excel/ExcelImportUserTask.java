@@ -83,7 +83,7 @@ public class ExcelImportUserTask {
                 }
         );
         //根据loginName和email去重，返回
-        List<UserDO> distinctUsers = distinct(validateUsers, errorUsers);
+        List<UserDO> distinctUsers = distinctUsers(validateUsers, errorUsers);
         List<UserDO> insertUsers = compareWithDb(distinctUsers, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
@@ -156,7 +156,7 @@ public class ExcelImportUserTask {
             }
         });
         //去重
-        List<ExcelMemberRoleDTO> distinctList = distinctExcel(validateMemberRoles, errorMemberRoles);
+        List<ExcelMemberRoleDTO> distinctList = distinctMemberRole(validateMemberRoles, errorMemberRoles);
         //***优化查询次数
         distinctList.parallelStream().forEach(emr -> {
             String loginName = emr.getLoginName().trim();
@@ -241,7 +241,15 @@ public class ExcelImportUserTask {
         return userDO;
     }
 
-    private List<ExcelMemberRoleDTO> distinctExcel(List<ExcelMemberRoleDTO> validateMemberRoles, List<ExcelMemberRoleDTO> errorMemberRoles) {
+    /**
+     * 导入member-role去重
+     * 去重策略，根据loginName和code分组，value集合大于1，则有重复的，将重复的集合放入error集合中
+     *
+     * @param validateMemberRoles 源集合
+     * @param errorMemberRoles    重复的数据集合
+     * @return
+     */
+    private List<ExcelMemberRoleDTO> distinctMemberRole(List<ExcelMemberRoleDTO> validateMemberRoles, List<ExcelMemberRoleDTO> errorMemberRoles) {
         List<ExcelMemberRoleDTO> distinctList = new ArrayList<>();
         //excel内去重
         Map<Map<String, String>, List<ExcelMemberRoleDTO>> distinctMap =
@@ -305,7 +313,15 @@ public class ExcelImportUserTask {
         return insertList;
     }
 
-    private List<UserDO> distinct(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
+    /**
+     * 导入用户去重
+     * 前置，loginName和email都是唯一的
+     * 1. 先根据loginName和email分组，剔除loginName和email都重复的数据
+     * @param users
+     * @param errorUsers
+     * @return
+     */
+    private List<UserDO> distinctUsers(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
         List<UserDO> distinctNameAndEmail = distinctNameAndEmail(users, errorUsers);
         Map<String, List<UserDO>> loginNameMap =
                 distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDO::getLoginName));
@@ -511,7 +527,7 @@ public class ExcelImportUserTask {
                 userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), true);
             } catch (CommonException c) {
                 if (c.getParameters().length >= 2)
-                cause += "，长度应为" + c.getParameters()[0] + "-" + c.getParameters()[1];
+                    cause += "，长度应为" + c.getParameters()[0] + "-" + c.getParameters()[1];
             }
             errorUser.setCause(cause);
             errorUsers.add(errorUser);
