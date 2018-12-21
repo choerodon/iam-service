@@ -61,14 +61,12 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         }
         List<UserDashboardDTO> userDashboards = userDashboardMapper
                 .selectWithDashboard(new UserDashboardE(userDetails.getUserId(), level, sourceId));
-        if (!isEquals(userDetails.getUserId(), sourceId, level)) {
-            List<UserDashboardDTO> userDashboards1 = userDashboardMapper.selectWithDashboardNotExist(
-                    new UserDashboardE(userDetails.getUserId(), level, sourceId));
-            List<UserDashboardDTO> userDashboardsAdd = userDashboards1.stream().filter(
-                    userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
-                    .collect(Collectors.toList());
-            userDashboards.addAll(userDashboardsAdd);
-        }
+        List<UserDashboardDTO> userDashboards1 = userDashboardMapper.selectWithDashboardNotExist(
+                new UserDashboardE(userDetails.getUserId(), level, sourceId));
+        List<UserDashboardDTO> userDashboardsAdd = userDashboards1.stream().filter(
+                userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
+                .collect(Collectors.toList());
+        userDashboards.addAll(userDashboardsAdd);
         return userDashboardHasRoleAndConvertPosistion(userDashboards, userDetails.getUserId(), sourceId, level);
     }
 
