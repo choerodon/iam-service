@@ -67,4 +67,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard.groovy') {
             }
         }
     }
+
+    changeSet(author: 'jcalaz@163.com', id: '2018-12-24-add-column-positionDTO') {
+        addColumn(tableName: 'IAM_DASHBOARD') {
+            column(name: 'POSITION', type: "VARCHAR(128)", remarks: '仪表盘默认高度，宽度')
+        }
+    }
 }
