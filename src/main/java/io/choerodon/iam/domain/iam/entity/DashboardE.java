@@ -35,6 +35,7 @@ public class DashboardE extends AuditDomain {
     private Boolean enabled;
     @Transient
     private List<Long> roleIds;
+    private String position;
 
     public DashboardE() {
     }
@@ -160,5 +161,13 @@ public class DashboardE extends AuditDomain {
 
     public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

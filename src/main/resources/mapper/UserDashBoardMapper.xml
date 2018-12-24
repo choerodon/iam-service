@@ -52,6 +52,7 @@
 			d.id dashboard_id,
 			d.sort,
 			d.fd_level,
+			d.position,
 			d.code dashboard_code,
 			d.name dashboard_name,
 			d.title dashboard_title,

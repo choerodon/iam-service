@@ -1,9 +1,12 @@
 package io.choerodon.iam.api.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.DashboardDTO;
+import io.choerodon.iam.api.dto.DashboardPositionDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.domain.iam.entity.DashboardE;
 import io.choerodon.iam.domain.iam.entity.DashboardRoleE;
@@ -27,6 +30,7 @@ import java.util.List;
 public class DashboardServiceImpl implements DashboardService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DashboardService.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private DashboardMapper dashboardMapper;
     private DashboardRoleMapper dashboardRoleMapper;
@@ -52,6 +56,7 @@ public class DashboardServiceImpl implements DashboardService {
                 dashboardDTO.getNeedRoles(),
                 dashboardDTO.getObjectVersionNumber());
         dashboard.setEnabled(dashboardDTO.getEnabled());
+        dashboard.setPosition(convertPositionDTOToJson(dashboardDTO.getPositionDTO()));
         int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboard);
         if (isUpdate != 1) {
             throw new CommonException("error.dashboard.not.exist");
@@ -94,8 +99,7 @@ public class DashboardServiceImpl implements DashboardService {
                 pageRequest, () -> dashboardMapper.fulltextSearch(
                         modelMapper.map(dashboardDTO, DashboardE.class), param));
 
-        return ConvertPageHelper.convertPage(
-                dashboardPage, DashboardDTO.class);
+        return ConvertPageHelper.convertPage(dashboardPage, DashboardDTO.class);
     }
 
     @Override
@@ -104,5 +108,30 @@ public class DashboardServiceImpl implements DashboardService {
         deleteCondition.setSourceId(dashboardId);
         long num = userDashboardMapper.delete(deleteCondition);
         LOGGER.info("reset userDashboard by dashboardId: {}, delete num: {}", dashboardId, num);
+    }
+
+    private String convertPositionDTOToJson(DashboardPositionDTO positionDTO) {
+        if (positionDTO == null ||
+                (positionDTO.getHeight() == null && positionDTO.getWidth() == null)) {
+            return null;
+        }
+        if (positionDTO.getPositionX() == null) {
+            positionDTO.setPositionX(0);
+        }
+        if (positionDTO.getPositionY() == null) {
+            positionDTO.setPositionY(0);
+        }
+        if (positionDTO.getHeight() == null) {
+            positionDTO.setHeight(0);
+        }
+        if (positionDTO.getWidth() == null) {
+            positionDTO.setWidth(0);
+        }
+        try {
+            return objectMapper.writeValueAsString(positionDTO);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("error.userDashboardService.convertPositionDTOToJson.JsonProcessingException", e);
+            return null;
+        }
     }
 }
