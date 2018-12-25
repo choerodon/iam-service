@@ -1,10 +1,22 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -13,15 +25,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author wuguokai
@@ -97,8 +100,16 @@ public class OrganizationController extends BaseController {
                 ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @ApiOperation(value = "启用组织")
+    @GetMapping(value = "/all")
+    public ResponseEntity<List<OrganizationSimplifyDTO>> getAllOrgs() {
+        return new ResponseEntity<>(organizationService.getAllOrgs(), HttpStatus.OK);
+    }
+
     /**
      * 根据id集合查询组织
+     *
      * @param ids id集合，去重
      * @return 组织集合
      */

@@ -6,6 +6,8 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
@@ -232,5 +234,10 @@ public class OrganizationServiceImpl implements OrganizationService {
                 throw new CommonException("error.organization.code.exist");
             }
         }
+    }
+
+    @Override
+    public List<OrganizationSimplifyDTO> getAllOrgs() {
+        return organizationRepository.selectAllOrgIdAndName();
     }
 }

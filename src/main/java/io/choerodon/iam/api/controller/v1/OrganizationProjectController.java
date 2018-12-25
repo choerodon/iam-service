@@ -1,7 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.Map;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
@@ -121,5 +124,12 @@ public class OrganizationProjectController extends BaseController {
         projectDTO.setOrganizationId(organizationId);
         organizationProjectService.check(projectDTO);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @ApiOperation(value = "查询组织下的项目类型及类下项目数及项目")
+    @GetMapping("/under_the_type")
+    public ResponseEntity<Map<String, Object>> getProjectsByType(@PathVariable(name = "organization_id") Long organizationId) {
+        return new ResponseEntity<>(organizationProjectService.getProjectsByType(organizationId), HttpStatus.OK);
     }
 }

@@ -24,7 +24,9 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.ProjectTypeDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
+import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
@@ -73,7 +75,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private AsgardFeignClient asgardFeignClient;
 
-
+    private ProjectTypeService projectTypeService;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
@@ -84,7 +86,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           LabelRepository labelRepository,
                                           SagaClient sagaClient,
                                           IUserService iUserService,
-                                          AsgardFeignClient asgardFeignClient) {
+                                          AsgardFeignClient asgardFeignClient,
+                                          ProjectTypeService projectTypeService) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -94,6 +97,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.sagaClient = sagaClient;
         this.iUserService = iUserService;
         this.asgardFeignClient = asgardFeignClient;
+        this.projectTypeService = projectTypeService;
     }
 
     @Transactional
@@ -298,5 +302,35 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 throw new CommonException("error.project.code.exist");
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> getProjectsByType(Long organizationId) {
+        //1.获取所有类型
+        List<ProjectTypeDTO> list = projectTypeService.list();
+        List<String> legend = list.stream().map(type -> type.getName()).collect(Collectors.toList());
+        List<Map<String, Object>> data = new ArrayList<>();
+        //2.获取类型下所有项目名
+        list.forEach(type -> {
+            List<String> projectNames = projectRepository.selectProjectNameByTypeCode(type.getCode(), organizationId);
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("value", projectNames.size());
+            dataMap.put("name", type.getName());
+            dataMap.put("projects", projectNames);
+            data.add(dataMap);
+        });
+        //3.获取无类型的所有项目名
+        List<String> projsNoType = projectRepository.selectProjectNameNoType(organizationId);
+        Map<String, Object> noTypeProjectList = new HashMap<>();
+        noTypeProjectList.put("value", projsNoType.size());
+        noTypeProjectList.put("name", "无");
+        noTypeProjectList.put("projects", projsNoType);
+        legend.add("无");
+        data.add(noTypeProjectList);
+        //4.构造返回map
+        Map<String, Object> map = new HashMap<>();
+        map.put("legend", legend);
+        map.put("data", data);
+        return map;
     }
 }

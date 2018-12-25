@@ -9,6 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
@@ -129,5 +130,10 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override
     public List<OrganizationDO> queryByIds(Set<Long> ids) {
         return organizationMapper.selectByIds(ids);
+    }
+
+    @Override
+    public List<OrganizationSimplifyDTO> selectAllOrgIdAndName() {
+        return organizationMapper.selectAllOrgIdAndName();
     }
 }

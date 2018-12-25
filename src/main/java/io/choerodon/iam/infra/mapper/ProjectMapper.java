@@ -3,9 +3,9 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.iam.api.dto.ProjectDTO;
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -45,4 +45,23 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     Boolean projectEnabled(@Param("sourceId") Long sourceId);
 
     List<ProjectDTO> selectByIds(@Param("ids") Set<Long> ids);
+
+    /**
+     * 获取组织下指定type的项目名
+     *
+     * @param type  项目类型Code
+     * @param orgId 组织Id
+     * @return 组织下指定type的项目名List
+     */
+    List<String> selectProjectNameByType(@Param("type") String type,
+                                         @Param("orgId") Long orgId);
+
+
+    /**
+     * 获取组织下没有项目类型的项目名
+     *
+     * @param orgId 组织Id
+     * @return 组织下没有项目类型的项目名List
+     */
+    List<String> selectProjectNameNoType(@Param("orgId") Long orgId);
 }

@@ -1,5 +1,11 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -15,11 +21,6 @@ import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author flyleft
@@ -169,5 +170,15 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public List<ProjectDTO> queryByIds(Set<Long> ids) {
         return projectMapper.selectByIds(ids);
+    }
+
+    @Override
+    public List<String> selectProjectNameByTypeCode(String typeCode, Long orgId) {
+        return projectMapper.selectProjectNameByType(typeCode, orgId);
+    }
+
+    @Override
+    public List<String> selectProjectNameNoType(Long orgId) {
+        return projectMapper.selectProjectNameNoType(orgId);
     }
 }

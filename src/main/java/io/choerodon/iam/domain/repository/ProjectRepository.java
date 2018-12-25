@@ -46,4 +46,22 @@ public interface ProjectRepository {
     List<Long> listUserIds(Long id);
 
     List<ProjectDTO> queryByIds(Set<Long> ids);
+
+
+    /**
+     * 获取组织下指定项目类型Code下的项目名
+     *
+     * @param typeCode
+     * @param orgId
+     * @return
+     */
+    List<String> selectProjectNameByTypeCode(String typeCode, Long orgId);
+
+    /**
+     * 获取组织下没有项目类型的项目名
+     *
+     * @param orgId
+     * @return
+     */
+    List<String> selectProjectNameNoType(Long orgId);
 }

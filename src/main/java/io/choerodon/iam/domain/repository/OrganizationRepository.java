@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,4 +43,11 @@ public interface OrganizationRepository {
     List<Long> listMemberIds(Long organizationId);
 
     List<OrganizationDO> queryByIds(Set<Long> ids);
+
+    /**
+     * 查询所有组织的ID/Name
+     *
+     * @return
+     */
+    List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
 }
