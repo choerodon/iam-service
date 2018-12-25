@@ -70,4 +70,21 @@ public interface UserMapper extends BaseMapper<UserDO> {
 
 
     List<SimplifiedUserDTO> selectAllUsersSimplifiedInfo(@Param("params") String params);
+
+
+    /**
+     * 全平台用户数（包括停用）
+     *
+     * @return 返回全平台用户数
+     */
+    Integer totalNumberOfUsers();
+
+    /**
+     * 全平台新增用户数（包括停用）
+     *
+     * @return 返回时间段内新增用户数
+     */
+    Integer newUsersByDate(@Param("begin") String begin,
+                           @Param("end") String end);
+
 }

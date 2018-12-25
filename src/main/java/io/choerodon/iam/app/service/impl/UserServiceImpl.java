@@ -664,4 +664,12 @@ public class UserServiceImpl implements UserService {
         return ConvertPageHelper.convertPage(
                 userRepository.pagingQueryUsersOnSiteLevel(userId, email, pageRequest, param), UserDTO.class);
     }
+
+    @Override
+    public Map<String, Object> queryAllAndNewUsers() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("allUsers", userRepository.totalNumberOfUsers());
+        map.put("newUsers", userRepository.newUsersToday());
+        return map;
+    }
 }
