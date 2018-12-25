@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -41,4 +42,12 @@ public interface OrganizationMapper extends BaseMapper<OrganizationDO> {
     Boolean organizationEnabled(@Param("sourceId") Long sourceId);
 
     List<OrganizationDO> selectByIds(@Param("ids") Set<Long> ids);
+
+    /**
+     * 获取所有组织{id,name}
+     *
+     * @return 组织{id,name}
+     */
+    List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
+
 }

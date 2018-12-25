@@ -296,4 +296,12 @@
         WHERE source_id = #{orgId}
         AND source_type = #{orgName}
     </select>
+
+    <select id="selectAllOrgIdAndName" resultType="io.choerodon.iam.api.dto.OrganizationSimplifyDTO">
+        SELECT
+            ID,
+            NAME
+        FROM
+            fd_organization
+    </select>
 </mapper>
