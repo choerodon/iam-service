@@ -512,4 +512,22 @@
             )
         </if>
     </select>
+
+
+    <select id="totalNumberOfUsers" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            iam_user
+    </select>
+
+    <select id="newUsersByDate" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            iam_user
+        WHERE
+            creation_date BETWEEN #{begin}
+        AND #{end}
+    </select>
 </mapper>

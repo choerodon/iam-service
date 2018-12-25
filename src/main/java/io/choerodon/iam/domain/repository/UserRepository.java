@@ -94,4 +94,17 @@ public interface UserRepository {
     Long[] listUserIds();
 
     Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param);
+
+    /**
+     * 全平台用户数（包括停用）
+     * @return 返回全平台用户数
+     */
+    Integer totalNumberOfUsers();
+
+    /**
+     * 全平台新增用户数（包括停用）
+     * @return 返回今日新增用户数
+     */
+    Integer newUsersToday();
+
 }

@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -109,4 +110,6 @@ public interface UserService {
     Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param);
 
     Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
+
+    Map<String,Object> queryAllAndNewUsers();
 }

@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -16,6 +17,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.app.service.PasswordPolicyService;
@@ -320,5 +322,13 @@ public class UserController extends BaseController {
     @GetMapping("/{id}/organization_project")
     public ResponseEntity<OrganizationProjectDTO> queryByUserIdOrganizationProject(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userService.queryByUserIdWithRoleOrganizationAndProject(id), HttpStatus.OK);
+    }
+
+
+    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @ApiOperation(value = "卡片：新增用户统计")
+    @GetMapping("/new")
+    public ResponseEntity<Map<String, Object>> queryNewAndAllUsers() {
+        return new ResponseEntity<>(userService.queryAllAndNewUsers(), HttpStatus.OK);
     }
 }

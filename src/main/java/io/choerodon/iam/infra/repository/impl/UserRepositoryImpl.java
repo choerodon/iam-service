@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.springframework.stereotype.Component;
@@ -289,5 +290,21 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param) {
         return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectAllUsersSimplifiedInfo(param));
+    }
+
+    @Override
+    public Integer totalNumberOfUsers() {
+        return mapper.totalNumberOfUsers();
+    }
+
+    @Override
+    public Integer newUsersToday() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        String begin = dateFormat.format(calendar.getTime());
+        calendar.add(Calendar.DATE, 1);
+        String end = dateFormat.format(calendar.getTime());
+        return mapper.newUsersByDate(begin, end);
     }
 }
