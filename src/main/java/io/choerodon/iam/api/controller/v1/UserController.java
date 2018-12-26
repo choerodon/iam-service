@@ -1,19 +1,5 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.NotFoundException;
@@ -30,6 +16,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author superlee
@@ -331,4 +330,17 @@ public class UserController extends BaseController {
     public ResponseEntity<Map<String, Object>> queryNewAndAllUsers() {
         return new ResponseEntity<>(userService.queryAllAndNewUsers(), HttpStatus.OK);
     }
+
+
+    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @CustomPageRequest
+    @ApiOperation("根据id分页获取用户所有角色列表")
+    @GetMapping("/{id}/roles")
+    public ResponseEntity<Page<UserRoleDTO>> pagingQueryRole(
+            @ApiIgnore PageRequest pageRequest,
+            @PathVariable("id") Long id,
+            @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(userService.pagingQueryRole(pageRequest, param, id), HttpStatus.OK);
+    }
+
 }

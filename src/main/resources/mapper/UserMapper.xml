@@ -18,6 +18,20 @@
         </collection>
     </resultMap>
 
+    <resultMap id="UserRoleDTO" type="io.choerodon.iam.api.dto.UserRoleDTO">
+        <id property="id" column="id"></id>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="level" column="source_type"/>
+        <result property="enabled" column="is_enabled"/>
+        <collection property="roles" ofType="io.choerodon.iam.api.dto.RoleDTO">
+            <id property="id" column="role_id"></id>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+            <result property="enabled" column="role_is_enabled"/>
+        </collection>
+    </resultMap>
+
     <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled"/>
@@ -530,4 +544,64 @@
             creation_date BETWEEN #{begin}
         AND #{end}
     </select>
+
+    <select id="selectRoles" resultMap="UserRoleDTO">
+        SELECT
+        0 AS id,
+        'Choerodon' AS name,
+        'Choerodon' AS code,
+        1 AS is_enabled,
+        imr.source_type,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'site' AND imr.member_id = #{userId}
+        UNION
+        SELECT
+        fp.id,
+        CONCAT(fo.name, CONCAT('/', fp.name)) AS name,
+        fp.code,
+        fp.is_enabled,
+        imr.source_type,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_project fp ON imr.source_id = fp.id
+        INNER JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId}
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+        UNION
+        SELECT
+        fo.id,
+        fo.name AS name,
+        fo.code,
+        fo.is_enabled,
+        imr.source_type,
+        ir.id AS role_id,
+        ir.name AS role_name,
+        ir.code AS role_code,
+        ir.is_enabled AS role_is_enabled
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_organization fo ON imr.source_id = fo.id
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId}
+        <if test="params != null">
+            AND (
+            fo.name LIKE concat(concat('%', #{params}), '%') OR
+            fo.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+    </select>
+
 </mapper>

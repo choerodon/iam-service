@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.dto.UserRoleDTO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
@@ -86,5 +87,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
      */
     Integer newUsersByDate(@Param("begin") String begin,
                            @Param("end") String end);
+
+    List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params")String params);
 
 }
