@@ -52,8 +52,8 @@ public class ILdapServiceImpl implements ILdapService {
         LdapTemplate ldapTemplate = initLdapTemplate(ldapDO, anonymous);
         returnMap.put(LDAP_TEMPLATE, ldapTemplate);
         //默认将account当作userDn,如果无法登陆，则去ldap服务器抓取ldapDO.getLoginNameField()==account的userDn，然后使用返回的userDn登陆
-        accountAsUserDn(ldapDO, anonymous, ldapConnectionDTO, ldapTemplate);
-        //去ldap服务器抓取userDn
+        accountAsUserDn(ldapDO, ldapConnectionDTO, ldapTemplate);
+        //输入的账户无法登陆，去ldap服务器抓取userDn(例外hand ldap)
         if (!anonymous && ldapConnectionDTO.getCanConnectServer() && !ldapConnectionDTO.getCanLogin()) {
             returnMap.put(LDAP_TEMPLATE, fetchUserDn2Authenticate(ldapDO, ldapConnectionDTO));
         }
@@ -135,7 +135,7 @@ public class ILdapServiceImpl implements ILdapService {
         }
     }
 
-    private void accountAsUserDn(LdapDO ldapDO, boolean anonymous, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
+    private void accountAsUserDn(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
         try {
             if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
                 ldapTemplate.setIgnorePartialResultException(true);
@@ -143,11 +143,8 @@ public class ILdapServiceImpl implements ILdapService {
             ldapConnectionDTO.setCanConnectServer(false);
             ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
-            if (anonymous) {
-                anonymousUserMatchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
-            } else {
-                matchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
-            }
+            //使用管理员登陆，查询一个objectclass=ldapDO.getObjectClass的对象去匹配属性
+            accountAsUserDn2MatchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
             ldapConnectionDTO.setCanConnectServer(true);
             ldapConnectionDTO.setCanLogin(true);
         } catch (InvalidNameException | AuthenticationException e) {
@@ -234,34 +231,34 @@ public class ILdapServiceImpl implements ILdapService {
         return attributeSet;
     }
 
-    private void anonymousUserMatchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
-        List<Attributes> attributes =
+    private void accountAsUserDn2MatchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
+        Map<String, String> attributeMap = initAttributeMap(ldapDO);
+        List<Attributes> attributesList =
                 ldapTemplate.search(
                         query()
                                 .searchScope(SearchScope.SUBTREE)
-                                .countLimit(1)
+                                .countLimit(100)
                                 .where("objectclass")
                                 .is(ldapDO.getObjectClass()),
-                        new AttributesMapper() {
+                        new AttributesMapper<Attributes>() {
                             @Override
-                            public Object mapFromAttributes(Attributes attributes) throws NamingException {
+                            public Attributes mapFromAttributes(Attributes attributes) throws NamingException {
                                 return attributes;
                             }
                         });
-        if (attributes.isEmpty()) {
+        if (attributesList.isEmpty()) {
             LOGGER.warn("can not get any attributes where objectclass = {}", ldapDO.getObjectClass());
             ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
             ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
             ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
             ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
         } else {
-            Map<String, String> attributeMap = new HashMap<>(5);
-            attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldapDO.getLoginNameField());
-            attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldapDO.getEmailField());
             Set<String> keySet = new HashSet<>();
-            NamingEnumeration attributesIDs = attributes.get(0).getIDs();
-            while (attributesIDs != null && attributesIDs.hasMoreElements()) {
-                keySet.add(attributesIDs.nextElement().toString());
+            for (Attributes attributes : attributesList) {
+                NamingEnumeration<String> attributesIDs = attributes.getIDs();
+                while (attributesIDs != null && attributesIDs.hasMoreElements()) {
+                    keySet.add(attributesIDs.nextElement());
+                }
             }
             fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
         }

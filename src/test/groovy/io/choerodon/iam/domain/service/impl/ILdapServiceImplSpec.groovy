@@ -46,7 +46,7 @@ class ILdapServiceImplSpec extends Specification {
         then: "校验结果"
         ldapConnectionDTO.getCanConnectServer()
         ldapConnectionDTO.getCanLogin()
-        ldapConnectionDTO.getMatchAttribute()
+        !ldapConnectionDTO.getMatchAttribute()
 
 
         /*when: "调用方法"

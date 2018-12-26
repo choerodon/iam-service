@@ -162,11 +162,10 @@ public class LdapSyncUserTask {
             //用户离职，状态改为停用,其余用户状态为可用
             //active directory 目前设置为全量同步
             user.setEnabled(true);
-            if (DirectoryType.OPEN_LDAP.value().equals(dirType)) {
-                if (attributes.get("employeeType") == null
-                        || DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
-                    user.setEnabled(false);
-                }
+            if (DirectoryType.OPEN_LDAP.value().equals(dirType)
+                    && attributes.get("employeeType") != null
+                    && DIMISSION_VALUE.equals(attributes.get("employeeType").get().toString())) {
+                user.setEnabled(false);
             }
             if (ldap.getLoginNameField() == null
                     || attributes.get(ldap.getLoginNameField()) == null) {
