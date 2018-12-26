@@ -133,7 +133,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public List<OrganizationSimplifyDTO> selectAllOrgIdAndName() {
-        return organizationMapper.selectAllOrgIdAndName();
+    public List<OrganizationSimplifyDTO> selectAllOrgIdAndName(PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectAllOrgIdAndName());
     }
 }

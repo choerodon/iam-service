@@ -101,10 +101,12 @@ public class OrganizationController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
-    @ApiOperation(value = "启用组织")
+    @ApiOperation(value = "分页查询所有组织基本信息")
     @GetMapping(value = "/all")
-    public ResponseEntity<List<OrganizationSimplifyDTO>> getAllOrgs() {
-        return new ResponseEntity<>(organizationService.getAllOrgs(), HttpStatus.OK);
+    public ResponseEntity<List<OrganizationSimplifyDTO>> getAllOrgs(@ApiIgnore
+                                                                    @SortDefault(value = "id", direction = Sort.Direction.ASC)
+                                                                            PageRequest pageRequest) {
+        return new ResponseEntity<>(organizationService.getAllOrgs(pageRequest), HttpStatus.OK);
     }
 
     /**

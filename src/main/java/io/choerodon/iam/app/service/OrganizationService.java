@@ -38,6 +38,6 @@ public interface OrganizationService {
      *
      * @return list
      */
-    List<OrganizationSimplifyDTO> getAllOrgs();
+    List<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest);
 
 }
