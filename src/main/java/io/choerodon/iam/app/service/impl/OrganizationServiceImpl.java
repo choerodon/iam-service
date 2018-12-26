@@ -237,7 +237,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<OrganizationSimplifyDTO> getAllOrgs() {
-        return organizationRepository.selectAllOrgIdAndName();
+    public List<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest) {
+        return organizationRepository.selectAllOrgIdAndName(pageRequest);
     }
 }

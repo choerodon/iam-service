@@ -47,7 +47,7 @@ public interface OrganizationRepository {
     /**
      * 查询所有组织的ID/Name
      *
-     * @return
+     * @return list
      */
-    List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
+    List<OrganizationSimplifyDTO> selectAllOrgIdAndName(PageRequest pageRequest);
 }
