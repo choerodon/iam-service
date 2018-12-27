@@ -2,8 +2,6 @@ package io.choerodon.iam.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.List;
-
 public class UserRoleDTO {
 
     @ApiModelProperty(value = "资源id")
@@ -21,7 +19,7 @@ public class UserRoleDTO {
     private Boolean isEnabled;
 
     @ApiModelProperty(value = "角色列表")
-    private List<RoleDTO> roles;
+    private String roles;
 
     public Long getId() {
         return id;
@@ -39,11 +37,11 @@ public class UserRoleDTO {
         this.name = name;
     }
 
-    public List<RoleDTO> getRoles() {
+    public String getRoles() {
         return roles;
     }
 
-    public void setRoles(List<RoleDTO> roles) {
+    public void setRoles(String roles) {
         this.roles = roles;
     }
 
