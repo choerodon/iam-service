@@ -1,13 +1,13 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-import java.util.Set;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -34,8 +34,6 @@ public interface ProjectRepository {
 
     /**
      * 查找用户在某个组织下所有的项目
-     *
-     * @param isEnabled
      */
     List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled);
 
@@ -50,18 +48,12 @@ public interface ProjectRepository {
 
     /**
      * 获取组织下指定项目类型Code下的项目名
-     *
-     * @param typeCode
-     * @param orgId
-     * @return
      */
     List<String> selectProjectNameByTypeCode(String typeCode, Long orgId);
 
     /**
      * 获取组织下没有项目类型的项目名
-     *
-     * @param orgId
-     * @return
      */
     List<String> selectProjectNameNoType(Long orgId);
+
 }

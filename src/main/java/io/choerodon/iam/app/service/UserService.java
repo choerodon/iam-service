@@ -1,14 +1,13 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author superlee
@@ -111,5 +110,8 @@ public interface UserService {
 
     Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
 
-    Map<String,Object> queryAllAndNewUsers();
+    Map<String, Object> queryAllAndNewUsers();
+
+    Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId);
+
 }

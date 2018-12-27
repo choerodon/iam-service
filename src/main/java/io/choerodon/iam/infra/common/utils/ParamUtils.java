@@ -2,7 +2,6 @@ package io.choerodon.iam.infra.common.utils;
 
 /**
  * @author flyleft
- * @date 2018/6/8
  */
 public class ParamUtils {
 

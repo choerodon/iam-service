@@ -6,6 +6,7 @@ import java.util.Set;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
+import io.choerodon.iam.api.dto.UserRoleDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -106,5 +107,10 @@ public interface UserRepository {
      * @return 返回今日新增用户数
      */
     Integer newUsersToday();
+
+    /**
+     * 分页获取用户下所有角色列表
+     */
+    Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId);
 
 }
