@@ -551,6 +551,12 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         WHERE imr.member_type = 'user' AND imr.source_type = 'site' AND imr.member_id = #{userId}
+        <if test="params != null">
+            AND (
+            'Choerodon' LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+        GROUP BY imr.source_type
         UNION
         SELECT
         fo.id,
@@ -604,6 +610,11 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'site'
+        <if test="params != null">
+            AND (
+            'Choerodon' LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
         GROUP BY imr.source_type
         UNION
         SELECT
