@@ -540,7 +540,7 @@
         AND #{end}
     </select>
 
-    <select id="selectRoles" databaseId="mysql" resultMap="UserRoleDTO">
+    <select id="selectRoles" resultMap="UserRoleDTO">
         SELECT
         0 AS id,
         'Choerodon' AS name,
@@ -588,8 +588,62 @@
             fp.name LIKE concat(concat('%', #{params}), '%') OR
             fp.code LIKE concat(concat('%', #{params}), '%')
             )
-            group by fp.id
         </if>
+        group by fp.id
+    </select>
+
+
+    <select id="selectRoles" databaseId="oracle" resultMap="UserRoleDTO">
+        SELECT
+        0 AS id,
+        'Choerodon' AS name,
+        'Choerodon' AS code,
+        1 AS is_enabled,
+        imr.source_type,
+        LISTAGG(ir.name , '\n') within group(ORDER BY imr.source_type) AS roles
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'site'
+        GROUP BY imr.source_type
+        UNION
+        SELECT
+        fo.id,
+        fo.name AS name,
+        fo.code,
+        fo.is_enabled,
+        imr.source_type,
+        LISTAGG(ir.name, '\n') within group(ORDER BY fo.id) AS roles
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_organization fo ON imr.source_id = fo.id
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization'
+        <if test="params != null">
+            AND (
+            fo.name LIKE concat(concat('%', #{params}), '%') OR
+            fo.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+        group by fo.id, fo.name, fo.code, fo.is_enabled, imr.source_type
+        UNION
+        SELECT
+        fp.id,
+        CONCAT(fo.name, CONCAT('/', fp.name)) AS name,
+        fp.code,
+        fp.is_enabled,
+        imr.source_type,
+        LISTAGG(ir.name, '\n') within group(ORDER BY fp.id) AS roles
+        FROM iam_member_role imr
+        INNER JOIN iam_role ir ON imr.role_id = ir.id
+        INNER JOIN fd_project fp ON imr.source_id = fp.id
+        INNER JOIN fd_organization fo ON fp.organization_id = fo.id
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'project'
+        <if test="params != null">
+            AND (
+            fp.name LIKE concat(concat('%', #{params}), '%') OR
+            fp.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+        group by fp.id, fo.name, fp.name, fp.code, fp.is_enabled, imr.source_type
     </select>
 
 </mapper>
