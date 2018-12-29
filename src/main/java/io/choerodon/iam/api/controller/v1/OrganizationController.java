@@ -102,6 +102,7 @@ public class OrganizationController extends BaseController {
 
     @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
+    @CustomPageRequest
     @GetMapping(value = "/all")
     public ResponseEntity<List<OrganizationSimplifyDTO>> getAllOrgs(@ApiIgnore
                                                                     @SortDefault(value = "id", direction = Sort.Direction.ASC)
