@@ -54,7 +54,7 @@ public class LdapDTO {
     @ApiModelProperty(value = "目录类型/非必填")
     private String directoryType;
 
-    @ApiModelProperty(value = "用户对象类/非必填")
+    @ApiModelProperty(value = "用户对象类,多个objectClass以逗号分割/非必填")
     @NotEmpty(message = "error.ldap.objectClass.empty")
     private String objectClass;
 
@@ -69,6 +69,9 @@ public class LdapDTO {
 
     @ApiModelProperty(value = "手机号属性/非必填")
     private String phoneField;
+
+    @ApiModelProperty(value = "同步用户自定义过滤条件，格式以'('开始以')'结束")
+    private String customFilter;
 
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
@@ -207,5 +210,13 @@ public class LdapDTO {
 
     public void setObjectClass(String objectClass) {
         this.objectClass = objectClass;
+    }
+
+    public String getCustomFilter() {
+        return customFilter;
+    }
+
+    public void setCustomFilter(String customFilter) {
+        this.customFilter = customFilter;
     }
 }

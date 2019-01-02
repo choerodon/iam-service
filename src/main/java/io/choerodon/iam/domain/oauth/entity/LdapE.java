@@ -22,6 +22,7 @@ public class LdapE {
     private String emailField;
     private String phoneField;
     private Long objectVersionNumber;
+    private String customFilter;
 
     public Long getId() {
         return id;
@@ -157,5 +158,13 @@ public class LdapE {
 
     public void setObjectClass(String objectClass) {
         this.objectClass = objectClass;
+    }
+
+    public String getCustomFilter() {
+        return customFilter;
+    }
+
+    public void setCustomFilter(String customFilter) {
+        this.customFilter = customFilter;
     }
 }

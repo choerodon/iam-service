@@ -19,12 +19,9 @@ public class UserConverter implements ConvertorI<UserE, UserDO, UserDTO> {
 
     @Override
     public UserE dtoToEntity(UserDTO dto) {
-        return new UserE(dto.getId(), dto.getLoginName(), dto.getEmail(),
-                dto.getOrganizationId(), dto.getPassword(),
-                dto.getRealName(), dto.getPhone(), dto.getImageUrl(), null,
-                dto.getLanguage(), dto.getTimeZone(), null, null,
-                dto.getEnabled(), dto.getLocked(), dto.getLdap(), null,
-                null, dto.getObjectVersionNumber(), dto.getAdmin(),dto.getInternationalTelCode());
+        UserE userE = new UserE();
+        BeanUtils.copyProperties(dto, userE);
+        return userE;
     }
 
     @Override
@@ -36,14 +33,8 @@ public class UserConverter implements ConvertorI<UserE, UserDO, UserDTO> {
 
     @Override
     public UserE doToEntity(UserDO dataObject) {
-        UserE userE = new UserE(dataObject.getId(), dataObject.getLoginName(), dataObject.getEmail(),
-                dataObject.getOrganizationId(), dataObject.getPassword(),
-                dataObject.getRealName(), dataObject.getPhone(), dataObject.getImageUrl(),
-                dataObject.getProfilePhoto(), dataObject.getLanguage(), dataObject.getTimeZone(),
-                dataObject.getLastPasswordUpdatedAt(), dataObject.getLastLoginAt(),
-                dataObject.getEnabled(), dataObject.getLocked(), dataObject.getLdap(),
-                dataObject.getLockedUntilAt(),
-                dataObject.getPasswordAttempt(), dataObject.getObjectVersionNumber(), dataObject.getAdmin(),dataObject.getInternationalTelCode());
+        UserE userE = new UserE();
+        BeanUtils.copyProperties(dataObject, userE);
         userE.setRoles(ConvertHelper.convertList(dataObject.getRoles(), RoleE.class));
         return userE;
     }

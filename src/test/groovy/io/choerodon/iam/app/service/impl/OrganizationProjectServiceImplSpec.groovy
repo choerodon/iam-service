@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.ProjectDTO
+import io.choerodon.iam.api.service.ProjectTypeService
 import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.domain.iam.entity.ProjectE
 import io.choerodon.iam.domain.iam.entity.UserE
@@ -49,13 +50,14 @@ class OrganizationProjectServiceImplSpec extends Specification {
     private SagaClient sagaClient = Mock(SagaClient)
     private IUserService iUserService = Mock(IUserService)
     private AsgardFeignClient asgardFeignClient = Mock(AsgardFeignClient)
+    private ProjectTypeService projectTypeService = Mock(ProjectTypeService)
     private OrganizationProjectService organizationProjectService
 
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient)
+                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient, projectTypeService)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)

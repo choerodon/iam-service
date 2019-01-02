@@ -40,13 +40,16 @@ class LdapSyncUserTaskSpec extends Specification {
         LdapTemplate ldapTemplate = Mock(LdapTemplate)
         LdapDO ldap = new LdapDO()
         ldap.setId(1L)
+        ldap.setObjectClass("person")
         ldap.setOrganizationId(1L)
         LdapSyncUserTask.FinishFallback fallback = Mock(LdapSyncUserTask.FinishFallback)
         Attributes attributes = Mock(Attributes)
         List<Attribute> attributesList = new ArrayList<>()
 
         attributesList << attributes
-
+        Attribute attribute = Mock(Attribute)
+        attributes.get(_) >> attribute
+        attribute.get() >> "aaa"
         when: "调用方法"
         ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback)
 
@@ -55,7 +58,10 @@ class LdapSyncUserTaskSpec extends Specification {
 
         1 * ldapHistoryRepository.insertSelective(_) >> { ldapHistoryDO }
         1 * fallback.callback(_, _)
-        0 * _
+        1 * userRepository.matchLoginName(_) >> new HashSet<String>()
+        1 * userRepository.matchEmail(_) >> new HashSet<String>()
+        1 * userRepository.select(_) >> new ArrayList<>()
+        1 * organizationUserService.batchCreateUsers(_) >> 0L
     }
 
     def "SyncLDAPUser"() {
@@ -72,6 +78,7 @@ class LdapSyncUserTaskSpec extends Specification {
         ldap.setId(1L)
         ldap.setDirectoryType("OpenLDAP")
         ldap.setLoginNameField("login")
+        ldap.setObjectClass("person")
         ldap.setEmailField("email")
         ldap.setOrganizationId(1L)
         LdapSyncUserTask.FinishFallback fallback = LdapSyncUserTask.FinishFallbackImpl.newInstance(ldapSyncUserTask, ldapHistoryRepository)
@@ -108,5 +115,7 @@ class LdapSyncUserTaskSpec extends Specification {
         employeeTypeAttribute.get() >> { "test" }
         1 * userRepository.matchLoginName(_) >> { matchLoginName }
         1 * userRepository.matchEmail(_) >> { matchEmail }
+        1 * userRepository.select(_) >> new ArrayList<>()
+        1 * organizationUserService.batchCreateUsers(_) >> 0L
     }
 }

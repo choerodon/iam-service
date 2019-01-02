@@ -36,6 +36,7 @@ public class LdapDO extends AuditDomain {
     private String realNameField;
     private String emailField;
     private String phoneField;
+    private String customFilter;
 
     public Long getId() {
         return id;
@@ -165,4 +166,11 @@ public class LdapDO extends AuditDomain {
         this.objectClass = objectClass;
     }
 
+    public String getCustomFilter() {
+        return customFilter;
+    }
+
+    public void setCustomFilter(String customFilter) {
+        this.customFilter = customFilter;
+    }
 }
