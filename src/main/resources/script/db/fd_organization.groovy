@@ -47,4 +47,14 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: 'IMAGE_URL', type: 'VARCHAR(255)', remarks: '组织图标url', afterColumn: 'ADDRESS')
         }
     }
+
+
+    changeSet(author: 'longhe1996@icloud.com', id: '2018-01-02-fd-organization-add') {
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'IS_REGISTER', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为注册组织。1.是，0不是', afterColumn: 'IS_ENABLED') {
+                constraints(nullable: false)
+            }
+            column(name: 'SCALE', type: 'TINYINT UNSIGNED', remarks: '组织规模。0：0-30,1：30-100,2：100', afterColumn: 'IMAGE_URL')
+        }
+    }
 }
