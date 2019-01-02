@@ -48,15 +48,19 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         if (userE == null) {
             throw new CommonException("error.user.not.exist");
         }
-        Page<UserAccessTokenE> userAccessTokenES = PageHelper.doPageAndSort(pageRequest, () -> accessTokenMapper.selectTokens(userE.getLoginName(), clientName));
-        return pageConvert(userAccessTokenES, currentToken);
+        return pageConvert(pageRequest, userE.getLoginName(), clientName, currentToken);
     }
 
-    public Page<UserAccessTokenDTO> pageConvert(Page<UserAccessTokenE> pageOri, String currentToken) {
+    public Page<UserAccessTokenDTO> pageConvert(PageRequest pageRequest, String loginName, String clientName, String currentToken) {
+        //原分页信息
+        Page<UserAccessTokenE> pageOri = PageHelper.doPageAndSort(pageRequest, () -> accessTokenMapper.selectTokens(loginName, clientName));
+        //所有token信息
+        List<UserAccessTokenE> userAccessTokenES = accessTokenMapper.selectTokens(loginName, clientName);
+
         Page<UserAccessTokenDTO> pageBack = new Page<>();
         pageBack.setNumber(pageOri.getNumber());
-        pageBack.setNumberOfElements(pageOri.getNumberOfElements());
         pageBack.setSize(pageOri.getSize());
+        pageBack.setNumberOfElements(pageOri.getNumberOfElements());
         pageBack.setTotalElements(pageOri.getTotalElements());
         pageBack.setTotalPages(pageOri.getTotalPages());
         if (pageOri.getContent().isEmpty()) {
@@ -64,8 +68,8 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         } else {
             //todo 此处还需优化修改
             //1.提取tokenDTO
-            List<UserAccessTokenDTO> userAccessTokenDTOS = pageOri.getContent().stream().map(tokenE ->
-                            new UserAccessTokenDTO(tokenE, currentToken)
+            List<UserAccessTokenDTO> userAccessTokenDTOS = userAccessTokenES.stream().map(tokenE ->
+                    new UserAccessTokenDTO(tokenE, currentToken)
             ).collect(Collectors.toList());
             //2.过滤老token（没有createTime）
             List<UserAccessTokenDTO> oldTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() == null).collect(Collectors.toList());
@@ -75,9 +79,14 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             List<UserAccessTokenDTO> result = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
             result.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
             result.addAll(oldTokens);
-            pageBack.setContent(result);
+
+            pageBack.setContent(getFromIndexAndtoIndex(pageBack.getSize(), pageBack.getNumber(), result));
             return pageBack;
         }
+    }
+
+    List<UserAccessTokenDTO> getFromIndexAndtoIndex(Integer size, Integer page, List result) {
+        return result.subList(size * page, (size * page + size) < result.size() ? (size * page + size) : result.size());
     }
 
     @Override
