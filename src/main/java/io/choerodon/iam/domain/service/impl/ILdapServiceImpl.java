@@ -17,6 +17,9 @@ import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.core.support.LdapContextSource;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.query.SearchScope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -41,6 +44,8 @@ public class ILdapServiceImpl implements ILdapService {
     public static final String LDAP_CONNECTION_DTO = "ldapConnectionDTO";
 
     public static final String LDAP_TEMPLATE = "ldapTemplate";
+
+    private final String OBJECT_CLASS = "objectclass";
 
     @Override
     public Map<String, Object> testConnect(LdapDO ldapDO) {
@@ -73,42 +78,34 @@ public class ILdapServiceImpl implements ILdapService {
             ldapTemplate.setIgnorePartialResultException(true);
         }
 
-        Map<String, String> attributeMap = initAttributeMap(ldapDO);
-        Set<String> attributeSet = initAttributeSet(attributeMap);
         String userDn = null;
-
-        for (String attr : attributeSet) {
-            try {
-                List<String> names =
-                        ldapTemplate.search(
-                                query()
-                                        .searchScope(SearchScope.SUBTREE)
-                                        .where("objectclass")
-                                        .is(ldapDO.getObjectClass())
-                                        .and(attr)
-                                        .is(ldapDO.getAccount()),
-                                new AbstractContextMapper() {
-                                    @Override
-                                    protected Object doMapFromContext(DirContextOperations ctx) {
-                                        return ctx.getNameInNamespace();
-                                    }
-                                });
-                if (!names.isEmpty()) {
-                    userDn = names.get(0);
-                    break;
-                }
-            } catch (UncategorizedLdapException e) {
-                if (e.getRootCause() instanceof NamingException) {
-                    LOGGER.warn("baseDn or userDn may be wrong!");
-                }
-                LOGGER.warn("uncategorized ldap exception {}", e);
-            } catch (Exception e) {
-                LOGGER.warn("can not find attributes where objectclass = {} and {} = {} , exception {}", ldapDO.getObjectClass(), attr, ldapDO.getAccount(), e);
+        Filter filter = getFilterByObjectClassAndAttribute(ldapDO);
+        try {
+            List<String> names =
+                    ldapTemplate.search(
+                            query()
+                                    .searchScope(SearchScope.SUBTREE)
+                                    .filter(filter),
+                            new AbstractContextMapper() {
+                                @Override
+                                protected Object doMapFromContext(DirContextOperations ctx) {
+                                    return ctx.getNameInNamespace();
+                                }
+                            });
+            if (names.size() == 1) {
+                userDn = names.get(0);
             }
+        } catch (UncategorizedLdapException e) {
+            if (e.getRootCause() instanceof NamingException) {
+                LOGGER.warn("baseDn or userDn may be wrong!");
+            }
+            LOGGER.warn("uncategorized ldap exception {}", e);
+        } catch (Exception e) {
+            LOGGER.warn("can not find anything while filter is {}, exception {}", filter, e);
         }
 
         if (userDn == null) {
-            LOGGER.error("can not find attributes where objectclass = {} and {} = {}, login failed", ldapDO.getObjectClass(), ldapDO.getLoginNameField(), ldapDO.getAccount());
+            LOGGER.error("can not find anything or find more than one userDn while filter is {}, login failed", filter);
             return null;
         } else {
             contextSource.setAnonymousReadOnly(false);
@@ -135,6 +132,23 @@ public class ILdapServiceImpl implements ILdapService {
         }
     }
 
+    private Filter getFilterByObjectClassAndAttribute(LdapDO ldapDO) {
+        String account = ldapDO.getAccount();
+        AndFilter andFilter = getAndFilterByObjectClass(ldapDO);
+        andFilter.and(new EqualsFilter(ldapDO.getLoginNameField(), account));
+        return andFilter;
+    }
+
+    private AndFilter getAndFilterByObjectClass(LdapDO ldapDO) {
+        String objectClass = ldapDO.getObjectClass();
+        String[] arr = objectClass.split(",");
+        AndFilter andFilter = new AndFilter();
+        for (String str : arr) {
+            andFilter.and(new EqualsFilter(OBJECT_CLASS, str));
+        }
+        return andFilter;
+    }
+
     private void accountAsUserDn(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
         try {
             if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
@@ -144,7 +158,7 @@ public class ILdapServiceImpl implements ILdapService {
             ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
             //使用管理员登陆，查询一个objectclass=ldapDO.getObjectClass的对象去匹配属性
-            accountAsUserDn2MatchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
+            matchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
             ldapConnectionDTO.setCanConnectServer(true);
             ldapConnectionDTO.setCanLogin(true);
         } catch (InvalidNameException | AuthenticationException e) {
@@ -186,60 +200,12 @@ public class ILdapServiceImpl implements ILdapService {
 
     private void matchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
         Map<String, String> attributeMap = initAttributeMap(ldapDO);
-        Set<String> attributeSet = initAttributeSet(attributeMap);
-        NamingEnumeration attributesIDs = null;
-        for (String attr : attributeSet) {
-            List<Attributes> attributes =
-                    ldapTemplate.search(
-                            query()
-                                    .searchScope(SearchScope.SUBTREE)
-                                    .where(attr)
-                                    .is(ldapDO.getAccount()),
-                            new AttributesMapper() {
-                                @Override
-                                public Object mapFromAttributes(Attributes attributes) throws NamingException {
-                                    return attributes;
-                                }
-                            });
-            if (!attributes.isEmpty()) {
-                attributesIDs = attributes.get(0).getIDs();
-                break;
-            }
-        }
-        if (attributesIDs == null) {
-            LOGGER.warn("can not search any attributes while attributes fields {} equals {}, maybe the baseDn is wrong or loginFiled is wrong", attributeSet, ldapDO.getAccount());
-            ldapConnectionDTO.setCanLogin(false);
-            ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
-            ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
-            ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
-            ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
-        } else {
-            Set<String> keySet = new HashSet<>();
-            while (attributesIDs.hasMoreElements()) {
-                keySet.add(attributesIDs.nextElement().toString());
-            }
-            fullMathAttribute(ldapConnectionDTO, attributeMap, keySet);
-        }
-    }
-
-    private Set<String> initAttributeSet(Map<String, String> attributeMap) {
-        Set<String> attributeSet = new HashSet<>(attributeMap.values());
-        //default attribute 处理
-        attributeSet.addAll(new HashSet<>(Arrays.asList("employeeNumber", "mail", "mobile")));
-        attributeSet.remove(null);
-        attributeSet.remove("");
-        return attributeSet;
-    }
-
-    private void accountAsUserDn2MatchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
-        Map<String, String> attributeMap = initAttributeMap(ldapDO);
+        Filter filter = getAndFilterByObjectClass(ldapDO);
         List<Attributes> attributesList =
                 ldapTemplate.search(
                         query()
                                 .searchScope(SearchScope.SUBTREE)
-                                .countLimit(100)
-                                .where("objectclass")
-                                .is(ldapDO.getObjectClass()),
+                                .countLimit(100).filter(filter),
                         new AttributesMapper<Attributes>() {
                             @Override
                             public Attributes mapFromAttributes(Attributes attributes) throws NamingException {
@@ -247,7 +213,7 @@ public class ILdapServiceImpl implements ILdapService {
                             }
                         });
         if (attributesList.isEmpty()) {
-            LOGGER.warn("can not get any attributes where objectclass = {}", ldapDO.getObjectClass());
+            LOGGER.warn("can not get any attributes while the filter is {}", filter);
             ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
             ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
             ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());

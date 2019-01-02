@@ -56,9 +56,13 @@ public class UserE {
 
     private Long objectVersionNumber;
 
+    private Long lastUpdatedBy;
+
     private Boolean admin;
 
     private List<RoleE> roles;
+
+    public UserE() {}
 
     public UserE(String password) {
         this.password = password;
@@ -258,4 +262,89 @@ public class UserE {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setProfilePhoto(String profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+
+    public void setLastPasswordUpdatedAt(Date lastPasswordUpdatedAt) {
+        this.lastPasswordUpdatedAt = lastPasswordUpdatedAt;
+    }
+
+    public void setLastLoginAt(Date lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
+    }
+
+    public void setLdap(Boolean ldap) {
+        this.ldap = ldap;
+    }
+
+    public void setLockedUntilAt(Date lockedUntilAt) {
+        this.lockedUntilAt = lockedUntilAt;
+    }
+
+    public void setPasswordAttempt(Integer passwordAttempt) {
+        this.passwordAttempt = passwordAttempt;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
+    }
+
 }

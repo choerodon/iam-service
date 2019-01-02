@@ -36,7 +36,7 @@ public interface OrganizationUserService {
      * ldap 批量同步用户，发送事件
      * @param insertUsers
      */
-    void batchCreateUsers(List<UserDO> insertUsers);
+    Long batchCreateUsers(List<UserDO> insertUsers);
 
     List<Long> listUserIds(Long organizationId);
 

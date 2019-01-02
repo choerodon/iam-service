@@ -42,12 +42,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserE insertSelective(UserE userE) {
-        UserDO userDO = ConvertHelper.convert(userE, UserDO.class);
-        if (mapper.insertSelective(userDO) != 1) {
+    public UserDO insertSelective(UserDO user) {
+        if (mapper.insertSelective(user) != 1) {
             throw new CommonException("error.user.create");
         }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(userDO.getId()), UserE.class);
+        return mapper.selectByPrimaryKey(user.getId());
     }
 
     @Override
@@ -311,5 +310,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId) {
         return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectRoles(userId, param));
+    }
+
+    @Override
+    public List<UserDO> select(UserDO example) {
+        return mapper.select(example);
     }
 }

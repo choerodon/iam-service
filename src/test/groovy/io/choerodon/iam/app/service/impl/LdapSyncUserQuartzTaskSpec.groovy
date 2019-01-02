@@ -45,6 +45,7 @@ class LdapSyncUserQuartzTaskSpec extends Specification {
         map.put("organizationCode", "error")
         LdapDTO ldapDTO = new LdapDTO()
         ldapDTO.setId(1L)
+        ldapDTO.setObjectClass("person")
         ldapDTO.setOrganizationId(1L)
 
         when: "调用方法"

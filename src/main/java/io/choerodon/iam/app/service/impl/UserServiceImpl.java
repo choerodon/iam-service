@@ -484,8 +484,8 @@ public class UserServiceImpl implements UserService {
     public UserDTO createUserAndAssignRoles(final CreateUserWithRolesDTO userWithRoles) {
         List<RoleDO> roles = validateRoles(userWithRoles);
         UserDO user = validateUser(userWithRoles);
-        UserE userE = userRepository.insertSelective(ConvertHelper.convert(user, UserE.class));
-        Long userId = userE.getId();
+        UserDO userDO = userRepository.insertSelective(user);
+        Long userId = userDO.getId();
         roles.forEach(r -> {
             MemberRoleDO memberRole = new MemberRoleDO();
             memberRole.setMemberId(userId);
@@ -498,7 +498,7 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException("error.memberRole.insert");
             }
         });
-        return ConvertHelper.convert(userE, UserDTO.class);
+        return ConvertHelper.convert(userDO, UserDTO.class);
     }
 
     @Override

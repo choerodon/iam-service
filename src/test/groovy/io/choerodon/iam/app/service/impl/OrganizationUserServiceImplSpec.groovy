@@ -27,6 +27,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.beans.BeanUtils
 import spock.lang.Specification
 
 import java.lang.reflect.Field
@@ -73,10 +74,14 @@ class OrganizationUserServiceImplSpec extends Specification {
         userDTO.setId(userId)
         userDTO.setOrganizationId(1L)
         userDTO.setPassword("123456")
-        UserE userE = new UserE(1, "kangkang")
+        UserE userE = new UserE()
         userE.setPassword("password")
+        userE.setId(1)
+        userE.setLoginName("kangkang")
+        UserDO userDO = new UserDO()
+        BeanUtils.copyProperties(userE, userDO)
         PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userE).thenReturn(new UserDTO())
+        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userE).thenReturn(userDO).thenReturn(userE).thenReturn(userDTO)
 
         when: "调用方法"
         organizationUserService.create(userDTO, checkPassword)
@@ -85,7 +90,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
         1 * userRepository.selectByLoginName(_) >> null
-        1 * userRepository.insertSelective(_) >> userE
+        1 * userRepository.insertSelective(_) >> userDO
         1 * passwordRecord.updatePassword(_, _)
     }
 
@@ -101,7 +106,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         organizationUserService.batchCreateUsers(insertUsers)
 
         then: "校验结果"
-        1 * userRepository.insertList(_) >> { insertUsers }
+        1 * userRepository.insertSelective(_) >> { userDO }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 

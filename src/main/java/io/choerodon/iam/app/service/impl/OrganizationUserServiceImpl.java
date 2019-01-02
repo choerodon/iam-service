@@ -31,6 +31,8 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -50,6 +52,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
@@ -136,28 +139,33 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         userE.unlocked();
         userE.enable();
         userE.encodePassword();
-        userE = userRepository.insertSelective(userE);
+        userE = ConvertHelper.convert(userRepository.insertSelective(ConvertHelper.convert(userE, UserDO.class)), UserE.class);
         passwordRecord.updatePassword(userE.getId(), userE.getPassword());
         return userE.hiddenPassword();
     }
 
     @Override
-    @Transactional
     @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
-    public void batchCreateUsers(List<UserDO> insertUsers) {
+    public Long batchCreateUsers(List<UserDO> insertUsers) {
+        Long errorCount = 0L;
         if (devopsMessage) {
             List<UserEventPayload> payloads = new ArrayList<>();
-            List<UserDO> users = userRepository.insertList(insertUsers);
-            users.forEach(user -> {
-                if (user.getEnabled()) {
-                    UserEventPayload payload = new UserEventPayload();
-                    payload.setEmail(user.getEmail());
-                    payload.setId(user.getId().toString());
-                    payload.setName(user.getRealName());
-                    payload.setUsername(user.getLoginName());
-                    payloads.add(payload);
+            for (UserDO user : insertUsers ) {
+                try {
+                    UserDO userDO = userRepository.insertSelective(user);
+                    if (userDO.getEnabled()) {
+                        UserEventPayload payload = new UserEventPayload();
+                        payload.setEmail(userDO.getEmail());
+                        payload.setId(userDO.getId().toString());
+                        payload.setName(userDO.getRealName());
+                        payload.setUsername(userDO.getLoginName());
+                        payloads.add(payload);
+                    }
+                } catch (Exception e) {
+                    errorCount++;
+                    logger.error("insert user failed, exception: {}", e);
                 }
-            });
+            }
             try {
                 String input = mapper.writeValueAsString(payloads);
                 String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
@@ -166,8 +174,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
             }
         } else {
-            userRepository.insertList(insertUsers);
+            for (UserDO user : insertUsers ) {
+                try {
+                    userRepository.insertSelective(user);
+                } catch (Exception e) {
+                    errorCount++;
+                    logger.error("insert user failed, exception: {}", e);
+                }
+            }
         }
+        return errorCount;
     }
 
     private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {

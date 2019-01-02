@@ -20,9 +20,11 @@ import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author wuguokai
@@ -56,12 +58,21 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         ldapDTO.setOrganizationId(orgId);
+        validateCustomFilter(ldapDTO);
         LdapE ldapE = ldapRepository.create(ConvertHelper.convert(ldapDTO, LdapE.class));
         return ConvertHelper.convert(ldapE, LdapDTO.class);
     }
 
+    private void validateCustomFilter(LdapDTO ldapDTO) {
+        String customFilter = ldapDTO.getCustomFilter();
+        if (!StringUtils.isEmpty(customFilter) && !Pattern.matches("\\(.*\\)", customFilter)) {
+            throw new CommonException("error.ldap.customFilter");
+        }
+    }
+
     @Override
     public LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO) {
+        validateCustomFilter(ldapDTO);
         if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }

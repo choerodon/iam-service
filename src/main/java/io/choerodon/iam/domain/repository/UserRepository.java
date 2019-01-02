@@ -21,7 +21,7 @@ public interface UserRepository {
 
     int selectCount(UserDO user);
 
-    UserE insertSelective(UserE userE);
+    UserDO insertSelective(UserDO userDO);
 
     Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param);
 
@@ -113,4 +113,5 @@ public interface UserRepository {
      */
     Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId);
 
+    List<UserDO> select(UserDO example);
 }

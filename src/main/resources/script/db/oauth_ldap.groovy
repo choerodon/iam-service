@@ -98,4 +98,10 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         addNotNullConstraint(tableName: 'OAUTH_LDAP', defaultNullValue: 'OpenLDAP', columnName: 'DIRECTORY_TYPE', columnDataType:'VARCHAR(64)')
     }
 
+    changeSet(author: 'superleader8@gmail.com', id: '2018-12-29-oauth-ldap-add-column') {
+        addColumn(tableName: 'OAUTH_LDAP') {
+            column(name: 'CUSTOM_FILTER', type: "VARCHAR(256)", remarks: '同步用户的自定义过滤配置', afterColumn: 'OBJECT_CLASS')
+        }
+    }
+
 }

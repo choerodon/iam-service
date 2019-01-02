@@ -323,7 +323,9 @@ class UserServiceImplSpec extends Specification {
 
         and: "mock静态方法-ConvertHelper"
         PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserE("123456")).thenReturn(new UserDTO())
+        UserDTO userDTO = new UserDTO()
+        userDTO.setPassword("123456")
+        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO).thenReturn(new UserDTO())
 
         when: "调用方法"
         userService.createUserAndAssignRoles(userWithRoles)
@@ -342,7 +344,11 @@ class UserServiceImplSpec extends Specification {
             basePasswordPolicyDO.setOriginalPassword("123456")
             return basePasswordPolicyDO
         }
-        1 * userRepository.insertSelective(_) >> { new UserE("123456") }
+        1 * userRepository.insertSelective(_) >> {
+            UserDO user = new UserDO()
+            user.setPassword("123456")
+            return user
+        }
         1 * memberRoleMapper.selectOne(_) >> { new MemberRoleDO() }
     }
 
