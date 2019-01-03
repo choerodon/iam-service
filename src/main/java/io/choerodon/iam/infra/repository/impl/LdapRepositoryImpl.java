@@ -32,7 +32,7 @@ public class LdapRepositoryImpl implements LdapRepository {
     @Override
     public LdapDO update(Long id, LdapDO ldap) {
         ldap.setId(id);
-        if (ldapMapper.updateByPrimaryKeySelective(ldap) != 1) {
+        if (ldapMapper.updateByPrimaryKey(ldap) != 1) {
             throw new CommonException("error.ldap.update");
         }
         return ldapMapper.selectByPrimaryKey(id);
