@@ -109,6 +109,9 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         if (projectDO.getEnabled() != null) {
             project.setEnabled(projectDO.getEnabled());
         }
+        if (projectDO.getImageUrl() != null) {
+            project.setImageUrl(projectDO.getImageUrl());
+        }
         project.setType(projectDO.getType());
         if (projectMapper.updateByPrimaryKey(project) != 1) {
             throw new CommonException("error.project.update");
