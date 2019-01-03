@@ -6,13 +6,6 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENA
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -28,15 +21,21 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrganizationDTO;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
+import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
+import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -88,6 +87,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         organizationDO.setEnabled(organizationDTO.getEnabled() == null ? true : organizationDTO.getEnabled());
         organizationDO.setName(organizationDTO.getName());
         organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
+        organizationDO.setImageUrl(organizationDTO.getImageUrl());
         organizationDO = organizationRepository.update(organizationDO);
         return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }

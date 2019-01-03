@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
-import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE
 import io.choerodon.iam.infra.dataobject.AccessTokenDO
@@ -11,21 +10,26 @@ import io.choerodon.iam.infra.dataobject.RefreshTokenDO
 import io.choerodon.iam.infra.mapper.AccessTokenMapper
 import io.choerodon.iam.infra.mapper.RefreshTokenMapper
 import io.choerodon.iam.infra.repository.impl.UserRepositoryImpl
+import io.choerodon.mybatis.pagehelper.PageHelper
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
+import org.junit.runner.RunWith
+import org.mockito.Mockito
+import org.powermock.api.mockito.PowerMockito
+import org.powermock.core.classloader.annotations.PrepareForTest
+import org.powermock.modules.junit4.PowerMockRunner
+import org.powermock.modules.junit4.PowerMockRunnerDelegate
+import org.spockframework.runtime.Sputnik
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken
 import org.springframework.security.oauth2.common.util.SerializationUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-
 /**
  * @author Eugen
  * */
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@Import(IntegrationTestConfiguration)
+@RunWith(PowerMockRunner)
+@PowerMockRunnerDelegate(Sputnik)
+@PrepareForTest([PageHelper])
 class AccessTokenServiceImplSpec extends Specification {
     private AccessTokenMapper accessTokenMapper = Mock(AccessTokenMapper)
     private RefreshTokenMapper refreshTokenMapper = Mock(RefreshTokenMapper)
@@ -79,6 +83,7 @@ class AccessTokenServiceImplSpec extends Specification {
             }
         }
     }
+
     def "PagingTokensByUserIdAndClient"() {
         given: "数据准备"
         def pageRequest = new PageRequest()
@@ -115,8 +120,17 @@ class AccessTokenServiceImplSpec extends Specification {
         userList.add(usertokenE)
         userList.add(usertokenE2)
         pageBack.setContent(userList)
+
+        PageRequest pageRequest = new PageRequest(0, 20)
+
+
+        and: "mock"
+        accessTokenMapper.selectTokens(_, _) >> { return userList }
+        PowerMockito.mockStatic(PageHelper)
+        PowerMockito.when(PageHelper.doPageAndSort(Mockito.any(), Mockito.any())).thenReturn(pageBack)
+
         when: "用户不存在"
-        accessTokenService.pageConvert(pageBack, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(1).getToken())).getValue())
+        accessTokenService.pageConvert(pageRequest, "loginName", "clientName", ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(1).getToken())).getValue())
         then: "结果分析"
         noExceptionThrown()
     }
