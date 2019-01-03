@@ -23,6 +23,7 @@ public class LdapE {
     private String phoneField;
     private Long objectVersionNumber;
     private String customFilter;
+    private Integer sagaBatchSize;
 
     public Long getId() {
         return id;
@@ -166,5 +167,13 @@ public class LdapE {
 
     public void setCustomFilter(String customFilter) {
         this.customFilter = customFilter;
+    }
+
+    public Integer getSagaBatchSize() {
+        return sagaBatchSize;
+    }
+
+    public void setSagaBatchSize(Integer sagaBatchSize) {
+        this.sagaBatchSize = sagaBatchSize;
     }
 }

@@ -37,6 +37,7 @@ public class LdapDO extends AuditDomain {
     private String emailField;
     private String phoneField;
     private String customFilter;
+    private Integer sagaBatchSize;
 
     public Long getId() {
         return id;
@@ -172,5 +173,13 @@ public class LdapDO extends AuditDomain {
 
     public void setCustomFilter(String customFilter) {
         this.customFilter = customFilter;
+    }
+
+    public Integer getSagaBatchSize() {
+        return sagaBatchSize;
+    }
+
+    public void setSagaBatchSize(Integer sagaBatchSize) {
+        this.sagaBatchSize = sagaBatchSize;
     }
 }

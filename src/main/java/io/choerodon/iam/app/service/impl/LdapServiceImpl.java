@@ -58,21 +58,24 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         ldapDTO.setOrganizationId(orgId);
-        validateCustomFilter(ldapDTO);
+        validateLdap(ldapDTO);
         LdapE ldapE = ldapRepository.create(ConvertHelper.convert(ldapDTO, LdapE.class));
         return ConvertHelper.convert(ldapE, LdapDTO.class);
     }
 
-    private void validateCustomFilter(LdapDTO ldapDTO) {
+    private void validateLdap(LdapDTO ldapDTO) {
         String customFilter = ldapDTO.getCustomFilter();
         if (!StringUtils.isEmpty(customFilter) && !Pattern.matches("\\(.*\\)", customFilter)) {
             throw new CommonException("error.ldap.customFilter");
+        }
+        if (ldapDTO.getSagaBatchSize() < 1) {
+            ldapDTO.setSagaBatchSize(1);
         }
     }
 
     @Override
     public LdapDTO update(Long organizationId, Long id, LdapDTO ldapDTO) {
-        validateCustomFilter(ldapDTO);
+        validateLdap(ldapDTO);
         if (organizationRepository.selectByPrimaryKey(organizationId) == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }

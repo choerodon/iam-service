@@ -37,7 +37,6 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 public class LdapSyncUserTask {
     private static final Logger logger = LoggerFactory.getLogger(LdapSyncUserTask.class);
 
-    private static final String DIMISSION_VALUE = "1";
     private static final String OBJECT_CLASS = "objectclass";
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
@@ -73,7 +72,7 @@ public class LdapSyncUserTask {
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
         if (!users.isEmpty()) {
-            compareWithDbAndInsert(users, ldapSyncReport, organizationId);
+            compareWithDbAndInsert(users, ldapSyncReport, organizationId, ldap.getSagaBatchSize());
         }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
@@ -132,7 +131,6 @@ public class LdapSyncUserTask {
                     user.setLanguage("zh_CN");
                     user.setTimeZone("CTT");
                     user.setEnabled(true);
-                    user.setPassword(ENCODER.encode("unknown password"));
                     user.setLocked(false);
                     user.setLdap(true);
                     user.setAdmin(false);
@@ -157,7 +155,7 @@ public class LdapSyncUserTask {
         return andFilter;
     }
 
-    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport, Long organizationId) {
+    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport, Long organizationId, Integer sagaBatchSize) {
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
@@ -177,6 +175,8 @@ public class LdapSyncUserTask {
                     ldapSyncReport.incrementError();
                     logger.warn("duplicate email, email : {}", user.getEmail());
                 } else {
+                    //加密为耗时操作，只有在插入的时候才加密，或者可以考虑取消掉
+                    user.setPassword(ENCODER.encode("unknown password"));
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
@@ -200,8 +200,7 @@ public class LdapSyncUserTask {
                 ldapSyncReport.incrementUpdate();
             }
         });
-
-        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, 1000);
+        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, sagaBatchSize);
         list.forEach(usrList -> {
             if (!usrList.isEmpty()) {
                 Long errorCount = ldapSyncReport.getError() + organizationUserService.batchCreateUsers(usrList);

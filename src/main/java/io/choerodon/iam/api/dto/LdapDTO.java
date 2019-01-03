@@ -76,6 +76,9 @@ public class LdapDTO {
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
+    @ApiModelProperty(value = "saga每次发送用户的数量，默认值为500，非必填")
+    private Integer sagaBatchSize;
+
     public Long getId() {
         return id;
     }
@@ -218,5 +221,13 @@ public class LdapDTO {
 
     public void setCustomFilter(String customFilter) {
         this.customFilter = customFilter;
+    }
+
+    public Integer getSagaBatchSize() {
+        return sagaBatchSize;
+    }
+
+    public void setSagaBatchSize(Integer sagaBatchSize) {
+        this.sagaBatchSize = sagaBatchSize;
     }
 }
