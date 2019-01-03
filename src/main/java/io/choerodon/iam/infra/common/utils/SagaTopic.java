@@ -61,6 +61,7 @@ public final class SagaTopic {
         //组织服务注册用户
         public static final String ORG_REGISTER = "org-register";
 
+        //iam注册组织task
         public static final String TASK_ORG_REGISTER = "iam-register-organization";
 
         //iam接收创建组织事件的SagaTaskCode
@@ -75,7 +76,8 @@ public final class SagaTopic {
     }
 
     public static class SystemSetting {
-        private SystemSetting() {}
+        private SystemSetting() {
+        }
 
         // iam 系统设置发生改变时（增加，更新，重置），触发 Saga 流程时的 code
         public static final String SYSTEM_SETTING_UPDATE = "iam-update-system-setting";

@@ -1,6 +1,19 @@
 package io.choerodon.iam.api.eventhandler;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.ldap.DirectoryType;
@@ -13,21 +26,6 @@ import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.iam.domain.service.IUserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_REGISTER;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_REGISTER;
 
 
 /**
@@ -114,7 +112,7 @@ public class OrganizationListener {
         }
     }
 
-    @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
+    @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 0, description = "iam接收org服务注册组织的事件")
     public void registerOrganization(String message) throws IOException {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
         Long organizationId = payload.getOrganizationId();
