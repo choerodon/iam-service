@@ -124,8 +124,14 @@ public class OrganizationListener {
         Long fromUserId = payload.getFromUserId();
         List<Long> userIds = new ArrayList<>();
         userIds.add(payload.getUserId());
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("addCount", userIds.size());
-        iUserService.sendNotice(fromUserId, userIds, "addUser", paramsMap, 0L);
+//        Map<String, Object> paramsMap = new HashMap<>();
+//        paramsMap.put("addCount", userIds.size());
+//        iUserService.sendNotice(fromUserId, userIds, "addUser", paramsMap, 0L);
+        Map<String, Object> params = new HashMap<>();
+        params.put("loginName", payload.getLoginName());
+        params.put("userName", payload.getRealName());
+        params.put("organizationName", payload.getOrganizationName());
+        params.put("email", payload.getEmail());
+        iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
     }
 }
