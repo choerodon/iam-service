@@ -61,6 +61,7 @@ public class OrganizationListener {
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
     public OrganizationCreateEventPayload create(String message) throws IOException {
         OrganizationCreateEventPayload organizationEventPayload = mapper.readValue(message, OrganizationCreateEventPayload.class);
+        LOGGER.info("Iam create the organization trigger task,payload:" + organizationEventPayload);
         Long orgId = organizationEventPayload.getId();
         OrganizationDTO organizationDTO = organizationService.queryOrganizationById(orgId);
         if (organizationDTO == null) {
@@ -115,18 +116,16 @@ public class OrganizationListener {
     @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 0, description = "iam接收org服务注册组织的事件")
     public void registerOrganization(String message) throws IOException {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
+        LOGGER.info("Iam register the organization trigger task,payload:" + payload);
         Long organizationId = payload.getOrganizationId();
         String organizationCode = payload.getOrganizationCode();
         String organizationName = payload.getOrganizationName();
         createLdap(organizationId, organizationName);
         createPasswordPolicy(organizationId, organizationCode, organizationName);
-        //发送站内信
+        //发送邮件——注册组织信息提交
         Long fromUserId = payload.getFromUserId();
         List<Long> userIds = new ArrayList<>();
         userIds.add(payload.getUserId());
-//        Map<String, Object> paramsMap = new HashMap<>();
-//        paramsMap.put("addCount", userIds.size());
-//        iUserService.sendNotice(fromUserId, userIds, "addUser", paramsMap, 0L);
         Map<String, Object> params = new HashMap<>();
         params.put("loginName", payload.getLoginName());
         params.put("userName", payload.getRealName());

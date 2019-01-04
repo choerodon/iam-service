@@ -15,6 +15,7 @@ public class ProjectEventPayload {
     private String organizationName;
     private String userName;
     private Long userId;
+    private String imageUrl;
 
     private Set<String> roleLabels;
 
@@ -80,5 +81,13 @@ public class ProjectEventPayload {
 
     public void setRoleLabels(Set<String> roleLabels) {
         this.roleLabels = roleLabels;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

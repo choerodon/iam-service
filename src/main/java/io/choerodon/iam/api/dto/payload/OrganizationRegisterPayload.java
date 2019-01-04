@@ -21,6 +21,9 @@ public class OrganizationRegisterPayload {
 
     private Long fromUserId;
 
+    private String imageUrl;
+
+
     public Long getOrganizationId() {
         return organizationId;
     }
@@ -93,4 +96,28 @@ public class OrganizationRegisterPayload {
         return this;
     }
 
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public OrganizationRegisterPayload setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "OrganizationRegisterPayload{" +
+                "organizationId=" + organizationId +
+                ", organizationName='" + organizationName + '\'' +
+                ", organizationCode='" + organizationCode + '\'' +
+                ", userId=" + userId +
+                ", realName='" + realName + '\'' +
+                ", loginName='" + loginName + '\'' +
+                ", email='" + email + '\'' +
+                ", fromUserId=" + fromUserId +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
+    }
 }

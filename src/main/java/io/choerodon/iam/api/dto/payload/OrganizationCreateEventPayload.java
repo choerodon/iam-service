@@ -6,6 +6,7 @@ public class OrganizationCreateEventPayload {
     private String name;
     private String code;
     private Long userId;
+    private String imageUrl;
 
     public Long getId() {
         return id;
@@ -39,6 +40,14 @@ public class OrganizationCreateEventPayload {
         this.userId = userId;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "OrganizationCreateEventPayload{" +
@@ -46,6 +55,7 @@ public class OrganizationCreateEventPayload {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", userId=" + userId +
+                ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
 }
