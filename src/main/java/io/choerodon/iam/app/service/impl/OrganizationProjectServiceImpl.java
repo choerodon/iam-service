@@ -129,6 +129,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setProjectId(newProjectE.getId());
         projectEventMsg.setProjectCode(newProjectE.getCode());
         projectEventMsg.setProjectName(newProjectE.getName());
+        projectEventMsg.setImageUrl(projectE.getImageUrl());
         OrganizationDO organizationDO =
                 organizationRepository.selectByPrimaryKey(newProjectE.getOrganizationId());
         projectEventMsg.setOrganizationCode(organizationDO.getCode());
@@ -207,6 +208,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             projectEventMsg.setProjectId(newProjectE.getId());
             projectEventMsg.setProjectCode(newProjectE.getCode());
             projectEventMsg.setProjectName(newProjectE.getName());
+            projectEventMsg.setImageUrl(newProjectE.getImageUrl());
             BeanUtils.copyProperties(newProjectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);

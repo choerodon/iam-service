@@ -1,6 +1,23 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -31,22 +48,6 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author superlee
@@ -307,7 +308,11 @@ public class UserServiceImpl implements UserService {
     public UserDTO queryInfo(Long userId) {
         checkLoginUser(userId);
         UserE user = userRepository.selectByPrimaryKey(userId);
-        return ConvertHelper.convert(user, UserDTO.class);
+        UserDTO userDTO = ConvertHelper.convert(user, UserDTO.class);
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
+        userDTO.setOrganizationName(organizationDO.getName());
+        userDTO.setOrganizationCode(organizationDO.getCode());
+        return userDTO;
     }
 
     @Override

@@ -1,6 +1,19 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -23,18 +36,6 @@ import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author flyleft
@@ -102,6 +103,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectEventMsg.setProjectCode(projectDO.getCode());
             ProjectE projectE = projectRepository.updateSelective(project);
             projectEventMsg.setProjectName(project.getName());
+            projectEventMsg.setImageUrl(projectE.getImageUrl());
             BeanUtils.copyProperties(projectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
