@@ -2,12 +2,16 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_UPDATE;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.payload.OrganizationPayload;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -81,18 +85,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        organizationDO.setAddress(organizationDTO.getAddress());
-        organizationDO.setEnabled(organizationDTO.getEnabled() == null ? true : organizationDTO.getEnabled());
-        organizationDO.setName(organizationDTO.getName());
-        organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
-        organizationDO.setImageUrl(organizationDTO.getImageUrl());
-        organizationDO = organizationRepository.update(organizationDO);
-        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
-    }
-
-    @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
@@ -109,6 +101,38 @@ public class OrganizationServiceImpl implements OrganizationService {
         dto.setOwnerPhone(user.getPhone());
         dto.setOwnerEmail(user.getEmail());
         return dto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Saga(code = ORG_UPDATE, description = "iam更新组织", inputSchemaClass = OrganizationPayload.class)
+    public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        organizationDO.setAddress(organizationDTO.getAddress());
+        organizationDO.setEnabled(organizationDTO.getEnabled() == null ? true : organizationDTO.getEnabled());
+        organizationDO.setName(organizationDTO.getName());
+        organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
+        organizationDO.setImageUrl(organizationDTO.getImageUrl());
+        organizationDO = organizationRepository.update(organizationDO);
+        if (devopsMessage) {
+            OrganizationPayload payload = new OrganizationPayload();
+            payload
+                    .setId(organizationDO.getId())
+                    .setName(organizationDO.getName())
+                    .setCode(organizationDO.getCode())
+                    .setUserId(organizationDO.getUserId())
+                    .setAddress(organizationDO.getAddress())
+                    .setImageUrl(organizationDO.getImageUrl());
+            try {
+                String input = mapper.writeValueAsString(payload);
+                sagaClient.startSaga(ORG_UPDATE, new StartInstanceDTO(input, "organization", organizationId + "", ResourceLevel.SITE.value(), 0L));
+            } catch (JsonProcessingException e) {
+                throw new CommonException("error.organization.update.payload.to.string");
+            } catch (Exception e) {
+                throw new CommonException("error.organization.update.event", e);
+            }
+        }
+        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
