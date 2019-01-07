@@ -73,6 +73,9 @@ public final class SagaTopic {
         //停用组织
         public static final String ORG_DISABLE = "iam-disable-organization";
 
+        //更新组织
+        public static final String ORG_UPDATE = "iam-update-organization";
+
     }
 
     public static class SystemSetting {

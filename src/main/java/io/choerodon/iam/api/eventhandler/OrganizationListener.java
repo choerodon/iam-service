@@ -107,6 +107,7 @@ public class OrganizationListener {
             ldapDTO.setEnabled(true);
             ldapDTO.setUseSSL(false);
             ldapDTO.setObjectClass("person");
+            ldapDTO.setSagaBatchSize(500);
             ldapService.create(orgId, ldapDTO);
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization, organizationId: {}, exception: {}", orgId, e);

@@ -74,6 +74,7 @@ class LdapControllerSpec extends Specification {
             ldapDTO.setOrganizationId(organizationId)
             ldapDTO.setServerAddress("ldap://ac.hand-china.com")
             ldapDTO.setObjectClass("person")
+            ldapDTO.setSagaBatchSize(500)
 
             isInit = true
 
@@ -130,11 +131,13 @@ class LdapControllerSpec extends Specification {
         def updateLdapDTO = new LdapDTO()
         BeanUtils.copyProperties(ldapDTO, updateLdapDTO)
         updateLdapDTO.setName("update-汉得")
+        updateLdapDTO.setSagaBatchSize(500)
         def paramsMap = new HashMap<String, Object>()
 
         when: "调用方法[异常-组织id不存在]"
         paramsMap.put("organization_id", 1000L)
         paramsMap.put("id", 1)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.postForEntity(BASE_PATH + "/{id}", updateLdapDTO, ExceptionResponse, paramsMap)
 
         then: "校验结果"
@@ -170,6 +173,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法[异常-组织id不匹配]"
         paramsMap.put("organization_id", 1000L)
         paramsMap.put("id", 1)
+        paramsMap.put("sagaBathSize", 500)
         def httpEntity = new HttpEntity<Object>()
         def entity = restTemplate.exchange(BASE_PATH + "/{id}/enable", HttpMethod.PUT, httpEntity, ExceptionResponse, paramsMap)
 
@@ -203,6 +207,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法[异常-组织id不匹配]"
         paramsMap.put("organization_id", 1000L)
         paramsMap.put("id", 1)
+        paramsMap.put("sagaBathSize", 500)
         def httpEntity = new HttpEntity<Object>()
         def entity = restTemplate.exchange(BASE_PATH + "/{id}/disable", HttpMethod.PUT, httpEntity, ExceptionResponse, paramsMap)
 
@@ -235,6 +240,7 @@ class LdapControllerSpec extends Specification {
 
         when: "调用方法[异常-组织id不存在]"
         paramsMap.put("organization_id", 1000L)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.getForEntity(BASE_PATH, ExceptionResponse, paramsMap)
 
         then: "校验结果"
@@ -258,6 +264,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法[异常-组织id不存在]"
         paramsMap.put("organization_id", 1000L)
         paramsMap.put("id", 2)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, ExceptionResponse, paramsMap)
 
         then: "校验结果"
@@ -281,6 +288,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法[异常-组织id不存在]"
         paramsMap.put("organization_id", 1000L)
         paramsMap.put("id", 1)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.postForEntity(BASE_PATH + "/{id}/test_connect", ldapAccountDTO, ExceptionResponse, paramsMap)
 
         then: "校验结果"
@@ -317,6 +325,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法[异常-组织不存在]"
         paramsMap.put("organization_id", 1000)
         paramsMap.put("id", 3)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.postForEntity(BASE_PATH + "/{id}/sync_users", Void, ExceptionResponse, paramsMap)
         needClean = true
 
@@ -340,6 +349,7 @@ class LdapControllerSpec extends Specification {
         when: "调用方法"
         paramsMap.put("organization_id", 3)
         paramsMap.put("id", 3)
+        paramsMap.put("sagaBathSize", 500)
         def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/latest_history", LdapHistoryDTO, paramsMap)
         needClean = true
 

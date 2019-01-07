@@ -106,8 +106,9 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
 
     changeSet(author: 'superleader8@gmail.com', id: '2019-01-03-oauth-ldap-add-column') {
         addColumn(tableName: 'OAUTH_LDAP') {
-            column(name: 'SAGA_BATCH_SIZE', type: "INTEGER UNSIGNED", remarks: '同步用户每次发送saga的用户数量', afterColumn: 'CUSTOM_FILTER', defaultValue: '500')
+            column(name: 'SAGA_BATCH_SIZE', type: "INTEGER UNSIGNED", remarks: '同步用户每次发送saga的用户数量', afterColumn: 'CUSTOM_FILTER', defaultValue: '500') {
+                constraints(nullable: false)
+            }
         }
     }
-
 }
