@@ -136,7 +136,7 @@ public class OrganizationListener {
     }
 
 
-    @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
+    @SagaTask(code = "iam-register-organization-test", sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
     public void testRegister(String message) throws IOException {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
         LOGGER.info("Iam register the organization trigger task,payload:" + payload);
