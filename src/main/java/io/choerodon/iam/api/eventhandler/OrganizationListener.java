@@ -115,7 +115,7 @@ public class OrganizationListener {
     }
 
     @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 0, description = "iam接收org服务注册组织的事件")
-    public void registerOrganization(String message) throws IOException {
+    public OrganizationRegisterPayload registerOrganization(String message) throws IOException {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
         LOGGER.info("Iam register the organization trigger task,payload:" + payload);
         Long organizationId = payload.getOrganizationId();
@@ -133,26 +133,6 @@ public class OrganizationListener {
         params.put("organizationName", payload.getOrganizationName());
         params.put("email", payload.getEmail());
         iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
-    }
-
-
-    @SagaTask(code = "iam-register-organization-test", sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
-    public void testRegister(String message) throws IOException {
-        OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
-        LOGGER.info("Iam register the organization trigger task,payload:" + payload);
-        //测试失败
-        if (payload.getLoginName().equalsIgnoreCase("loginName184845")) {
-            throw new CommonException("test.register.saga.task.instance.failed");
-        }
-        //发送邮件——注册组织信息提交
-        Long fromUserId = payload.getFromUserId();
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(payload.getUserId());
-        Map<String, Object> params = new HashMap<>();
-        params.put("loginName", payload.getLoginName());
-        params.put("userName", payload.getRealName());
-        params.put("organizationName", "FAILED");
-        params.put("email", payload.getEmail());
-        iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
+        return payload;
     }
 }
