@@ -134,4 +134,18 @@ public class OrganizationListener {
         params.put("email", payload.getEmail());
         iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
     }
+
+
+    @SagaTask(code = "iam-register-organization-test", sagaCode = ORG_REGISTER, seq = 1, description = "iam接收org服务注册组织的事件")
+    public void testRegister(String message) throws IOException {
+        OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
+        LOGGER.info("Iam register the organization trigger task,payload:" + payload);
+        //测试失败
+        Long fromUserId = payload.getFromUserId();
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(payload.getUserId());
+        Map<String, Object> params = new HashMap<>();
+        params.put("content", payload.toString());
+        iUserService.sendNotice(fromUserId, userIds, "organizationNotification", params, 0L);
+    }
 }
