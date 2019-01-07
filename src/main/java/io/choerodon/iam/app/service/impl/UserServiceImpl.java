@@ -316,6 +316,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(Long userId) {
+        UserE user = userRepository.selectByPrimaryKey(userId);
+        UserE admin = userRepository.selectByLoginName("admin");
+        RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
+        registrantInfoDTO.setUser(user);
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
+        registrantInfoDTO.setOrganizationName(organizationDO.getName());
+        registrantInfoDTO.setAdminId(admin.getId());
+        return registrantInfoDTO;
+    }
+
+    @Override
     @Transactional
     public UserDTO updateInfo(UserDTO userDTO) {
         checkLoginUser(userDTO.getId());
