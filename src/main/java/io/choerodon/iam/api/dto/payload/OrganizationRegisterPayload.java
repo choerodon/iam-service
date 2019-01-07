@@ -93,4 +93,17 @@ public class OrganizationRegisterPayload {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "OrganizationRegisterPayload{" +
+                "organizationId=" + organizationId +
+                ", organizationName='" + organizationName + '\'' +
+                ", organizationCode='" + organizationCode + '\'' +
+                ", userId=" + userId +
+                ", realName='" + realName + '\'' +
+                ", loginName='" + loginName + '\'' +
+                ", email='" + email + '\'' +
+                ", fromUserId=" + fromUserId +
+                '}';
+    }
 }
