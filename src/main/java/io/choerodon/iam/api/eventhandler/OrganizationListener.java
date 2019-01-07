@@ -141,11 +141,18 @@ public class OrganizationListener {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
         LOGGER.info("Iam register the organization trigger task,payload:" + payload);
         //测试失败
+        if (payload.getLoginName().equalsIgnoreCase("loginName184845")) {
+            throw new CommonException("test.register.saga.task.instance.failed");
+        }
+        //发送邮件——注册组织信息提交
         Long fromUserId = payload.getFromUserId();
         List<Long> userIds = new ArrayList<>();
         userIds.add(payload.getUserId());
         Map<String, Object> params = new HashMap<>();
-        params.put("content", payload.toString());
-        iUserService.sendNotice(fromUserId, userIds, "organizationNotification", params, 0L);
+        params.put("loginName", payload.getLoginName());
+        params.put("userName", payload.getRealName());
+        params.put("organizationName", "FAILED");
+        params.put("email", payload.getEmail());
+        iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
     }
 }
