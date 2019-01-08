@@ -21,6 +21,9 @@ public class UserRoleDTO {
     @ApiModelProperty(value = "角色列表")
     private String roles;
 
+    @ApiModelProperty(value = "图标url")
+    private String imageUrl;
+
     public Long getId() {
         return id;
     }
@@ -68,5 +71,13 @@ public class UserRoleDTO {
 
     public void setLevel(String level) {
         this.level = level;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
