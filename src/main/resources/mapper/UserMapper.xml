@@ -20,6 +20,7 @@
 
     <resultMap id="UserRoleDTO" type="io.choerodon.iam.api.dto.UserRoleDTO">
         <id property="id" column="id"></id>
+        <result property="imageUrl" column="image_url"/>
         <result property="name" column="name"/>
         <result property="code" column="code"/>
         <result property="level" column="source_type"/>
@@ -547,7 +548,8 @@
         'Choerodon' AS code,
         1 AS is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles
+        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        'site' as image_url
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         WHERE imr.member_type = 'user' AND imr.source_type = 'site' AND imr.member_id = #{userId}
@@ -564,7 +566,8 @@
         fo.code,
         fo.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles
+        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        fo.image_url
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_organization fo ON imr.source_id = fo.id
@@ -579,11 +582,12 @@
         UNION
         SELECT
         fp.id,
-        CONCAT(fo.name, CONCAT('/', fp.name)) AS name,
+        CONCAT(fo.name, CONCAT(' / ', fp.name)) AS name,
         fp.code,
         fp.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles
+        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        fp.image_url
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_project fp ON imr.source_id = fp.id
