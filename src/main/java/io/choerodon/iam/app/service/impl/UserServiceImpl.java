@@ -693,7 +693,7 @@ public class UserServiceImpl implements UserService {
     public Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId) {
         Long id = DetailsHelper.getUserDetails().getUserId();
         if (id == null || !id.equals(userId)) {
-            throw new CommonException("error.permission.id.notMatc");
+            throw new CommonException("error.permission.id.notMatch");
         }
         return userRepository.pagingQueryRole(pageRequest, param, userId);
     }
