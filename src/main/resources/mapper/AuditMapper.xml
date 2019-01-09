@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.AuditMapper">
+    <select id="selectByParams" resultType="io.choerodon.iam.api.dto.AuditDTO">
+        SELECT
+        *
+        FROM
+        fd_audit
+        WHERE
+        1=1
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+        <if test="businessType != null">
+            AND business_type LIKE concat(concat('%',#{businessType}), '%')
+        </if>
+        <if test="dataType != null">
+            AND data_type LIKE concat(concat('%',#{dataType}), '%')
+        </if>
+    </select>
+</mapper>
