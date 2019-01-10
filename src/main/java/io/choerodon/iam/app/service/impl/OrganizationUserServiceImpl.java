@@ -159,6 +159,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         payload.setId(userDO.getId().toString());
                         payload.setName(userDO.getRealName());
                         payload.setUsername(userDO.getLoginName());
+                        payload.setOrganizationId(userDO.getOrganizationId());
                         payloads.add(payload);
                     }
                 } catch (Exception e) {
