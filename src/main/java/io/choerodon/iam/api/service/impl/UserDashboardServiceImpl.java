@@ -56,8 +56,12 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         if (null == userDetails) {
             return new ArrayList<>();
         }
+        boolean isAdmin = false;
+        if (userDetails.getAdmin() != null) {
+            isAdmin = userDetails.getAdmin();
+        }
         if (!ResourceLevel.SITE.value().equals(level)) {
-            memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId);
+            memberRoleValidator.userHasRoleValidator(userDetails, level, sourceId, isAdmin);
         }
         List<UserDashboardDTO> userDashboards = userDashboardMapper
                 .selectWithDashboard(new UserDashboardE(userDetails.getUserId(), level, sourceId));
@@ -67,7 +71,7 @@ public class UserDashboardServiceImpl implements UserDashboardService {
                 userDashboardDTO1 -> !dashboardExist(userDashboards, userDashboardDTO1))
                 .collect(Collectors.toList());
         userDashboards.addAll(userDashboardsAdd);
-        return userDashboardHasRoleAndConvertPosistion(userDashboards, userDetails.getUserId(), sourceId, level);
+        return userDashboardHasRoleAndConvertPosition(userDashboards, userDetails.getUserId(), sourceId, level, isAdmin);
     }
 
     @Override
@@ -156,15 +160,12 @@ public class UserDashboardServiceImpl implements UserDashboardService {
         return isExist;
     }
 
-    private List<UserDashboardDTO> userDashboardHasRoleAndConvertPosistion(
-            List<UserDashboardDTO> userDashboardList,
-            Long userId,
-            Long sourceId,
-            String level) {
+    private List<UserDashboardDTO> userDashboardHasRoleAndConvertPosition(
+            List<UserDashboardDTO> userDashboardList, Long userId, Long sourceId, String level, Boolean isAdmin) {
         List<Long> dashboardIds = dashboardRoleMapper.selectDashboardByUserId(userId, sourceId, level);
 
         return userDashboardList.stream()
-                .filter(userDashboard -> dashboardNeedRole(dashboardIds, userDashboard))
+                .filter(userDashboard -> dashboardNeedRole(dashboardIds, userDashboard, isAdmin))
                 .map(this::convertPosition)
                 .collect(Collectors.toList());
     }
@@ -183,7 +184,10 @@ public class UserDashboardServiceImpl implements UserDashboardService {
     }
 
 
-    private boolean dashboardNeedRole(List<Long> dashboardIds, UserDashboardDTO userDashboard) {
+    private boolean dashboardNeedRole(List<Long> dashboardIds, UserDashboardDTO userDashboard, Boolean isAdmin) {
+        if (isAdmin) {
+            return true;
+        }
         return !Optional.ofNullable(userDashboard.getNeedRoles()).orElse(false) || dashboardIds.contains(userDashboard.getDashboardId());
     }
 
