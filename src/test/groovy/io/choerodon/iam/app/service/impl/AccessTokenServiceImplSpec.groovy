@@ -7,6 +7,7 @@ import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE
 import io.choerodon.iam.infra.dataobject.AccessTokenDO
 import io.choerodon.iam.infra.dataobject.ClientDO
 import io.choerodon.iam.infra.dataobject.RefreshTokenDO
+import io.choerodon.iam.infra.feign.OauthTokenFeignClient
 import io.choerodon.iam.infra.mapper.AccessTokenMapper
 import io.choerodon.iam.infra.mapper.RefreshTokenMapper
 import io.choerodon.iam.infra.repository.impl.UserRepositoryImpl
@@ -34,8 +35,9 @@ class AccessTokenServiceImplSpec extends Specification {
     private AccessTokenMapper accessTokenMapper = Mock(AccessTokenMapper)
     private RefreshTokenMapper refreshTokenMapper = Mock(RefreshTokenMapper)
     private UserRepositoryImpl userRepository = Mock(UserRepositoryImpl)
+    private OauthTokenFeignClient oauthTokenFeignClient = Mock(OauthTokenFeignClient)
 
-    private AccessTokenServiceImpl accessTokenService = new AccessTokenServiceImpl(accessTokenMapper, refreshTokenMapper, userRepository)
+    private AccessTokenServiceImpl accessTokenService = new AccessTokenServiceImpl(accessTokenMapper, refreshTokenMapper, userRepository, oauthTokenFeignClient)
 
     @Shared
     def accessTokenList = new ArrayList<AccessTokenDO>()
