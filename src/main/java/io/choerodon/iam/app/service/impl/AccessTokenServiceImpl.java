@@ -102,6 +102,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             throw new CommonException("error.delete.current.token");
         }
         oauthTokenFeignClient.deleteToken(tokenId);
+        logger.info("iam delete token,tokenId:{}", tokenId);
     }
 
     @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
