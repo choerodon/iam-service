@@ -145,6 +145,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
+    @Transactional(rollbackFor = CommonException.class)
     @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
     public Long batchCreateUsers(List<UserDO> insertUsers) {
         Long errorCount = 0L;
