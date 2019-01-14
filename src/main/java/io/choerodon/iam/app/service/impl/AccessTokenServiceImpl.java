@@ -21,6 +21,7 @@ import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.dataobject.AccessTokenDO;
+import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.iam.infra.mapper.AccessTokenMapper;
 import io.choerodon.iam.infra.mapper.RefreshTokenMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -35,11 +36,13 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     private AccessTokenMapper accessTokenMapper;
     private RefreshTokenMapper refreshTokenMapper;
     private UserRepository userRepository;
+    private OauthTokenFeignClient oauthTokenFeignClient;
 
-    public AccessTokenServiceImpl(AccessTokenMapper accessTokenMapper, RefreshTokenMapper refreshTokenMapper, UserRepository userRepository) {
+    public AccessTokenServiceImpl(AccessTokenMapper accessTokenMapper, RefreshTokenMapper refreshTokenMapper, UserRepository userRepository, OauthTokenFeignClient oauthTokenFeignClient) {
         this.accessTokenMapper = accessTokenMapper;
         this.refreshTokenMapper = refreshTokenMapper;
         this.userRepository = userRepository;
+        this.oauthTokenFeignClient = oauthTokenFeignClient;
     }
 
     @Override
@@ -98,8 +101,8 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         if (((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenDO.getToken())).getValue().equalsIgnoreCase(currentToken)) {
             throw new CommonException("error.delete.current.token");
         }
-        accessTokenMapper.deleteByPrimaryKey(tokenId);
-        refreshTokenMapper.deleteByPrimaryKey(accessTokenDO.getRefreshToken());
+        oauthTokenFeignClient.deleteToken(tokenId);
+        logger.info("iam delete token,tokenId:{}", tokenId);
     }
 
     @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")

@@ -45,7 +45,7 @@ public class ILdapServiceImpl implements ILdapService {
 
     public static final String LDAP_TEMPLATE = "ldapTemplate";
 
-    private final String OBJECT_CLASS = "objectclass";
+    private static final String OBJECT_CLASS = "objectclass";
 
     @Override
     public Map<String, Object> testConnect(LdapDO ldapDO) {
@@ -72,6 +72,7 @@ public class ILdapServiceImpl implements ILdapService {
         contextSource.setUrl(url);
         contextSource.setBase(ldapDO.getBaseDn());
         contextSource.setAnonymousReadOnly(true);
+        setConnectionTimeout(contextSource);
         contextSource.afterPropertiesSet();
         LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
         if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
@@ -119,10 +120,7 @@ public class ILdapServiceImpl implements ILdapService {
                 matchAttributes(ldapDO, ldapConnectionDTO, newLdapTemplate);
                 ldapConnectionDTO.setCanLogin(true);
                 return newLdapTemplate;
-            } catch (InvalidNameException e) {
-                LOGGER.error("userDn = {} or password is invalid, login failed, exception: {}", userDn, e);
-                return null;
-            } catch (AuthenticationException e) {
+            } catch (InvalidNameException | AuthenticationException e) {
                 LOGGER.error("userDn = {} or password is invalid, login failed, exception: {}", userDn, e);
                 return null;
             } catch (Exception e) {
@@ -188,6 +186,8 @@ public class ILdapServiceImpl implements ILdapService {
         String url = ldapDO.getServerAddress() + ":" + ldapDO.getPort();
         contextSource.setUrl(url);
         contextSource.setBase(ldapDO.getBaseDn());
+        setConnectionTimeout(contextSource);
+
         if (!anonymous) {
             contextSource.setUserDn(ldapDO.getAccount());
             contextSource.setPassword(ldapDO.getPassword());
@@ -196,6 +196,13 @@ public class ILdapServiceImpl implements ILdapService {
         }
         contextSource.afterPropertiesSet();
         return new LdapTemplate(contextSource);
+    }
+
+    private void setConnectionTimeout(LdapContextSource contextSource) {
+        Map<String, Object> environment = new HashMap<>(1);
+        //设置ldap服务器连接超时时间为10s
+        environment.put("com.sun.jndi.ldap.connect.timeout", "10000");
+        contextSource.setBaseEnvironmentProperties(environment);
     }
 
     private void matchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {

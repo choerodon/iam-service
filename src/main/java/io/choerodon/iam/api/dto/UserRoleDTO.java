@@ -24,6 +24,9 @@ public class UserRoleDTO {
     @ApiModelProperty(value = "图标url")
     private String imageUrl;
 
+    @ApiModelProperty(value = "项目名称")
+    private String projName;
+
     public Long getId() {
         return id;
     }
@@ -79,5 +82,13 @@ public class UserRoleDTO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getProjName() {
+        return projName;
+    }
+
+    public void setProjName(String projName) {
+        this.projName = projName;
     }
 }

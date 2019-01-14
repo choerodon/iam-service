@@ -41,15 +41,14 @@ public class MemberRoleValidator {
         });
     }
 
-    public Boolean userHasRoleValidator(CustomUserDetails userDetails, String sourceType, Long sourceId) {
-        boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
+    public Boolean userHasRoleValidator(CustomUserDetails userDetails, String sourceType, Long sourceId, Boolean isAdmin) {
         if (!isAdmin) {
             MemberRoleDO memberRoleDO = new MemberRoleDO();
             memberRoleDO.setMemberId(userDetails.getUserId());
             memberRoleDO.setMemberType("user");
             memberRoleDO.setSourceType(sourceType);
             memberRoleDO.setSourceId(sourceId);
-            if (null == memberRoleMapper.selectOne(memberRoleDO)) {
+            if (memberRoleMapper.select(memberRoleDO).isEmpty()) {
                 throw new CommonException("error.memberRole.select");
             }
         }
