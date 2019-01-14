@@ -71,6 +71,9 @@ public class LdapServiceImpl implements LdapService {
         if (ldapDTO.getSagaBatchSize() < 1) {
             ldapDTO.setSagaBatchSize(1);
         }
+        if (ldapDTO.getConnectionTimeout() < 1) {
+            throw new CommonException("error.ldap.connectionTimeout");
+        }
     }
 
     @Override
@@ -122,7 +125,6 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.organization.not.has.ldap", organizationId, id);
         }
         ldap.setAccount(ldapAccount.getAccount());
-        //todo ldap password 加密解密
         ldap.setPassword(ldapAccount.getPassword());
         return (LdapConnectionDTO) iLdapService.testConnect(ldap).get(ILdapServiceImpl.LDAP_CONNECTION_DTO);
     }

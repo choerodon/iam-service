@@ -20,7 +20,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
-import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -54,13 +53,25 @@ class LdapControllerSpec extends Specification {
     def needClean = false
     def ldapDTO = new LdapDTO()
     @Shared
-    def organizationId = 3L
+    def organizationId = 1L
     @Shared
-    def organizationDO
+    OrganizationDO organizationDO
     @Shared
     def organizationDO1
 
     def setup() {
+        ldapDTO.setOrganizationId(organizationId)
+        ldapDTO.setServerAddress("ldap://ac.hand-china.com")
+        ldapDTO.setObjectClass("person")
+        ldapDTO.setSagaBatchSize(500)
+        ldapDTO.setName("hand")
+        ldapDTO.setOrganizationId(organizationId)
+        ldapDTO.setServerAddress("ldap://ac.hand-china.com")
+        ldapDTO.setObjectClass("person")
+        ldapDTO.setConnectionTimeout(10)
+        ldapDTO.setAccount("test")
+        ldapDTO.setPassword("test")
+        ldapDTO.setPort("389")
         if (!isInit) {
             given: "构造参数"
             organizationDO = new OrganizationDO()
@@ -71,10 +82,6 @@ class LdapControllerSpec extends Specification {
             organizationDO.setName("猪齿鱼")
             organizationDO.setCode("choerodon")
             organizationDO.setEnabled(true)
-            ldapDTO.setOrganizationId(organizationId)
-            ldapDTO.setServerAddress("ldap://ac.hand-china.com")
-            ldapDTO.setObjectClass("person")
-            ldapDTO.setSagaBatchSize(500)
 
             isInit = true
 
@@ -83,10 +90,6 @@ class LdapControllerSpec extends Specification {
             ldapDO.setOrganizationId(2L)
             ldapDO.setServerAddress("ldap://ac.hand-china.com")
             ldapDO.setObjectClass("person")
-            ldapDTO.setName("hand")
-            ldapDTO.setOrganizationId(organizationId)
-            ldapDTO.setServerAddress("ldap://ac.hand-china.com")
-            ldapDTO.setObjectClass("person")
 
             when: "调用方法"
             int count = organizationMapper.insert(organizationDO)
@@ -130,8 +133,6 @@ class LdapControllerSpec extends Specification {
         given: "构造请求参数"
         def updateLdapDTO = new LdapDTO()
         BeanUtils.copyProperties(ldapDTO, updateLdapDTO)
-        updateLdapDTO.setName("update-汉得")
-        updateLdapDTO.setSagaBatchSize(500)
         def paramsMap = new HashMap<String, Object>()
 
         when: "调用方法[异常-组织id不存在]"
@@ -155,15 +156,21 @@ class LdapControllerSpec extends Specification {
 
         when: "调用方法"
         paramsMap.put("organization_id", organizationId)
-        paramsMap.put("id", 3)
+        paramsMap.put("id", 1)
+        BeanUtils.copyProperties(ldapMapper.selectByPrimaryKey(1L), updateLdapDTO)
+        updateLdapDTO.setAccount("account")
+        updateLdapDTO.setPassword("password")
+        updateLdapDTO.setBaseDn("base/dn")
+        updateLdapDTO.setObjectClass("objectclass")
+        updateLdapDTO.setCustomFilter("(filter)")
         entity = restTemplate.postForEntity(BASE_PATH + "/{id}", updateLdapDTO, LdapDTO, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getName().equals(ldapDTO.getName())
-        entity.getBody().getOrganizationId().equals(ldapDTO.getOrganizationId())
-        entity.getBody().getServerAddress().equals(ldapDTO.getServerAddress())
-        entity.getBody().getObjectClass().equals(ldapDTO.getObjectClass())
+        entity.getBody().getName()=="choerodon"
+        entity.getBody().getOrganizationId()==1L
+        entity.getBody().getServerAddress()=="please edit"
+        entity.getBody().getObjectClass()=="objectclass"
     }
 
     def "EnableLdap"() {

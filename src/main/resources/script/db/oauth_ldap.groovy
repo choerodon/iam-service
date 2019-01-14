@@ -111,4 +111,14 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
             }
         }
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2019-01-14-oauth-ldap-add-column') {
+        addColumn(tableName: 'OAUTH_LDAP') {
+            column(name: 'CONNECTION_TIMEOUT', type: "INTEGER UNSIGNED", remarks: 'ldap服务器连接超时时间，单位为秒，默认值为10秒', afterColumn: 'SAGA_BATCH_SIZE', defaultValue: '10') {
+                constraints(nullable: false)
+            }
+        }
+        addNotNullConstraint(tableName:'OAUTH_LDAP', columnName: 'ACCOUNT', columnDataType:'VARCHAR(128)', defaultNullValue: 'test')
+        addNotNullConstraint(tableName:'OAUTH_LDAP', columnName: 'PASSWORD', columnDataType:'VARCHAR(128)', defaultNullValue: 'test')
+    }
 }

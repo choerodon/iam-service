@@ -76,8 +76,13 @@ public class LdapDTO {
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
-    @ApiModelProperty(value = "saga每次发送用户的数量，默认值为500，非必填")
+    @ApiModelProperty(value = "saga每次发送用户的数量，默认值为500，必填")
+    @NotNull(message = "error.ldap.sagaBatchSize.null")
     private Integer sagaBatchSize;
+
+    @ApiModelProperty(value = "ldap服务器连接超时时间，单位是秒，默认值10秒，必填")
+    @NotNull(message = "error.ldap.connectionTimeout.null")
+    private Integer connectionTimeout;
 
     public Long getId() {
         return id;
@@ -229,5 +234,13 @@ public class LdapDTO {
 
     public void setSagaBatchSize(Integer sagaBatchSize) {
         this.sagaBatchSize = sagaBatchSize;
+    }
+
+    public Integer getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(Integer connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }

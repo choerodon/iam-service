@@ -69,10 +69,11 @@ public class ILdapServiceImpl implements ILdapService {
     private LdapTemplate fetchUserDn2Authenticate(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO) {
         LdapContextSource contextSource = new LdapContextSource();
         String url = ldapDO.getServerAddress() + ":" + ldapDO.getPort();
+        int connectionTimeout = ldapDO.getConnectionTimeout();
         contextSource.setUrl(url);
         contextSource.setBase(ldapDO.getBaseDn());
         contextSource.setAnonymousReadOnly(true);
-        setConnectionTimeout(contextSource);
+        setConnectionTimeout(contextSource, connectionTimeout);
         contextSource.afterPropertiesSet();
         LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
         if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
@@ -184,9 +185,10 @@ public class ILdapServiceImpl implements ILdapService {
     private LdapTemplate initLdapTemplate(LdapDO ldapDO, boolean anonymous) {
         LdapContextSource contextSource = new LdapContextSource();
         String url = ldapDO.getServerAddress() + ":" + ldapDO.getPort();
+        int connectionTimeout = ldapDO.getConnectionTimeout();
         contextSource.setUrl(url);
         contextSource.setBase(ldapDO.getBaseDn());
-        setConnectionTimeout(contextSource);
+        setConnectionTimeout(contextSource, connectionTimeout);
 
         if (!anonymous) {
             contextSource.setUserDn(ldapDO.getAccount());
@@ -198,10 +200,10 @@ public class ILdapServiceImpl implements ILdapService {
         return new LdapTemplate(contextSource);
     }
 
-    private void setConnectionTimeout(LdapContextSource contextSource) {
+    private void setConnectionTimeout(LdapContextSource contextSource, int connectionTimeout) {
         Map<String, Object> environment = new HashMap<>(1);
         //设置ldap服务器连接超时时间为10s
-        environment.put("com.sun.jndi.ldap.connect.timeout", "10000");
+        environment.put("com.sun.jndi.ldap.connect.timeout", String.valueOf(connectionTimeout * 1000));
         contextSource.setBaseEnvironmentProperties(environment);
     }
 
