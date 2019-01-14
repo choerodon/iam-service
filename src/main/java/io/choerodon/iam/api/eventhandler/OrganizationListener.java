@@ -61,7 +61,7 @@ public class OrganizationListener {
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
     public OrganizationCreateEventPayload create(String message) throws IOException {
         OrganizationCreateEventPayload organizationEventPayload = mapper.readValue(message, OrganizationCreateEventPayload.class);
-        LOGGER.info("Iam create the organization trigger task,payload:" + organizationEventPayload);
+        LOGGER.info("iam create the organization trigger task,payload: {}", organizationEventPayload);
         Long orgId = organizationEventPayload.getId();
         OrganizationDTO organizationDTO = organizationService.queryOrganizationById(orgId);
         if (organizationDTO == null) {
@@ -108,6 +108,9 @@ public class OrganizationListener {
             ldapDTO.setUseSSL(false);
             ldapDTO.setObjectClass("person");
             ldapDTO.setSagaBatchSize(500);
+            ldapDTO.setConnectionTimeout(10);
+            ldapDTO.setAccount("test");
+            ldapDTO.setPassword("test");
             ldapService.create(orgId, ldapDTO);
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization, organizationId: {}, exception: {}", orgId, e);
@@ -117,7 +120,7 @@ public class OrganizationListener {
     @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 0, description = "iam接收org服务注册组织的事件")
     public OrganizationRegisterPayload registerOrganization(String message) throws IOException {
         OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
-        LOGGER.info("Iam register the organization trigger task,payload:" + payload);
+        LOGGER.info("iam register the organization trigger task,payload: {}", payload);
         Long organizationId = payload.getOrganizationId();
         String organizationCode = payload.getOrganizationCode();
         String organizationName = payload.getOrganizationName();
