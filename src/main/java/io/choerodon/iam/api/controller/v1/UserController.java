@@ -230,7 +230,7 @@ public class UserController extends BaseController {
     @GetMapping("/admin")
     public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(required = false, name = "loginName") String loginName,
             @RequestParam(required = false, name = "realName") String realName,
             @RequestParam(required = false, name = "enabled") Boolean enabled,
