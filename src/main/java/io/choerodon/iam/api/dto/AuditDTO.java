@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -10,7 +12,7 @@ public class AuditDTO {
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 
-    @NotEmpty(message = "error.audit.userId.empty")
+    @NotNull(message = "error.audit.userId.empty")
     @ApiModelProperty(value = "用户Id/必填")
     private Long userId;
 
