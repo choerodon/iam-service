@@ -1,6 +1,9 @@
 package io.choerodon.iam.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 public class UserRoleDTO {
 
@@ -19,13 +22,16 @@ public class UserRoleDTO {
     private Boolean isEnabled;
 
     @ApiModelProperty(value = "角色列表")
-    private String roles;
+    private List<RoleNameAndEnabledDTO> roles;
 
     @ApiModelProperty(value = "图标url")
     private String imageUrl;
 
     @ApiModelProperty(value = "项目名称")
     private String projName;
+
+    @JsonIgnore
+    private String roleNames;
 
     public Long getId() {
         return id;
@@ -43,11 +49,11 @@ public class UserRoleDTO {
         this.name = name;
     }
 
-    public String getRoles() {
+    public List<RoleNameAndEnabledDTO> getRoles() {
         return roles;
     }
 
-    public void setRoles(String roles) {
+    public void setRoles(List<RoleNameAndEnabledDTO> roles) {
         this.roles = roles;
     }
 
@@ -90,5 +96,13 @@ public class UserRoleDTO {
 
     public void setProjName(String projName) {
         this.projName = projName;
+    }
+
+    public String getRoleNames() {
+        return roleNames;
+    }
+
+    public void setRoleNames(String roleNames) {
+        this.roleNames = roleNames;
     }
 }

@@ -6,6 +6,7 @@ import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.dto.RoleNameAndEnabledDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
 import io.choerodon.iam.api.dto.UserRoleDTO;
 import io.choerodon.iam.domain.iam.entity.UserE;
@@ -161,7 +162,7 @@ public class UserRepositoryImpl implements UserRepository {
     public UserE updateUserInfo(UserE userE) {
         UserDO user = ConvertHelper.convert(userE, UserDO.class);
         if (mapper.updateByPrimaryKeySelective(user) != 1) {
-            throw new CommonException("error.user.update");
+            throw new CommonException(ERROR_USER_UPDATE);
         }
         return ConvertHelper.convert(mapper.selectByPrimaryKey(user.getId()), UserE.class);
     }
@@ -309,7 +310,21 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectRoles(userId, param));
+        Page<UserRoleDTO> page = PageHelper.doPageAndSort(pageRequest, () -> mapper.selectRoles(userId, param));
+        page.getContent().forEach(i -> {
+            String[] roles = i.getRoleNames().split("\n");
+            List<RoleNameAndEnabledDTO> list = new ArrayList<>(roles.length);
+            for (int j = 0; j < roles.length; j++) {
+                String[] nameAndEnabled = roles[j].split(",enabled=");
+                boolean roleEnabled = true;
+                if (nameAndEnabled[1].equals("0")){
+                    roleEnabled = false;
+                }
+                list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], roleEnabled));
+            }
+            i.setRoles(list);
+        });
+        return page;
     }
 
     @Override

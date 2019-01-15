@@ -25,7 +25,7 @@
         <result property="code" column="code"/>
         <result property="level" column="source_type"/>
         <result property="enabled" column="is_enabled"/>
-        <result property="roles" column="roles"/>
+        <result property="roleNames" column="roles"/>
         <result property="projName" column="proj_name"/>
     </resultMap>
 
@@ -549,7 +549,7 @@
         'Choerodon' AS code,
         1 AS is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled), '\n') AS roles,
         'site' as image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -568,7 +568,7 @@
         fo.code,
         fo.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') AS roles,
         fo.image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -589,7 +589,7 @@
         fp.code,
         fp.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(ir.name SEPARATOR '\n') AS roles,
+        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') AS roles,
         fp.image_url,
         fp.name AS proj_name
         FROM iam_member_role imr
@@ -614,7 +614,7 @@
         'Choerodon' AS code,
         1 AS is_enabled,
         imr.source_type,
-        LISTAGG(ir.name , '\n') within group(ORDER BY imr.source_type) AS roles,
+        LISTAGG(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') within group(ORDER BY imr.source_type) AS roles,
         'site' as image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -633,7 +633,7 @@
         fo.code,
         fo.is_enabled,
         imr.source_type,
-        LISTAGG(ir.name, '\n') within group(ORDER BY fo.id) AS roles,
+        LISTAGG(concat(concat(ir.name, ',enabled='), ir.is_enabled), '\n') within group(ORDER BY fo.id) AS roles,
         fo.image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -654,7 +654,7 @@
         fp.code,
         fp.is_enabled,
         imr.source_type,
-        LISTAGG(ir.name, '\n') within group(ORDER BY fp.id) AS roles,
+        LISTAGG(concat(concat(ir.name, ',enabled='), ir.is_enabled), '\n') within group(ORDER BY fp.id) AS roles,
         fp.image_url,
         fp.name AS proj_name
         FROM iam_member_role imr
