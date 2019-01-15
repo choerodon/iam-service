@@ -39,8 +39,6 @@ public class LdapSyncUserTask {
 
     private static final String OBJECT_CLASS = "objectclass";
 
-    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
-
     private UserRepository userRepository;
 
     private OrganizationUserService organizationUserService;
@@ -119,6 +117,14 @@ public class LdapSyncUserTask {
             } else {
                 UserDO user = new UserDO();
                 user.setOrganizationId(organizationId);
+                user.setLanguage("zh_CN");
+                user.setTimeZone("CTT");
+                user.setEnabled(true);
+                user.setLocked(false);
+                user.setLdap(true);
+                user.setAdmin(false);
+                user.setPassword("ldap users do not have password");
+                user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
                 try {
                     user.setLoginName(loginNameAttribute.get().toString());
                     user.setEmail(emailAttribute.get().toString());
@@ -128,13 +134,6 @@ public class LdapSyncUserTask {
                     if (ldap.getPhoneField() != null && phoneAttribute != null) {
                         user.setPhone(phoneAttribute.get().toString());
                     }
-                    user.setLanguage("zh_CN");
-                    user.setTimeZone("CTT");
-                    user.setEnabled(true);
-                    user.setLocked(false);
-                    user.setLdap(true);
-                    user.setAdmin(false);
-                    user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
                 } catch (NamingException e) {
                     ldapSyncReport.incrementError();
                     logger.error("Attribute get() exception, skip the attributes {}, exception: {}", attributes, e);
@@ -175,8 +174,6 @@ public class LdapSyncUserTask {
                     ldapSyncReport.incrementError();
                     logger.warn("duplicate email, email : {}", user.getEmail());
                 } else {
-                    //加密为耗时操作，只有在插入的时候才加密，或者可以考虑取消掉
-                    user.setPassword(ENCODER.encode("unknown password"));
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
