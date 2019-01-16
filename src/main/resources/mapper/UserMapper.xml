@@ -574,7 +574,7 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_organization fo ON imr.source_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId}
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND fo.is_enabled = 1
         <if test="params != null">
             AND (
             fo.name LIKE concat(concat('%', #{params}), '%') OR
@@ -596,7 +596,7 @@
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_project fp ON imr.source_id = fp.id
         INNER JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId}
+        WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId} AND fp.is_enabled = 1
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR
@@ -639,7 +639,7 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_organization fo ON imr.source_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization'
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization' AND fo.is_enabled = 1
         <if test="params != null">
             AND (
             fo.name LIKE concat(concat('%', #{params}), '%') OR
@@ -661,7 +661,7 @@
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_project fp ON imr.source_id = fp.id
         INNER JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'project'
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.is_enabled = 1
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR
