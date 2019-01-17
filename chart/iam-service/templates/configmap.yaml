@@ -3,4 +3,6 @@ kind: ConfigMap
 metadata:
   name: {{ .Chart.Name }}
 data:
-  application.yml: {{ range .Files.Lines "profile/application.yml" }}{{ . }}{{ end }}
+  application.yml: |-
+    {{- range .Files.Lines "conf/application.yml" }}
+      {{ . }}{{ end }}
