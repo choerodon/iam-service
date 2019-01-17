@@ -1,0 +1,59 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: choerodon
+    password: 123456
+  http: #设置上传文件最大为10M
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+choerodon:
+  devops:
+    message: true
+  eureka:
+    event:
+      max-cache-size: 300
+      retry-time: 5
+      retry-interval: 3
+      skip-services: config**, **register-server, **gateway**, zipkin**, hystrix**, oauth**
+  saga:
+    consumer:
+      enabled: true # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  schedule:
+    consumer:
+      enabled: true # 启用任务调度消费端
+      thread-num: 1 # 任务调度消费线程数
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  cleanPermission: false
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 10
+    leaseExpirationDurationInSeconds: 30
+    metadata-map:
+      VERSION: v1
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8000/eureka/}
+    registryFetchIntervalSeconds: 10
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 15000
+ribbon:
+  ReadTimeout: 5000
+  ConnectTimeout: 5000
+file-service:
+  ribbon:
+    ReadTimeout: 60000
+    ConnectTimeout: 60000
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml
+  configuration: # 数据库下划线转驼峰配置
+    mapUnderscoreToCamelCase: true
