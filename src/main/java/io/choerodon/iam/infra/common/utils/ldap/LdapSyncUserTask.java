@@ -1,7 +1,5 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.naming.NamingException;
@@ -13,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.filter.AndFilter;
-import org.springframework.ldap.filter.EqualsFilter;
-import org.springframework.ldap.filter.HardcodedFilter;
+import org.springframework.ldap.filter.*;
 import org.springframework.ldap.query.SearchScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +25,8 @@ import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
+
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 
 /**
@@ -161,17 +159,14 @@ public class LdapSyncUserTask {
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
-        Set<String> phoneSet = users.stream().map(UserDO::getPhone).collect(Collectors.toSet());
         //oracle In-list上限为1000，这里List size要小于1000
         List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
         List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
-        List<Set<String>> subPhoneSet = CollectionUtils.subSet(phoneSet, 999);
         Set<String> existedNames = new HashSet<>();
         Set<String> existedEmails = new HashSet<>();
-        Set<String> existedPhones = new HashSet<>();
         subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
         subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
-        subPhoneSet.forEach(set -> existedPhones.addAll(userRepository.matchPhone(set)));//match启用的用户的手机号
+
         users.forEach(user -> {
             String loginName = user.getLoginName();
             if (!existedNames.contains(user.getLoginName())) {
@@ -179,10 +174,6 @@ public class LdapSyncUserTask {
                     //邮箱重复，报错
                     ldapSyncReport.incrementError();
                     logger.warn("duplicate email, email : {}", user.getEmail());
-                } else if (existedPhones.contains(user.getPhone())) {
-                    //与启用用户的手机号重复，报错
-                    ldapSyncReport.incrementError();
-                    logger.warn("duplicate phone, phone : {}", user.getPhone());
                 } else {
                     //加密为耗时操作，只有在插入的时候才加密，或者可以考虑取消掉
                     user.setPassword(ENCODER.encode("unknown password"));
