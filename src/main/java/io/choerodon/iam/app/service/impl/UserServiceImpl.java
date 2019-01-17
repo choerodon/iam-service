@@ -331,7 +331,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO updateInfo(UserDTO userDTO) {
         checkLoginUser(userDTO.getId());
-        userRepository.checkPhoneDuplicate(userDTO.getId(), userDTO.getPhone());
         UserE userE = ConvertHelper.convert(userDTO, UserE.class);
         UserDTO dto;
         if (devopsMessage) {
@@ -362,8 +361,7 @@ public class UserServiceImpl implements UserService {
     public void check(UserDTO user) {
         Boolean checkLoginName = !StringUtils.isEmpty(user.getLoginName());
         Boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
-        Boolean checkPhone = !StringUtils.isEmpty(user.getPhone());
-        if (!checkEmail && !checkLoginName  && !checkPhone) {
+        if (!checkEmail && !checkLoginName) {
             throw new CommonException("error.user.validation.fields.empty");
         }
         if (checkLoginName) {
@@ -372,13 +370,6 @@ public class UserServiceImpl implements UserService {
         if (checkEmail) {
             checkEmail(user);
         }
-        if(checkPhone){
-            checkPhone(user);
-        }
-    }
-
-    private void checkPhone(UserDTO user){
-        userRepository.checkPhoneDuplicate(user.getId(),user.getPhone());
     }
 
     private void checkEmail(UserDTO user) {

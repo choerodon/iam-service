@@ -495,19 +495,6 @@
         </foreach>
     </select>
 
-    <select id="matchPhone" resultType="java.lang.String">
-        SELECT phone
-        FROM iam_user
-        WHERE phone
-        IN
-        <foreach item="item" index="index" collection="phoneSet"
-                 open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        AND
-        is_enabled = 1
-    </select>
-
     <select id="listUserIds" resultType="java.lang.Long">
         SELECT id from iam_user where is_enabled = 1
     </select>

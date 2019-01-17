@@ -92,8 +92,6 @@ public interface UserRepository {
 
     Set<String> matchEmail(Set<String> emailSet);
 
-    Set<String> matchPhone(Set<String> phoneSet);
-
     Long[] listUserIds();
 
     Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param);
@@ -116,6 +114,4 @@ public interface UserRepository {
     Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId);
 
     List<UserDO> select(UserDO example);
-
-    void checkPhoneDuplicate(Long id, String phone);
 }
