@@ -3,11 +3,11 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.iam.api.dto.UserRoleDTO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
+import io.choerodon.iam.api.dto.UserRoleDTO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -66,6 +66,8 @@ public interface UserMapper extends BaseMapper<UserDO> {
     Set<String> matchLoginName(@Param("nameSet") Set<String> nameSet);
 
     Set<String> matchEmail(@Param("emailSet") Set<String> emailSet);
+
+    Set<String> matchPhone(@Param("phoneSet") Set<String> phoneSet);
 
     Long[] listUserIds();
 

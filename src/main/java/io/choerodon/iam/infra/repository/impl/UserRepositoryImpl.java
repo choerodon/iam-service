@@ -1,5 +1,11 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -16,10 +22,6 @@ import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * @author superlee
@@ -267,6 +269,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Set<String> matchPhone(Set<String> phoneSet) {
+        return mapper.matchPhone(phoneSet);
+    }
+
+    @Override
     public Long[] listUserIds() {
         return mapper.listUserIds();
     }
@@ -330,5 +337,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDO> select(UserDO example) {
         return mapper.select(example);
+    }
+
+    @Override
+    public void checkPhoneDuplicate(Long id, String phone) {
+        UserDO userDO = new UserDO();
+        userDO.setPhone(phone);
+        List<UserDO> enable = mapper.select(userDO).stream().filter(u -> u.getEnabled().equals(true) && !u.getId().equals(id)).collect(Collectors.toList());
+        if (!enable.isEmpty()) {
+            throw new CommonException("user.phone.is.exist");
+        }
     }
 }

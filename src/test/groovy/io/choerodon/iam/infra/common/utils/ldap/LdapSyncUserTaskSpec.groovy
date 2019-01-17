@@ -61,6 +61,7 @@ class LdapSyncUserTaskSpec extends Specification {
         1 * fallback.callback(_, _)
         1 * userRepository.matchLoginName(_) >> new HashSet<String>()
         1 * userRepository.matchEmail(_) >> new HashSet<String>()
+        1 * userRepository.matchPhone(_) >> new HashSet<String>()
         1 * userRepository.select(_) >> new ArrayList<>()
         1 * organizationUserService.batchCreateUsers(_) >> 0L
     }
@@ -92,8 +93,11 @@ class LdapSyncUserTaskSpec extends Specification {
         matchEmail.add("youquan.deng@hand-china.com")
         matchEmail.add("youquan.deng1@hand-china.com")
         matchEmail.add("youquan.deng2@hand-china.com")
-
+        Set<String> matchPhone = new HashSet<>()
         List<Attributes> attributesList = new ArrayList<>()
+        matchPhone.add("17805987261")
+        matchPhone.add("17806982772")
+        matchPhone.add("17806251726")
         attributesList << attributes
 
 
@@ -117,6 +121,7 @@ class LdapSyncUserTaskSpec extends Specification {
         employeeTypeAttribute.get() >> { "test" }
         1 * userRepository.matchLoginName(_) >> { matchLoginName }
         1 * userRepository.matchEmail(_) >> { matchEmail }
+        1 * userRepository.matchPhone(_) >> { matchPhone }
         1 * userRepository.select(_) >> new ArrayList<>()
         1 * organizationUserService.batchCreateUsers(_) >> 0L
     }
