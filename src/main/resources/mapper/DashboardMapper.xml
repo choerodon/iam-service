@@ -26,10 +26,17 @@
         <if test="dashboard.enabled != null">
             AND IS_ENABLED = #{dashboard.enabled}
         </if>
+        <if test="dashboard.needRoles != null">
+            AND NEED_ROLES = #{dashboard.needRoles}
+        </if>
+        <if test="dashboard.namespace != null">
+            AND NAMESPACE = #{dashboard.namespace}
+        </if>
         <if test="param != null">
             AND
             NAME LIKE concat(concat('%',#{param}),'%') OR
             CODE LIKE concat(concat('%',#{param}),'%') OR
+            NAMESPACE LIKE concat(concat('%',#{param}),'%') OR
             FD_LEVEL = #{param}
         </if>
     </select>
