@@ -20,4 +20,18 @@
             AND oat.client_id = #{clientId}
         </if>
     </select>
+
+    <select id="selectTokenList" resultType="io.choerodon.iam.infra.dataobject.AccessTokenDO">
+        SELECT
+            TOKEN_ID,
+            TOKEN
+        FROM
+            oauth_access_token
+        WHERE
+            TOKEN_ID
+        IN
+        <foreach collection="tokenIds" item="tokenId" index="index" open="(" separator="," close=")">
+            #{tokenId}
+        </foreach>
+	 </select>
 </mapper>

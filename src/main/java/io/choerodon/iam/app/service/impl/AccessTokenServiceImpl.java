@@ -105,6 +105,20 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         logger.info("iam delete token,tokenId:{}", tokenId);
     }
 
+    @Override
+    public void deleteList(List<String> tokenIds, String currentToken) {
+        List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectTokenList(tokenIds);
+        List<String> tokens = accessTokenDOS.stream().map(t -> ((DefaultOAuth2AccessToken)SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
+
+        if(tokens!=null && !tokens.isEmpty() && tokens.contains(currentToken)){
+            throw new CommonException("error.delete.current.token");
+        }
+        if(tokens.size()!=tokenIds.size()){
+            tokenIds = accessTokenDOS.stream().map(t -> t.getTokenId()).collect(Collectors.toList());
+        }
+        oauthTokenFeignClient.deleteTokenList(tokenIds);
+    }
+
     @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
     @Override
     public void deleteAllExpiredToken(Map<String, Object> map) {

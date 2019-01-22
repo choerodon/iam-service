@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.domain.Page;
@@ -22,9 +23,17 @@ public interface AccessTokenService {
      * 手动失效用户已存在的token
      *
      * @param tokenId tokenId
+     * @param currentToken 当前token
      */
     void delete(String tokenId, String currentToken);
 
+    /**
+     * 批量失效用户的token
+     *
+     * @param tokenIds token列表
+     * @param currentToken 当前token
+     */
+    void deleteList(List<String> tokenIds, String currentToken);
 
     /**
      * 删除所有过期的token
