@@ -1,9 +1,13 @@
 package io.choerodon.iam.infra.feign;
 
-import io.choerodon.iam.infra.feign.fallback.OauthTokenFeignClientFallback;
+import java.util.List;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import io.choerodon.iam.infra.feign.fallback.OauthTokenFeignClientFallback;
 
 /**
  * @author zmf
@@ -25,4 +29,12 @@ public interface OauthTokenFeignClient {
      */
     @DeleteMapping("/one")
     void deleteToken(@RequestParam(value = "tokenId") String tokenId);
+
+    /**
+     * 根据 tokenList删除 token
+     *
+     * @param tokenIdList tokenIdList
+     */
+    @DeleteMapping("/list")
+    void deleteTokenList(@RequestBody List<String> tokenIdList);
 }

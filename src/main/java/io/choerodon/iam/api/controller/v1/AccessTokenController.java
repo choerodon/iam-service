@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +51,13 @@ public class AccessTokenController {
     public void delete(@RequestParam(name = "tokenId") String tokenId,
                        @RequestParam(value = "currentToken") String currentToken) {
         accessTokenService.delete(tokenId, currentToken);
+    }
+
+    @Permission(permissionLogin = true, level = ResourceLevel.SITE)
+    @ApiOperation(value = "根据tokenId列表批量删除token")
+    @DeleteMapping("/batch")
+    public void deleteList(@RequestBody List<String> tokenIds,
+                           @RequestParam(value = "currentToken") String currentToken) {
+        accessTokenService.deleteList(tokenIds, currentToken);
     }
 }
