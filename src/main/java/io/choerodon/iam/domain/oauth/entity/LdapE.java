@@ -25,6 +25,7 @@ public class LdapE {
     private String customFilter;
     private Integer sagaBatchSize;
     private Integer connectionTimeout;
+    private String uuidField;
 
     public Long getId() {
         return id;
@@ -184,5 +185,13 @@ public class LdapE {
 
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    public String getUuidField() {
+        return uuidField;
+    }
+
+    public void setUuidField(String uuidField) {
+        this.uuidField = uuidField;
     }
 }

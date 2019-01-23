@@ -1,10 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.iam.api.dto.LdapAccountDTO;
-import io.choerodon.iam.api.dto.LdapConnectionDTO;
-import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.LdapHistoryDTO;
+import io.choerodon.core.domain.Page;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -40,14 +39,24 @@ public interface LdapService {
     /**
      * 根据ldap id 查询最新的一条记录
      *
-     * @param id
+     * @param ldapId ldapId
      * @return
      */
-    LdapHistoryDTO queryLatestHistory(Long id);
+    LdapHistoryDTO queryLatestHistory(Long ldapId);
 
     LdapDTO enableLdap(Long organizationId, Long id);
 
     LdapDTO disableLdap(Long organizationId, Long id);
 
     LdapHistoryDTO stop(Long id);
+
+    /**
+     * 根据ldapId分页查询ldap history
+     * @param pageRequest
+     * @param ldapId
+     * @return
+     */
+    Page<LdapHistoryDTO> pagingQueryHistories(PageRequest pageRequest, Long ldapId);
+
+    Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long id);
 }

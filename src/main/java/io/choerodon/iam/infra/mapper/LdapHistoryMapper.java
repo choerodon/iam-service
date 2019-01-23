@@ -7,5 +7,4 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author superlee
  */
 public interface LdapHistoryMapper extends BaseMapper<LdapHistoryDO> {
-    LdapHistoryDO queryLatestHistory(Long id);
 }
