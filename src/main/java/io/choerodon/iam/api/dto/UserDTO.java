@@ -20,7 +20,7 @@ public class UserDTO {
 
     public static final String PHONE_REG = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
 
-    public static final String LOGIN_NAME_REG = "[a-zA-Z0-9]{1,128}";
+    public static final String LOGIN_NAME_REG = "^(?!\\-)[a-zA-Z0-9\\_\\-\\.]+(?<!\\.git|\\.atom|\\.)$";
 
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
