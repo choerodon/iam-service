@@ -87,7 +87,7 @@ public class OrganizationProjectController extends BaseController {
     @ApiOperation(value = "修改项目")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                              @PathVariable(name = "project_id") Long projectId,
-                                             @RequestBody ProjectDTO projectDTO) {
+                                             @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.updateCheck();
         projectDTO.setOrganizationId(organizationId);
         projectDTO.setId(projectId);
