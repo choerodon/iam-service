@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.*;
@@ -40,7 +41,7 @@ import java.util.regex.Pattern;
 public class LdapServiceImpl implements LdapService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
-    private static final String LDAP_ERROR_USER_MESSAGE_DIR = "classpath:messages";
+    private static final String LDAP_ERROR_USER_MESSAGE_DIR = "classpath:messages/messages";
     private LdapRepository ldapRepository;
     private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
@@ -219,7 +220,7 @@ public class LdapServiceImpl implements LdapService {
     public Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long ldapHistoryId) {
         LdapErrorUserDO example = new LdapErrorUserDO();
         example.setLdapHistoryId(ldapHistoryId);
-        Page<LdapErrorUserDTO> dtos = PageHelper.doPageAndSort(pageRequest, ()-> ldapErrorUserMapper.select(example));
+        Page<LdapErrorUserDTO> dtos = ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, ()-> ldapErrorUserMapper.select(example)), LdapErrorUserDTO.class);
         //cause国际化处理
         List<LdapErrorUserDTO> errorUsers = dtos.getContent();
         MessageSource messageSource = MessageSourceFactory.create(LDAP_ERROR_USER_MESSAGE_DIR);

@@ -6,13 +6,19 @@ import io.choerodon.iam.api.dto.LdapAccountDTO
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.api.dto.LdapDTO
 import io.choerodon.iam.api.dto.LdapHistoryDTO
+import io.choerodon.iam.app.service.LdapService
+import io.choerodon.iam.app.service.impl.LdapServiceImpl
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.dataobject.LdapDO
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO
 import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.enums.LdapErrorUserCause
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
 import io.choerodon.iam.infra.mapper.LdapMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
+import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,6 +26,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -41,6 +48,8 @@ class LdapControllerSpec extends Specification {
     private OrganizationMapper organizationMapper
     @Autowired
     private LdapMapper ldapMapper
+    @Autowired
+    private LdapErrorUserMapper ldapErrorUserMapper
     @Autowired
     private LdapHistoryRepository ldapHistoryRepository
 
@@ -72,6 +81,7 @@ class LdapControllerSpec extends Specification {
         ldapDTO.setAccount("test")
         ldapDTO.setPassword("test")
         ldapDTO.setPort("389")
+        ldapDTO.setUuidField("uid")
         if (!isInit) {
             given: "构造参数"
             organizationDO = new OrganizationDO()
@@ -167,10 +177,10 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getName()=="choerodon"
-        entity.getBody().getOrganizationId()==1L
-        entity.getBody().getServerAddress()=="please edit"
-        entity.getBody().getObjectClass()=="objectclass"
+        entity.getBody().getName() == "choerodon"
+        entity.getBody().getOrganizationId() == 1L
+        entity.getBody().getServerAddress() == "please edit"
+        entity.getBody().getObjectClass() == "objectclass"
     }
 
     def "EnableLdap"() {
@@ -378,5 +388,44 @@ class LdapControllerSpec extends Specification {
         then: "校验"
         entity.statusCode.is2xxSuccessful()
         entity.body.syncEndTime != null
+    }
+
+    @Transactional
+    def "pagingQueryHistories"() {
+        given:
+        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, ldapHistoryRepository, null)
+        LdapController ldapController = new LdapController(ldapService)
+        PageRequest pageRequest = new PageRequest(0, 10)
+        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
+        ldapHistoryDO.setLdapId(1L)
+        ldapHistoryRepository.insertSelective(ldapHistoryDO)
+
+        when:
+        def entity = ldapController.pagingQueryHistories(pageRequest, 1L, 1L)
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body.totalElements == 2L
+
+    }
+
+    def "pagingQueryErrorUsers"() {
+        given:
+        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, null, ldapErrorUserMapper)
+        LdapController ldapController = new LdapController(ldapService)
+        PageRequest pageRequest = new PageRequest(0, 10)
+
+        LdapErrorUserDO ldapErrorUserDO = new LdapErrorUserDO()
+        ldapErrorUserDO.setLdapHistoryId(1L)
+        ldapErrorUserDO.setUuid("uuid")
+        ldapErrorUserDO.setCause(LdapErrorUserCause.EMAIL_ALREADY_EXISTED.value())
+        ldapErrorUserMapper.insertSelective(ldapErrorUserDO)
+
+        when:
+        def entity = ldapController.pagingQueryErrorUsers(pageRequest, 1L)
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body.totalElements == 1L
     }
 }

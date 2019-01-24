@@ -9,6 +9,7 @@ import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
 import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -30,10 +31,12 @@ class LdapServiceImplSpec extends Specification {
     private LdapSyncUserTask.FinishFallback finishFallback = Mock(LdapSyncUserTask.FinishFallback)
     private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapService ldapService
+    @Autowired
+    private LdapErrorUserMapper ldapErrorUserMapper
 
     def setup() {
         ldapService = new LdapServiceImpl(ldapRepository, organizationRepository,
-                ldapSyncUserTask, iLdapService, finishFallback, ldapHistoryRepository)
+                ldapSyncUserTask, iLdapService, finishFallback, ldapHistoryRepository, ldapErrorUserMapper)
     }
 
     def "SyncLdapUser"() {

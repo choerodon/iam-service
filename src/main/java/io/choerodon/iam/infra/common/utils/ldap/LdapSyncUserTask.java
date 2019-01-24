@@ -6,6 +6,9 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
+import io.choerodon.iam.infra.enums.LdapErrorUserCause;
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -14,7 +17,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.*;
 import org.springframework.ldap.query.SearchScope;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.iam.app.service.OrganizationUserService;
@@ -45,12 +47,16 @@ public class LdapSyncUserTask {
 
     private LdapHistoryRepository ldapHistoryRepository;
 
+    private LdapErrorUserMapper ldapErrorUserMapper;
+
     public LdapSyncUserTask(UserRepository userRepository,
                             OrganizationUserService organizationUserService,
-                            LdapHistoryRepository ldapHistoryRepository) {
+                            LdapHistoryRepository ldapHistoryRepository,
+                            LdapErrorUserMapper ldapErrorUserMapper) {
         this.userRepository = userRepository;
         this.organizationUserService = organizationUserService;
         this.ldapHistoryRepository = ldapHistoryRepository;
+        this.ldapErrorUserMapper = ldapErrorUserMapper;
     }
 
     @Async("ldap-executor")
@@ -66,18 +72,26 @@ public class LdapSyncUserTask {
         ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
 
-        List<UserDO> users = getUsersFromLdapServer(ldapTemplate, ldap, organizationId, ldapSyncReport);
+        List<LdapErrorUserDO> errorUsers = new ArrayList<>();
+        List<UserDO> users = getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, errorUsers);
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
         if (!users.isEmpty()) {
-            compareWithDbAndInsert(users, ldapSyncReport, organizationId, ldap.getSagaBatchSize());
+            compareWithDbAndInsert(users, ldapSyncReport, organizationId, ldap.getSagaBatchSize(), errorUsers);
         }
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
+
+        Long ldapHistoryId = ldapHistory.getId();
+        errorUsers.forEach(errorUser -> {
+            errorUser.setLdapHistoryId(ldapHistoryId);
+            ldapErrorUserMapper.insert(errorUser);
+        });
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    private List<UserDO> getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, Long organizationId, LdapSyncReport ldapSyncReport) {
+    private List<UserDO> getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap,
+                                                LdapSyncReport ldapSyncReport, List<LdapErrorUserDO> errorUsers) {
         AndFilter andFilter = getAndFilterByObjectClass(ldap);
         HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
         andFilter.and(hardcodedFilter);
@@ -96,51 +110,110 @@ public class LdapSyncUserTask {
         if (attributesList.isEmpty()) {
             logger.warn("can not find any attributes while filter is {}", andFilter);
         } else {
-            processUserFromAttributes(ldap, organizationId, attributesList, users, ldapSyncReport);
+            processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
             ldapSyncReport.setCount(Long.valueOf(users.size()));
         }
         return users;
     }
 
-    private void processUserFromAttributes(LdapDO ldap, Long organizationId, List<Attributes> attributesList, List<UserDO> users, LdapSyncReport ldapSyncReport) {
+    private void processUserFromAttributes(LdapDO ldap, List<Attributes> attributesList,
+                                           List<UserDO> users, LdapSyncReport ldapSyncReport,
+                                           List<LdapErrorUserDO> errorUsers) {
+        Long organizationId = ldap.getOrganizationId();
         attributesList.forEach(attributes -> {
             String loginNameFiled = ldap.getLoginNameField();
             String emailFiled = ldap.getEmailField();
+            String uuidField = ldap.getUuidField();
+            Attribute uuidAttribute = attributes.get(uuidField);
             Attribute loginNameAttribute = attributes.get(loginNameFiled);
             Attribute emailAttribute = attributes.get(emailFiled);
             Attribute realNameAttribute = attributes.get(ldap.getRealNameField());
             Attribute phoneAttribute = attributes.get(ldap.getPhoneField());
-            if (loginNameAttribute == null || emailAttribute == null) {
+
+            String uuid;
+            String loginName;
+            String email;
+            String realName = null;
+            String phone = null;
+            if (uuidAttribute == null) {
                 ldapSyncReport.incrementError();
-                logger.warn("the filed [{}, {}] of attributes is null, so skip the attributes {}", loginNameFiled, emailFiled, attributes);
+                logger.error("the uuid {} of attributes {} can not be null, skip the user", ldap.getUuidField(), attributes);
                 return;
-            } else {
-                UserDO user = new UserDO();
-                user.setOrganizationId(organizationId);
-                user.setLanguage("zh_CN");
-                user.setTimeZone("CTT");
-                user.setEnabled(true);
-                user.setLocked(false);
-                user.setLdap(true);
-                user.setAdmin(false);
-                user.setPassword("ldap users do not have password");
-                user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
-                try {
-                    user.setLoginName(loginNameAttribute.get().toString());
-                    user.setEmail(emailAttribute.get().toString());
-                    if (ldap.getRealNameField() != null && realNameAttribute != null) {
-                        user.setRealName(realNameAttribute.get().toString());
-                    }
-                    if (ldap.getPhoneField() != null && phoneAttribute != null) {
-                        user.setPhone(phoneAttribute.get().toString());
-                    }
-                } catch (NamingException e) {
-                    ldapSyncReport.incrementError();
-                    logger.error("Attribute get() exception, skip the attributes {}, exception: {}", attributes, e);
-                    return;
-                }
-                users.add(user);
             }
+            try {
+                uuid = uuidAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                logger.error("attributes {} get uuid attribute exception {}, skip the user", attributes, e);
+                return;
+            }
+
+            if (loginNameAttribute == null ) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.LOGIN_NAME_FIELD_NULL.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+            try {
+                loginName = loginNameAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.LOGIN_NAME_GET_EXCEPTION.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+
+            if (emailAttribute == null) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.EMAIL_FIELD_NULL.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+            try {
+                email = emailAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.EMAIL_GET_EXCEPTION.value()).setLoginName(loginName);
+                errorUsers.add(errorUser);
+                return;
+            }
+
+            try {
+                if (ldap.getRealNameField() != null && realNameAttribute != null) {
+                    realName = realNameAttribute.get().toString();
+                }
+                if (ldap.getPhoneField() != null && phoneAttribute != null) {
+                    phone = phoneAttribute.get().toString();
+                }
+            } catch (NamingException e) {
+                logger.warn("realName or phone field attribute get exception {}", e);
+            }
+
+            UserDO user = new UserDO();
+            user.setUuid(uuid);
+            user.setOrganizationId(organizationId);
+            user.setLanguage("zh_CN");
+            user.setTimeZone("CTT");
+            user.setEnabled(true);
+            user.setLocked(false);
+            user.setLdap(true);
+            user.setAdmin(false);
+            user.setPassword("ldap users do not have password");
+            user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
+            user.setLoginName(loginName);
+            user.setEmail(email);
+            user.setRealName(realName);
+            user.setPhone(phone);
+
+            users.add(user);
         });
     }
 
@@ -154,7 +227,9 @@ public class LdapSyncUserTask {
         return andFilter;
     }
 
-    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport, Long organizationId, Integer sagaBatchSize) {
+    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport,
+                                        Long organizationId, Integer sagaBatchSize,
+                                        List<LdapErrorUserDO> errorUsers) {
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
@@ -172,7 +247,15 @@ public class LdapSyncUserTask {
                 if (existedEmails.contains(user.getEmail())) {
                     //邮箱重复，报错
                     ldapSyncReport.incrementError();
-                    logger.warn("duplicate email, email : {}", user.getEmail());
+                    LdapErrorUserDO errorUser =
+                            new LdapErrorUserDO()
+                                    .setUuid(user.getUuid())
+                                    .setLoginName(user.getLoginName())
+                                    .setEmail(user.getEmail())
+                                    .setRealName(user.getRealName())
+                                    .setPhone(user.getPhone())
+                                    .setCause(LdapErrorUserCause.EMAIL_ALREADY_EXISTED.value());
+                    errorUsers.add(errorUser);
                 } else {
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
@@ -200,8 +283,11 @@ public class LdapSyncUserTask {
         List<List<UserDO>> list = CollectionUtils.subList(insertUsers, sagaBatchSize);
         list.forEach(usrList -> {
             if (!usrList.isEmpty()) {
-                Long errorCount = ldapSyncReport.getError() + organizationUserService.batchCreateUsers(usrList);
-                ldapSyncReport.setError(errorCount);
+                List<LdapErrorUserDO> errorUserList = organizationUserService.batchCreateUsers(usrList);
+                errorUsers.addAll(errorUserList);
+                Long errorCount = Long.valueOf(errorUserList.size());
+                ldapSyncReport.reduceInsert(errorCount);
+                ldapSyncReport.incrementError(errorCount);
             }
         });
     }

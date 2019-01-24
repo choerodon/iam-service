@@ -28,7 +28,7 @@ public class LocaleUtils {
         } else {
             String lang = arr[0];
             String country = arr[1];
-            return new Locale(lang, country);
+            return new Locale.Builder().setLanguage(lang).setRegion(country).build();
         }
     }
 }

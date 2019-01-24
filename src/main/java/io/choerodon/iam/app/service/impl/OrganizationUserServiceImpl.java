@@ -22,8 +22,10 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.enums.LdapErrorUserCause;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
@@ -52,7 +54,6 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
-    private static final Logger logger = LoggerFactory.getLogger(OrganizationUserServiceImpl.class);
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
@@ -147,8 +148,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Transactional(rollbackFor = CommonException.class)
     @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
-    public Long batchCreateUsers(List<UserDO> insertUsers) {
-        Long errorCount = 0L;
+    public List<LdapErrorUserDO> batchCreateUsers(List<UserDO> insertUsers) {
+        List<LdapErrorUserDO> errorUsers = new ArrayList<>();
         if (devopsMessage) {
             List<UserEventPayload> payloads = new ArrayList<>();
             for (UserDO user : insertUsers ) {
@@ -164,8 +165,15 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                         payloads.add(payload);
                     }
                 } catch (Exception e) {
-                    errorCount++;
-                    logger.error("insert user failed, exception: {}", e);
+                    LdapErrorUserDO errorUser =
+                            new LdapErrorUserDO()
+                                    .setUuid(user.getUuid())
+                                    .setLoginName(user.getLoginName())
+                                    .setEmail(user.getEmail())
+                                    .setRealName(user.getRealName())
+                                    .setPhone(user.getPhone())
+                                    .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
+                    errorUsers.add(errorUser);
                 }
             }
             try {
@@ -180,12 +188,19 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 try {
                     userRepository.insertSelective(user);
                 } catch (Exception e) {
-                    errorCount++;
-                    logger.error("insert user failed, exception: {}", e);
+                    LdapErrorUserDO errorUser =
+                            new LdapErrorUserDO()
+                                    .setUuid(user.getUuid())
+                                    .setLoginName(user.getLoginName())
+                                    .setEmail(user.getEmail())
+                                    .setRealName(user.getRealName())
+                                    .setPhone(user.getPhone())
+                                    .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
+                    errorUsers.add(errorUser);
                 }
             }
         }
-        return errorCount;
+        return errorUsers;
     }
 
     private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {

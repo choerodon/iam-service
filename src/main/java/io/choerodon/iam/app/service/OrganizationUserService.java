@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -36,7 +37,7 @@ public interface OrganizationUserService {
      * ldap 批量同步用户，发送事件
      * @param insertUsers
      */
-    Long batchCreateUsers(List<UserDO> insertUsers);
+    List<LdapErrorUserDO> batchCreateUsers(List<UserDO> insertUsers);
 
     List<Long> listUserIds(Long organizationId);
 

@@ -40,6 +40,9 @@ public class UserDO extends AuditDomain {
     private String timeZone;
     private Date lastPasswordUpdatedAt;
     private Date lastLoginAt;
+
+    @Transient
+    private String uuid;
     /**
      * 连续登录错误次数超出规定次数后是否锁定账户
      */
@@ -240,5 +243,13 @@ public class UserDO extends AuditDomain {
 
     public void setInternationalTelCode(String internationalTelCode) {
         this.internationalTelCode = internationalTelCode;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

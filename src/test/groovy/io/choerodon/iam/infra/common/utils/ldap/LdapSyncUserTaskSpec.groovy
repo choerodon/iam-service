@@ -6,6 +6,8 @@ import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.ldap.core.LdapTemplate
@@ -28,9 +30,11 @@ class LdapSyncUserTaskSpec extends Specification {
     private OrganizationUserService organizationUserService = Mock(OrganizationUserService)
     private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapSyncUserTask ldapSyncUserTask
+    @Autowired
+    private LdapErrorUserMapper ldapErrorUserMapper
 
     def setup() {
-        ldapSyncUserTask = new LdapSyncUserTask(userRepository, organizationUserService, ldapHistoryRepository)
+        ldapSyncUserTask = new LdapSyncUserTask(userRepository, organizationUserService, ldapHistoryRepository, ldapErrorUserMapper)
     }
 
     def "SyncLDAPUser[null]"() {
@@ -62,17 +66,16 @@ class LdapSyncUserTaskSpec extends Specification {
         1 * userRepository.matchLoginName(_) >> new HashSet<String>()
         1 * userRepository.matchEmail(_) >> new HashSet<String>()
         1 * userRepository.select(_) >> new ArrayList<>()
-        1 * organizationUserService.batchCreateUsers(_) >> 0L
+        1 * organizationUserService.batchCreateUsers(_) >> new ArrayList<>()
     }
 
     def "SyncLDAPUser"() {
         given: "构造请求参数"
         LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
-        NamingEnumeration enumeration = Mock(NamingEnumeration)
-        SearchResult searchResult = Mock(SearchResult)
         Attributes attributes = Mock(Attributes)
         Attribute loginNameAttribute = Mock(Attribute)
         Attribute emailAttribute = Mock(Attribute)
+        Attribute uuidAttribute = Mock(Attribute)
         Attribute employeeTypeAttribute = Mock(Attribute)
         LdapTemplate ldapTemplate = Mock(LdapTemplate)
         LdapDO ldap = new LdapDO()
@@ -83,6 +86,7 @@ class LdapSyncUserTaskSpec extends Specification {
         ldap.setEmailField("email")
         ldap.setOrganizationId(1L)
         ldap.setSagaBatchSize(500)
+        ldap.setUuidField("uid")
         LdapSyncUserTask.FinishFallback fallback = LdapSyncUserTask.FinishFallbackImpl.newInstance(ldapSyncUserTask, ldapHistoryRepository)
         Set<String> matchLoginName = new HashSet<>()
         matchLoginName.add("dengyouquan")
@@ -109,15 +113,16 @@ class LdapSyncUserTaskSpec extends Specification {
                 if (str.equals("employeeType")) return employeeTypeAttribute
                 if (str.equals(ldap.getLoginNameField())) return loginNameAttribute
                 if (str.equals(ldap.getEmailField())) return emailAttribute
-
+                if (str.equals(ldap.getUuidField())) return uuidAttribute
                 return null
         }
+        uuidAttribute.get() >> "123123"
         loginNameAttribute.get() >> { ldap.getLoginNameField() }
         emailAttribute.get() >> { ldap.getEmailField() }
         employeeTypeAttribute.get() >> { "test" }
         1 * userRepository.matchLoginName(_) >> { matchLoginName }
         1 * userRepository.matchEmail(_) >> { matchEmail }
         1 * userRepository.select(_) >> new ArrayList<>()
-        1 * organizationUserService.batchCreateUsers(_) >> 0L
+        1 * organizationUserService.batchCreateUsers(_) >> new ArrayList<>()
     }
 }
