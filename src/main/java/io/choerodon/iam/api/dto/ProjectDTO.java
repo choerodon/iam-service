@@ -17,12 +17,15 @@ public class ProjectDTO {
     private static final String CODE_REGULAR_EXPRESSION =
             "^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$";
 
+    public static final String PROJECT_NAME_REG = "^[-—\\.\\w\\s\\u4e00-\\u9fa5]{1,32}$";
+
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 
     @ApiModelProperty(value = "项目名/必填")
     @NotEmpty(message = "error.project.name.empty")
     @Size(min = 1, max = 32, message = "error.project.code.size")
+    @Pattern(regexp = PROJECT_NAME_REG, message = "error.project.name.regex")
     private String name;
 
     @ApiParam(name = "organization_id", value = "组织id")
