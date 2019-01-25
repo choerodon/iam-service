@@ -143,8 +143,8 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
-        //todo 此处0.13.1默认一次同步总数为：12000
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, 12000);
+        //todo 此处暂时默认每批大小与sagaBatchSize一致
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, ldap.getSagaBatchSize());
     }
 
     @Override
