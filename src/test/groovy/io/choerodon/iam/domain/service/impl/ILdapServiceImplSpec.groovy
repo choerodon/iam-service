@@ -30,6 +30,7 @@ class ILdapServiceImplSpec extends Specification {
         ldapDO.setLoginNameField("employeeNumber")
         ldapDO.setEmailField("mail")
         ldapDO.setPhoneField("mobile")
+        ldapDO.setConnectionTimeout(10)
 
         when: "调用方法[异常-连接失败]"
         LdapConnectionDTO ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(ILdapServiceImpl.LDAP_CONNECTION_DTO)

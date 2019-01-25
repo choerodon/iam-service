@@ -10,6 +10,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -36,7 +37,7 @@ public class LdapController {
     @ApiOperation(value = "创建Ldap")
     @PostMapping
     public ResponseEntity<LdapDTO> create(@PathVariable("organization_id") Long organizationId,
-                                          @RequestBody LdapDTO ldapDTO) {
+                                          @RequestBody @Validated LdapDTO ldapDTO) {
         return new ResponseEntity<>(ldapService.create(organizationId, ldapDTO), HttpStatus.OK);
     }
 
@@ -52,7 +53,7 @@ public class LdapController {
     @ApiOperation(value = "修改Ldap")
     @PostMapping(value = "/{id}")
     public ResponseEntity<LdapDTO> update(@PathVariable("organization_id") Long organizationId,
-                                          @PathVariable("id") Long id, @RequestBody LdapDTO ldapDTO) {
+                                          @PathVariable("id") Long id, @RequestBody @Validated LdapDTO ldapDTO) {
         return new ResponseEntity<>(ldapService.update(organizationId, id, ldapDTO), HttpStatus.OK);
     }
 

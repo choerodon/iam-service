@@ -15,4 +15,7 @@ public interface AccessTokenMapper extends BaseMapper<AccessTokenDO> {
 
     List<UserAccessTokenE> selectTokens(@Param("userName") String userName,
                                         @Param("clientId") String clientId);
+
+
+    List<AccessTokenDO> selectTokenList(@Param("tokenIds") List<String> tokenIds);
 }

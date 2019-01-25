@@ -63,7 +63,7 @@ class UserControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.user.id.not.equals")
-//
+
 //        when: "调用方法"
 //        entity = restTemplate.getForEntity(BASE_PATH + "/{id}/info", ExceptionResponse, 0L)
 //
