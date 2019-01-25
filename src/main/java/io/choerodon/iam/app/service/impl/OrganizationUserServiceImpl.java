@@ -1,6 +1,20 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -31,19 +45,6 @@ import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
 import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.*;
 
 /**
  * @author superlee
@@ -174,6 +175,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds,ResourceLevel.ORGANIZATION.value(),insertUsers.get(0).getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
+            }finally {
+                payloads.clear();
             }
         } else {
             for (UserDO user : insertUsers ) {
