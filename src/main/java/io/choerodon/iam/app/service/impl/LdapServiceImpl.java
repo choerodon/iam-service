@@ -1,5 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
@@ -16,15 +24,7 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
-
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import java.util.Date;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * @author wuguokai
@@ -143,7 +143,8 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
+        //todo 此处0.13.1默认一次同步总数为：500
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, 500);
     }
 
     @Override

@@ -43,6 +43,7 @@ class LdapSyncUserQuartzTaskSpec extends Specification {
         given: "构造请求参数"
         Map<String, Object> map = new HashMap<>()
         map.put("organizationCode", "error")
+        map.put("countLimit", 500)
         LdapDTO ldapDTO = new LdapDTO()
         ldapDTO.setId(1L)
         ldapDTO.setObjectClass("person")

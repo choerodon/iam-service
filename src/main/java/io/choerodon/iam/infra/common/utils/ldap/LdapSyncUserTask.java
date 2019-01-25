@@ -1,5 +1,7 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.naming.NamingException;
@@ -11,7 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.filter.*;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.HardcodedFilter;
 import org.springframework.ldap.query.SearchScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,8 +29,6 @@ import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
-
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 
 /**
@@ -56,7 +58,7 @@ public class LdapSyncUserTask {
     }
 
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
+    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback,Integer countLimit) {
         logger.info("@@@ start async user");
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
@@ -68,7 +70,7 @@ public class LdapSyncUserTask {
         ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
 
-        List<UserDO> users = getUsersFromLdapServer(ldapTemplate, ldap, organizationId, ldapSyncReport);
+        List<UserDO> users = getUsersFromLdapServer(ldapTemplate, ldap, organizationId, ldapSyncReport,countLimit);
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         //写入
         if (!users.isEmpty()) {
@@ -79,7 +81,7 @@ public class LdapSyncUserTask {
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    private List<UserDO> getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, Long organizationId, LdapSyncReport ldapSyncReport) {
+    private List<UserDO> getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, Long organizationId, LdapSyncReport ldapSyncReport,Integer countLimit) {
         AndFilter andFilter = getAndFilterByObjectClass(ldap);
         HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
         andFilter.and(hardcodedFilter);
@@ -87,6 +89,7 @@ public class LdapSyncUserTask {
                 ldapTemplate.search(
                         query()
                                 .searchScope(SearchScope.SUBTREE)
+                                .countLimit(countLimit)
                                 .filter(andFilter),
                         new AttributesMapper() {
                             @Override
