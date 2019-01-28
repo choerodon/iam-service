@@ -56,7 +56,7 @@ class LdapSyncUserTaskSpec extends Specification {
         attributes.get(_) >> attribute
         attribute.get() >> "aaa"
         when: "调用方法"
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback)
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback,500)
 
         then: "校验结果"
         1 * ldapTemplate.search(_, _,) >> attributesList
@@ -102,7 +102,7 @@ class LdapSyncUserTaskSpec extends Specification {
 
 
         when: "调用方法"
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback)
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, fallback,500)
 
         then: "校验结果"
         1 * ldapTemplate.search(_, _) >> attributesList

@@ -1,5 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -157,7 +165,8 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
+        //todo 此处暂时默认每批大小与sagaBatchSize一致
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, ldap.getSagaBatchSize());
     }
 
     @Override
