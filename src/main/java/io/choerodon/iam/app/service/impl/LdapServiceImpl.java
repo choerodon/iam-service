@@ -32,15 +32,9 @@ import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.context.MessageSource;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * @author wuguokai

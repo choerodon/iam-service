@@ -60,6 +60,10 @@ public class LdapSyncReport {
         this.count++;
     }
 
+    public void incrementCount(Long count) {
+        this.count = this.count + count;
+    }
+
     public Long getOrganizationId() {
         return organizationId;
     }
