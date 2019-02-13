@@ -160,7 +160,7 @@ public class LdapServiceImpl implements LdapService {
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
         //todo 此处暂时默认每批大小与sagaBatchSize一致
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, ldap.getSagaBatchSize());
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
     }
 
     @Override
