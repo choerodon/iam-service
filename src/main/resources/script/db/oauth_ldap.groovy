@@ -121,4 +121,13 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         addNotNullConstraint(tableName:'OAUTH_LDAP', columnName: 'ACCOUNT', columnDataType:'VARCHAR(128)', defaultNullValue: 'test')
         addNotNullConstraint(tableName:'OAUTH_LDAP', columnName: 'PASSWORD', columnDataType:'VARCHAR(128)', defaultNullValue: 'test')
     }
+
+    changeSet(author: 'superleader8@gmail.com', id: '2019-01-15-oauth-ldap-add-column') {
+        addColumn(tableName: 'OAUTH_LDAP') {
+            column(name: 'UUID_FIELD', type: "VARCHAR(64)", remarks: 'ldap中唯一标识对象的字段', afterColumn: 'CONNECTION_TIMEOUT', defaultValue: 'entryUUID') {
+                constraints(nullable: false)
+            }
+        }
+    }
+
 }

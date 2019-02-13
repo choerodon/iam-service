@@ -84,6 +84,10 @@ public class LdapDTO {
     @NotNull(message = "error.ldap.connectionTimeout.null")
     private Integer connectionTimeout;
 
+    @ApiModelProperty(value = "ldap服务端对象的唯一标识，用于记录同步用户失败信息")
+    @NotEmpty(message = "error.ldap.uuidField.empty")
+    private String uuidField;
+
     public Long getId() {
         return id;
     }
@@ -242,5 +246,13 @@ public class LdapDTO {
 
     public void setConnectionTimeout(Integer connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    public String getUuidField() {
+        return uuidField;
+    }
+
+    public void setUuidField(String uuidField) {
+        this.uuidField = uuidField;
     }
 }

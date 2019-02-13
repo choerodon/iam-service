@@ -48,12 +48,20 @@ public class LdapSyncReport {
         this.error++;
     }
 
+    public void incrementError(Long count) {
+        this.error = this.error + count;
+    }
+
     public void incrementUpdate() {
         this.update++;
     }
 
     public void incrementCount() {
         this.count++;
+    }
+
+    public void incrementCount(Long count) {
+        this.count = this.count + count;
     }
 
     public Long getOrganizationId() {
@@ -116,5 +124,9 @@ public class LdapSyncReport {
                 ", count=" + count +
                 ", ldapId=" + ldapId +
                 '}';
+    }
+
+    public void reduceInsert(Long count) {
+        this.insert = this.insert - count;
     }
 }

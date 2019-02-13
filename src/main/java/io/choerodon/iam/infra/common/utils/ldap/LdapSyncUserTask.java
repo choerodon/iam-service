@@ -7,6 +7,9 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
+import io.choerodon.iam.infra.enums.LdapErrorUserCause;
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -20,7 +23,6 @@ import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.HardcodedFilter;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.iam.app.service.OrganizationUserService;
@@ -42,24 +44,26 @@ public class LdapSyncUserTask {
 
     private static final String OBJECT_CLASS = "objectclass";
 
-    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
-
     private UserRepository userRepository;
 
     private OrganizationUserService organizationUserService;
 
     private LdapHistoryRepository ldapHistoryRepository;
 
+    private LdapErrorUserMapper ldapErrorUserMapper;
+
     public LdapSyncUserTask(UserRepository userRepository,
                             OrganizationUserService organizationUserService,
-                            LdapHistoryRepository ldapHistoryRepository) {
+                            LdapHistoryRepository ldapHistoryRepository,
+                            LdapErrorUserMapper ldapErrorUserMapper) {
         this.userRepository = userRepository;
         this.organizationUserService = organizationUserService;
         this.ldapHistoryRepository = ldapHistoryRepository;
+        this.ldapErrorUserMapper = ldapErrorUserMapper;
     }
 
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback, Integer batchSize) {
+    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
         logger.info("@@@ start async user");
         Long organizationId = ldap.getOrganizationId();
         LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
@@ -71,14 +75,17 @@ public class LdapSyncUserTask {
         ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
 
-        getUsersFromLdapServer(ldapTemplate, ldap, organizationId, ldapSyncReport, batchSize);
+        Long ldapHistoryId = ldapHistory.getId();
+        getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistoryId);
         logger.info("###total user count : {}", ldapSyncReport.getCount());
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
+
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    private void getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, Long organizationId, LdapSyncReport ldapSyncReport, Integer batchSize) {
+    private void getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport,
+                                        Long ldapHistoryId) {
         //搜索控件
         final SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -86,89 +93,155 @@ public class LdapSyncUserTask {
         AndFilter andFilter = getAndFilterByObjectClass(ldap);
         HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
         andFilter.and(hardcodedFilter);
+
+        int batchSize = ldap.getSagaBatchSize();
         //分页PagedResultsDirContextProcessor
         final PagedResultsDirContextProcessor processor =
                 new PagedResultsDirContextProcessor(batchSize);
-
         SingleContextSource.doWithSingleContext(
                 ldapTemplate.getContextSource(), new LdapOperationsCallback<List<UserDO>>() {
                     @Override
                     public List<UserDO> doWithLdapOperations(LdapOperations operations) {
-                        List<UserDO> result = new LinkedList<>();
-                        Integer pageNum = 1;
+                        Integer page = 1;
+                        AttributesMapper attributesMapper = new AttributesMapper() {
+                            @Override
+                            public Object mapFromAttributes(Attributes attributes) {
+                                return attributes;
+                            }
+                        };
+
                         do {
-                            AttributesMapper attributesMapper = new AttributesMapper() {
-                                @Override
-                                public Object mapFromAttributes(Attributes attributes) throws NamingException {
-                                    return attributes;
-                                }
-                            };
-                            List<Attributes> onePage = operations.search(
-                                    "",
-                                    andFilter.toString(),
-                                    searchControls,
-                                    attributesMapper,
-                                    processor);
+                            List<Attributes> attributesList =
+                                    operations.search("", andFilter.toString(), searchControls,
+                                            attributesMapper, processor);
                             //将当前分页的数据做插入处理
                             List<UserDO> users = new ArrayList<>();
-                            if (onePage.isEmpty()) {
-                                logger.warn("can not find any attributes while filter is {},page is {}", andFilter, pageNum);
+                            List<LdapErrorUserDO> errorUsers = new ArrayList<>();
+                            if (attributesList.isEmpty()) {
+                                logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
                             } else {
-                                processUserFromAttributes(ldap, organizationId, onePage, users, ldapSyncReport);
+                                processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
                             //当前页做数据写入
                             if (!users.isEmpty()) {
-                                compareWithDbAndInsert(users, ldapSyncReport, organizationId, ldap.getSagaBatchSize());
+                                compareWithDbAndInsert(users, ldapSyncReport, errorUsers, ldapHistoryId);
                             }
-                            result.addAll(users);
-                            logger.info("batch {} synchronizes {} users, and a total of {} users have been synchronized", pageNum++, users.size(), result.size());
-                            onePage.clear();
+                            int legalUserSize = users.size();
+                            attributesList.clear();
                             users.clear();
+                            errorUsers.clear();
+                            ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
                         } while (processor.hasMore());
-                        ldapSyncReport.setCount(Long.valueOf(result.size()));
-                        return result;
+                        return null;
                     }
                 });
     }
 
-    private void processUserFromAttributes(LdapDO ldap, Long organizationId, List<Attributes> attributesList, List<UserDO> users, LdapSyncReport ldapSyncReport) {
+    private void processUserFromAttributes(LdapDO ldap, List<Attributes> attributesList,
+                                           List<UserDO> users, LdapSyncReport ldapSyncReport,
+                                           List<LdapErrorUserDO> errorUsers) {
+        Long organizationId = ldap.getOrganizationId();
+        String loginNameFiled = ldap.getLoginNameField();
+        String emailFiled = ldap.getEmailField();
+        String uuidField = ldap.getUuidField();
         attributesList.forEach(attributes -> {
-            String loginNameFiled = ldap.getLoginNameField();
-            String emailFiled = ldap.getEmailField();
+            Attribute uuidAttribute = attributes.get(uuidField);
             Attribute loginNameAttribute = attributes.get(loginNameFiled);
             Attribute emailAttribute = attributes.get(emailFiled);
-            Attribute realNameAttribute = attributes.get(ldap.getRealNameField());
-            Attribute phoneAttribute = attributes.get(ldap.getPhoneField());
-            if (loginNameAttribute == null || emailAttribute == null) {
-                ldapSyncReport.incrementError();
-                logger.warn("the filed [{}, {}] of attributes is null, so skip the attributes {}", loginNameFiled, emailFiled, attributes);
-                return;
-            } else {
-                UserDO user = new UserDO();
-                user.setOrganizationId(organizationId);
-                try {
-                    user.setLoginName(loginNameAttribute.get().toString());
-                    user.setEmail(emailAttribute.get().toString());
-                    if (ldap.getRealNameField() != null && realNameAttribute != null) {
-                        user.setRealName(realNameAttribute.get().toString());
-                    }
-                    if (ldap.getPhoneField() != null && phoneAttribute != null) {
-                        user.setPhone(phoneAttribute.get().toString());
-                    }
-                    user.setLanguage("zh_CN");
-                    user.setTimeZone("CTT");
-                    user.setEnabled(true);
-                    user.setLocked(false);
-                    user.setLdap(true);
-                    user.setAdmin(false);
-                    user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
-                } catch (NamingException e) {
-                    ldapSyncReport.incrementError();
-                    logger.error("Attribute get() exception, skip the attributes {}, exception: {}", attributes, e);
-                    return;
-                }
-                users.add(user);
+            Attribute realNameAttribute = null;
+            if (ldap.getRealNameField() != null) {
+                realNameAttribute = attributes.get(ldap.getRealNameField());
             }
+            Attribute phoneAttribute = null;
+            if (ldap.getPhoneField() != null) {
+                phoneAttribute = attributes.get(ldap.getPhoneField());
+            }
+
+
+            String uuid;
+            String loginName;
+            String email;
+            String realName = null;
+            String phone = null;
+            if (uuidAttribute == null) {
+                ldapSyncReport.incrementError();
+                logger.error("the uuid {} of attributes {} can not be null, skip the user", ldap.getUuidField(), attributes);
+                return;
+            }
+            try {
+                uuid = uuidAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                logger.error("attributes {} get uuid attribute exception {}, skip the user", attributes, e);
+                return;
+            }
+
+            if (loginNameAttribute == null) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.LOGIN_NAME_FIELD_NULL.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+            try {
+                loginName = loginNameAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.LOGIN_NAME_GET_EXCEPTION.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+
+            if (emailAttribute == null) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.EMAIL_FIELD_NULL.value());
+                errorUsers.add(errorUser);
+                return;
+            }
+            try {
+                email = emailAttribute.get().toString();
+            } catch (NamingException e) {
+                ldapSyncReport.incrementError();
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO().setUuid(uuid)
+                                .setCause(LdapErrorUserCause.EMAIL_GET_EXCEPTION.value()).setLoginName(loginName);
+                errorUsers.add(errorUser);
+                return;
+            }
+
+            try {
+                if (realNameAttribute != null) {
+                    realName = realNameAttribute.get().toString();
+                }
+                if (phoneAttribute != null) {
+                    phone = phoneAttribute.get().toString();
+                }
+            } catch (NamingException e) {
+                logger.warn("realName or phone field attribute get exception {}", e);
+            }
+
+            UserDO user = new UserDO();
+            user.setUuid(uuid);
+            user.setOrganizationId(organizationId);
+            user.setLanguage("zh_CN");
+            user.setTimeZone("CTT");
+            user.setEnabled(true);
+            user.setLocked(false);
+            user.setLdap(true);
+            user.setAdmin(false);
+            user.setPassword("ldap users do not have password");
+            user.setLastPasswordUpdatedAt(new Date(System.currentTimeMillis()));
+            user.setLoginName(loginName);
+            user.setEmail(email);
+            user.setRealName(realName);
+            user.setPhone(phone);
+
+            users.add(user);
         });
     }
 
@@ -182,7 +255,8 @@ public class LdapSyncUserTask {
         return andFilter;
     }
 
-    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport, Long organizationId, Integer sagaBatchSize) {
+    private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport,
+                                        List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
@@ -196,45 +270,60 @@ public class LdapSyncUserTask {
 
         users.forEach(user -> {
             String loginName = user.getLoginName();
-            if (!existedNames.contains(user.getLoginName())) {
+            if (!existedNames.contains(loginName)) {
                 if (existedEmails.contains(user.getEmail())) {
                     //邮箱重复，报错
                     ldapSyncReport.incrementError();
-                    logger.warn("duplicate email, email : {}", user.getEmail());
+                    LdapErrorUserDO errorUser =
+                            new LdapErrorUserDO()
+                                    .setUuid(user.getUuid())
+                                    .setLoginName(loginName)
+                                    .setEmail(user.getEmail())
+                                    .setRealName(user.getRealName())
+                                    .setPhone(user.getPhone())
+                                    .setCause(LdapErrorUserCause.EMAIL_ALREADY_EXISTED.value());
+                    errorUsers.add(errorUser);
                 } else {
-                    //加密为耗时操作，只有在插入的时候才加密，或者可以考虑取消掉
-                    user.setPassword("ldap users do not have password");
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
             }
-//            else {
-//                UserE userE = userRepository.selectByLoginName(loginName);
-//                //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
-//                if (userE.getLastUpdatedBy().equals(0L) && !userE.getEnabled()) {
-//                    organizationUserService.enableUser(organizationId, userE.getId());
-//                    ldapSyncReport.incrementUpdate();
-//                }
-//            }
         });
-        UserDO example = new UserDO();
-        example.setOrganizationId(organizationId);
-        example.setLdap(true);
-        List<UserDO> userList = userRepository.select(example);
-        //把已经存在的，不满足自定义过滤条件的用户禁用掉
-//        userList.forEach(user -> {
-//            if (!nameSet.contains(user.getLoginName()) && user.getEnabled()) {
-//                organizationUserService.disableUser(organizationId, user.getId());
-//                ldapSyncReport.incrementUpdate();
-//            }
-//        });
-        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, sagaBatchSize);
-        list.forEach(usrList -> {
-            if (!usrList.isEmpty()) {
-                Long errorCount = ldapSyncReport.getError() + organizationUserService.batchCreateUsers(usrList);
-                ldapSyncReport.setError(errorCount);
-            }
-        });
+        insertUser(ldapSyncReport, errorUsers, insertUsers);
+        insertErrorUser(errorUsers, ldapHistoryId);
+
+        cleanAfterDataPersistence(insertUsers, nameSet, emailSet, subNameSet, subEmailSet, existedNames, existedEmails);
+    }
+
+    private void insertErrorUser(List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
+        if (!errorUsers.isEmpty()) {
+            errorUsers.forEach(errorUser -> {
+                errorUser.setLdapHistoryId(ldapHistoryId);
+                ldapErrorUserMapper.insert(errorUser);
+            });
+        }
+    }
+
+    private void insertUser(LdapSyncReport ldapSyncReport, List<LdapErrorUserDO> errorUsers, List<UserDO> insertUsers) {
+        if (!insertUsers.isEmpty()) {
+            List<LdapErrorUserDO> errorUserList = organizationUserService.batchCreateUsers(insertUsers);
+            errorUsers.addAll(errorUserList);
+            Long errorCount = Long.valueOf(errorUserList.size());
+            ldapSyncReport.reduceInsert(errorCount);
+            ldapSyncReport.incrementError(errorCount);
+        }
+    }
+
+    private void cleanAfterDataPersistence(List<UserDO> insertUsers, Set<String> nameSet, Set<String> emailSet,
+                                           List<Set<String>> subNameSet, List<Set<String>> subEmailSet,
+                                           Set<String> existedNames, Set<String> existedEmails) {
+        insertUsers.clear();
+        nameSet.clear();
+        emailSet.clear();
+        subNameSet.clear();
+        subEmailSet.clear();
+        existedNames.clear();
+        existedEmails.clear();
     }
 
     public interface FinishFallback {

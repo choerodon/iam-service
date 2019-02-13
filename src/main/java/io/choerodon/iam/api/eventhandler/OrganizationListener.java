@@ -111,6 +111,7 @@ public class OrganizationListener {
             ldapDTO.setConnectionTimeout(10);
             ldapDTO.setAccount("test");
             ldapDTO.setPassword("test");
+            ldapDTO.setUuidField("entryUUID");
             ldapService.create(orgId, ldapDTO);
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization, organizationId: {}, exception: {}", orgId, e);

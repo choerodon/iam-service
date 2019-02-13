@@ -9,11 +9,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.LdapAccountDTO;
-import io.choerodon.iam.api.dto.LdapConnectionDTO;
-import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.LdapHistoryDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.domain.oauth.entity.LdapE;
@@ -22,9 +21,20 @@ import io.choerodon.iam.domain.repository.LdapRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
+import io.choerodon.iam.infra.common.utils.LocaleUtils;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
+import io.choerodon.iam.infra.factory.MessageSourceFactory;
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.context.MessageSource;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author wuguokai
@@ -33,23 +43,27 @@ import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 public class LdapServiceImpl implements LdapService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String LDAP_NOT_EXIST_EXCEPTION = "error.ldap.not.exist";
+    private static final String LDAP_ERROR_USER_MESSAGE_DIR = "classpath:messages/messages";
     private LdapRepository ldapRepository;
     private ILdapService iLdapService;
     private OrganizationRepository organizationRepository;
     private LdapSyncUserTask ldapSyncUserTask;
     private LdapSyncUserTask.FinishFallback finishFallback;
     private LdapHistoryRepository ldapHistoryRepository;
+    private LdapErrorUserMapper ldapErrorUserMapper;
 
     public LdapServiceImpl(LdapRepository ldapRepository, OrganizationRepository organizationRepository,
                            LdapSyncUserTask ldapSyncUserTask, ILdapService iLdapService,
                            LdapSyncUserTask.FinishFallback finishFallback,
-                           LdapHistoryRepository ldapHistoryRepository) {
+                           LdapHistoryRepository ldapHistoryRepository,
+                           LdapErrorUserMapper ldapErrorUserMapper) {
         this.ldapRepository = ldapRepository;
         this.organizationRepository = organizationRepository;
         this.ldapSyncUserTask = ldapSyncUserTask;
         this.iLdapService = iLdapService;
         this.finishFallback = finishFallback;
         this.ldapHistoryRepository = ldapHistoryRepository;
+        this.ldapErrorUserMapper = ldapErrorUserMapper;
     }
 
     @Override
@@ -146,7 +160,7 @@ public class LdapServiceImpl implements LdapService {
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
         //todo 此处暂时默认每批大小与sagaBatchSize一致
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback, ldap.getSagaBatchSize());
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
     }
 
     @Override
@@ -163,8 +177,8 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public LdapHistoryDTO queryLatestHistory(Long id) {
-        return ConvertHelper.convert(ldapHistoryRepository.queryLatestHistory(id), LdapHistoryDTO.class);
+    public LdapHistoryDTO queryLatestHistory(Long ldapId) {
+        return ConvertHelper.convert(ldapHistoryRepository.queryLatestHistory(ldapId), LdapHistoryDTO.class);
     }
 
     @Override
@@ -198,5 +212,26 @@ public class LdapServiceImpl implements LdapService {
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.queryLatestHistory(id);
         ldapHistoryDO.setSyncEndTime(new Date(System.currentTimeMillis()));
         return ConvertHelper.convert(ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO), LdapHistoryDTO.class);
+    }
+
+    @Override
+    public Page<LdapHistoryDTO> pagingQueryHistories(PageRequest pageRequest, Long ldapId) {
+        return ldapHistoryRepository.pagingQuery(pageRequest, ldapId);
+    }
+
+    @Override
+    public Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long ldapHistoryId) {
+        LdapErrorUserDO example = new LdapErrorUserDO();
+        example.setLdapHistoryId(ldapHistoryId);
+        Page<LdapErrorUserDTO> dtos = ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, ()-> ldapErrorUserMapper.select(example)), LdapErrorUserDTO.class);
+        //cause国际化处理
+        List<LdapErrorUserDTO> errorUsers = dtos.getContent();
+        MessageSource messageSource = MessageSourceFactory.create(LDAP_ERROR_USER_MESSAGE_DIR);
+        Locale locale = LocaleUtils.locale();
+        errorUsers.forEach(errorUser -> {
+            String cause = errorUser.getCause();
+            errorUser.setCause(messageSource.getMessage(cause, null, locale));
+        });
+        return dtos;
     }
 }

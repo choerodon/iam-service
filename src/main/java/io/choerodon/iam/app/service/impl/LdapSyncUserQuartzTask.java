@@ -95,7 +95,7 @@ public class LdapSyncUserQuartzTask {
             ldapHistoryDO.setUpdateUserCount(ldapSyncReport.getUpdate());
             ldapHistoryDO.setErrorUserCount(ldapSyncReport.getError());
             return ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO);
-        }, countLimit);
+        });
         try {
             latch.await();
         } catch (InterruptedException e) {
