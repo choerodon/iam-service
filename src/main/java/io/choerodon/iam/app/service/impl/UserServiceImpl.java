@@ -361,7 +361,9 @@ public class UserServiceImpl implements UserService {
     public void check(UserDTO user) {
         Boolean checkLoginName = !StringUtils.isEmpty(user.getLoginName());
         Boolean checkEmail = !StringUtils.isEmpty(user.getEmail());
-        if (!checkEmail && !checkLoginName) {
+        Boolean checkPhone = !StringUtils.isEmpty(user.getPhone());
+
+        if (!checkEmail && !checkLoginName && !checkPhone) {
             throw new CommonException("error.user.validation.fields.empty");
         }
         if (checkLoginName) {
@@ -369,6 +371,34 @@ public class UserServiceImpl implements UserService {
         }
         if (checkEmail) {
             checkEmail(user);
+        }
+        if (checkPhone) {
+            checkPhone(user);
+        }
+    }
+
+    /**
+     * 校验在启用用户中手机号唯一
+     * @param user 用户信息
+     */
+    private void checkPhone(UserDTO user) {
+        Boolean createCheck = StringUtils.isEmpty(user.getId());
+        String phone = user.getPhone();
+        UserDO userDO = new UserDO();
+        userDO.setPhone(phone);
+        userDO.setEnabled(true);
+        if (createCheck) {
+            Boolean existed = userRepository.selectOne(userDO) != null;
+            if (existed) {
+                throw new CommonException("error.user.phone.exist");
+            }
+        } else {
+            Long id = user.getId();
+            UserDO userDO1 = userRepository.selectOne(userDO);
+            Boolean existed = userDO1 != null && !id.equals(userDO1.getId());
+            if (existed) {
+                throw new CommonException("error.user.phone.exist");
+            }
         }
     }
 
