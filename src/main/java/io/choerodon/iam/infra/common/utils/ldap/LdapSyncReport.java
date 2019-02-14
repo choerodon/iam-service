@@ -56,6 +56,10 @@ public class LdapSyncReport {
         this.update++;
     }
 
+    public void incrementUpdate(Long update) {
+        this.update = this.update + update;
+    }
+
     public void incrementCount() {
         this.count++;
     }

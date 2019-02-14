@@ -484,6 +484,29 @@
         </foreach>
     </select>
 
+    <select id="getIdsByMatchLoginName" resultType="java.lang.Long">
+        SELECT id
+        FROM iam_user
+        WHERE login_name
+        IN
+        <foreach item="item" index="index" collection="nameSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="disableListByIds">
+        UPDATE iam_user
+        SET is_enabled = 0
+        WHERE id
+        IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
     <select id="matchEmail" resultType="java.lang.String">
         SELECT email
         FROM iam_user
@@ -574,7 +597,8 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_organization fo ON imr.source_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND fo.is_enabled = 1
+        WHERE imr.member_type = 'user' AND imr.source_type = 'organization' AND imr.member_id = #{userId} AND
+        fo.is_enabled = 1
         <if test="params != null">
             AND (
             fo.name LIKE concat(concat('%', #{params}), '%') OR
@@ -596,7 +620,8 @@
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_project fp ON imr.source_id = fp.id
         INNER JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId} AND fp.is_enabled = 1
+        WHERE imr.member_type = 'user' AND imr.source_type = 'project' AND imr.member_id = #{userId} AND fp.is_enabled =
+        1
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR
@@ -614,7 +639,8 @@
         'Choerodon' AS code,
         1 AS is_enabled,
         imr.source_type,
-        LISTAGG(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') within group(ORDER BY imr.source_type) AS roles,
+        LISTAGG(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') within group(ORDER BY imr.source_type) AS
+        roles,
         'site' as image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -639,7 +665,8 @@
         FROM iam_member_role imr
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_organization fo ON imr.source_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization' AND fo.is_enabled = 1
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'organization' AND
+        fo.is_enabled = 1
         <if test="params != null">
             AND (
             fo.name LIKE concat(concat('%', #{params}), '%') OR
@@ -661,7 +688,8 @@
         INNER JOIN iam_role ir ON imr.role_id = ir.id
         INNER JOIN fd_project fp ON imr.source_id = fp.id
         INNER JOIN fd_organization fo ON fp.organization_id = fo.id
-        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.is_enabled = 1
+        WHERE imr.member_type = 'user' AND imr.member_id = #{userId} AND imr.source_type = 'project' AND fp.is_enabled =
+        1
         <if test="params != null">
             AND (
             fp.name LIKE concat(concat('%', #{params}), '%') OR

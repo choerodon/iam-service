@@ -1,5 +1,10 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -16,10 +21,6 @@ import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UserMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * @author superlee
@@ -261,6 +262,17 @@ public class UserRepositoryImpl implements UserRepository {
         return mapper.matchLoginName(nameSet);
     }
 
+
+    @Override
+    public Set<Long> getIdsByMatchLoginName(Set<String> nameSet) {
+        return mapper.getIdsByMatchLoginName(nameSet);
+    }
+
+    @Override
+    public void disableByIdList(Set<Long> ids) {
+        mapper.disableListByIds(ids);
+    }
+
     @Override
     public Set<String> matchEmail(Set<String> emailSet) {
         return mapper.matchEmail(emailSet);
@@ -317,7 +329,7 @@ public class UserRepositoryImpl implements UserRepository {
             for (int j = 0; j < roles.length; j++) {
                 String[] nameAndEnabled = roles[j].split(",enabled=");
                 boolean roleEnabled = true;
-                if (nameAndEnabled[1].equals("0")){
+                if (nameAndEnabled[1].equals("0")) {
                     roleEnabled = false;
                 }
                 list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], roleEnabled));
