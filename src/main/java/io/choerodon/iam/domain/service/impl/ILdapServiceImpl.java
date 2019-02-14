@@ -258,6 +258,7 @@ public class ILdapServiceImpl implements ILdapService {
         attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());
         attributeMap.put(LdapDTO.GET_EMAIL_FIELD, ldap.getEmailField());
         attributeMap.put(LdapDTO.GET_PHONE_FIELD, ldap.getPhoneField());
+        attributeMap.put(LdapDTO.GET_UUID_FIELD, ldap.getUuidField());
         return attributeMap;
     }
 

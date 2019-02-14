@@ -21,6 +21,16 @@ public class LdapConnectionDTO {
     private String phoneField;
     @ApiModelProperty(value = "邮箱属性是否成功")
     private String emailField;
+    @ApiModelProperty(value = "uuid属性校验是否成功")
+    private String uuidField;
+
+    public String getUuidField() {
+        return uuidField;
+    }
+
+    public void setUuidField(String uuidField) {
+        this.uuidField = uuidField;
+    }
 
     public Boolean getCanConnectServer() {
         return canConnectServer;
@@ -90,6 +100,9 @@ public class LdapConnectionDTO {
         }
         if (LdapDTO.GET_PHONE_FIELD.equals(key)) {
             this.setPhoneField(value);
+        }
+        if (LdapDTO.GET_UUID_FIELD.equals(key)) {
+            this.setUuidField(value);
         }
     }
 }

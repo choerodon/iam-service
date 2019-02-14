@@ -14,6 +14,7 @@ public class LdapDTO {
     public static final String GET_REAL_NAME_FIELD = "getRealNameField";
     public static final String GET_EMAIL_FIELD = "getEmailField";
     public static final String GET_PHONE_FIELD = "getPhoneField";
+    public static final String GET_UUID_FIELD = "getUuidField";
 
     @ApiModelProperty(value = "主键/非必填")
     private Long id;
