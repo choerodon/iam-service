@@ -7,9 +7,6 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
-import io.choerodon.iam.infra.enums.LdapErrorUserCause;
-import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -30,8 +27,11 @@ import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.enums.LdapErrorUserCause;
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 
 
 /**
@@ -63,6 +63,31 @@ public class LdapSyncUserTask {
     }
 
     @Async("ldap-executor")
+    public void syncDisabledLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncUserTask.FinishFallback fallback) {
+        logger.info("@@@ start async user");
+
+        Long organizationId = ldap.getOrganizationId();
+
+        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
+        ldapSyncReport.setLdapId(ldap.getId());
+        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
+
+        LdapHistoryDO ldapHistory = new LdapHistoryDO();
+        ldapHistory.setLdapId(ldap.getId());
+        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
+
+        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
+
+        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport);
+
+        logger.info("###total user count : {}", ldapSyncReport.getCount());
+        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
+        logger.info("async finished : {}", ldapSyncReport);
+        fallback.callback(ldapSyncReport, ldapHistoryDO);
+    }
+
+
+    @Async("ldap-executor")
     public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
         logger.info("@@@ start async user");
         Long organizationId = ldap.getOrganizationId();
@@ -82,6 +107,59 @@ public class LdapSyncUserTask {
         logger.info("async finished : {}", ldapSyncReport);
 
         fallback.callback(ldapSyncReport, ldapHistoryDO);
+    }
+
+    public void disabledUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport) {
+        //搜索控件
+        final SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        //Filter
+        AndFilter andFilter = getAndFilterByObjectClass(ldap);
+        HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
+        andFilter.and(hardcodedFilter);
+
+        int batchSize = ldap.getSagaBatchSize();
+        //分页PagedResultsDirContextProcessor
+        final PagedResultsDirContextProcessor processor =
+                new PagedResultsDirContextProcessor(batchSize);
+        SingleContextSource.doWithSingleContext(
+                ldapTemplate.getContextSource(), new LdapOperationsCallback<List<UserDO>>() {
+                    @Override
+                    public List<UserDO> doWithLdapOperations(LdapOperations operations) {
+                        Integer page = 1;
+                        AttributesMapper attributesMapper = new AttributesMapper() {
+                            @Override
+                            public Object mapFromAttributes(Attributes attributes) {
+                                return attributes;
+                            }
+                        };
+
+                        do {
+                            List<Attributes> attributesList =
+                                    operations.search("", andFilter.toString(), searchControls,
+                                            attributesMapper, processor);
+                            //将当前分页的数据做插入处理
+                            List<UserDO> users = new ArrayList<>();
+                            List<LdapErrorUserDO> errorUsers = new ArrayList<>();
+                            if (attributesList.isEmpty()) {
+                                logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
+                            } else {
+                                processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
+                            }
+                            //当前页做用户停用
+                            if (!users.isEmpty()) {
+                                Long disabledCount = compareWithDbAndDisabled(users);
+                                ldapSyncReport.incrementUpdate(Long.valueOf(disabledCount));
+                            }
+                            int legalUserSize = users.size();
+                            attributesList.clear();
+                            users.clear();
+                            errorUsers.clear();
+                            ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
+                        } while (processor.hasMore());
+                        return null;
+                    }
+                });
     }
 
     private void getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport,
@@ -294,6 +372,27 @@ public class LdapSyncUserTask {
 
         cleanAfterDataPersistence(insertUsers, nameSet, emailSet, subNameSet, subEmailSet, existedNames, existedEmails);
     }
+
+
+    private Long compareWithDbAndDisabled(List<UserDO> users) {
+        List<UserDO> disabledUsers = new ArrayList<>();
+        //获取同步列表中的loginNameSet
+        Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
+        //oracle In-list上限为1000，这里List size要小于1000
+        List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
+        //获取数据库中已存在登录名的userIdSet
+        Set<Long> idsByExistedNames = new HashSet<>();
+        subNameSet.forEach(set -> idsByExistedNames.addAll(userRepository.getIdsByMatchLoginName(set)));
+        //oracle In-list上限为1000，这里List size要小于1000
+        List<Set<Long>> idsByExistedNamesList = CollectionUtils.subSet(idsByExistedNames, 999);
+
+        idsByExistedNamesList.forEach(set -> userRepository.disableByIdList(set));
+
+        nameSet.clear();
+        subNameSet.clear();
+        return new Long(idsByExistedNames.size());
+    }
+
 
     private void insertErrorUser(List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
         if (!errorUsers.isEmpty()) {

@@ -90,6 +90,10 @@ public interface UserRepository {
 
     Set<String> matchLoginName(Set<String> nameSet);
 
+    Set<Long> getIdsByMatchLoginName(Set<String> nameSet);
+
+    void disableByIdList(Set<Long> ids);
+
     Set<String> matchEmail(Set<String> emailSet);
 
     Long[] listUserIds();
@@ -98,12 +102,14 @@ public interface UserRepository {
 
     /**
      * 全平台用户数（包括停用）
+     *
      * @return 返回全平台用户数
      */
     Integer totalNumberOfUsers();
 
     /**
      * 全平台新增用户数（包括停用）
+     *
      * @return 返回今日新增用户数
      */
     Integer newUsersToday();

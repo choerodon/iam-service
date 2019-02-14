@@ -152,6 +152,6 @@ class ProjectControllerSpec extends Specification {
         when:
         def value = controller.queryByIds(ids)
         then:
-        value.body.size() == 0
+        noExceptionThrown()
     }
 }
