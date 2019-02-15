@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -128,6 +129,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         rolePermissionRepository.insertList(rolePermissionDOList);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public RoleE update(RoleE roleE) {
         RoleE role1 = roleRepository.selectByPrimaryKey(roleE.getId());
@@ -157,7 +159,7 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                 .map(RoleLabelDO::getLabelId).collect(Collectors.toList());
         List<LabelE> labels = roleE.getLabels();
         final List<Long> newLabelIds = new ArrayList<>();
-        if (labels != null) {
+        if (!ObjectUtils.isEmpty(labels)) {
             newLabelIds.addAll(labels.stream().map(LabelE::getId).collect(Collectors.toList()));
         }
         //labelId交集
@@ -170,27 +172,28 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                 !intersection.contains(item)).collect(Collectors.toList());
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
         List<UserDO> users = userRepository.listUsersByRoleId(roleE.getId(), "user", ResourceLevel.PROJECT.value());
-        if (devopsMessage) {
-            doUpdateAndDelete(roleE, insertList, deleteList);
+
+        boolean sendSagaEvent = !ObjectUtils.isEmpty(users) && devopsMessage;
+        doUpdateAndDelete(roleE, insertList, deleteList);
+        if (sendSagaEvent) {
             users.forEach(user -> {
-                List<LabelDO> labels1 = labelRepository.selectByUserId(user.getId());
+                List<LabelDO> labelList = labelRepository.selectByUserId(user.getId());
                 UserMemberEventPayload payload = new UserMemberEventPayload();
                 payload.setResourceId(user.getSourceId());
+                payload.setUserId(user.getId());
                 payload.setResourceType(ResourceLevel.PROJECT.value());
                 payload.setUsername(user.getLoginName());
-                Set<String> nameSet = new HashSet<>(labels1.stream().map(LabelDO::getName).collect(Collectors.toSet()));
+                Set<String> nameSet = new HashSet<>(labelList.stream().map(LabelDO::getName).collect(Collectors.toSet()));
                 payload.setRoleLabels(nameSet);
                 userMemberEventPayloads.add(payload);
             });
             try {
                 String input = mapper.writeValueAsString(userMemberEventPayloads);
-                String refIds = userMemberEventPayloads.stream().map(t -> t.getUserId() + "").collect(Collectors.joining(","));
-                sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "members", refIds));
+                String refIds = userMemberEventPayloads.stream().map(t -> String.valueOf(t.getUserId())).collect(Collectors.joining(","));
+                sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds));
             } catch (Exception e) {
                 throw new CommonException("error.IRoleServiceImpl.update.event", e);
             }
-        } else {
-            doUpdateAndDelete(roleE, insertList, deleteList);
         }
     }
 
