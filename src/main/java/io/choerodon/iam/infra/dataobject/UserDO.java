@@ -252,4 +252,22 @@ public class UserDO extends AuditDomain {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
+    public UserDO() {
+    }
+
+
+    public UserDO(String loginName, String email, Long organizationId, String password, String realName, Boolean enabled,
+                  String language, String timeZone, Date lastPasswordUpdatedAt, Boolean locked) {
+        this.loginName = loginName;
+        this.email = email;
+        this.organizationId = organizationId;
+        this.password = password;
+        this.realName = realName;
+        this.enabled = enabled;
+        this.language = language;
+        this.timeZone = timeZone;
+        this.lastPasswordUpdatedAt = lastPasswordUpdatedAt;
+        this.locked = locked;
+    }
 }

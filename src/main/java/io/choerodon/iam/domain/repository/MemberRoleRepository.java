@@ -23,6 +23,8 @@ public interface MemberRoleRepository {
 
     MemberRoleE selectByPrimaryKey(Long id);
 
+    void insert(MemberRoleDO memberRole);
+
     MemberRoleDO selectOne(MemberRoleDO memberRole);
 
     List<Long> selectDeleteList(final List<Long> deleteList, final long memberId, final String memberType, final long sourceId, final String sourceType);
