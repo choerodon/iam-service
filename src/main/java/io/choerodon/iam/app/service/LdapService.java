@@ -58,5 +58,5 @@ public interface LdapService {
      */
     Page<LdapHistoryDTO> pagingQueryHistories(PageRequest pageRequest, Long ldapId);
 
-    Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long id);
+    Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long id, LdapErrorUserDTO ldapErrorUserDTO);
 }
