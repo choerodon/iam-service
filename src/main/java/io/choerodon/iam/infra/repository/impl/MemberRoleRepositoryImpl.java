@@ -1,5 +1,9 @@
 package io.choerodon.iam.infra.repository.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
@@ -15,9 +19,6 @@ import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author superlee
@@ -90,6 +91,13 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     @Override
     public MemberRoleDO selectOne(MemberRoleDO memberRole) {
         return memberRoleMapper.selectOne(memberRole);
+    }
+
+    @Override
+    public void insert(MemberRoleDO memberRole) {
+        if (memberRoleMapper.insertSelective(memberRole) != 1) {
+            throw new CommonException("error.memberRole.insert.failed");
+        }
     }
 
     @Override
