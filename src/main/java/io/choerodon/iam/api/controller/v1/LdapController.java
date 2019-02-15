@@ -156,8 +156,9 @@ public class LdapController {
     public ResponseEntity<Page<LdapErrorUserDTO>> pagingQueryErrorUsers(@ApiIgnore
                                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC)
                                                                                 PageRequest pageRequest,
-                                                                        @PathVariable Long id) {
-        return new ResponseEntity<>(ldapService.pagingQueryErrorUsers(pageRequest, id), HttpStatus.OK);
+                                                                        @PathVariable Long id,
+                                                                        LdapErrorUserDTO ldapErrorUserDTO) {
+        return new ResponseEntity<>(ldapService.pagingQueryErrorUsers(pageRequest, id, ldapErrorUserDTO), HttpStatus.OK);
     }
 
 

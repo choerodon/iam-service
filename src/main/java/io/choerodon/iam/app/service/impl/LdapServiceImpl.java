@@ -25,7 +25,6 @@ import io.choerodon.iam.infra.common.utils.LocaleUtils;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.dataobject.LdapDO;
 
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
 import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.factory.MessageSourceFactory;
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
@@ -159,7 +158,6 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
-        //todo 此处暂时默认每批大小与sagaBatchSize一致
         ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
     }
 
@@ -220,10 +218,10 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long ldapHistoryId) {
-        LdapErrorUserDO example = new LdapErrorUserDO();
-        example.setLdapHistoryId(ldapHistoryId);
-        Page<LdapErrorUserDTO> dtos = ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, ()-> ldapErrorUserMapper.select(example)), LdapErrorUserDTO.class);
+    public Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long ldapHistoryId, LdapErrorUserDTO ldapErrorUserDTO) {
+        Page<LdapErrorUserDTO> dtos =
+                ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest,
+                        () -> ldapErrorUserMapper.fuzzyQuery(ldapHistoryId, ldapErrorUserDTO)), LdapErrorUserDTO.class);
         //cause国际化处理
         List<LdapErrorUserDTO> errorUsers = dtos.getContent();
         MessageSource messageSource = MessageSourceFactory.create(LDAP_ERROR_USER_MESSAGE_DIR);
