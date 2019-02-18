@@ -42,18 +42,10 @@ import io.choerodon.iam.infra.mapper.UserMapper;
 public class OrganizationListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationListener.class);
 
-    private static final String ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-    private static final String PROJECT_MEMBER_ROLE_CODE = "role/project/default/project-member";
-    private static final String PROJECT_OWNER_LABEL_NAME = "project.owner";
-
     private PasswordPolicyService passwordPolicyService;
-    private MemberRoleRepository memberRoleRepository;
     private OrganizationService organizationService;
-    private ProjectMapper projectMapper;
     private IUserService iUserService;
     private LdapService ldapService;
-    private RoleService roleService;
-    private UserMapper userMapper;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -67,17 +59,11 @@ public class OrganizationListener {
     private Integer maxErrorTime;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, IUserService iUserService,
-                                ProjectMapper projectMapper, RoleService roleService,
-                                MemberRoleRepository memberRoleRepository, UserMapper userMapper) {
+                                OrganizationService organizationService, IUserService iUserService) {
         this.passwordPolicyService = passwordPolicyService;
-        this.memberRoleRepository = memberRoleRepository;
         this.organizationService = organizationService;
-        this.projectMapper = projectMapper;
         this.iUserService = iUserService;
         this.ldapService = ldapService;
-        this.roleService = roleService;
-        this.userMapper = userMapper;
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
@@ -101,10 +87,8 @@ public class OrganizationListener {
         Long organizationId = payload.getOrganizationId();
         String organizationCode = payload.getOrganizationCode();
         String organizationName = payload.getOrganizationName();
-        Long userId = payload.getUserId();
         createLdap(organizationId, organizationName);
         createPasswordPolicy(organizationId, organizationCode, organizationName);
-        createProjectAndMember(organizationId, organizationName, userId);
         //发送邮件——注册组织信息提交
         Long fromUserId = payload.getFromUserId();
         List<Long> userIds = new ArrayList<>();
@@ -162,111 +146,5 @@ public class OrganizationListener {
         } catch (Exception e) {
             LOGGER.error("create ldap error of organization, organizationId: {}, exception: {}", orgId, e);
         }
-    }
-
-    private void createProjectAndMember(Long orgId, String orgName, Long userId) {
-        try {
-            LOGGER.info("### begin create project of organization {} ", orgId);
-            String projectCode = "";
-            boolean flagPC = false;
-            while (!flagPC) {
-                projectCode = "proj-" + generateString(false, 8);
-                ProjectDO checkCodeDO = new ProjectDO();
-                checkCodeDO.setCode(projectCode);
-                ProjectDO projByCode = projectMapper.selectOne(checkCodeDO);
-                if (projByCode == null) {
-                    flagPC = true;
-                }
-            }
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMMddHHmmss");
-            ProjectDO projectDO = new ProjectDO();
-            projectDO.setName("公司内销平台");
-            projectDO.setType("type/develop-platform");
-            projectDO.setOrganizationName(orgName);
-            projectDO.setOrganizationId(orgId);
-            projectDO.setCode(projectCode);
-            projectDO.setEnabled(true);
-            projectMapper.insert(projectDO);
-            List<Long> roleIds = roleService.queryIdsByLabelNameAndLabelType(PROJECT_OWNER_LABEL_NAME, "role");
-            initProjRole(projectDO.getId(), userId, roleIds);
-            UserDO userDO = userMapper.selectByPrimaryKey(userId);
-            createProjectMember(orgId, projectDO.getId(), userDO.getPassword());
-        } catch (Exception e) {
-            LOGGER.error("create project error of organizationId: {}, exception: {}", orgId, e);
-        }
-    }
-
-
-    private void createProjectMember(Long orgId, Long projectId, String pwd) {
-        //创建两个User
-        String loginNameA = "";
-        boolean flagLNA = false;
-        while (!flagLNA) {
-            loginNameA = generateString(false, 10);
-            UserDO userDO = new UserDO();
-            userDO.setLoginName(loginNameA);
-            UserDO userByLoginName = userMapper.selectOne(userDO);
-            if (userByLoginName == null) {
-                flagLNA = true;
-            }
-        }
-        UserDO userA = new UserDO(loginNameA, loginNameA + "@demo.com", orgId, pwd, "项目成员A", true,
-                "zh_CN", "CTT", new Date(System.currentTimeMillis()), false);
-        userMapper.insert(userA);
-        String loginNameB = "";
-        boolean flagLNB = false;
-        while (!flagLNB) {
-            loginNameB = generateString(false, 10);
-            UserDO userDO = new UserDO();
-            userDO.setLoginName(loginNameB);
-            UserDO userByLoginName = userMapper.selectOne(userDO);
-            if (userByLoginName == null) {
-                flagLNB = true;
-            }
-        }
-        UserDO userB = new UserDO(loginNameB, loginNameB + "@demo.com", orgId, pwd, "项目成员B", true,
-                "zh_CN", "CTT", new Date(System.currentTimeMillis()), false);
-        userMapper.insert(userB);
-
-        //分配角色
-        RoleDTO roleDTO = roleService.queryByCode(PROJECT_MEMBER_ROLE_CODE);
-        if (roleDTO != null) {
-            List<Long> roleIds = new ArrayList<>();
-            roleIds.add(roleDTO.getId());
-            initProjRole(projectId, userA.getId(), roleIds);
-            initProjRole(projectId, userB.getId(), roleIds);
-        }
-    }
-
-
-    private void initProjRole(Long projectId, Long userId, List<Long> roleIds) {
-        if (roleIds != null && !roleIds.isEmpty()) {
-            roleIds.forEach(roleId -> {
-                MemberRoleDO memberRole = new MemberRoleDO();
-                memberRole.setRoleId(roleId);
-                memberRole.setMemberId(userId);
-                memberRole.setMemberType("user");
-                memberRole.setSourceId(projectId);
-                memberRole.setSourceType(ResourceLevel.PROJECT.value());
-                if (memberRoleRepository.selectOne(memberRole) != null) {
-                    throw new CommonException("error.memberRole.existed", memberRole.toString());
-                }
-                memberRoleRepository.insert(memberRole);
-            });
-        } else {
-            throw new CommonException("error.roleIds.empty.by.label", PROJECT_OWNER_LABEL_NAME);
-        }
-    }
-
-    private String generateString(Boolean isChinese, int length) {
-        char[] text = new char[length];
-        for (int i = 0; i < length; i++) {
-            if (isChinese) {
-                text[i] = (char) (0x4e00 + (int) (Math.random() * (0x5ea5 - 0x4ea5 + 1)));
-            } else {
-                text[i] = ALPHANUMERIC.charAt(new Random().nextInt(ALPHANUMERIC.length()));
-            }
-        }
-        return new String(text);
     }
 }
