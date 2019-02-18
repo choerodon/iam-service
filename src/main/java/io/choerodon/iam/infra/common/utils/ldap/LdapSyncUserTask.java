@@ -24,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
@@ -207,15 +208,14 @@ public class LdapSyncUserTask {
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
+            } else {
+                UserE userE = userRepository.selectByLoginName(loginName);
+                //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
+                if (userE.getLastUpdatedBy().equals(0L) && !userE.getEnabled()) {
+                    organizationUserService.enableUser(organizationId, userE.getId());
+                    ldapSyncReport.incrementUpdate();
+                }
             }
-//            else {
-//                UserE userE = userRepository.selectByLoginName(loginName);
-//                //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
-//                if (userE.getLastUpdatedBy().equals(0L) && !userE.getEnabled()) {
-//                    organizationUserService.enableUser(organizationId, userE.getId());
-//                    ldapSyncReport.incrementUpdate();
-//                }
-//            }
         });
         UserDO example = new UserDO();
         example.setOrganizationId(organizationId);
