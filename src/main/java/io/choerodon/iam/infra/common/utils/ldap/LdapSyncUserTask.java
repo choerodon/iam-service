@@ -138,8 +138,14 @@ public class LdapSyncUserTask {
             String emailFiled = ldap.getEmailField();
             Attribute loginNameAttribute = attributes.get(loginNameFiled);
             Attribute emailAttribute = attributes.get(emailFiled);
-            Attribute realNameAttribute = attributes.get(ldap.getRealNameField());
-            Attribute phoneAttribute = attributes.get(ldap.getPhoneField());
+            Attribute realNameAttribute = null;
+            Attribute phoneAttribute = null;
+            if (ldap.getRealNameField() != null) {
+                realNameAttribute = attributes.get(ldap.getRealNameField());
+            }
+            if (ldap.getPhoneField() != null) {
+                phoneAttribute = attributes.get(ldap.getPhoneField());
+            }
             if (loginNameAttribute == null || emailAttribute == null) {
                 ldapSyncReport.incrementError();
                 logger.warn("the filed [{}, {}] of attributes is null, so skip the attributes {}", loginNameFiled, emailFiled, attributes);
@@ -150,10 +156,10 @@ public class LdapSyncUserTask {
                 try {
                     user.setLoginName(loginNameAttribute.get().toString());
                     user.setEmail(emailAttribute.get().toString());
-                    if (ldap.getRealNameField() != null && realNameAttribute != null) {
+                    if (realNameAttribute != null) {
                         user.setRealName(realNameAttribute.get().toString());
                     }
-                    if (ldap.getPhoneField() != null && phoneAttribute != null) {
+                    if (phoneAttribute != null) {
                         user.setPhone(phoneAttribute.get().toString());
                     }
                     user.setLanguage("zh_CN");
