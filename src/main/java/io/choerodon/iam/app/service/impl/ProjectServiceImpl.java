@@ -107,7 +107,7 @@ public class ProjectServiceImpl implements ProjectService {
             BeanUtils.copyProperties(projectE, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId(),ResourceLevel.PROJECT.value(),projectDTO.getId()));
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId(), ResourceLevel.PROJECT.value(), projectDTO.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.projectService.update.event", e);
             }
@@ -137,7 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
             BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE);
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId(),ResourceLevel.PROJECT.value(),project.getId()));
+                sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId(), ResourceLevel.PROJECT.value(), project.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.projectService.disableProject.event", e);
             }
@@ -159,5 +159,16 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return projectRepository.queryByIds(ids);
         }
+    }
+
+    @Override
+    public Boolean checkProjCode(String code) {
+        ProjectDO projectDO = new ProjectDO();
+        projectDO.setCode(code);
+        ProjectDO checkDO = projectRepository.selectOne(projectDO);
+        if (checkDO == null) {
+            return true;
+        }
+        return false;
     }
 }

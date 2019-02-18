@@ -21,6 +21,8 @@ public interface ProjectService {
 
     ProjectDTO disableProject(Long id);
 
+    Boolean checkProjCode(String code);
+
     List<Long> listUserIds(Long projectId);
 
     List<ProjectDTO> queryByIds(Set<Long> ids);

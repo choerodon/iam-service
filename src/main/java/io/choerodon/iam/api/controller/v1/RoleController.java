@@ -93,6 +93,17 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.queryByCode(code), HttpStatus.OK);
     }
 
+    /**
+     * 根据角色code查询角色Id
+     *
+     * @return 查询结果
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "通过code查询角色Id")
+    @GetMapping("/idByCode")
+    public ResponseEntity<Long> queryIdByCode(@RequestParam String code) {
+        return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
+    }
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "创建角色")

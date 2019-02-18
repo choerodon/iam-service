@@ -33,14 +33,10 @@ class OrganizationListenerSpec extends Specification {
     private IUserService iUserService = Mock(IUserService)
     private OrganizationListener organizationListener
     private final ObjectMapper mapper = new ObjectMapper()
-    private RoleService roleService
-    private UserMapper userMapper
-    private MemberRoleRepository memberRoleRepository
-    private ProjectMapper projectMapper
 
     def setup() {
         organizationListener = new OrganizationListener(ldapService, passwordPolicyService,
-                organizationService, iUserService,projectMapper,roleService,memberRoleRepository,userMapper)
+                organizationService, iUserService)
 
         Field field = organizationListener.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)

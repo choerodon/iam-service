@@ -1,5 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.ws.rs.GET;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -12,14 +23,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author flyleft
@@ -49,6 +52,7 @@ public class ProjectController extends BaseController {
 
     /**
      * 根据id集合查询项目
+     *
      * @param ids id集合，去重
      * @return 项目集合
      */
@@ -98,5 +102,11 @@ public class ProjectController extends BaseController {
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "project_id") Long id) {
         return new ResponseEntity<>(projectService.disableProject(id), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @GetMapping(value = "/check/{code}")
+    public ResponseEntity<Boolean> checkProjCode(@PathVariable(name = "code") String code) {
+        return new ResponseEntity<>(projectService.checkProjCode(code), HttpStatus.OK);
     }
 }
