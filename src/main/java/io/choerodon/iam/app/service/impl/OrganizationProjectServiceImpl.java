@@ -122,8 +122,15 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectDTO createProjectBySaga(final ProjectE projectE) {
         ProjectEventPayload projectEventMsg = new ProjectEventPayload();
         CustomUserDetails details = DetailsHelper.getUserDetails();
-        projectEventMsg.setUserName(details.getUsername());
-        projectEventMsg.setUserId(details.getUserId());
+        if (details != null && details.getUserId() != 0) {
+            projectEventMsg.setUserName(details.getUsername());
+            projectEventMsg.setUserId(details.getUserId());
+        } else {
+            Long userId = organizationRepository.selectByPrimaryKey(projectE.getOrganizationId()).getUserId();
+            UserE userE = userRepository.selectByPrimaryKey(userId);
+            projectEventMsg.setUserId(userId);
+            projectEventMsg.setUserName(userE.getLoginName());
+        }
         ProjectE newProjectE = projectRepository.create(projectE);
         projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
         projectEventMsg.setProjectId(newProjectE.getId());
