@@ -30,13 +30,12 @@ class OrganizationListenerSpec extends Specification {
     private LdapService ldapService = Mock(LdapService)
     private PasswordPolicyService passwordPolicyService = Mock(PasswordPolicyService)
     private OrganizationService organizationService = Mock(OrganizationService)
-    private IUserService iUserService = Mock(IUserService)
     private OrganizationListener organizationListener
     private final ObjectMapper mapper = new ObjectMapper()
 
     def setup() {
         organizationListener = new OrganizationListener(ldapService, passwordPolicyService,
-                organizationService, iUserService)
+                organizationService)
 
         Field field = organizationListener.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
@@ -57,25 +56,5 @@ class OrganizationListenerSpec extends Specification {
         1 * ldapService.create(_, _)
         1 * passwordPolicyService.create(_, _)
         0 * _
-    }
-
-    def "registerOrganization"() {
-        given: "构造请求参数"
-        OrganizationRegisterPayload payload = new OrganizationRegisterPayload()
-        payload.setOrganizationName("aaa")
-        payload.setOrganizationCode("code1314")
-        payload.setUserId(1L)
-        payload.setFromUserId(1L)
-        payload.setEmail("110101123@qq.com")
-        payload.setOrganizationId(10090L)
-        payload.setLoginName("zhangsan09876")
-        payload.setRealName("zhangsan")
-        String message = mapper.writeValueAsString(payload)
-
-        when: "调用方法"
-        organizationListener.registerOrganization(message)
-
-        then: "校验结果"
-        noExceptionThrown()
     }
 }
