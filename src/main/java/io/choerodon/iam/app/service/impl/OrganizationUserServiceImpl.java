@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -125,7 +123,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 List<UserEventPayload> payloads = new ArrayList<>();
                 payloads.add(userEventPayload);
                 String input = mapper.writeValueAsString(payloads);
-                sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
+                sagaClient.startSaga(USER_CREATE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.createUser.event", e);
             }
@@ -151,56 +149,42 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
     public List<LdapErrorUserDO> batchCreateUsers(List<UserDO> insertUsers) {
         List<LdapErrorUserDO> errorUsers = new ArrayList<>();
-        if (devopsMessage) {
-            List<UserEventPayload> payloads = new ArrayList<>();
-            for (UserDO user : insertUsers ) {
-                try {
-                    UserDO userDO = userRepository.insertSelective(user);
-                    if (userDO.getEnabled()) {
-                        UserEventPayload payload = new UserEventPayload();
-                        payload.setEmail(userDO.getEmail());
-                        payload.setId(userDO.getId().toString());
-                        payload.setName(userDO.getRealName());
-                        payload.setUsername(userDO.getLoginName());
-                        payload.setOrganizationId(userDO.getOrganizationId());
-                        payloads.add(payload);
-                    }
-                } catch (Exception e) {
-                    LdapErrorUserDO errorUser =
-                            new LdapErrorUserDO()
-                                    .setUuid(user.getUuid())
-                                    .setLoginName(user.getLoginName())
-                                    .setEmail(user.getEmail())
-                                    .setRealName(user.getRealName())
-                                    .setPhone(user.getPhone())
-                                    .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
-                    errorUsers.add(errorUser);
-                }
+        List<UserEventPayload> payloads = new ArrayList<>();
+        insertUsers.forEach(user -> {
+            UserDO userDO = null;
+            try {
+                userDO = userRepository.insertSelective(user);
+            } catch (Exception e) {
+                LdapErrorUserDO errorUser =
+                        new LdapErrorUserDO()
+                                .setUuid(user.getUuid())
+                                .setLoginName(user.getLoginName())
+                                .setEmail(user.getEmail())
+                                .setRealName(user.getRealName())
+                                .setPhone(user.getPhone())
+                                .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
+                errorUsers.add(errorUser);
             }
+            if (devopsMessage && userDO != null && userDO.getEnabled()) {
+                UserEventPayload payload = new UserEventPayload();
+                payload.setEmail(userDO.getEmail());
+                payload.setId(userDO.getId().toString());
+                payload.setName(userDO.getRealName());
+                payload.setUsername(userDO.getLoginName());
+                payload.setOrganizationId(userDO.getOrganizationId());
+                payloads.add(payload);
+            }
+        });
+
+        if (!payloads.isEmpty()) {
             try {
                 String input = mapper.writeValueAsString(payloads);
                 String refIds = payloads.stream().map(UserEventPayload::getId).collect(Collectors.joining(","));
-                sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds,ResourceLevel.ORGANIZATION.value(),insertUsers.get(0).getOrganizationId()));
+                sagaClient.startSaga(USER_CREATE_BATCH, new StartInstanceDTO(input, "users", refIds, ResourceLevel.ORGANIZATION.value(), insertUsers.get(0).getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.batchCreateUser.event", e);
-            }finally {
+            } finally {
                 payloads.clear();
-            }
-        } else {
-            for (UserDO user : insertUsers ) {
-                try {
-                    userRepository.insertSelective(user);
-                } catch (Exception e) {
-                    LdapErrorUserDO errorUser =
-                            new LdapErrorUserDO()
-                                    .setUuid(user.getUuid())
-                                    .setLoginName(user.getLoginName())
-                                    .setEmail(user.getEmail())
-                                    .setRealName(user.getRealName())
-                                    .setPhone(user.getPhone())
-                                    .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
-                    errorUsers.add(errorUser);
-                }
             }
         }
         return errorUsers;
@@ -250,7 +234,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(user, dto);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),userDTO.getOrganizationId()));
+                sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), userDTO.getOrganizationId()));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
@@ -391,7 +375,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
+                sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.enableUser.event", e);
             }
@@ -420,7 +404,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
-                sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(),ResourceLevel.ORGANIZATION.value(),organizationId));
+                sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }

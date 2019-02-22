@@ -1,10 +1,9 @@
 package io.choerodon.iam.api.eventhandler;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.TASK_ORG_CREATE;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -14,25 +13,14 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.ldap.DirectoryType;
 import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.dto.OrganizationDTO;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
-import io.choerodon.iam.api.dto.payload.OrganizationRegisterPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
-import io.choerodon.iam.app.service.RoleService;
-import io.choerodon.iam.domain.repository.MemberRoleRepository;
-import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.UserMapper;
 
 
 /**
@@ -44,7 +32,6 @@ public class OrganizationListener {
 
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
-    private IUserService iUserService;
     private LdapService ldapService;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -59,10 +46,9 @@ public class OrganizationListener {
     private Integer maxErrorTime;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, IUserService iUserService) {
+                                OrganizationService organizationService) {
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
-        this.iUserService = iUserService;
         this.ldapService = ldapService;
     }
 
@@ -78,28 +64,6 @@ public class OrganizationListener {
         createLdap(orgId, organizationDTO.getName());
         createPasswordPolicy(orgId, organizationDTO.getCode(), organizationDTO.getName());
         return organizationEventPayload;
-    }
-
-    @SagaTask(code = TASK_ORG_REGISTER, sagaCode = ORG_REGISTER, seq = 0, description = "iam接收org服务注册组织的事件")
-    public OrganizationRegisterPayload registerOrganization(String message) throws IOException {
-        OrganizationRegisterPayload payload = mapper.readValue(message, OrganizationRegisterPayload.class);
-        LOGGER.info("iam register the organization trigger task,payload: {}", payload);
-        Long organizationId = payload.getOrganizationId();
-        String organizationCode = payload.getOrganizationCode();
-        String organizationName = payload.getOrganizationName();
-        createLdap(organizationId, organizationName);
-        createPasswordPolicy(organizationId, organizationCode, organizationName);
-        //发送邮件——注册组织信息提交
-        Long fromUserId = payload.getFromUserId();
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(payload.getUserId());
-        Map<String, Object> params = new HashMap<>();
-        params.put("loginName", payload.getLoginName());
-        params.put("userName", payload.getRealName());
-        params.put("organizationName", payload.getOrganizationName());
-        params.put("email", payload.getEmail());
-        iUserService.sendNotice(fromUserId, userIds, "registerOrganization-submit", params, 0L);
-        return payload;
     }
 
     private void createPasswordPolicy(Long orgId, String code, String name) {
