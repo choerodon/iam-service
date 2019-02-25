@@ -46,14 +46,28 @@ public class OrganizationController extends BaseController {
      * @return 修改成功后的组织信息
      */
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "修改组织")
+    @ApiOperation(value = "全局层修改组织")
     @PutMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> update(@PathVariable(name = "organization_id") Long id,
                                                   @RequestBody @Valid OrganizationDTO organizationDTO) {
-        organizationDTO.setUserId(null);
-        return new ResponseEntity<>(organizationService.updateOrganization(id, organizationDTO),
+        return new ResponseEntity<>(organizationService.updateOrganization(id, organizationDTO, ResourceLevel.SITE.value(), 0L),
                 HttpStatus.OK);
     }
+
+    /**
+     * 组织层修改组织信息
+     *
+     * @return 修改成功后的组织信息
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "组织层修改组织")
+    @PutMapping(value = "/{organization_id}/organization_level")
+    public ResponseEntity<OrganizationDTO> updateOnOrganizationLevel(@PathVariable(name = "organization_id") Long id,
+                                                                     @RequestBody @Valid OrganizationDTO organizationDTO) {
+        return new ResponseEntity<>(organizationService.updateOrganization(id, organizationDTO, ResourceLevel.ORGANIZATION.value(), id),
+                HttpStatus.OK);
+    }
+
 
     /**
      * 根据组织id查询组织

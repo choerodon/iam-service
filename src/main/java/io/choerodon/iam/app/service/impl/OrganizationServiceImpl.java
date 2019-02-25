@@ -12,6 +12,7 @@ import io.choerodon.iam.api.dto.payload.OrganizationPayload;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -106,13 +107,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = ORG_UPDATE, description = "iam更新组织", inputSchemaClass = OrganizationPayload.class)
-    public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        organizationDO.setAddress(organizationDTO.getAddress());
-        organizationDO.setEnabled(organizationDTO.getEnabled() == null ? true : organizationDTO.getEnabled());
-        organizationDO.setName(organizationDTO.getName());
-        organizationDO.setObjectVersionNumber(organizationDTO.getObjectVersionNumber());
-        organizationDO.setImageUrl(organizationDTO.getImageUrl());
+    public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
+        preUpdate(organizationId, organizationDTO);
+
+        OrganizationDO organizationDO = ConvertHelper.convert(organizationDTO, OrganizationDO.class);
         organizationDO = organizationRepository.update(organizationDO);
         if (devopsMessage) {
             OrganizationPayload payload = new OrganizationPayload();
@@ -125,7 +123,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     .setImageUrl(organizationDO.getImageUrl());
             try {
                 String input = mapper.writeValueAsString(payload);
-                sagaClient.startSaga(ORG_UPDATE, new StartInstanceDTO(input, "organization", organizationId + "", ResourceLevel.SITE.value(), 0L));
+                sagaClient.startSaga(ORG_UPDATE, new StartInstanceDTO(input, "organization", organizationId + "", resourceLevel, sourceId));
             } catch (JsonProcessingException e) {
                 throw new CommonException("error.organization.update.payload.to.string");
             } catch (Exception e) {
@@ -133,6 +131,19 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         }
         return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+    }
+
+    private void preUpdate(Long organizationId, OrganizationDTO organizationDTO) {
+        OrganizationDO organization = organizationRepository.selectByPrimaryKey(organizationId);
+        if (ObjectUtils.isEmpty(organization)) {
+            throw new CommonException("error.organization.notFound");
+        }
+        //code和创建人不可修改
+        organizationDTO.setUserId(organization.getUserId());
+        organizationDTO.setCode(organization.getCode());
+        if (ObjectUtils.isEmpty(organizationDTO.getEnabled())) {
+            organizationDTO.setEnabled(true);
+        }
     }
 
     @Override

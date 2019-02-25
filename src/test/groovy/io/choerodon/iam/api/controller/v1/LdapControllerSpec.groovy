@@ -422,7 +422,7 @@ class LdapControllerSpec extends Specification {
         ldapErrorUserMapper.insertSelective(ldapErrorUserDO)
 
         when:
-        def entity = ldapController.pagingQueryErrorUsers(pageRequest, 1L)
+        def entity = ldapController.pagingQueryErrorUsers(pageRequest, 1L, null)
 
         then:
         entity.statusCode.is2xxSuccessful()
