@@ -4,20 +4,22 @@
     <select id="fuzzyQuery" resultType="io.choerodon.iam.infra.dataobject.LdapErrorUserDO">
         select * from oauth_ldap_error_user
         where ldap_history_id = #{ldapHistoryId}
-        <if test="ldapErrorUserDTO.uuid != null">
-            AND uuid LIKE concat(concat('%',#{ldapErrorUserDTO.uuid}),'%')
-        </if>
-        <if test="ldapErrorUserDTO.loginName != null">
-            AND login_name LIKE concat(concat('%',#{ldapErrorUserDTO.loginName}),'%')
-        </if>
-        <if test="ldapErrorUserDTO.email != null">
-            AND email LIKE concat(concat('%',#{ldapErrorUserDTO.email}),'%')
-        </if>
-        <if test="ldapErrorUserDTO.realName != null">
-            AND real_name LIKE concat(concat('%',#{ldapErrorUserDTO.realName}),'%')
-        </if>
-        <if test="ldapErrorUserDTO.phone != null">
-            AND phone LIKE concat(concat('%',#{ldapErrorUserDTO.phone}),'%')
+        <if test="ldapErrorUserDTO != null">
+            <if test="ldapErrorUserDTO.uuid != null">
+                AND uuid LIKE concat(concat('%',#{ldapErrorUserDTO.uuid}),'%')
+            </if>
+            <if test="ldapErrorUserDTO.loginName != null">
+                AND login_name LIKE concat(concat('%',#{ldapErrorUserDTO.loginName}),'%')
+            </if>
+            <if test="ldapErrorUserDTO.email != null">
+                AND email LIKE concat(concat('%',#{ldapErrorUserDTO.email}),'%')
+            </if>
+            <if test="ldapErrorUserDTO.realName != null">
+                AND real_name LIKE concat(concat('%',#{ldapErrorUserDTO.realName}),'%')
+            </if>
+            <if test="ldapErrorUserDTO.phone != null">
+                AND phone LIKE concat(concat('%',#{ldapErrorUserDTO.phone}),'%')
+            </if>
         </if>
     </select>
 </mapper>
