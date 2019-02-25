@@ -69,6 +69,14 @@ public class LdapSyncUserQuartzTask {
         syncAndDisabledLdapUserByFilter(map);
     }
 
+    @JobTask(maxRetryCount = 2, code = "syncDisabledLdapUserOrg", level = ResourceLevel.ORGANIZATION, params = {
+            @JobParam(name = "organizationCode", description = "组织编码"),
+            @JobParam(name = "filterStr", defaultValue = "(employeeType=1)", description = "ldap过滤条件")
+    }, description = "组织层过滤并停用LDAP用户")
+    public void syncDisabledLdapUserOrg(Map<String, Object> map) {
+        syncAndDisabledLdapUserByFilter(map);
+    }
+
     private void syncLdapUser(Map<String, Object> map) {
         //获取方法参数
         String orgCode = Optional.ofNullable((String) map.get("organizationCode")).orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
