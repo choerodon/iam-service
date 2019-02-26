@@ -290,4 +290,15 @@
         AND organization_id = #{orgId};
     </select>
 
+    <select id="selectProjsNotGroup" resultType="io.choerodon.iam.api.dto.ProjectDTO">
+        SELECT
+            id,
+            name,
+            code
+        FROM
+            fd_project
+        WHERE
+            IS_GROUP = 0
+        AND ORGANIZATION_ID = #{orgId};
+    </select>
 </mapper>

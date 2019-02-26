@@ -184,4 +184,9 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     public List<String> selectProjectNameNoType(Long orgId) {
         return projectMapper.selectProjectNameNoType(orgId);
     }
+
+    @Override
+    public List<ProjectDTO> selectProjsNotGroup(Long orgId) {
+        return projectMapper.selectProjsNotGroup(orgId);
+    }
 }

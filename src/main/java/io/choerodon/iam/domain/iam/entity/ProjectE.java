@@ -15,6 +15,8 @@ public class ProjectE {
 
     private Boolean enabled;
 
+    private Boolean group;
+
     private Long objectVersionNumber;
 
     private String typeName;
@@ -93,5 +95,13 @@ public class ProjectE {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Boolean getGroup() {
+        return group;
+    }
+
+    public void setGroup(Boolean group) {
+        this.group = group;
     }
 }

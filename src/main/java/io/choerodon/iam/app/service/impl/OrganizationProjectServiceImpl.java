@@ -342,4 +342,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         map.put("data", data);
         return map;
     }
+
+    @Override
+    public List<ProjectDTO> getProjectsNotGroup(Long organizationId) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        return projectRepository.selectProjsNotGroup(organizationId);
+    }
 }

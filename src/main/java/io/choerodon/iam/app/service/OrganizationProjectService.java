@@ -34,4 +34,12 @@ public interface OrganizationProjectService {
      * @return map
      */
     Map<String, Object> getProjectsByType(Long organizationId);
+
+    /**
+     * 查询组织下所有非项目群的项目
+     *
+     * @param organizationId
+     * @return 项目列表
+     */
+    List<ProjectDTO> getProjectsNotGroup(Long organizationId);
 }

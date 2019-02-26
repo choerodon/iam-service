@@ -64,4 +64,11 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
      * @return 组织下没有项目类型的项目名List
      */
     List<String> selectProjectNameNoType(@Param("orgId") Long orgId);
+
+    /**
+     * 获取组织下不是项目群的项目
+     * @param orgId
+     * @return list
+     */
+    List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId);
 }
