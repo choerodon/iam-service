@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.dataobject;
 
+import java.util.List;
+import javax.persistence.*;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
-import java.util.List;
 
 /**
  * @author wuguokai
@@ -32,6 +32,9 @@ public class ProjectDO extends AuditDomain {
 
     @Column(name = "is_enabled")
     private Boolean enabled;
+
+    @Column(name = "is_group")
+    private Boolean group;
 
     @Transient
     private List<RoleDO> roles;
@@ -96,6 +99,14 @@ public class ProjectDO extends AuditDomain {
         this.enabled = enabled;
     }
 
+    public Boolean getGroup() {
+        return group;
+    }
+
+    public void setGroup(Boolean group) {
+        this.group = group;
+    }
+
     public List<RoleDO> getRoles() {
         return roles;
     }
@@ -138,6 +149,7 @@ public class ProjectDO extends AuditDomain {
                 ", imageUrl='" + imageUrl + '\'' +
                 ", organizationName='" + organizationName + '\'' +
                 ", enabled=" + enabled +
+                ", group=" + group +
                 ", roles=" + roles +
                 ", type='" + type + '\'' +
                 ", typeName='" + typeName + '\'' +

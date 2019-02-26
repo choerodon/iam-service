@@ -50,4 +50,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             column(name: 'IMAGE_URL', type: 'VARCHAR(255)', remarks: '项目图标url', afterColumn: 'IS_ENABLED')
         }
     }
+
+    changeSet(author: 'longhe1996@icloud.com', id: '2019-02-25-fd-project-add') {
+        addColumn(tableName: 'FD_PROJECT') {
+            column(name: 'IS_GROUP', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否是项目群。1是，0不是', afterColumn: 'IS_ENABLED')
+        }
+    }
 }

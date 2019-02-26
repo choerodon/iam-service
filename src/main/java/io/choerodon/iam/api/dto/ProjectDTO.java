@@ -53,6 +53,9 @@ public class ProjectDTO {
     @ApiModelProperty(value = "项目图标url")
     private String imageUrl;
 
+    @ApiModelProperty(value = "是否为项目群")
+    private Boolean group;
+
     public Long getId() {
         return id;
     }
@@ -91,6 +94,14 @@ public class ProjectDTO {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getGroup() {
+        return group;
+    }
+
+    public void setGroup(Boolean group) {
+        this.group = group;
     }
 
     public Long getObjectVersionNumber() {

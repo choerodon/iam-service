@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.base.BaseController;
@@ -131,5 +132,13 @@ public class OrganizationProjectController extends BaseController {
     @GetMapping("/under_the_type")
     public ResponseEntity<Map<String, Object>> getProjectsByType(@PathVariable(name = "organization_id") Long organizationId) {
         return new ResponseEntity<>(organizationProjectService.getProjectsByType(organizationId), HttpStatus.OK);
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "查询组织下所有非项目群的项目")
+    @GetMapping("/not_group")
+    public ResponseEntity<List<ProjectDTO>> getProjectsNotGroup(@PathVariable(name = "organization_id") Long organizationId) {
+        return new ResponseEntity<>(organizationProjectService.getProjectsNotGroup(organizationId), HttpStatus.OK);
     }
 }

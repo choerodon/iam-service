@@ -56,4 +56,11 @@ public interface ProjectRepository {
      */
     List<String> selectProjectNameNoType(Long orgId);
 
+    /**
+     * 获取组织下不是项目群的项目
+     * @param orgId
+     * @return
+     */
+    List<ProjectDTO> selectProjsNotGroup(Long orgId);
+
 }
