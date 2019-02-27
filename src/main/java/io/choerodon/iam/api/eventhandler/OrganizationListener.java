@@ -24,6 +24,7 @@ import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 
 
@@ -39,6 +40,7 @@ public class OrganizationListener {
     private OrganizationService organizationService;
     private LdapService ldapService;
     private ProjectRepository projectRepository;
+    private IUserService iUserService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -52,11 +54,13 @@ public class OrganizationListener {
     private Integer maxErrorTime;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, ProjectRepository projectRepository) {
+                                OrganizationService organizationService, ProjectRepository projectRepository,
+                                IUserService iUserService) {
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
         this.ldapService = ldapService;
         this.projectRepository = projectRepository;
+        this.iUserService = iUserService;
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
@@ -85,6 +89,7 @@ public class OrganizationListener {
         if (organizationDTO == null) {
             throw new CommonException("error.organization.not exist");
         }
+        iUserService.updateUserDisabled(organizationRegisterEventPayload.getUser().getId());
         createLdap(orgId, organizationDTO.getName());
         createPasswordPolicy(orgId, organizationDTO.getCode(), organizationDTO.getName());
         return organizationRegisterEventPayload;
