@@ -59,13 +59,16 @@ public final class SagaTopic {
         public static final String ORG_CREATE = "org-create-organization";
 
         //组织服务注册组织
-        public static final String ORG_REGISTER = "org-register";
-
-        //iam注册组织task
-        public static final String TASK_ORG_REGISTER = "iam-register-organization";
+        public static final String ORG_REGISTER = "register-org";
 
         //iam接收创建组织事件的SagaTaskCode
         public static final String TASK_ORG_CREATE = "iam-create-organization";
+
+        //iam接受注册组织:创建默认密码策略，创建默认ldap配置
+        public static final String TASK_ORG_REGISTER_INIT_ORG="register-iam-init-org";
+
+        //iam接受注册组织:创建项目
+        public static final String TASK_ORG_REGISTER_INIT_PROJ="register-iam-init-project";
 
         //启用组织
         public static final String ORG_ENABLE = "iam-enable-organization";

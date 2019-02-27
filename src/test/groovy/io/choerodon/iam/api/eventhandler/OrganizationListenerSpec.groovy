@@ -10,6 +10,7 @@ import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.app.service.PasswordPolicyService
 import io.choerodon.iam.app.service.RoleService
 import io.choerodon.iam.domain.repository.MemberRoleRepository
+import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import io.choerodon.iam.infra.mapper.UserMapper
@@ -31,11 +32,12 @@ class OrganizationListenerSpec extends Specification {
     private PasswordPolicyService passwordPolicyService = Mock(PasswordPolicyService)
     private OrganizationService organizationService = Mock(OrganizationService)
     private OrganizationListener organizationListener
+    private ProjectRepository projectRepository
     private final ObjectMapper mapper = new ObjectMapper()
 
     def setup() {
         organizationListener = new OrganizationListener(ldapService, passwordPolicyService,
-                organizationService)
+                organizationService,projectRepository)
 
         Field field = organizationListener.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
