@@ -4,16 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.OrganizationDTO
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload
-import io.choerodon.iam.api.dto.payload.OrganizationRegisterPayload
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.app.service.PasswordPolicyService
-import io.choerodon.iam.app.service.RoleService
-import io.choerodon.iam.domain.repository.MemberRoleRepository
 import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.service.IUserService
-import io.choerodon.iam.infra.mapper.ProjectMapper
-import io.choerodon.iam.infra.mapper.UserMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -33,11 +28,12 @@ class OrganizationListenerSpec extends Specification {
     private OrganizationService organizationService = Mock(OrganizationService)
     private OrganizationListener organizationListener
     private ProjectRepository projectRepository
+    private IUserService iUserService
     private final ObjectMapper mapper = new ObjectMapper()
 
     def setup() {
         organizationListener = new OrganizationListener(ldapService, passwordPolicyService,
-                organizationService,projectRepository)
+                organizationService, projectRepository, iUserService)
 
         Field field = organizationListener.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
