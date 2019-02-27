@@ -13,10 +13,5 @@ spring:
       uri: localhost:8010
       enabled: false
 management:
-  port: 8031
-  security:
-    enabled: false
-security:
-  basic:
-    enabled: false
-  ignored: /choerodon/config,/v2/choerodon/api-docs
+  server:
+    port: 8031
