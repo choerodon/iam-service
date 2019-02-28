@@ -32,9 +32,26 @@ public interface ProjectGroupService {
      */
     List<ProjectGroupDTO> batchAddProjsToTheGroup(List<ProjectGroupDTO> list);
 
+
+    /**
+     * 项目组下批量更新项目
+     *
+     * @param list
+     * @return list
+     */
+    List<ProjectGroupDTO> batchModifyProjsToTheGroup(List<ProjectGroupDTO> list);
+
     /**
      * 修改项目组的关联时间（包括开始及结束时间）
      */
     ProjectGroupDTO updateGroupDate(ProjectGroupDTO projectGroupDTO);
+
+    /**
+     * 批量修改/新增/启停用项目组
+     *
+     * @param list
+     * @return
+     */
+    List<ProjectGroupDTO> batchUpdateProjsToTheGroup(List<ProjectGroupDTO> list);
 
 }
