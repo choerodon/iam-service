@@ -1,5 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -86,6 +87,21 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
     }
 
     @Override
+    public List<ProjectGroupDTO> batchModifyProjsToTheGroup(List<ProjectGroupDTO> list) {
+        list.forEach(i -> {
+            if (projectGroupRepository.selectByPrimaryKey(i.getId()) == null) {
+                logger.warn("Batch update groupProjects exist Nonexistent groupProject,id is{}:{}", i.getId(), i);
+            } else {
+                ProjectGroupDO projectGroupDO = new ProjectGroupDO();
+                BeanUtils.copyProperties(i, projectGroupDO);
+                projectGroupDO = projectGroupRepository.update(projectGroupDO);
+                BeanUtils.copyProperties(projectGroupDO, i);
+            }
+        });
+        return list;
+    }
+
+    @Override
     public ProjectGroupDTO updateGroupDate(ProjectGroupDTO projectGroupDTO) {
         if (projectGroupRepository.selectByPrimaryKey(projectGroupDTO.getId()) == null) {
             throw new CommonException("error.update.group.id.not.exist:" + projectGroupDTO.getId());
@@ -94,5 +110,22 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         BeanUtils.copyProperties(projectGroupDTO, projectGroupDO);
         BeanUtils.copyProperties(projectGroupRepository.update(projectGroupDO), projectGroupDTO);
         return projectGroupDTO;
+    }
+
+    @Override
+    public List<ProjectGroupDTO> batchUpdateProjsToTheGroup(List<ProjectGroupDTO> list) {
+        List<ProjectGroupDTO> updateNewList = new ArrayList<>();
+        List<ProjectGroupDTO> insertNewList = new ArrayList<>();
+        list.forEach(g -> {
+            if (g.getId() == null) {
+                insertNewList.add(g);
+            } else {
+                updateNewList.add(g);
+            }
+        });
+        List<ProjectGroupDTO> inserted = batchAddProjsToTheGroup(insertNewList);
+        List<ProjectGroupDTO> updated = batchModifyProjsToTheGroup(updateNewList);
+        inserted.addAll(updated);
+        return inserted;
     }
 }
