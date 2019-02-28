@@ -2,6 +2,13 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
@@ -16,13 +23,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
 
 /**
  * @author flyleft
@@ -72,6 +72,7 @@ public class OrganizationProjectController extends BaseController {
                                                  @RequestParam(required = false) String code,
                                                  @RequestParam(required = false) String typeName,
                                                  @RequestParam(required = false) Boolean enabled,
+                                                 @RequestParam(required = false) Boolean group,
                                                  @RequestParam(required = false) String[] params) {
         ProjectDTO project = new ProjectDTO();
         project.setOrganizationId(organizationId);
@@ -79,6 +80,7 @@ public class OrganizationProjectController extends BaseController {
         project.setCode(code);
         project.setEnabled(enabled);
         project.setTypeName(typeName);
+        project.setGroup(group);
         return new ResponseEntity<>(organizationProjectService.pagingQuery(project, pageRequest, ParamUtils.arrToStr(params)),
                 HttpStatus.OK);
     }
