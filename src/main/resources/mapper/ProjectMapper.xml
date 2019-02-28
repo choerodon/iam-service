@@ -6,6 +6,7 @@
     <resultMap id="projectDO" type="io.choerodon.iam.infra.dataobject.ProjectDO">
         <id column="id" property="id"></id>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_group" property="group" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <resultMap id="ProjectWithRoleDTO" type="io.choerodon.iam.infra.dataobject.ProjectDO">
@@ -15,6 +16,7 @@
         <result property="organizationId" column="organization_id"/>
         <result property="organizationName" column="organization_name" jdbcType="VARCHAR"/>
         <result property="enabled" column="is_enabled"/>
+        <result property="group" column="is_group"/>
         <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
             <id property="id" column="role_id"></id>
             <result property="name" column="role_name"/>
@@ -70,6 +72,9 @@
         </if>
         <if test="project.enabled != null">
             AND fp.is_enabled = #{project.enabled}
+        </if>
+        <if test="project.group != null">
+            AND fp.is_group = #{project.group}
         </if>
         <if test="project.typeName != null">
             AND fpt.name LIKE concat(concat('%',#{project.typeName}),'%')
