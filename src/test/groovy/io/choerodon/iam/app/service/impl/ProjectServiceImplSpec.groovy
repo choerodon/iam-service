@@ -1,12 +1,9 @@
 package io.choerodon.iam.app.service.impl
 
-import com.sun.org.apache.regexp.internal.RE
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ProjectDTO
 import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.domain.iam.entity.ProjectE
@@ -23,16 +20,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.security.core.GrantedAuthority
-import spock.lang.Shared
 import spock.lang.Specification
 
 import java.lang.reflect.Field
-
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * @author dengyouquan
