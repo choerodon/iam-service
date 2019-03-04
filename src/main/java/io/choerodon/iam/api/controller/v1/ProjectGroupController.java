@@ -53,9 +53,6 @@ public class ProjectGroupController {
                     && projectGroupDTO.getEndDate().getTime() < projectGroupDTO.getStartDate().getTime()) {
                 throw new CommonException("error.update.project.group.endDate.before.startDate");
             }
-            if (projectGroupDTO.getEnabled() == null) {
-                projectGroupDTO.setEnabled(true);
-            }
         });
         Set<Long> collect = projectGroupDTOList.stream().map(t -> t.getParentId()).collect(Collectors.toSet());
         if (collect.size() != 1) {

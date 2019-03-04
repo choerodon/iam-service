@@ -36,10 +36,11 @@ public interface OrganizationProjectService {
     Map<String, Object> getProjectsByType(Long organizationId);
 
     /**
-     * 查询组织下所有非项目群的项目
+     * 查询组织下可被分配至当前项目群的敏捷项目
      *
      * @param organizationId
+     * @param projectId
      * @return 项目列表
      */
-    List<ProjectDTO> getProjectsNotGroup(Long organizationId);
+    List<ProjectDTO> getProjectsNotGroup(Long organizationId,Long projectId);
 }

@@ -64,4 +64,9 @@ public class ProjectGroupRepositoryImpl implements ProjectGroupRepository {
     public ProjectGroupDO selectOne(ProjectGroupDO projectGroupDO) {
         return projectGroupMapper.selectOne(projectGroupDO);
     }
+
+    @Override
+    public List<ProjectGroupDO> select(ProjectGroupDO projectGroupDO) {
+        return projectGroupMapper.select(projectGroupDO);
+    }
 }

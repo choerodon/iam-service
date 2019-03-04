@@ -303,7 +303,25 @@
         FROM
             fd_project
         WHERE
-            IS_GROUP = 0
+            CATEGORY = 0
         AND ORGANIZATION_ID = #{orgId};
+    </select>
+
+    <select id="selectProjsNotInAnyGroup" resultType="io.choerodon.iam.api.dto.ProjectDTO">
+        SELECT
+            ID,
+            NAME,
+            CODE
+        FROM
+            fd_project
+        WHERE
+            CATEGORY = 0
+        AND ORGANIZATION_ID = #{orgId}
+        AND ID NOT IN (
+            SELECT DISTINCT
+                PROJECT_ID
+            FROM
+                fd_project_group
+        )
     </select>
 </mapper>

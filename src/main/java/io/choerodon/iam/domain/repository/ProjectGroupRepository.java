@@ -42,6 +42,7 @@ public interface ProjectGroupRepository {
 
     /**
      * 更新项目群
+     *
      * @param projectGroupDO
      * @return
      */
@@ -49,8 +50,16 @@ public interface ProjectGroupRepository {
 
     /**
      * selectOne
+     *
      * @param projectGroupDO
      * @return
      */
     ProjectGroupDO selectOne(ProjectGroupDO projectGroupDO);
+
+    /**
+     * select
+     * @param projectGroupDO
+     * @return
+     */
+    List<ProjectGroupDO> select(ProjectGroupDO projectGroupDO);
 }

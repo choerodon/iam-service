@@ -1,13 +1,14 @@
 package io.choerodon.iam.api.dto;
 
-import io.choerodon.core.exception.CommonException;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import io.choerodon.core.exception.CommonException;
 
 /**
  * @author flyleft
@@ -53,8 +54,9 @@ public class ProjectDTO {
     @ApiModelProperty(value = "项目图标url")
     private String imageUrl;
 
-    @ApiModelProperty(value = "是否为项目群")
-    private Boolean group;
+
+    @ApiModelProperty(value = "项目类别：0（敏捷项目），1（普通项目组），2（统计项目组）")
+    private Integer category;
 
     public Long getId() {
         return id;
@@ -96,14 +98,6 @@ public class ProjectDTO {
         this.enabled = enabled;
     }
 
-    public Boolean getGroup() {
-        return group;
-    }
-
-    public void setGroup(Boolean group) {
-        this.group = group;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -134,6 +128,14 @@ public class ProjectDTO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Integer getCategory() {
+        return category;
+    }
+
+    public void setCategory(Integer category) {
+        this.category = category;
     }
 
     public void updateCheck() {

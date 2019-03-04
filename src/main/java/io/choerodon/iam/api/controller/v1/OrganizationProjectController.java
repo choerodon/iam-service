@@ -72,7 +72,7 @@ public class OrganizationProjectController extends BaseController {
                                                  @RequestParam(required = false) String code,
                                                  @RequestParam(required = false) String typeName,
                                                  @RequestParam(required = false) Boolean enabled,
-                                                 @RequestParam(required = false) Boolean group,
+                                                 @RequestParam(required = false) Integer category,
                                                  @RequestParam(required = false) String[] params) {
         ProjectDTO project = new ProjectDTO();
         project.setOrganizationId(organizationId);
@@ -80,7 +80,7 @@ public class OrganizationProjectController extends BaseController {
         project.setCode(code);
         project.setEnabled(enabled);
         project.setTypeName(typeName);
-        project.setGroup(group);
+        project.setCategory(category);
         return new ResponseEntity<>(organizationProjectService.pagingQuery(project, pageRequest, ParamUtils.arrToStr(params)),
                 HttpStatus.OK);
     }
@@ -137,10 +137,16 @@ public class OrganizationProjectController extends BaseController {
     }
 
 
+    /**
+     * @param organizationId 组织Id
+     * @param projectId      项目Id
+     * @return
+     */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "查询组织下所有非项目群的项目")
-    @GetMapping("/not_group")
-    public ResponseEntity<List<ProjectDTO>> getProjectsNotGroup(@PathVariable(name = "organization_id") Long organizationId) {
-        return new ResponseEntity<>(organizationProjectService.getProjectsNotGroup(organizationId), HttpStatus.OK);
+    @ApiOperation(value = "查询组织下可被分配至当前项目群的敏捷项目")
+    @GetMapping("/{project_id}/agile")
+    public ResponseEntity<List<ProjectDTO>> getProjectsNotGroup(@PathVariable(name = "organization_id") Long organizationId,
+                                                                @PathVariable(name = "project_id") Long projectId) {
+        return new ResponseEntity<>(organizationProjectService.getProjectsNotGroup(organizationId, projectId), HttpStatus.OK);
     }
 }

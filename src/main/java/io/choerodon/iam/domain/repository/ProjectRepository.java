@@ -3,6 +3,7 @@ package io.choerodon.iam.domain.repository;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
+import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -63,4 +64,10 @@ public interface ProjectRepository {
      */
     List<ProjectDTO> selectProjsNotGroup(Long orgId);
 
+    /**
+     * 获取组织下不是项目群且无所属的项目
+     * @param orgId
+     * @return
+     */
+    List<ProjectDTO> selectProjsNotInAnyGroup(Long orgId);
 }

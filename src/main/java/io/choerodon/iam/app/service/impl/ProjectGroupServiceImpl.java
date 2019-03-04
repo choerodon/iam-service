@@ -40,7 +40,7 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
             throw new CommonException("error.parent.project.not.exist");
 
         }
-        if (!projectDO.getGroup()) {
+        if (projectDO.getCategory() != 1 && projectDO.getCategory() != 2) {
             throw new CommonException("error.parent.project.is.not.group");
         }
         return projectGroupRepository.seleteProjectsByParentId(projectId);
@@ -59,22 +59,7 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
     @Transactional
     public List<ProjectGroupDTO> batchAddProjsToTheGroup(List<ProjectGroupDTO> list) {
         list.forEach(projectGroupDTO -> {
-            //parent校验，不能为空且is_group=true
-            ProjectDO parent = projectRepository.selectByPrimaryKey(projectGroupDTO.getParentId());
-            if (parent == null) {
-                throw new CommonException("error.parent.project.not.exist");
-            }
-            if (!parent.getGroup()) {
-                throw new CommonException("error.parent.project.is.not.group");
-            }
-            //project校验，不能为空且is_group=false
-            ProjectDO son = projectRepository.selectByPrimaryKey(projectGroupDTO.getProjectId());
-            if (son == null) {
-                throw new CommonException("error.son.project.not.exist");
-            } else if (son.getGroup()) {
-                throw new CommonException("error.son.project.is.group");
-            }
-
+            checkGroupIsLegal(projectGroupDTO);
             ProjectGroupDO checkDO = new ProjectGroupDO();
             checkDO.setParentId(projectGroupDTO.getParentId());
             checkDO.setProjectId(projectGroupDTO.getProjectId());
@@ -87,8 +72,10 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
     }
 
     @Override
+    @Transactional
     public List<ProjectGroupDTO> batchModifyProjsToTheGroup(List<ProjectGroupDTO> list) {
         list.forEach(i -> {
+            checkGroupIsLegal(i);
             if (projectGroupRepository.selectByPrimaryKey(i.getId()) == null) {
                 logger.warn("Batch update groupProjects exist Nonexistent groupProject,id is{}:{}", i.getId(), i);
             } else {
@@ -113,6 +100,7 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
     }
 
     @Override
+    @Transactional
     public List<ProjectGroupDTO> batchUpdateProjsToTheGroup(List<ProjectGroupDTO> list) {
         List<ProjectGroupDTO> updateNewList = new ArrayList<>();
         List<ProjectGroupDTO> insertNewList = new ArrayList<>();
@@ -127,5 +115,38 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         List<ProjectGroupDTO> updated = batchModifyProjsToTheGroup(updateNewList);
         inserted.addAll(updated);
         return inserted;
+    }
+
+    private void checkGroupIsLegal(ProjectGroupDTO projectGroupDTO) {
+        ProjectDO parent = projectRepository.selectByPrimaryKey(projectGroupDTO.getParentId());
+        if (parent == null) {
+            throw new CommonException("error.parent.project.not.exist");
+        }
+        if (parent.getCategory() != 1 && parent.getCategory() != 2) {
+            throw new CommonException("error.parent.project.is.not.group");
+        }
+
+
+        ProjectDO son = projectRepository.selectByPrimaryKey(projectGroupDTO.getProjectId());
+        if (son == null) {
+            throw new CommonException("error.son.project.not.exist");
+        } else if (son.getCategory() != 0) {
+            throw new CommonException("error.son.project.is.group");
+        }
+
+        ProjectGroupDO projectGroupDO = new ProjectGroupDO();
+        projectGroupDO.setProjectId(son.getId());
+        List<ProjectGroupDO> select = projectGroupRepository.select(projectGroupDO);
+
+        if (parent.getCategory() == 2) {
+            return;
+        } else if (parent.getCategory() == 1) {
+            if (select.size() == 1 && select.get(0).getParentId() == parent.getId()) {
+                return;
+            } else {
+                logger.error("A normal group can only assign projects to which it does not belong");
+                throw new CommonException("error.update.project.group,{}", "A normal group can only assign items to which it does not belong");
+            }
+        }
     }
 }
