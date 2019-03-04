@@ -73,8 +73,8 @@
         <if test="project.enabled != null">
             AND fp.is_enabled = #{project.enabled}
         </if>
-        <if test="project.group != null">
-            AND fp.is_group = #{project.group}
+        <if test="project.category != null">
+            AND fp.category = #{project.category}
         </if>
         <if test="project.typeName != null">
             AND fpt.name LIKE concat(concat('%',#{project.typeName}),'%')
