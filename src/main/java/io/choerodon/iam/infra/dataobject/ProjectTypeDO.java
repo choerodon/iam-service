@@ -23,6 +23,7 @@ public class ProjectTypeDO extends AuditDomain {
 
     private String description;
 
+
     public Long getId() {
         return id;
     }

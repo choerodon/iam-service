@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.ProjectTypeMapper">
+    <select id="fuzzyQuery" resultType="io.choerodon.iam.infra.dataobject.ProjectTypeDO">
+        SELECT * FROM fd_project_type
+        WHERE 1=1
+        <if test="name != null">
+            AND NAME LIKE concat(concat('%',#{name}),'%')
+        </if>
+        <if test="code != null">
+            AND code LIKE concat(concat('%',#{code}),'%')
+        </if>
+        <if test="param != null">
+            AND (
+            NAME LIKE concat(concat('%',#{param}),'%')
+            OR code LIKE concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+</mapper>
