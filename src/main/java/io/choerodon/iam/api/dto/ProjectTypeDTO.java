@@ -1,17 +1,35 @@
 package io.choerodon.iam.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
+/**
+ * @author superlee
+ */
 public class ProjectTypeDTO {
 
+    private Long id;
+
     @ApiModelProperty(value = "项目类型编码")
+    @NotEmpty(message = "error.code.empty")
     private String code;
 
     @ApiModelProperty(value = "项目类型名称")
+    @NotEmpty(message = "error.name.empty")
     private String name;
 
     @ApiModelProperty(value = "项目类型描述")
     private String description;
+
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public String getName() {
         return name;
@@ -40,9 +58,20 @@ public class ProjectTypeDTO {
     @Override
     public String toString() {
         return "ProjectTypeDTO{" +
-                ", name='" + name + '\'' +
+                "id=" + id +
                 ", code='" + code + '\'' +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", objectVersionNumber=" + objectVersionNumber +
                 '}';
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
 }
