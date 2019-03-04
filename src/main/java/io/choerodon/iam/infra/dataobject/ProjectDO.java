@@ -33,9 +33,6 @@ public class ProjectDO extends AuditDomain {
     @Column(name = "is_enabled")
     private Boolean enabled;
 
-    @Column(name = "is_group")
-    private Boolean group;
-
     @Transient
     private List<RoleDO> roles;
 
@@ -43,6 +40,8 @@ public class ProjectDO extends AuditDomain {
 
     @Transient
     private String typeName;
+
+    private Integer category;
 
     public ProjectDO() {
     }
@@ -99,14 +98,6 @@ public class ProjectDO extends AuditDomain {
         this.enabled = enabled;
     }
 
-    public Boolean getGroup() {
-        return group;
-    }
-
-    public void setGroup(Boolean group) {
-        this.group = group;
-    }
-
     public List<RoleDO> getRoles() {
         return roles;
     }
@@ -139,6 +130,14 @@ public class ProjectDO extends AuditDomain {
         this.imageUrl = imageUrl;
     }
 
+    public Integer getCategory() {
+        return category;
+    }
+
+    public void setCategory(Integer category) {
+        this.category = category;
+    }
+
     @Override
     public String toString() {
         return "ProjectDO{" +
@@ -149,10 +148,10 @@ public class ProjectDO extends AuditDomain {
                 ", imageUrl='" + imageUrl + '\'' +
                 ", organizationName='" + organizationName + '\'' +
                 ", enabled=" + enabled +
-                ", group=" + group +
                 ", roles=" + roles +
                 ", type='" + type + '\'' +
                 ", typeName='" + typeName + '\'' +
+                ", category=" + category +
                 '}';
     }
 }

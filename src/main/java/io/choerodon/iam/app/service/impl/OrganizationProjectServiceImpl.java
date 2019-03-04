@@ -49,6 +49,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @RefreshScope
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
+    private static final String PROJECT_NOT_EXIST_EXCEPTION = "error.project.not.exist";
     public static final String PROJECT = "project";
 
     @Value("${choerodon.devops.message:false}")
@@ -344,11 +345,21 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public List<ProjectDTO> getProjectsNotGroup(Long organizationId) {
+    public List<ProjectDTO> getProjectsNotGroup(Long organizationId, Long projectId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return projectRepository.selectProjsNotGroup(organizationId);
+        ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
+        if (projectDO == null) {
+            throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
+        }
+        if (projectDO.getCategory() == 1) {
+            return projectRepository.selectProjsNotInAnyGroup(organizationId);
+        } else if (projectDO.getCategory() == 2) {
+            return projectRepository.selectProjsNotGroup(organizationId);
+        } else {
+            throw new CommonException("error.project.is.not.group,id:{}", projectId);
+        }
     }
 }

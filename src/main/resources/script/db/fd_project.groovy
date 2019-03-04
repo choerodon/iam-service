@@ -51,9 +51,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
         }
     }
 
-    changeSet(author: 'longhe1996@icloud.com', id: '2019-02-25-fd-project-add') {
+    changeSet(author: 'longhe1996@icloud.com', id: '2019-03-04-fd-project-add-category') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'IS_GROUP', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否是项目群。1是，0不是', afterColumn: 'IS_ENABLED')
+            column(name: 'CATEGORY', type: 'TINYINT UNSIGNED', remarks: '项目类别：0(敏捷项目),1(普通项目组),2(统计项目组)', afterColumn: 'TYPE', defaultValue: 0)
         }
     }
 }

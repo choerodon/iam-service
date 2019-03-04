@@ -15,8 +15,6 @@ public class ProjectE {
 
     private Boolean enabled;
 
-    private Boolean group;
-
     private Long objectVersionNumber;
 
     private String typeName;
@@ -24,6 +22,8 @@ public class ProjectE {
     private String type;
 
     private String imageUrl;
+
+    private Integer category;
 
     public Long getId() {
         return id;
@@ -97,11 +97,11 @@ public class ProjectE {
         this.imageUrl = imageUrl;
     }
 
-    public Boolean getGroup() {
-        return group;
+    public Integer getCategory() {
+        return category;
     }
 
-    public void setGroup(Boolean group) {
-        this.group = group;
+    public void setCategory(Integer category) {
+        this.category = category;
     }
 }
