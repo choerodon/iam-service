@@ -37,6 +37,7 @@ import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -77,6 +78,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private AsgardFeignClient asgardFeignClient;
 
     private ProjectTypeService projectTypeService;
+
+    private ProjectRelationshipRepository projectRelationshipRepository;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
@@ -88,7 +91,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           SagaClient sagaClient,
                                           IUserService iUserService,
                                           AsgardFeignClient asgardFeignClient,
-                                          ProjectTypeService projectTypeService) {
+                                          ProjectTypeService projectTypeService,
+                                          ProjectRelationshipRepository projectRelationshipRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -99,6 +103,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.iUserService = iUserService;
         this.asgardFeignClient = asgardFeignClient;
         this.projectTypeService = projectTypeService;
+        this.projectRelationshipRepository = projectRelationshipRepository;
     }
 
     @Transactional
@@ -345,7 +350,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public List<ProjectDTO> getProjectsNotGroup(Long organizationId, Long projectId) {
+    public List<ProjectDTO> getAvailableAgileProj(Long organizationId, Long projectId) {
         OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
@@ -353,13 +358,14 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
         if (projectDO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
-        }
-        if (projectDO.getCategory() == 1) {
-            return projectRepository.selectProjsNotInAnyGroup(organizationId);
-        } else if (projectDO.getCategory() == 2) {
-            return projectRepository.selectProjsNotGroup(organizationId);
+        } else if (projectDO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
+            throw new CommonException("error.agile.projects.cannot.configure.subprojects");
         } else {
-            throw new CommonException("error.project.is.not.group,id:{}", projectId);
+            //组织下全部敏捷项目
+            List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
+            //去除已与该项目群建立关系的敏捷项目
+            Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(r -> r.getProjectId()).collect(Collectors.toSet());
+            return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
         }
     }
 }

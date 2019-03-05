@@ -23,7 +23,7 @@ public class ProjectE {
 
     private String imageUrl;
 
-    private Integer category;
+    private String category;
 
     public Long getId() {
         return id;
@@ -97,11 +97,11 @@ public class ProjectE {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Integer category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 }

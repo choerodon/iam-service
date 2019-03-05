@@ -88,6 +88,7 @@
         </if>
     </select>
 
+
     <select id="selectProjectsByUserIdWithParam" resultMap="projectDO">
         SELECT DISTINCT fd_project.*, fpt.name AS type_name
         FROM fd_project
@@ -303,7 +304,7 @@
         FROM
             fd_project
         WHERE
-            CATEGORY = 0
+            CATEGORY = 'AGILE'
         AND ORGANIZATION_ID = #{orgId};
     </select>
 
@@ -315,13 +316,13 @@
         FROM
             fd_project
         WHERE
-            CATEGORY = 0
+            CATEGORY = 'AGILE'
         AND ORGANIZATION_ID = #{orgId}
         AND ID NOT IN (
             SELECT DISTINCT
                 PROJECT_ID
             FROM
-                fd_project_group
+                fd_project_relationship
         )
     </select>
 </mapper>

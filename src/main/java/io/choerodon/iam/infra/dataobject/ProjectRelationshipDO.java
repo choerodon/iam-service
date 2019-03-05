@@ -15,8 +15,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
-@Table(name = "fd_project_group")
-public class ProjectGroupDO extends AuditDomain {
+@Table(name = "fd_project_relationship")
+public class ProjectRelationshipDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -26,6 +26,7 @@ public class ProjectGroupDO extends AuditDomain {
     private Date endDate;
     @Column(name = "is_enabled")
     private Boolean enabled;
+    private Long programId;
 
     public Long getId() {
         return id;
@@ -75,16 +76,24 @@ public class ProjectGroupDO extends AuditDomain {
         this.enabled = enabled;
     }
 
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
+    }
+
     @Override
     public String toString() {
-        return "ProjectGroupDO{" +
+        return "ProjectRelationshipDO{" +
                 "id=" + id +
                 ", projectId=" + projectId +
                 ", parentId=" + parentId +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", enabled=" + enabled +
+                ", programId=" + programId +
                 '}';
     }
-
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.ProjectRelationshipMapper">
+
+    <select id="seleteProjectsByParentId" resultType="io.choerodon.iam.api.dto.ProjectRelationshipDTO">
+        SELECT
+            fpr.*,
+            fpr.IS_ENABLED AS enabled,
+            fp. CODE AS projCode,
+            fp. NAME AS projName
+        FROM
+            fd_project_relationship fpr
+        LEFT JOIN fd_project fp ON fpr.PROJECT_ID = fp.ID
+        WHERE
+            fpr.PARENT_ID = #{parentId};
+    </select>
+</mapper>

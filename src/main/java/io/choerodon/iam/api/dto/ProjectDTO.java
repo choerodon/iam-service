@@ -55,8 +55,8 @@ public class ProjectDTO {
     private String imageUrl;
 
 
-    @ApiModelProperty(value = "项目类别：0（敏捷项目），1（普通项目组），2（统计项目组）")
-    private Integer category;
+    @ApiModelProperty(value = "项目类别：AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)")
+    private String category;
 
     public Long getId() {
         return id;
@@ -130,11 +130,11 @@ public class ProjectDTO {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Integer category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 

@@ -53,7 +53,7 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
 
     changeSet(author: 'longhe1996@icloud.com', id: '2019-03-04-fd-project-add-category') {
         addColumn(tableName: 'FD_PROJECT') {
-            column(name: 'CATEGORY', type: 'TINYINT UNSIGNED', remarks: '项目类别：0(敏捷项目),1(普通项目组),2(统计项目组)', afterColumn: 'TYPE', defaultValue: 0)
+            column(name: 'CATEGORY', type: 'VARCHAR(64)', remarks: '项目类别：AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)', afterColumn: 'TYPE', defaultValue: 'AGILE')
         }
     }
 }

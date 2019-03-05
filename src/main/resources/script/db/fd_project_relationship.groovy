@@ -1,13 +1,13 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'script/db/fd_project_group.groovy') {
-    changeSet(author: 'longhe1996@icloud.com', id: '2019-02-25-fd-project-group') {
+databaseChangeLog(logicalFilePath: 'script/db/fd_project_relationship.groovy') {
+    changeSet(author: 'longhe1996@icloud.com', id: '2019-03-05-fd_project_relationship') {
         if (helper.dbType().isSupportSequence()) {
-            createSequence(sequenceName: 'FD_PROJECT_GROUP_S', startValue: "1")
+            createSequence(sequenceName: 'FD_PROJECT_RELATIONSHIP_S', startValue: "1")
         }
-        createTable(tableName: "FD_PROJECT_GROUP") {
+        createTable(tableName: "FD_PROJECT_RELATIONSHIP") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1。') {
-                constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT_GROUP')
+                constraints(primaryKey: true, primaryKeyName: 'PK_FD_PROJECT_RELATIONSHIP')
             }
             column(name: 'PROJECT_ID', type: 'BIGINT UNSIGNED', remarks: '项目ID。') {
                 constraints(nullable: false)
@@ -27,6 +27,12 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_group.groovy') {
             column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
+        }
+    }
+
+    changeSet(author: 'longhe1996@icloud.com', id: '2019-03-05-fd_project_relationship-add-program_id') {
+        addColumn(tableName: 'FD_PROJECT_RELATIONSHIP') {
+            column(name: 'PROGRAM_ID', type: 'BIGINT UNSIGNED', remarks: '所属项目ID（只包含PROGRAM类型）', afterColumn: 'PARENT_ID')
         }
     }
 }
