@@ -9,12 +9,7 @@ import io.choerodon.iam.api.service.ProjectTypeService
 import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.domain.iam.entity.ProjectE
 import io.choerodon.iam.domain.iam.entity.UserE
-import io.choerodon.iam.domain.repository.LabelRepository
-import io.choerodon.iam.domain.repository.MemberRoleRepository
-import io.choerodon.iam.domain.repository.OrganizationRepository
-import io.choerodon.iam.domain.repository.ProjectRepository
-import io.choerodon.iam.domain.repository.RoleRepository
-import io.choerodon.iam.domain.repository.UserRepository
+import io.choerodon.iam.domain.repository.*
 import io.choerodon.iam.domain.service.IProjectService
 import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
@@ -52,12 +47,14 @@ class OrganizationProjectServiceImplSpec extends Specification {
     private AsgardFeignClient asgardFeignClient = Mock(AsgardFeignClient)
     private ProjectTypeService projectTypeService = Mock(ProjectTypeService)
     private OrganizationProjectService organizationProjectService
+    private ProjectRelationshipRepository projectRelationshipRepository
 
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient, projectTypeService)
+                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient,
+                projectTypeService, projectRelationshipRepository)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)

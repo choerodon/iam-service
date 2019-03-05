@@ -4,21 +4,21 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.iam.api.dto.ProjectGroupDTO;
-import io.choerodon.iam.infra.dataobject.ProjectGroupDO;
+import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
+import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author Eugen
  */
-public interface ProjectGroupMapper extends BaseMapper<ProjectGroupDO> {
+public interface ProjectRelationshipMapper extends BaseMapper<ProjectRelationshipDO> {
     /**
      * 查询一个项目群下的所有项目(groupid,id,code,name)
      *
      * @param parentId 项目群的项目Id
      * @return 项目Id
      */
-    List<ProjectGroupDTO> seleteProjectsByParentId(@Param("parentId") Long parentId);
+    List<ProjectRelationshipDTO> seleteProjectsByParentId(@Param("parentId") Long parentId);
 
 
 }

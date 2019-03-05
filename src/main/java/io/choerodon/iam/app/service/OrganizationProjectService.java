@@ -42,5 +42,5 @@ public interface OrganizationProjectService {
      * @param projectId
      * @return 项目列表
      */
-    List<ProjectDTO> getProjectsNotGroup(Long organizationId,Long projectId);
+    List<ProjectDTO> getAvailableAgileProj(Long organizationId,Long projectId);
 }

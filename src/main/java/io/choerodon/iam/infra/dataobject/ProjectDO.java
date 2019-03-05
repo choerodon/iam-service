@@ -41,7 +41,7 @@ public class ProjectDO extends AuditDomain {
     @Transient
     private String typeName;
 
-    private Integer category;
+    private String category;
 
     public ProjectDO() {
     }
@@ -130,11 +130,11 @@ public class ProjectDO extends AuditDomain {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Integer category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 

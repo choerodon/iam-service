@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author Eugen
  */
-public class ProjectGroupDTO {
+public class ProjectRelationshipDTO {
     @ApiModelProperty(value = "主键Id")
     private Long id;
     @ApiModelProperty(value = "项目Id")
@@ -21,6 +21,9 @@ public class ProjectGroupDTO {
 
     @ApiModelProperty(value = "项目组的项目Id")
     private Long parentId;
+
+    @ApiModelProperty(value = "所属ProgramId")
+    private Long programId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始时间")
@@ -105,5 +108,13 @@ public class ProjectGroupDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
     }
 }
