@@ -40,7 +40,7 @@ public class ProjectRelationshipController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "项目群下移除项目")
     @DeleteMapping("/{relationship_id}")
-    public ResponseEntity create(@PathVariable(name = "relationship_id") Long id) {
+    public ResponseEntity delete(@PathVariable(name = "relationship_id") Long id) {
         projectRelationshipService.removesAProjUnderGroup(id);
         return new ResponseEntity(HttpStatus.OK);
     }
