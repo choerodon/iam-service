@@ -65,10 +65,10 @@ public final class SagaTopic {
         public static final String TASK_ORG_CREATE = "iam-create-organization";
 
         //iam接受注册组织:创建默认密码策略，创建默认ldap配置
-        public static final String TASK_ORG_REGISTER_INIT_ORG="register-iam-init-org";
+        public static final String TASK_ORG_REGISTER_INIT_ORG = "register-iam-init-org";
 
         //iam接受注册组织:创建项目
-        public static final String TASK_ORG_REGISTER_INIT_PROJ="register-iam-init-project";
+        public static final String TASK_ORG_REGISTER_INIT_PROJ = "register-iam-init-project";
 
         //启用组织
         public static final String ORG_ENABLE = "iam-enable-organization";
@@ -89,4 +89,13 @@ public final class SagaTopic {
         public static final String SYSTEM_SETTING_UPDATE = "iam-update-system-setting";
     }
 
+    public static class Application {
+        private Application() {
+        }
+
+        public static final String APP_CREATE = "iam-create-application";
+        public static final String APP_UPDATE = "iam-update-application";
+        public static final String APP_DISABLE = "iam-disable-application";
+        public static final String APP_ENABLE = "iam-enable-application";
+    }
 }
