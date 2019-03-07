@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.ApplicationMapper">
+    <select id="fuzzyQuery" resultType="io.choerodon.iam.infra.dataobject.ApplicationDO">
+        SELECT * FROM iam_application
+        WHERE 1=1
+        <if test="example != null">
+            <if test="example.name != null">
+                AND NAME LIKE concat(concat('%',#{example.name}),'%')
+            </if>
+            <if test="example.code != null">
+                AND code LIKE concat(concat('%',#{example.code}),'%')
+            </if>
+            <if test="example.organizationId != null">
+                AND organization_id = #{example.organizationId}
+            </if>
+            <if test="example.projectId != null">
+                AND projectId = #{example.projectId}
+            </if>
+            <if test="example.enabled != null">
+                AND is_enabled = #{example.enabled}
+            </if>
+            <if test="example.applicationType != null">
+                AND application_type LIKE concat(concat('%',#{example.applicationType}),'%')
+            </if>
+        </if>
+        <if test="param != null">
+            AND (
+            NAME LIKE concat(concat('%',#{param}),'%')
+            OR code LIKE concat(concat('%',#{param}),'%')
+            OR application_type LIKE concat(concat('%',#{example.applicationType}),'%')
+            )
+        </if>
+    </select>
+
+</mapper>

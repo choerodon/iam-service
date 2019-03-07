@@ -1,0 +1,50 @@
+package db
+
+databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
+    changeSet(id: '2018-03-05-create-table-iam_application', author: 'superlee') {
+        if(helper.dbType().isSupportSequence()){
+            createSequence(sequenceName: 'IAM_APPLICATION_S', startValue:"1")
+        }
+        createTable(tableName: "IAM_APPLICATION") {
+            column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
+                constraints(primaryKey: true, primaryKeyName: 'PK_IAM_APPLICATION')
+            }
+            column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织id') {
+                constraints(nullable: false)
+            }
+            column(name: 'PROJECT_ID', type: 'BIGINT UNSIGNED', remarks: '项目id，可以为空，如果非空，不可修改')
+            column(name: 'NAME', type: 'VARCHAR(20)', remarks: '应用名称') {
+                constraints(nullable: false, unique: true, uniqueConstraintName:'UK_IAM_APPLICATION_U1')
+            }
+
+            column(name: 'CODE', type: 'VARCHAR(30)', remarks: '应用编码') {
+                constraints(nullable: false, unique: true, uniqueConstraintName: 'UK_IAM_APPLICATION_U2')
+            }
+
+            column(name: 'IS_ENABLED', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '是否启用。1启用，0未启用') {
+                constraints(nullable: false)
+            }
+
+            column(name: 'APPLICATION_CATEGORY', type: 'VARCHAR(64)', remarks: '应用被划分为哪些类别(普通应用:application;项目组:application-group等)') {
+                constraints(nullable: false)
+            }
+            column(name: 'APPLICATION_TYPE', type: 'VARCHAR(64)',
+                    remarks: '应用的分类(开发应用:development-application;测试应用:test-application)') {
+                constraints(nullable: false)
+            }
+
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+
+        }
+    }
+}
