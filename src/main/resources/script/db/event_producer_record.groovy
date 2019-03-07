@@ -15,8 +15,4 @@ databaseChangeLog(logicalFilePath: 'script/db/event_producer_record.groovy') {
             column(name: 'CREATE_TIME', type: 'DATETIME', remarks: '创建时间')
         }
     }
-
-    changeSet(id:'2019-03-05-drop-table-event_producer_record', author: 'superlee') {
-        dropTable(tableName:'EVENT_PRODUCER_RECORD')
-    }
 }
