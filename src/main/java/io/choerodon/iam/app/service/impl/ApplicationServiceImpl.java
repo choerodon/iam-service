@@ -23,6 +23,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,24 +105,27 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationDTO update(ApplicationDTO applicationDTO) {
         Long originProjectId = applicationDTO.getProjectId();
         validate(applicationDTO);
-        preUpdate(applicationDTO);
-        ApplicationDO applicationDO = modelMapper.map(applicationDTO, ApplicationDO.class);
-        Long projectId = applicationDO.getProjectId();
-        boolean sendCreateEvent = (projectId != null);
-
+        ApplicationDO applicationDO = assertHelper.applicationNotExisted(applicationDTO.getId());
+        Long targetProjectId = applicationDO.getProjectId();
+        preUpdate(applicationDTO, applicationDO);
+        ApplicationDO application = modelMapper.map(applicationDTO, ApplicationDO.class);
         ApplicationDO result;
         if (devopsMessage) {
-            if (originProjectId != null && sendCreateEvent) {
-                //项目id第一次选择，发送创建事件
-                result = sendEvent(applicationDO, APP_CREATE);
-            } else if (originProjectId == null && sendCreateEvent) {
-                //如果没有更新projectId,不发事件
-                result = doUpdate(applicationDO);
+            if (targetProjectId == null) {
+                if (originProjectId != null) {
+                    //send create event
+                    result = sendEvent(application, APP_CREATE);
+                } else {
+                    //do not send event
+                    result = doUpdate(application);
+                }
             } else {
-                result = sendEvent(applicationDO, APP_UPDATE);
+                //send update event
+                result = sendEvent(application, APP_UPDATE);
             }
         } else {
-            result = doUpdate(applicationDO);
+            //do not sent event
+            result = doUpdate(application);
         }
         return modelMapper.map(result, ApplicationDTO.class);
     }
@@ -196,8 +200,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void check(ApplicationDTO applicationDTO) {
-        checkName(applicationDTO);
-        checkCode(applicationDTO);
+        if (!StringUtils.isEmpty(applicationDTO.getName())) {
+            checkName(applicationDTO);
+        }
+        if (!StringUtils.isEmpty((applicationDTO.getCode()))) {
+            checkCode(applicationDTO);
+        }
     }
 
     private void checkCode(ApplicationDTO applicationDTO) {
@@ -231,8 +239,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
 
-    private boolean preUpdate(ApplicationDTO applicationDTO) {
-        ApplicationDO applicationDO = assertHelper.applicationNotExisted(applicationDTO.getId());
+    private void preUpdate(ApplicationDTO applicationDTO , ApplicationDO applicationDO) {
         Long projectId = applicationDTO.getProjectId();
         boolean canUpdateProject = ObjectUtils.isEmpty(applicationDO.getProjectId());
         if (!canUpdateProject) {
@@ -242,7 +249,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         applicationDTO.setOrganizationId(null).setApplicationCategory(null).setCode(null);
         assertHelper.objectVersionNumberNotNull(applicationDTO.getObjectVersionNumber());
-        return canUpdateProject;
     }
 
     private void validate(ApplicationDTO applicationDTO) {
