@@ -31,6 +31,7 @@ public class PermissionDO extends AuditDomain {
     private Boolean publicAccess;
     private Boolean loginAccess;
     private String serviceName;
+    @Column(name= "is_within")
     private Boolean within;
 
     public Long getId() {

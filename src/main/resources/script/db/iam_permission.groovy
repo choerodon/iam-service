@@ -76,4 +76,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
         }
     }
 
+    changeSet(author: 'superlee', id: '2019-03-07-modify-column-within') {
+        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_WITHIN", oldColumnName: "WITHIN", remarks: '是否为内部接口', tableName: 'IAM_PERMISSION')
+    }
+
 }
