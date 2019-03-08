@@ -124,8 +124,9 @@ public class ApplicationDTO {
         return param;
     }
 
-    public void setParam(String param) {
+    public ApplicationDTO setParam(String param) {
         this.param = param;
+        return this;
     }
 
     @Override

@@ -58,10 +58,21 @@ public class ApplicationController {
     @ApiOperation(value = "分页查询应用")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<ApplicationDTO>> pagingQuery(@ApiIgnore
+    public ResponseEntity<Page<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
+                                                            @ApiIgnore
                                                             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                                            ApplicationDTO applicationDTO) {
-        return new ResponseEntity<>(applicationService.pagingQuery(pageRequest, applicationDTO), HttpStatus.OK);
+                                                            @RequestParam(required = false) String name,
+                                                            @RequestParam(required = false) String code,
+                                                            @RequestParam(required = false) Boolean enabled,
+                                                            @RequestParam(required = false) String param) {
+
+        return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,
+                new ApplicationDTO()
+                        .setOrganizationId(organizationId)
+                        .setName(name)
+                        .setCode(code)
+                        .setEnabled(enabled)
+                        .setParam(param)), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
