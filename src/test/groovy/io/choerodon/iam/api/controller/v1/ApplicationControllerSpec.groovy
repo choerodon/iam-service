@@ -105,32 +105,32 @@ class ApplicationControllerSpec extends Specification {
     def "Check"() {
         given:
         ApplicationDTO dto = new ApplicationDTO()
-        dto.setName("nnn")
+        dto.setName("nnn").setOrganizationId(1L)
 
         when: "插入校验name"
-        controller.check(dto)
+        controller.check(1L, dto)
 
         then:
         noExceptionThrown()
 
-        when:"更新校验name"
+        when: "更新校验name"
         dto.setId(1)
-        controller.check(dto)
+        controller.check(1L, dto)
 
         then:
         noExceptionThrown()
 
-        when:"更新校验code"
+        when: "更新校验code"
         dto.setName(null)
         dto.setCode("ccc")
-        controller.check(dto)
+        controller.check(1L, dto)
 
         then:
         noExceptionThrown()
 
-        when:"插入校验code"
+        when: "插入校验code"
         dto.setId(null)
-        controller.check(dto)
+        controller.check(1L, dto)
 
         then:
         noExceptionThrown()

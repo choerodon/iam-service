@@ -9,12 +9,12 @@ package io.choerodon.iam.infra.enums;
 public enum ApplicationCategory {
 
     /**
-     * 开发应用
+     * 应用
      */
     APPLICATION("普通应用", "application"),
 
     /**
-     * 测试应用
+     * 应用组
      */
     GROUP("应用组", "application-group");
 
