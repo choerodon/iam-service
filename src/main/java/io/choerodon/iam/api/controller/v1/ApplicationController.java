@@ -89,7 +89,9 @@ public class ApplicationController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重名校验")
     @PostMapping("/check")
-    public ResponseEntity check(@RequestBody ApplicationDTO applicationDTO) {
+    public ResponseEntity check(@PathVariable("organization_id") Long organizationId,
+                                @RequestBody ApplicationDTO applicationDTO) {
+        applicationDTO.setOrganizationId(organizationId);
         applicationService.check(applicationDTO);
         return new ResponseEntity(HttpStatus.OK);
     }

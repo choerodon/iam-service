@@ -23,6 +23,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,8 @@ import java.util.List;
  */
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
+
+    private static final Long PROJECT_DOES_NOT_EXIST_ID = 0L;
 
     private ApplicationMapper applicationMapper;
 
@@ -59,17 +62,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         assertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
         validate(applicationDTO);
         //application-group不能选项目
-        if (ApplicationCategory.GROUP.code().equals(applicationDTO.getApplicationCategory())) {
-            applicationDTO.setProjectId(null);
+        if (ApplicationCategory.GROUP.code().equals(applicationDTO.getApplicationCategory())
+                || ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
+            applicationDTO.setProjectId(0L);
         }
         ApplicationDO applicationDO = modelMapper.map(applicationDTO, ApplicationDO.class);
         Long projectId = applicationDO.getProjectId();
-        if (projectId != null) {
+        if (!PROJECT_DOES_NOT_EXIST_ID.equals(projectId)) {
             assertHelper.projectNotExisted(projectId);
         }
 
         ApplicationDO result;
-        if (devopsMessage && projectId != null) {
+        if (devopsMessage && !PROJECT_DOES_NOT_EXIST_ID.equals(projectId)) {
             result =
                     producer.applyAndReturn(
                             StartSagaBuilder
@@ -102,26 +106,31 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = APP_UPDATE, description = "iam更新应用", inputSchemaClass = ApplicationDO.class)
     public ApplicationDTO update(ApplicationDTO applicationDTO) {
-        Long originProjectId = applicationDTO.getProjectId();
+        Long originProjectId =
+                ObjectUtils.isEmpty(applicationDTO.getProjectId()) ? PROJECT_DOES_NOT_EXIST_ID : applicationDTO.getProjectId();
+        applicationDTO.setProjectId(originProjectId);
         validate(applicationDTO);
-        preUpdate(applicationDTO);
-        ApplicationDO applicationDO = modelMapper.map(applicationDTO, ApplicationDO.class);
-        Long projectId = applicationDO.getProjectId();
-        boolean sendCreateEvent = (projectId != null);
-
+        ApplicationDO applicationDO = assertHelper.applicationNotExisted(applicationDTO.getId());
+        Long targetProjectId = applicationDO.getProjectId();
+        preUpdate(applicationDTO, applicationDO);
+        ApplicationDO application = modelMapper.map(applicationDTO, ApplicationDO.class);
         ApplicationDO result;
         if (devopsMessage) {
-            if (originProjectId != null && sendCreateEvent) {
-                //项目id第一次选择，发送创建事件
-                result = sendEvent(applicationDO, APP_CREATE);
-            } else if (originProjectId == null && sendCreateEvent) {
-                //如果没有更新projectId,不发事件
-                result = doUpdate(applicationDO);
+            if (PROJECT_DOES_NOT_EXIST_ID.equals(targetProjectId)) {
+                if (!PROJECT_DOES_NOT_EXIST_ID.equals(originProjectId)) {
+                    //send create event
+                    result = sendEvent(application, APP_CREATE);
+                } else {
+                    //do not send event
+                    result = doUpdate(application);
+                }
             } else {
-                result = sendEvent(applicationDO, APP_UPDATE);
+                //send update event
+                result = sendEvent(application, APP_UPDATE);
             }
         } else {
-            result = doUpdate(applicationDO);
+            //do not sent event
+            result = doUpdate(application);
         }
         return modelMapper.map(result, ApplicationDTO.class);
     }
@@ -164,22 +173,21 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = APP_ENABLE, description = "iam启用应用", inputSchemaClass = ApplicationDO.class)
     public ApplicationDTO enable(Long id) {
-        ApplicationDO applicationDO = assertHelper.applicationNotExisted(id);
-        applicationDO.setEnabled(true);
-        if (devopsMessage && applicationDO.getProjectId() != null) {
-            return modelMapper.map(sendEvent(applicationDO, APP_ENABLE), ApplicationDTO.class);
-        } else {
-            return modelMapper.map(doUpdate(applicationDO), ApplicationDTO.class);
-        }
+        return enable(id, true);
     }
 
     @Override
     @Saga(code = APP_DISABLE, description = "iam禁用应用", inputSchemaClass = ApplicationDO.class)
     public ApplicationDTO disable(Long id) {
+        return enable(id, false);
+    }
+
+    private ApplicationDTO enable(Long id, boolean enabled) {
         ApplicationDO applicationDO = assertHelper.applicationNotExisted(id);
-        applicationDO.setEnabled(false);
-        if (devopsMessage && applicationDO.getProjectId() != null) {
-            return modelMapper.map(sendEvent(applicationDO, APP_DISABLE), ApplicationDTO.class);
+        applicationDO.setEnabled(enabled);
+        String sagaCode = enabled ? APP_ENABLE : APP_DISABLE;
+        if (devopsMessage && !PROJECT_DOES_NOT_EXIST_ID.equals(applicationDO.getProjectId())) {
+            return modelMapper.map(sendEvent(applicationDO, sagaCode), ApplicationDTO.class);
         } else {
             return modelMapper.map(doUpdate(applicationDO), ApplicationDTO.class);
         }
@@ -196,14 +204,23 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void check(ApplicationDTO applicationDTO) {
-        checkName(applicationDTO);
-        checkCode(applicationDTO);
+        if (!StringUtils.isEmpty(applicationDTO.getName())) {
+            //name是组织下唯一
+            checkName(applicationDTO);
+        }
+        if (!StringUtils.isEmpty((applicationDTO.getCode()))) {
+            //如果选的有项目，code是项目下唯一；如果没选项目，code是组织下唯一
+            checkCode(applicationDTO);
+        }
     }
 
     private void checkCode(ApplicationDTO applicationDTO) {
         String code = applicationDTO.getCode();
         ApplicationDO example = new ApplicationDO();
         example.setCode(code);
+        example.setOrganizationId(applicationDTO.getOrganizationId());
+        example.setProjectId(
+                ObjectUtils.isEmpty(applicationDTO.getProjectId()) ? PROJECT_DOES_NOT_EXIST_ID : applicationDTO.getProjectId());
         Long id = applicationDTO.getId();
         check(example, id, "error.application.code.duplicate");
     }
@@ -226,23 +243,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         String name = applicationDTO.getName();
         ApplicationDO example = new ApplicationDO();
         example.setName(name);
+        example.setOrganizationId(applicationDTO.getOrganizationId());
         Long id = applicationDTO.getId();
         check(example, id, "error.application.name.duplicate");
     }
 
 
-    private boolean preUpdate(ApplicationDTO applicationDTO) {
-        ApplicationDO applicationDO = assertHelper.applicationNotExisted(applicationDTO.getId());
-        Long projectId = applicationDTO.getProjectId();
-        boolean canUpdateProject = ObjectUtils.isEmpty(applicationDO.getProjectId());
+    private void preUpdate(ApplicationDTO applicationDTO, ApplicationDO applicationDO) {
+        boolean canUpdateProject = PROJECT_DOES_NOT_EXIST_ID.equals(applicationDO.getProjectId());
         if (!canUpdateProject) {
+            //为空的情况下，调用updateByPrimaryKeySelective这一列不会被更新
             applicationDTO.setProjectId(null);
-        } else if (applicationDTO.getProjectId() != null) {
-            assertHelper.projectNotExisted(projectId);
+        } else if (!PROJECT_DOES_NOT_EXIST_ID.equals(applicationDTO.getProjectId())) {
+            assertHelper.projectNotExisted(applicationDTO.getProjectId());
         }
         applicationDTO.setOrganizationId(null).setApplicationCategory(null).setCode(null);
         assertHelper.objectVersionNumberNotNull(applicationDTO.getObjectVersionNumber());
-        return canUpdateProject;
     }
 
     private void validate(ApplicationDTO applicationDTO) {
