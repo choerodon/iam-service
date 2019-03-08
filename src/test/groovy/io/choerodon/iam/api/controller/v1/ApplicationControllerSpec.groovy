@@ -74,7 +74,7 @@ class ApplicationControllerSpec extends Specification {
         PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(pageRequest, new ApplicationDTO())
+        def result = controller.pagingQuery(1L, pageRequest, null, null, null, null)
         then:
         result.statusCode.is2xxSuccessful()
         result.body.size() > 0
