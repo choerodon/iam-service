@@ -63,4 +63,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
     changeSet(author: 'superleader8@gmail.com', id: '2018-08-28-rename') {
         renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '菜单层级', tableName: 'IAM_MENU')
     }
+
+    changeSet(author: 'fan@choerodon.io', id: '2019-03-11-add-column') {
+        addColumn(tableName: 'IAM_MENU') {
+            column(name: 'CATEGORY', type: 'VARCHAR(64)', remarks: '项目层菜单分类，可以为AGILE，PROGRAM，ANALYTICAL')
+        }
+    }
 }
