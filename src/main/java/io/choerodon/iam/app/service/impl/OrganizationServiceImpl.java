@@ -8,6 +8,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.dto.payload.OrganizationPayload;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,10 +26,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.OrganizationDTO;
-import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.api.dto.RoleDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.iam.entity.UserE;
@@ -152,20 +149,17 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (customUserDetails == null) {
             throw new CommonException("error.user.not.login");
         }
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        OrganizationDTO dto = queryOrganizationById(organizationId);
         long userId = customUserDetails.getUserId();
-        if (organizationDO == null) {
-            throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
-        }
+
         List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, null);
-        organizationDO.setProjects(projects);
-        organizationDO.setProjectCount(projects.size());
-        OrganizationDTO organizationDTO = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        dto.setProjects(ConvertHelper.convertList(projects, ProjectDTO.class));
+        dto.setProjectCount(projects.size());
 
-
-        List<RoleDO> roles = roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
-        organizationDTO.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
-        return organizationDTO;
+        List<RoleDO> roles =
+                roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
+        dto.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
+        return dto;
     }
 
     @Override
