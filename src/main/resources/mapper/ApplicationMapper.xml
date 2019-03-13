@@ -39,4 +39,15 @@
         </if>
     </select>
 
+    <select id="matchId" resultMap="ApplicationDO">
+        SELECT *
+        FROM iam_application
+        WHERE id IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
 </mapper>

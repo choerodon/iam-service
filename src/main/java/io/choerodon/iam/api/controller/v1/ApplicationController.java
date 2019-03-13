@@ -106,4 +106,14 @@ public class ApplicationController {
         applicationService.check(applicationDTO);
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "将应用/组合应用添加到组合应用中")
+    @PostMapping("/{id}/add_to_combination")
+    public ResponseEntity addToCombination(@PathVariable("organization_id") Long organizationId,
+                                @PathVariable("id") Long id,
+                                @RequestBody Long[] ids) {
+        applicationService.addToCombination(organizationId, id, ids);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }
