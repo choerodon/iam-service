@@ -141,6 +141,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         projectEventMsg.setRoleLabels(initMemberRole(newProjectE));
         projectEventMsg.setProjectId(newProjectE.getId());
         projectEventMsg.setProjectCode(newProjectE.getCode());
+        projectEventMsg.setProjectCategory(newProjectE.getCategory());
         projectEventMsg.setProjectName(newProjectE.getName());
         projectEventMsg.setImageUrl(projectE.getImageUrl());
         OrganizationDO organizationDO =

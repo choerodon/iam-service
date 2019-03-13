@@ -11,6 +11,7 @@ public class ProjectEventPayload {
     private Long projectId;
     private String projectCode;
     private String projectName;
+    private String projectCategory;
     private String organizationCode;
     private String organizationName;
     private String userName;
@@ -89,5 +90,13 @@ public class ProjectEventPayload {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getProjectCategory() {
+        return projectCategory;
+    }
+
+    public void setProjectCategory(String projectCategory) {
+        this.projectCategory = projectCategory;
     }
 }
