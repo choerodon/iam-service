@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.api.dto.RelationshipEnableCheckDTO;
+import io.choerodon.iam.api.dto.RelationshipCheckDTO;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -64,7 +64,7 @@ public class ProjectRelationshipController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验项目关系能否被启用")
     @GetMapping("/check/{relationship_id}/can_be_enabled")
-    public ResponseEntity<RelationshipEnableCheckDTO> checkRelationshipCanBeEnabled(@PathVariable(name = "relationship_id") Long id) {
+    public ResponseEntity<RelationshipCheckDTO> checkRelationshipCanBeEnabled(@PathVariable(name = "relationship_id") Long id) {
         return new ResponseEntity<>(projectRelationshipService.checkRelationshipCanBeEnabled(id), HttpStatus.OK);
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.api.dto.RelationshipEnableCheckDTO;
+import io.choerodon.iam.api.dto.RelationshipCheckDTO;
 
 /**
  * @author Eugen
@@ -49,5 +49,5 @@ public interface ProjectRelationshipService {
      * @param id
      * @return
      */
-    RelationshipEnableCheckDTO checkRelationshipCanBeEnabled(Long id);
+    RelationshipCheckDTO checkRelationshipCanBeEnabled(Long id);
 }
