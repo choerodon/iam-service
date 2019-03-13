@@ -3,6 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
+import io.choerodon.iam.api.dto.ApplicationExplorationDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -111,9 +112,32 @@ public class ApplicationController {
     @ApiOperation(value = "将应用/组合应用添加到组合应用中")
     @PostMapping("/{id}/add_to_combination")
     public ResponseEntity addToCombination(@PathVariable("organization_id") Long organizationId,
-                                @PathVariable("id") Long id,
-                                @RequestBody Long[] ids) {
+                                           @PathVariable("id") Long id,
+                                           @RequestBody Long[] ids) {
         applicationService.addToCombination(organizationId, id, ids);
         return new ResponseEntity(HttpStatus.OK);
     }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询组合应用的后裔")
+    @GetMapping("/{id}/descendant")
+    public ResponseEntity<List<ApplicationExplorationDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
+                                                                           @PathVariable("id") Long id) {
+        return new ResponseEntity<>(applicationService.queryDescendant(id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询组合应用下普通应用清单")
+    @CustomPageRequest
+    @GetMapping("/{id}/app_list")
+    public ResponseEntity<Page<ApplicationDTO>> queryApplicationList(@ApiIgnore
+                                                                     @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+                                                                     @PathVariable("organization_id") Long organizationId,
+                                                                     @PathVariable("id") Long id,
+                                                                     @RequestParam(required = false) String name,
+                                                                     @RequestParam(required = false) String code) {
+        return new ResponseEntity<>(applicationService.queryApplicationList(pageRequest, id, name, code), HttpStatus.OK);
+    }
+
 }

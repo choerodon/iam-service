@@ -8,6 +8,41 @@
         <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
+    <resultMap id="ApplicationDO" type="io.choerodon.iam.infra.dataobject.ApplicationDO">
+        <id property="id" column="id"/>
+        <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+
+    <select id="selectDescendantApplications" resultMap="ApplicationDO">
+        SELECT j.*, k.app_count FROM iam_application j
+        JOIN (
+            SELECT ia.id, count(ia.id) AS app_count
+            FROM iam_application ia
+            JOIN (
+                SELECT iae.*
+                FROM iam_application_exploration iae
+                JOIN (
+                    SELECT i.path
+                    FROM iam_application_exploration i
+                    WHERE i.application_id = #{id}
+                ) t ON 1=1
+                WHERE iae.path LIKE concat(t.path,'%')
+            ) temp
+            ON ia.id = temp.APPLICATION_ID
+            WHERE ia.APPLICATION_CATEGORY = #{category}
+            GROUP BY ia.id
+        )k ON j.id = k.id
+        WHERE 1=1
+        <if test="name != null">
+            AND j.name LIKE concat(concat('%',#{name}),'%')
+        </if>
+        <if test="code != null">
+            AND j.code LIKE concat(concat('%',#{code}),'%')
+        </if>
+    </select>
+
+
     <select id="selectDescendantByApplicationIds" resultMap="ApplicationExplorationDO">
         SELECT distinct iae.*
         FROM iam_application_exploration iae
@@ -19,7 +54,7 @@
                  open="(" separator="," close=")">
             #{item}
         </foreach>
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
@@ -30,7 +65,7 @@
         SELECT i.path
         FROM iam_application_exploration i
         WHERE i.application_id = #{id}
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
@@ -46,7 +81,7 @@
             #{item}
         </foreach>
         AND i.parent_id = #{parentId}
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
@@ -58,7 +93,7 @@
         FROM iam_application_exploration i
         WHERE i.application_id = #{id}
         AND i.parent_id = #{parentId}
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
@@ -67,7 +102,7 @@
         FROM iam_application_exploration i
         JOIN (
         SELECT path FROM iam_application_exploration j WHERE j.application_id = #{id}
-        ) t
+        ) t ON 1=1
         WHERE t.path LIKE concat(i.path, '%');
     </select>
 
@@ -82,7 +117,7 @@
         JOIN
         (
         SELECT path FROM iam_application_exploration WHERE application_id = #{id}
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </delete>
     <delete id="deleteDescendantByApplicationIds">
@@ -94,7 +129,7 @@
                  open="(" separator="," close=")">
             #{item}
         </foreach>
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </delete>
 
@@ -108,7 +143,7 @@
             #{item}
         </foreach>
         AND parent_id = #{parentId}
-        ) t
+        ) t ON 1=1
         WHERE iae.path LIKE concat(t.path,'%')
     </delete>
 

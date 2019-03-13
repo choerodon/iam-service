@@ -4,10 +4,7 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author superlee
@@ -36,6 +33,8 @@ public class ApplicationDO extends AuditDomain {
     private String applicationCategory;
 
     private String applicationType;
+
+    private Integer appCount;
 
     public Long getId() {
         return id;
@@ -106,6 +105,15 @@ public class ApplicationDO extends AuditDomain {
 
     public ApplicationDO setApplicationType(String applicationType) {
         this.applicationType = applicationType;
+        return this;
+    }
+
+    public Integer getAppCount() {
+        return appCount;
+    }
+
+    public ApplicationDO setAppCount(Integer appCount) {
+        this.appCount = appCount;
         return this;
     }
 }

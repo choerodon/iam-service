@@ -56,6 +56,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
 
     /**
      * 根据应用id和父id删除所有子节点，包含自己
+     *
      * @param idSet
      * @param parentId
      */
@@ -79,9 +80,20 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
 
     /**
      * 根据应用节点id和该节点的父id查询该节点下的所有节点，包含自己
+     *
      * @param id
      * @param parentId
      * @return
      */
     List selectDescendantByApplicationIdAndParentId(@Param("id") Long id, @Param("parentId") Long parentId);
+
+    /**
+     * 查询组合应用下指定类型的应用{@link io.choerodon.iam.infra.enums.ApplicationCategory}
+     *
+     * @param id
+     * @param category
+     * @return
+     */
+    List selectDescendantApplications(@Param("id") Long id, @Param("category") String category,
+                                      @Param("name") String name, @Param("code") String code);
 }
