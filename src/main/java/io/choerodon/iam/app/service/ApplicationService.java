@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ApplicationDTO;
+import io.choerodon.iam.api.dto.ApplicationExplorationDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -67,4 +68,18 @@ public interface ApplicationService {
      * @param ids 需要被分配的应用或组合应用
      */
     void addToCombination(Long organizationId, Long id, Long[] ids);
+
+    /**
+     * 查询指定组合应用下的所有节点
+     * @param id
+     * @return
+     */
+    List<ApplicationExplorationDTO> queryDescendant(Long id);
+
+    /**
+     * 根据组合应用id查询下面所有的普通应用{@link io.choerodon.iam.infra.enums.ApplicationCategory#APPLICATION}
+     * @param id
+     * @return
+     */
+    Page<ApplicationDTO> queryApplicationList(PageRequest pageRequest, Long id, String name, String code);
 }

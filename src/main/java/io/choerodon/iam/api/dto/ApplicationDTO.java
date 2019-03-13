@@ -35,6 +35,8 @@ public class ApplicationDTO {
     @NotEmpty(message = "error.application.applicationType.empty")
     private String applicationType;
 
+    private Integer appCount;
+
     private Long objectVersionNumber;
 
     private String param;
@@ -129,6 +131,14 @@ public class ApplicationDTO {
         return this;
     }
 
+    public Integer getAppCount() {
+        return appCount;
+    }
+
+    public void setAppCount(Integer appCount) {
+        this.appCount = appCount;
+    }
+
     @Override
     public String toString() {
         return "ApplicationDTO{" +
@@ -140,6 +150,7 @@ public class ApplicationDTO {
                 ", enabled=" + enabled +
                 ", applicationCategory='" + applicationCategory + '\'' +
                 ", applicationType='" + applicationType + '\'' +
+                ", appCount=" + appCount +
                 ", objectVersionNumber=" + objectVersionNumber +
                 ", param='" + param + '\'' +
                 '}';

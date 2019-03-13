@@ -1,30 +1,18 @@
-package io.choerodon.iam.infra.dataobject;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
+package io.choerodon.iam.api.dto;
 
 /**
  * @author superlee
  * @since 0.15.0
  */
-@ModifyAudit
-@VersionAudit
-@Table(name = "iam_application_exploration")
-public class ApplicationExplorationDO extends AuditDomain {
-    @Id
-    @GeneratedValue
+public class ApplicationExplorationDTO {
+
     private Long id;
     private Long applicationId;
     private String path;
     private Long rootId;
     private Long parentId;
     private String hashcode;
-    @Column(name = "is_enabled")
     private Boolean enabled;
-
 
     public Long getId() {
         return id;

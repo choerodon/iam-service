@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_application_exploration.groovy
             column(name: 'APPLICATION_ID', type: 'BIGINT UNSIGNED', remarks: '应用id') {
                 constraints(nullable: false)
             }
-            column(name: 'PATH', type: 'VARCHAR(5000)', remarks: '应用路径，从根节点到当前节点的application_id路径，实例：1/或1/2/3/或1/4/5/等') {
+            column(name: 'PATH', type: 'VARCHAR(4000)', remarks: '应用路径，从根节点到当前节点的application_id路径，实例：1/或1/2/3/或1/4/5/等') {
                 constraints(nullable: false)
             }
             column(name: 'ROOT_ID', type: 'BIGINT UNSIGNED', remarks: '当前节点的根节点id，如果自己是根节点，则是自己的id') {

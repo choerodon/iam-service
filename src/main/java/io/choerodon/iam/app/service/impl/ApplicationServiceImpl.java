@@ -10,6 +10,7 @@ import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
+import io.choerodon.iam.api.dto.ApplicationExplorationDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.common.utils.AssertHelper;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
@@ -234,8 +235,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         isApplicationsIllegal(organizationId, idSet);
 
-        //校验组合应用或应用 idSet 是否能放到 组合应用=id 下面。
-        Map<Long, List> map = canAddToCombination(id, idSet);
         //查询直接儿子
         List<ApplicationExplorationDO> originDirectDescendant =
                 applicationExplorationMapper.selectDirectDescendantByApplicationId(id);
@@ -247,11 +246,37 @@ public class ApplicationServiceImpl implements ApplicationService {
                 !intersection.contains(item)).collect(Collectors.toList());
         List<Long> deleteList = originDirectDescendantIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
-        Long rootId = getRootId(id);
-        addTreeNode(id, map, rootId, insertList);
+        //校验组合应用或应用 idSet 是否能放到 组合应用=id 下面。
+        if (!insertList.isEmpty()) {
+            Long rootId = getRootId(id);
+            Map<Long, List> map = canAddToCombination(id, idSet);
+            addTreeNode(id, map, rootId, insertList);
+        }
         if (!deleteList.isEmpty()) {
             deleteTreeNode(id, deleteList);
         }
+    }
+
+    @Override
+    public List<ApplicationExplorationDTO> queryDescendant(Long id) {
+        if (!ApplicationCategory.COMBINATION.value().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+            throw new CommonException("error.application.queryDescendant.not.support");
+        }
+        List<ApplicationExplorationDO> doList = applicationExplorationMapper.selectDescendantByApplicationId(id);
+        return
+                modelMapper.map(doList, new TypeToken<List<ApplicationExplorationDTO>>() {
+                }.getType());
+    }
+
+    @Override
+    public Page<ApplicationDTO> queryApplicationList(PageRequest pageRequest, Long id, String name, String code) {
+        Page<ApplicationDO> pages =
+                PageHelper.doPageAndSort(pageRequest, () ->
+                        applicationExplorationMapper.selectDescendantApplications(id, ApplicationCategory.APPLICATION.code(), name, code));
+        List<ApplicationDTO> dtoList =
+                modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
+                }.getType());
+        return new Page<>(dtoList, new PageInfo(pages.getNumber(), pages.getSize()), pages.getTotalElements());
     }
 
     private void deleteTreeNode(Long id, List<Long> deleteList) {
