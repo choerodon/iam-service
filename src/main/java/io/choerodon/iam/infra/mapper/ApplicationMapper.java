@@ -5,6 +5,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author superlee
@@ -13,9 +14,18 @@ import java.util.List;
 public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     /**
      * 模糊查询
+     *
      * @param example
      * @param param
      * @return
      */
     List fuzzyQuery(@Param("example") ApplicationDO example, @Param("param") String param);
+
+    /**
+     * 传入application id集合，返回application 对象集合
+     *
+     * @param idSet
+     * @return
+     */
+    List matchId(@Param("idSet") Set<Long> idSet);
 }

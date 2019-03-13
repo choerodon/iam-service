@@ -59,4 +59,12 @@ public interface ApplicationService {
      * @param applicationDTO
      */
     void check(ApplicationDTO applicationDTO);
+
+    /**
+     * 在组织下面将应用或组合应用添加到指定的组合应用里
+     * @param organizationId 组织id
+     * @param id 应用id，applicationCategory为combination-application {@link io.choerodon.iam.infra.enums.ApplicationCategory#COMBINATION}
+     * @param ids 需要被分配的应用或组合应用
+     */
+    void addToCombination(Long organizationId, Long id, Long[] ids);
 }

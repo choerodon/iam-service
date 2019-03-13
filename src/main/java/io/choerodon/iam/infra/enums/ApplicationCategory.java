@@ -14,9 +14,9 @@ public enum ApplicationCategory {
     APPLICATION("普通应用", "application"),
 
     /**
-     * 应用组
+     * 组合应用
      */
-    GROUP("应用组", "application-group");
+    COMBINATION("组合应用", "combination-application");
 
     private String value;
     private String code;

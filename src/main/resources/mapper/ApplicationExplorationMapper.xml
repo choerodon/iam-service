@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.iam.infra.mapper.ApplicationExplorationMapper">
+
+    <resultMap id="ApplicationExplorationDO" type="io.choerodon.iam.infra.dataobject.ApplicationExplorationDO">
+        <id property="id" column="id"/>
+        <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="selectDescendantByApplicationIds" resultMap="ApplicationExplorationDO">
+        SELECT distinct iae.*
+        FROM iam_application_exploration iae
+        JOIN (
+        SELECT i.path
+        FROM iam_application_exploration i
+        WHERE i.application_id IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </select>
+
+    <select id="selectDescendantByApplicationId" resultMap="ApplicationExplorationDO">
+        SELECT iae.*
+        FROM iam_application_exploration iae
+        JOIN (
+        SELECT i.path
+        FROM iam_application_exploration i
+        WHERE i.application_id = #{id}
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </select>
+
+    <select id="selectDescendantByApplicationIdsAndParentId" resultMap="ApplicationExplorationDO">
+        SELECT distinct iae.*
+        FROM iam_application_exploration iae
+        JOIN (
+        SELECT i.path
+        FROM iam_application_exploration i
+        WHERE i.application_id IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND i.parent_id = #{parentId}
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </select>
+
+    <select id="selectDescendantByApplicationIdAndParentId" resultMap="ApplicationExplorationDO">
+        SELECT distinct iae.*
+        FROM iam_application_exploration iae
+        JOIN (
+        SELECT i.path
+        FROM iam_application_exploration i
+        WHERE i.application_id = #{id}
+        AND i.parent_id = #{parentId}
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </select>
+
+    <select id="selectAncestorByApplicationId" resultMap="ApplicationExplorationDO">
+        SELECT i.*
+        FROM iam_application_exploration i
+        JOIN (
+        SELECT path FROM iam_application_exploration j WHERE j.application_id = #{id}
+        ) t
+        WHERE t.path LIKE concat(i.path, '%');
+    </select>
+
+    <select id="selectDirectDescendantByApplicationId" resultMap="ApplicationExplorationDO">
+        select * from iam_application_exploration
+        where parent_id = #{id}
+    </select>
+
+
+    <delete id="deleteDescendantByApplicationId" parameterType="Long">
+        DELETE iae FROM iam_application_exploration iae
+        JOIN
+        (
+        SELECT path FROM iam_application_exploration WHERE application_id = #{id}
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </delete>
+    <delete id="deleteDescendantByApplicationIds">
+        DELETE iae FROM iam_application_exploration iae
+        JOIN
+        (
+        SELECT path FROM iam_application_exploration WHERE application_id IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </delete>
+
+    <delete id="deleteDescendantByApplicationIdsAndParentId">
+        DELETE iae FROM iam_application_exploration iae
+        JOIN
+        (
+        SELECT path FROM iam_application_exploration WHERE application_id IN
+        <foreach item="item" index="index" collection="idSet"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND parent_id = #{parentId}
+        ) t
+        WHERE iae.path LIKE concat(t.path,'%')
+    </delete>
+
+</mapper>

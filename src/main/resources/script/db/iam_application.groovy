@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'APPLICATION_CATEGORY', type: 'VARCHAR(64)', remarks: '应用被划分为哪些类别(普通应用:application;应用组:application-group等)') {
+            column(name: 'APPLICATION_CATEGORY', type: 'VARCHAR(64)', remarks: '应用被划分为哪些类别(普通应用:application;组合应用:combination-application等)') {
                 constraints(nullable: false)
             }
             column(name: 'APPLICATION_TYPE', type: 'VARCHAR(64)',
