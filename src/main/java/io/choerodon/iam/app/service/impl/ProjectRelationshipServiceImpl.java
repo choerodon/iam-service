@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.api.dto.RelationshipEnableCheckDTO;
+import io.choerodon.iam.api.dto.RelationshipCheckDTO;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
@@ -65,58 +65,14 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
     }
 
     @Override
-    public RelationshipEnableCheckDTO checkRelationshipCanBeEnabled(Long id) {
+    public RelationshipCheckDTO checkRelationshipCanBeEnabled(Long id) {
         ProjectRelationshipDO projectRelationshipDO = projectRelationshipRepository.selectByPrimaryKey(id);
         if (projectRelationshipDO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
         } else if (projectRelationshipDO.getEnabled()) {
             throw new CommonException("error.check.relationship.is.already.enabled");
         }
-
-        ProjectRelationshipDO checkDO = new ProjectRelationshipDO();
-        checkDO.setProjectId(projectRelationshipDO.getProjectId());
-        List<ProjectRelationshipDO> checkList = projectRelationshipRepository.select(checkDO);
-        long start = projectRelationshipDO.getStartDate().getTime();
-        RelationshipEnableCheckDTO result = new RelationshipEnableCheckDTO();
-        result.setResult(true);
-        checkList.forEach(r -> {
-            ProjectDO parent = projectRepository.selectByPrimaryKey(r.getParentId());
-            if (r.getId() != id && r.getEnabled()
-                    && parent.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-                long min = r.getStartDate().getTime();
-                ProjectDO projectDO = projectRepository.selectByPrimaryKey(r.getParentId());
-                Boolean flag = true;
-                if (projectRelationshipDO.getEndDate() != null) {
-                    long end = projectRelationshipDO.getEndDate().getTime();
-                    if (r.getEndDate() != null) {
-                        long max = r.getEndDate().getTime();
-                        if (!(start >= max || end <= min)) {
-                            flag = false;
-                        }
-                    } else {
-                        if (!(end <= min)) {
-                            flag = false;
-                        }
-                    }
-                } else {
-                    if (r.getEndDate() != null) {
-                        long max = r.getEndDate().getTime();
-                        if (!(start >= max)) {
-                            flag = false;
-                        }
-                    } else {
-                        flag = false;
-                    }
-                }
-                if (!flag) {
-                    result.setResult(false);
-                    result.setProjectCode(projectDO.getCode());
-                    result.setProjectName(projectDO.getName());
-                    return;
-                }
-            }
-        });
-        return result;
+        return checkDate(projectRelationshipDO);
     }
 
     @Override
@@ -183,8 +139,16 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             checkDO.setParentId(relationshipDTO.getParentId());
             checkDO.setProjectId(relationshipDTO.getProjectId());
             if (projectRelationshipRepository.selectOne(checkDO) != null) {
-                throw new CommonException("error.group.exist");
+                throw new CommonException("error.relationship.exist");
             }
+            // check date
+            ProjectRelationshipDO relationshipDO = new ProjectRelationshipDO();
+            BeanUtils.copyProperties(relationshipDTO, relationshipDO);
+            RelationshipCheckDTO relationshipCheckDTO = checkDate(relationshipDO);
+            if (!relationshipCheckDTO.getResult()) {
+                throw new CommonException("error.relationship.date.is.not.legal");
+            }
+            // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
         });
@@ -200,6 +164,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 }
                 ProjectRelationshipDO projectRelationshipDO = new ProjectRelationshipDO();
                 BeanUtils.copyProperties(relationshipDTO, projectRelationshipDO);
+                // check date
+                RelationshipCheckDTO relationshipCheckDTO = checkDate(projectRelationshipDO);
+                if (!relationshipCheckDTO.getResult()) {
+                    throw new CommonException("error.relationship.date.is.not.legal");
+                }
+                // update
                 projectRelationshipDO = projectRelationshipRepository.update(projectRelationshipDO);
                 BeanUtils.copyProperties(projectRelationshipDO, relationshipDTO);
                 returnList.add(relationshipDTO);
@@ -267,5 +237,59 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         } else if (!son.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
             throw new CommonException(PROGRAM_CANNOT_BE_CONFIGURA_SUBPROJECTS);
         }
+    }
+
+    private RelationshipCheckDTO checkDate(ProjectRelationshipDO needCheckDO) {
+        // db list
+        ProjectRelationshipDO checkDO = new ProjectRelationshipDO();
+        checkDO.setProjectId(needCheckDO.getProjectId());
+        List<ProjectRelationshipDO> dbList = projectRelationshipRepository.select(checkDO);
+
+        long start = needCheckDO.getStartDate().getTime();
+        // build result
+        RelationshipCheckDTO result = new RelationshipCheckDTO();
+        result.setResult(true);
+
+        // check
+        dbList.forEach(r -> {
+            ProjectDO parent = projectRepository.selectByPrimaryKey(r.getParentId());
+            if (r.getId() != needCheckDO.getId() && r.getEnabled()
+                    && parent.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                long min = r.getStartDate().getTime();
+                Boolean flag = true;
+                if (needCheckDO.getEndDate() != null) {
+                    long end = needCheckDO.getEndDate().getTime();
+                    if (r.getEndDate() != null) {
+                        long max = r.getEndDate().getTime();
+                        if (!(start >= max || end <= min)) {
+                            flag = false;
+                        }
+                    } else {
+                        if (!(end <= min)) {
+                            flag = false;
+                        }
+                    }
+                } else {
+                    if (r.getEndDate() != null) {
+                        long max = r.getEndDate().getTime();
+                        if (!(start >= max)) {
+                            flag = false;
+                        }
+                    } else {
+                        flag = false;
+                    }
+                }
+                if (!flag) {
+                    result.setResult(false);
+                    result.setProjectCode(parent.getCode());
+                    result.setProjectName(parent.getName());
+                    logger.warn("Project associated time is not legal,relationship:{},conflict project name:{},code:{}",
+                            needCheckDO, result.getProjectName(), result.getProjectCode());
+                    return;
+                }
+            }
+        });
+        // return
+        return result;
     }
 }

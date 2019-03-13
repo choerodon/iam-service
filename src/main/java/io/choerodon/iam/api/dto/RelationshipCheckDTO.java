@@ -2,8 +2,8 @@ package io.choerodon.iam.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class RelationshipEnableCheckDTO {
-    @ApiModelProperty(value = "是否可启用")
+public class RelationshipCheckDTO {
+    @ApiModelProperty(value = "是否与项目其余被占用时间冲突")
     private Boolean result;
 
     @ApiModelProperty(value = "占用的项目code")
@@ -36,10 +36,10 @@ public class RelationshipEnableCheckDTO {
         this.projectName = projectName;
     }
 
-    public RelationshipEnableCheckDTO() {
+    public RelationshipCheckDTO() {
     }
 
-    public RelationshipEnableCheckDTO(Boolean result, String projectCode, String projectName) {
+    public RelationshipCheckDTO(Boolean result, String projectCode, String projectName) {
         this.result = result;
         this.projectCode = projectCode;
         this.projectName = projectName;
