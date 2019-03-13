@@ -32,7 +32,7 @@ public interface UserService {
 
     UserDTO queryInfo(Long userId);
 
-    RegistrantInfoDTO queryRegistrantInfoAndAdmin(Long userId);
+    RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
 
     UserDTO updateInfo(UserDTO user);
 
