@@ -64,9 +64,10 @@ public class UserController extends BaseController {
 
 
     @Permission(permissionWithin = true)
-    @GetMapping(value = "/{id}/registrant")
-    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(@PathVariable Long id) {
-        return Optional.ofNullable(userService.queryRegistrantInfoAndAdmin(id))
+    @GetMapping(value = "/registrant")
+    public ResponseEntity<RegistrantInfoDTO> queryInfoSkipLogin(
+            @RequestParam(value = "org_code") String orgCode) {
+        return Optional.ofNullable(userService.queryRegistrantInfoAndAdmin(orgCode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(NotFoundException::new);
     }

@@ -39,6 +39,7 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
+import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
@@ -316,12 +317,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(Long userId) {
-        UserE user = userRepository.selectByPrimaryKey(userId);
+    public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
+        OrganizationDO organizationDO=new OrganizationDO();
+        organizationDO.setCode(orgCode);
+        organizationDO = organizationRepository.selectOne(organizationDO);
+        UserE user = userRepository.selectByPrimaryKey(organizationDO.getUserId());
         UserE admin = userRepository.selectByLoginName("admin");
         RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
         registrantInfoDTO.setUser(user);
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
         registrantInfoDTO.setOrganizationName(organizationDO.getName());
         registrantInfoDTO.setAdminId(admin.getId());
         return registrantInfoDTO;
