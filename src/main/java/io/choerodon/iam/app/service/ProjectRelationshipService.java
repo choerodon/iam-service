@@ -26,6 +26,7 @@ public interface ProjectRelationshipService {
      * @param groupId
      */
     void removesAProjUnderGroup(Long groupId);
+
     /**
      * 查询项目在该项目组下的不可用时间
      *
@@ -42,10 +43,11 @@ public interface ProjectRelationshipService {
      * @param list
      * @return
      */
-    List<ProjectRelationshipDTO> batchUpdateRelationShipUnderProgram(List<ProjectRelationshipDTO> list);
+    List<ProjectRelationshipDTO> batchUpdateRelationShipUnderProgram(Long orgId, List<ProjectRelationshipDTO> list);
 
     /**
      * 校验项目关系能否被启用
+     *
      * @param id
      * @return
      */

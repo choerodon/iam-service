@@ -34,7 +34,7 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
         if (projectRelationshipMapper.insertSelective(projectRelationshipDO) != 1) {
             throw new CommonException("error.create.project.group");
         }
-        return projectRelationshipDO;
+        return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDO.getId());
     }
 
     @Override

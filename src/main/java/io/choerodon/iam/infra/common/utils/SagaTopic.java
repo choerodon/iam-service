@@ -101,4 +101,12 @@ public final class SagaTopic {
         //devops端创建application失败，触发rollback操作
         public static final String DEVOPS_CREATE_FAILED = "devops_create_app_err";
     }
+
+    public static class ProjectRelationship {
+        private ProjectRelationship() {
+        }
+
+        // iam新增项目关系
+        public static final String PROJECT_RELATIONSHIP_ADD = "iam-add-project-relationships";
+    }
 }
