@@ -1,14 +1,13 @@
 package io.choerodon.iam.domain.repository;
 
+import java.util.List;
+import java.util.Set;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
-import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author flyleft

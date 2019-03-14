@@ -22,6 +22,7 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 import io.choerodon.iam.infra.dataobject.MenuDO;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.enums.ProjectCategory;
 
 /**
  * @author wuguokai
@@ -103,16 +104,18 @@ public class MenuServiceImpl implements MenuService {
         if (isAdmin) {
             MenuDO menu = new MenuDO();
             menu.setLevel(level);
+            String projectCategory = this.selectProgramMenuCategory(level, sourceId);
+            if (projectCategory != null) {
+                menu.setCategory(projectCategory);
+            }
             List<MenuDO> menuDOList = menuRepository.select(menu);
+
             menus = ConvertHelper.convertList(menuDOList, MenuDTO.class);
         } else {
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            String projectCategory = null;
-            if (ResourceLevel.PROJECT.value().equals(level)) {
-                ProjectDO projectDo = projectRepository.selectByPrimaryKey(sourceId);
-                projectCategory = projectDo != null ? projectDo.getCategory() : null;
-            }
+            String projectCategory = this.selectProgramMenuCategory(level, sourceId);
+
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
                             "user", userDetails.getUserId(), sourceType, sourceId, projectCategory), MenuDTO.class);
@@ -263,5 +266,15 @@ public class MenuServiceImpl implements MenuService {
             menuDTO.setId(newMenuDTO.getId());
             menuDTO.setObjectVersionNumber(newMenuDTO.getObjectVersionNumber());
         }
+    }
+
+    private String selectProgramMenuCategory(String level, Long projectId) {
+        if (ResourceLevel.PROJECT.value().equals(level)) {
+            ProjectDO projectDo = projectRepository.selectByPrimaryKey(projectId);
+            if (projectDo.getCategory() != null && !ProjectCategory.AGILE.value().equals(projectDo.getCategory().toLowerCase())) {
+                return ProjectCategory.PROGRAM.value().toUpperCase();
+            }
+        }
+        return null;
     }
 }
