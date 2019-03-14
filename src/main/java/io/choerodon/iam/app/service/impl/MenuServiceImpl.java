@@ -32,8 +32,6 @@ public class MenuServiceImpl implements MenuService {
 
     private MenuRepository menuRepository;
     private MenuValidator menuValidator;
-
-    @
     private ProjectRepository projectRepository;
 
 
