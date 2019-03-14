@@ -103,9 +103,14 @@
             <if test="level != null">
                 AND im.fd_level = #{level}
             </if>
-            <if test="category != null and category != 'AGILE' ">
-                AND im.CATEGORY LIKE 'PROGRAM'
-            </if>
+            <choose>
+              <when test="category != null and category == 'PROGRAM' ">
+                AND im.CATEGORY == 'PROGRAM'
+              </when>
+              <otherwise>
+                AND im.CATEGORY !='PROGRAM'
+              </otherwise>
+            </choose>
             UNION
             SELECT DISTINCT * FROM iam_menu
             WHERE
