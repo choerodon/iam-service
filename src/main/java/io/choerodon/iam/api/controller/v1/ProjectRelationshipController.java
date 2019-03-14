@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author Eugen
  */
 @RestController
-@RequestMapping(value = "/v1/project_relation")
+@RequestMapping(value = "/v1/organizations/{organization_id}/project_relations")
 public class ProjectRelationshipController {
 
     private ProjectRelationshipService projectRelationshipService;
@@ -31,16 +31,18 @@ public class ProjectRelationshipController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "查询项目群下所有项目")
+    @ApiOperation(value = "查询组合项目下所有项目")
     @GetMapping(value = "/{parent_id}")
-    public ResponseEntity<List<ProjectRelationshipDTO>> getProjUnderGroup(@PathVariable(name = "parent_id") Long id) {
+    public ResponseEntity<List<ProjectRelationshipDTO>> getProjUnderGroup(@PathVariable(name = "organization_id") Long orgId,
+                                                                          @PathVariable(name = "parent_id") Long id) {
         return new ResponseEntity<>(projectRelationshipService.getProjUnderGroup(id), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "项目群下移除项目")
+    @ApiOperation(value = "组合项目下移除项目")
     @DeleteMapping("/{relationship_id}")
-    public ResponseEntity delete(@PathVariable(name = "relationship_id") Long id) {
+    public ResponseEntity delete(@PathVariable(name = "organization_id") Long orgId,
+                                 @PathVariable(name = "relationship_id") Long id) {
         projectRelationshipService.removesAProjUnderGroup(id);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -48,7 +50,8 @@ public class ProjectRelationshipController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "获取敏捷项目的不可用时间")
     @GetMapping("/{project_id}/unavailable/under/{parent_id}")
-    public ResponseEntity<List<Map<String, Date>>> getUnavailableTime(@PathVariable(name = "project_id") Long id,
+    public ResponseEntity<List<Map<String, Date>>> getUnavailableTime(@PathVariable(name = "organization_id") Long orgId,
+                                                                      @PathVariable(name = "project_id") Long id,
                                                                       @PathVariable(name = "parent_id") Long parentId) {
         return new ResponseEntity<>(projectRelationshipService.getUnavailableTime(id, parentId), HttpStatus.OK);
     }
@@ -57,14 +60,16 @@ public class ProjectRelationshipController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "项目群下批量更新（添加/修改/启停用）子项目")
     @PutMapping
-    public ResponseEntity<List<ProjectRelationshipDTO>> create(@RequestBody @Valid List<ProjectRelationshipDTO> projectRelationshipDTOList) {
+    public ResponseEntity<List<ProjectRelationshipDTO>> create(@PathVariable(name = "organization_id") Long orgId,
+                                                               @RequestBody @Valid List<ProjectRelationshipDTO> projectRelationshipDTOList) {
         return new ResponseEntity<>(projectRelationshipService.batchUpdateRelationShipUnderProgram(projectRelationshipDTOList), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验项目关系能否被启用")
     @GetMapping("/check/{relationship_id}/can_be_enabled")
-    public ResponseEntity<RelationshipCheckDTO> checkRelationshipCanBeEnabled(@PathVariable(name = "relationship_id") Long id) {
+    public ResponseEntity<RelationshipCheckDTO> checkRelationshipCanBeEnabled(@PathVariable(name = "organization_id") Long orgId,
+                                                                              @PathVariable(name = "relationship_id") Long id) {
         return new ResponseEntity<>(projectRelationshipService.checkRelationshipCanBeEnabled(id), HttpStatus.OK);
     }
 
