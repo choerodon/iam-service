@@ -228,7 +228,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public void addToCombination(Long organizationId, Long id, Long[] ids) {
         assertHelper.organizationNotExisted(organizationId);
-        assertHelper.applicationNotExisted(id);
+        if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+            throw new CommonException("error.application.addToCombination.not.support");
+        }
         Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
         if (idSet.isEmpty()) {
             throw new CommonException("error.application.add2combination.target.empty");
@@ -259,7 +261,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationExplorationDTO> queryDescendant(Long id) {
-        if (!ApplicationCategory.COMBINATION.value().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+        if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
         List<ApplicationExplorationDO> doList = applicationExplorationMapper.selectDescendantByApplicationId(id);
