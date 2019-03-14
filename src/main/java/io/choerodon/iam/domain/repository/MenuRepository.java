@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
+import java.util.List;
+
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.infra.dataobject.MenuDO;
-
-import java.util.List;
 
 /**
  * @author wuguokai
@@ -26,7 +26,7 @@ public interface MenuRepository {
     List<MenuDO> queryMenusWithPermissions(String level, String type);
 
     List<MenuDO> queryMenusWithPermissionByTestPermission(String level, String memberType, Long memberId,
-                                                          String sourceType, Long sourceId);
+                                                          String sourceType, Long sourceId, String category);
 
     List<MenuDO> select(MenuDO menuDO);
 

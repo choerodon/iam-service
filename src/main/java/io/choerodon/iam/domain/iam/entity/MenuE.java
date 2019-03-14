@@ -20,10 +20,11 @@ public class MenuE {
     private Boolean isDefault;
     private String icon;
     private String route;
+    private String category;
     private Long objectVersionNumber;
 
     public MenuE(String code, String name, String level, Long parentId, String type, Integer sort,
-                 Boolean isDefault, String icon, String route, Long objectVersionNumber) {
+                 Boolean isDefault, String icon, String route, String category, Long objectVersionNumber) {
         this.code = code;
         this.name = name;
         this.level = level;
@@ -34,6 +35,7 @@ public class MenuE {
         this.icon = icon;
         this.objectVersionNumber = objectVersionNumber;
         this.route = route;
+        this.category = category;
     }
 
     public Integer getSort() {

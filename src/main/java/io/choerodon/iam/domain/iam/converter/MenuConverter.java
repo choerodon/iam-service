@@ -1,15 +1,16 @@
 package io.choerodon.iam.domain.iam.converter;
 
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.iam.api.dto.MenuDTO;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.infra.dataobject.MenuDO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author wuguokai
@@ -21,7 +22,7 @@ public class MenuConverter implements ConvertorI<MenuE, MenuDO, MenuDTO> {
     public MenuE doToEntity(MenuDO dataObject) {
         MenuE menuE = new MenuE(dataObject.getCode(), dataObject.getName(), dataObject.getLevel(),
                 dataObject.getParentId(), dataObject.getType(), dataObject.getSort(), dataObject.getDefault(),
-                dataObject.getIcon(), dataObject.getRoute(), dataObject.getObjectVersionNumber());
+                dataObject.getIcon(), dataObject.getRoute(), dataObject.getCategory(), dataObject.getObjectVersionNumber());
         menuE.setId(dataObject.getId());
         return menuE;
     }
@@ -37,7 +38,7 @@ public class MenuConverter implements ConvertorI<MenuE, MenuDO, MenuDTO> {
     public MenuE dtoToEntity(MenuDTO dto) {
         MenuE menuE = new MenuE(dto.getCode(), dto.getName(), dto.getLevel(),
                 dto.getParentId(), dto.getType(), dto.getSort(), dto.getDefault(), dto.getIcon(),
-                dto.getRoute(), dto.getObjectVersionNumber());
+                dto.getRoute(), dto.getCategory(), dto.getObjectVersionNumber());
         menuE.setId(dto.getId());
         return menuE;
     }

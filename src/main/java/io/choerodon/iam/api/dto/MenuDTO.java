@@ -50,6 +50,10 @@ public class MenuDTO {
 
     @ApiModelProperty(value = "菜单路由/非必填")
     private String route;
+
+    @ApiModelProperty(value = "菜单分类/非必填")
+    private String category;
+
     @ApiModelProperty(value = "objectVersionNumber")
     private Long objectVersionNumber;
 
@@ -181,5 +185,13 @@ public class MenuDTO {
 
     public void setRoute(String route) {
         this.route = route;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

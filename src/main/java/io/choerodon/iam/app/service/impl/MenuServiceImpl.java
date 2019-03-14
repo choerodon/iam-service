@@ -1,5 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -10,15 +18,9 @@ import io.choerodon.iam.api.validator.MenuValidator;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.domain.iam.entity.MenuE;
 import io.choerodon.iam.domain.repository.MenuRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 import io.choerodon.iam.infra.dataobject.MenuDO;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -29,6 +31,7 @@ public class MenuServiceImpl implements MenuService {
 
     private MenuRepository menuRepository;
     private MenuValidator menuValidator;
+    private ProjectRepository projectRepository;
 
 
     public MenuServiceImpl(MenuRepository menuRepository, MenuValidator menuValidator) {
@@ -103,9 +106,11 @@ public class MenuServiceImpl implements MenuService {
         } else {
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
+            String projectCategory =  ResourceLevel.PROJECT.value().equals(level)? projectRepository.selectByPrimaryKey(sourceId).getCategory(): null;
+
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                            "user", userDetails.getUserId(), sourceType, sourceId), MenuDTO.class);
+                            "user", userDetails.getUserId(), sourceType, sourceId, projectCategory), MenuDTO.class);
         }
         return MenuTreeUtil.formatMenu(menus);
     }
@@ -121,7 +126,7 @@ public class MenuServiceImpl implements MenuService {
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
             menus = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                    "user", userDetails.getUserId(), sourceType, null), MenuDTO.class);
+                    "user", userDetails.getUserId(), sourceType, null, null), MenuDTO.class);
         } else {
             menus = queryMenusWithPermissions(level, null);
         }
