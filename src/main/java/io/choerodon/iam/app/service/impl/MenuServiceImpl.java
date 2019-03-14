@@ -32,12 +32,15 @@ public class MenuServiceImpl implements MenuService {
 
     private MenuRepository menuRepository;
     private MenuValidator menuValidator;
+
+    @
     private ProjectRepository projectRepository;
 
 
-    public MenuServiceImpl(MenuRepository menuRepository, MenuValidator menuValidator) {
+    public MenuServiceImpl(MenuRepository menuRepository, MenuValidator menuValidator, ProjectRepository projectRepository) {
         this.menuRepository = menuRepository;
         this.menuValidator = menuValidator;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -110,7 +113,7 @@ public class MenuServiceImpl implements MenuService {
             String projectCategory = null;
             if (ResourceLevel.PROJECT.value().equals(level)) {
                 ProjectDO projectDo = projectRepository.selectByPrimaryKey(sourceId);
-                projectCategory = projectDo!=null ? projectDo.getCategory(): null;
+                projectCategory = projectDo != null ? projectDo.getCategory() : null;
             }
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
