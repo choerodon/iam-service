@@ -1,13 +1,13 @@
 package io.choerodon.iam.infra.dataobject;
 
+import java.util.List;
+import javax.persistence.*;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
-import java.util.List;
 
 /**
  * @author wuguokai
@@ -32,6 +32,8 @@ public class MenuDO extends AuditDomain {
     private Boolean isDefault;
     private String icon;
     private String route;
+
+    private String category;
 
     @Transient
     private List<PermissionDO> permissions;
@@ -144,4 +146,13 @@ public class MenuDO extends AuditDomain {
     public void setRoute(String route) {
         this.route = route;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
 }
