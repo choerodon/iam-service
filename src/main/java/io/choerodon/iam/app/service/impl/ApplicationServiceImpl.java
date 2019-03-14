@@ -484,8 +484,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationDO example = new ApplicationDO();
         example.setCode(code);
         example.setOrganizationId(applicationDTO.getOrganizationId());
-        example.setProjectId(
-                ObjectUtils.isEmpty(applicationDTO.getProjectId()) ? PROJECT_DOES_NOT_EXIST_ID : applicationDTO.getProjectId());
         Long id = applicationDTO.getId();
         check(example, id, "error.application.code.duplicate");
     }
@@ -497,8 +495,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new CommonException(message);
             }
         } else {
-            ApplicationDO applicationDO = applicationMapper.selectOne(example);
-            if (applicationDO != null && !applicationDO.getId().equals(id)) {
+            List<ApplicationDO> applications = applicationMapper.select(example);
+            if (applications.size() > 2) {
+                throw new CommonException(message);
+            }
+            if (applications.size() == 1 && !applications.get(0).getId().equals(id)) {
                 throw new CommonException(message);
             }
         }
