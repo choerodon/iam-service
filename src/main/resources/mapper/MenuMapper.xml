@@ -12,6 +12,7 @@
         <result column="icon" property="icon" jdbcType="VARCHAR"/>
         <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
         <result column="route" property="route" jdbcType="VARCHAR"/>
+        <result column="category" property="category" jdbcType="VARCHAR"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT"/>
         <collection property="permissions" ofType="io.choerodon.iam.infra.dataobject.PermissionDO">
             <id column="permission_id" property="id"></id>
@@ -101,6 +102,9 @@
             )
             <if test="level != null">
                 AND im.fd_level = #{level}
+            </if>
+            <if test="category != null and category != 'AGILE' ">
+                AND im.CATEGORY LIKE 'PROGRAM'
             </if>
             UNION
             SELECT DISTINCT * FROM iam_menu
