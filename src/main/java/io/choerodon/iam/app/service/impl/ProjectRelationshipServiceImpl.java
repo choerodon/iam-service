@@ -1,19 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.api.dto.RelationshipCheckDTO;
+import io.choerodon.iam.api.dto.payload.ProjectRelationshipInsertPayload;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
@@ -36,10 +44,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     private ProjectRelationshipRepository projectRelationshipRepository;
     private ProjectRepository projectRepository;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private SagaClient sagaClient;
 
-    public ProjectRelationshipServiceImpl(ProjectRepository projectRepository, ProjectRelationshipRepository projectRelationshipRepository) {
+    public ProjectRelationshipServiceImpl(ProjectRelationshipRepository projectRelationshipRepository, ProjectRepository projectRepository, SagaClient sagaClient) {
         this.projectRelationshipRepository = projectRelationshipRepository;
         this.projectRepository = projectRepository;
+        this.sagaClient = sagaClient;
     }
 
     @Override
@@ -111,10 +122,10 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         return list;
     }
 
-
+    @Saga(code = PROJECT_RELATIONSHIP_ADD, description = "iam组合项目中新增子项目", inputSchemaClass = ProjectRelationshipInsertPayload.class)
     @Override
     @Transactional
-    public List<ProjectRelationshipDTO> batchUpdateRelationShipUnderProgram(List<ProjectRelationshipDTO> list) {
+    public List<ProjectRelationshipDTO> batchUpdateRelationShipUnderProgram(Long orgId, List<ProjectRelationshipDTO> list) {
         //check list
         checkUpdateList(list);
         //update与create分区
@@ -128,6 +139,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             }
         });
         List<ProjectRelationshipDTO> returnList = new ArrayList<>();
+        // build project relationship saga payload
+        ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
+        ProjectDO parent = projectRepository.selectByPrimaryKey(list.get(0).getParentId());
+        sagaPayload.setCategory(parent.getCategory());
+        sagaPayload.setParentCode(parent.getCode());
+        sagaPayload.setParentId(parent.getId());
+        List<ProjectRelationshipInsertPayload.ProjectRelationship> relationships = new ArrayList<>();
         //批量插入
         insertNewList.forEach(relationshipDTO -> {
             checkGroupIsLegal(relationshipDTO);
@@ -151,6 +169,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
+            // fill the saga payload
+            ProjectDO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
+            ProjectRelationshipInsertPayload.ProjectRelationship relationship
+                    = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
+                    relationshipDTO.getStartDate(), relationshipDTO.getEndDate(), relationshipDTO.getEnabled());
+            relationships.add(relationship);
         });
         //批量更新
         updateNewList.forEach(relationshipDTO -> {
@@ -175,6 +199,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 returnList.add(relationshipDTO);
             }
         });
+        try {
+            sagaPayload.setRelationships(relationships);
+            String input = mapper.writeValueAsString(sagaPayload);
+            sagaClient.startSaga(PROJECT_RELATIONSHIP_ADD, new StartInstanceDTO(input, "organization", "" + orgId, ResourceLevel.ORGANIZATION.value(), orgId));
+        } catch (Exception e) {
+            throw new CommonException("error.project.relationship.add.event", e);
+        }
         return returnList;
     }
 

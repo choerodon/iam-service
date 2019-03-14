@@ -62,7 +62,7 @@ public class ProjectRelationshipController {
     @PutMapping
     public ResponseEntity<List<ProjectRelationshipDTO>> create(@PathVariable(name = "organization_id") Long orgId,
                                                                @RequestBody @Valid List<ProjectRelationshipDTO> projectRelationshipDTOList) {
-        return new ResponseEntity<>(projectRelationshipService.batchUpdateRelationShipUnderProgram(projectRelationshipDTOList), HttpStatus.OK);
+        return new ResponseEntity<>(projectRelationshipService.batchUpdateRelationShipUnderProgram(orgId,projectRelationshipDTOList), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
