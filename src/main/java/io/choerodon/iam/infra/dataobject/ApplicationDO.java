@@ -34,6 +34,7 @@ public class ApplicationDO extends AuditDomain {
 
     private String applicationType;
 
+    @Transient
     private Integer appCount;
 
     public Long getId() {
