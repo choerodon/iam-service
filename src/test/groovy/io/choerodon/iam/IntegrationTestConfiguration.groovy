@@ -29,7 +29,6 @@ import org.springframework.ldap.core.LdapTemplate
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
 
@@ -39,8 +38,6 @@ import javax.annotation.PostConstruct
 @TestConfiguration
 @Import(LiquibaseConfig)
 class IntegrationTestConfiguration {
-
-    private final detachedMockFactory = new DetachedMockFactory()
 
     @Value('${choerodon.oauth.jwt.key:choerodon}')
     String key

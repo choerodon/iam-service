@@ -3,7 +3,7 @@ spring:
     url: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
     password: 123456
-  http: #设置上传文件最大为10M
+  servlet: #设置上传文件最大为10M
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB

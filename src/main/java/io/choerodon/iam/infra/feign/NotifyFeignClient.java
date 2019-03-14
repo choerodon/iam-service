@@ -4,7 +4,7 @@ import javax.validation.Valid;
 
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.iam.api.dto.SystemAnnouncementDTO;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;

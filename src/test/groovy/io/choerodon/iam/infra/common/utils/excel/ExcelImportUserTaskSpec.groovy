@@ -205,8 +205,6 @@ class ExcelImportUserTaskSpec extends Specification {
         then: "校验结果"
         1 * fallback.callback(_)
         1 * 1 * fileFeignClient.uploadFile(_, _, _) >> { new ResponseEntity<String>(HttpStatus.OK) }
-        1 * userRepository.matchLoginName(_) >> { matchLoginName }
-        1 * userRepository.matchEmail(_) >> { matchEmail }
     }
 
     def "ImportMemberRole"() {
