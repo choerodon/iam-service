@@ -21,6 +21,7 @@ import io.choerodon.iam.domain.repository.MenuRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
 import io.choerodon.iam.infra.dataobject.MenuDO;
+import io.choerodon.iam.infra.dataobject.ProjectDO;
 
 /**
  * @author wuguokai
@@ -106,8 +107,11 @@ public class MenuServiceImpl implements MenuService {
         } else {
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
             String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            String projectCategory =  ResourceLevel.PROJECT.value().equals(level)? projectRepository.selectByPrimaryKey(sourceId).getCategory(): null;
-
+            String projectCategory = null;
+            if (ResourceLevel.PROJECT.value().equals(level)) {
+                ProjectDO projectDo = projectRepository.selectByPrimaryKey(sourceId);
+                projectCategory = projectDo!=null ? projectDo.getCategory(): null;
+            }
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
                             "user", userDetails.getUserId(), sourceType, sourceId, projectCategory), MenuDTO.class);
