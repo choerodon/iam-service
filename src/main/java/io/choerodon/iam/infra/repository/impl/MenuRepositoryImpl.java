@@ -82,7 +82,10 @@ public class MenuRepositoryImpl implements MenuRepository {
     public List<MenuDO> queryMenusWithPermissionByTestPermission(String level, String memberType, Long memberId, String sourceType, Long sourceId, String category) {
         return menuMapper.queryMenusWithPermissionByTestPermission(level, memberType, memberId, sourceType, sourceId, category);
     }
-
+    @Override
+    public List<MenuDO> queryProjectMenusWithCategoryByRootUser(String category) {
+        return menuMapper.queryProjectMenusWithCategoryByRootUser(category);
+    }
     @Override
     public List<MenuDO> select(MenuDO menuDO) {
         return menuMapper.select(menuDO);

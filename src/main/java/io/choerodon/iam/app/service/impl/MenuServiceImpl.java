@@ -104,12 +104,13 @@ public class MenuServiceImpl implements MenuService {
         if (isAdmin) {
             MenuDO menu = new MenuDO();
             menu.setLevel(level);
-            String projectCategory = this.selectProgramMenuCategory(level, sourceId);
-            if (projectCategory != null) {
-                menu.setCategory(projectCategory);
+            List<MenuDO> menuDOList;
+            if (ResourceLevel.PROJECT.value().equals(level)) {
+                menuDOList = menuRepository.queryProjectMenusWithCategoryByRootUser(
+                        this.selectProgramMenuCategory(level, sourceId));
+            } else {
+                menuDOList = menuRepository.select(menu);
             }
-            List<MenuDO> menuDOList = menuRepository.select(menu);
-
             menus = ConvertHelper.convertList(menuDOList, MenuDTO.class);
         } else {
             //如果是menu level是user(个人中心)，不在member_role表里判断sourceType

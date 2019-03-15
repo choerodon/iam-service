@@ -20,5 +20,7 @@ public interface MenuMapper extends BaseMapper<MenuDO> {
                                                           @Param("sourceType") String sourceType, @Param("sourceId") Long sourceId,
                                                           @Param("category") String category);
 
+    List<MenuDO> queryProjectMenusWithCategoryByRootUser(@Param("category") String category);
+
     void deleteMenusById(@Param("menuIds") List<Long> menuIds);
 }
