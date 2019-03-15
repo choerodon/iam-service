@@ -69,6 +69,23 @@
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
+    <select id="selectDescendantWithApplication" resultMap="ApplicationExplorationDO">
+        SELECT
+          iae.*,
+          ia.name application_name,
+          ia.code application_code,
+          ia.application_category application_category,
+          ia.application_type application_type
+        FROM iam_application_exploration iae
+        JOIN (
+        SELECT i.path
+        FROM iam_application_exploration i
+        WHERE i.application_id = #{id}
+        ) t ON 1=1
+        join iam_application ia on iae.application_id = ia.id
+        WHERE iae.path LIKE concat(t.path,'%')
+    </select>
+
     <select id="selectDescendantByApplicationIdsAndParentId" resultMap="ApplicationExplorationDO">
         SELECT distinct iae.*
         FROM iam_application_exploration iae

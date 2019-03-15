@@ -40,4 +40,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_application_exploration.groovy
         }
         addUniqueConstraint(tableName: 'IAM_APPLICATION_EXPLORATION', columnNames: 'APPLICATION_ID, PARENT_ID', constraintName: 'PK_IAM_APPLICATION_EXPLO_U1')
     }
+
+    changeSet(author: 'superlee', id: '2018-03-14-iam-application-exploration-remove-unique-constraint') {
+        dropUniqueConstraint(tableName:'IAM_APPLICATION_EXPLORATION', constraintName:'PK_IAM_APPLICATION_EXPLO_U1')
+    }
 }

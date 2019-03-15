@@ -25,6 +25,15 @@ public class ApplicationExplorationDO extends AuditDomain {
     @Column(name = "is_enabled")
     private Boolean enabled;
 
+    @Transient
+    private String applicationName;
+    @Transient
+    private String applicationCode;
+    @Transient
+    private String applicationCategory;
+    @Transient
+    private String applicationType;
+
 
     public Long getId() {
         return id;
@@ -80,5 +89,37 @@ public class ApplicationExplorationDO extends AuditDomain {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public String getApplicationCode() {
+        return applicationCode;
+    }
+
+    public void setApplicationCode(String applicationCode) {
+        this.applicationCode = applicationCode;
+    }
+
+    public String getApplicationCategory() {
+        return applicationCategory;
+    }
+
+    public void setApplicationCategory(String applicationCategory) {
+        this.applicationCategory = applicationCategory;
+    }
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
     }
 }
