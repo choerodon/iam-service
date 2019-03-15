@@ -3,7 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
-import io.choerodon.iam.api.dto.ApplicationExplorationDTO;
+import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -120,11 +120,19 @@ public class ApplicationController {
 
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询组合应用的后裔")
+    @ApiOperation(value = "查询组合应用的后代")
     @GetMapping("/{id}/descendant")
-    public ResponseEntity<List<ApplicationExplorationDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
-                                                                           @PathVariable("id") Long id) {
+    public ResponseEntity<List<ApplicationExplorationWithAppDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
+                                                                                  @PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.queryDescendant(id), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询可以向指定组合应用添加的后代，判别标准是不构成环")
+    @GetMapping("/{id}/enabled_app")
+    public ResponseEntity<List<ApplicationDTO>> queryEnabledApplication(@PathVariable("organization_id") Long organizationId,
+                                                                        @PathVariable("id") Long id) {
+        return new ResponseEntity<>(applicationService.queryEnabledApplication(organizationId, id), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
