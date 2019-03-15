@@ -94,13 +94,12 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuDTO> listAfterTestPermission(String level, Long sourceId) {
-//        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-//        if (userDetails == null) {
-//            return new ArrayList<>();
-//        }
-//        boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
-        boolean isAdmin =false;
-                //例外super admin,如果是的话能看到所有菜单
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null) {
+            return new ArrayList<>();
+        }
+        boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
+        //例外super admin,如果是的话能看到所有菜单
         List<MenuDTO> menus;
         if (isAdmin) {
             MenuDO menu = new MenuDO();
@@ -119,7 +118,7 @@ public class MenuServiceImpl implements MenuService {
 
             menus =
                     ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                            "user", (long)11756, sourceType, sourceId, projectCategory), MenuDTO.class);
+                            "user", userDetails.getUserId(), sourceType, sourceId, projectCategory), MenuDTO.class);
         }
         return MenuTreeUtil.formatMenu(menus);
     }
