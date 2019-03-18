@@ -72,8 +72,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         assertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
         validate(applicationDTO);
         //combination-application不能选项目
-        if (ApplicationCategory.COMBINATION.code().equals(applicationDTO.getApplicationCategory())
-                || ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
+        String combination = ApplicationCategory.COMBINATION.code();
+        if (ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
             applicationDTO.setProjectId(0L);
         }
         ApplicationDO applicationDO = modelMapper.map(applicationDTO, ApplicationDO.class);
@@ -83,7 +83,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         ApplicationDO result;
-        if (devopsMessage && !PROJECT_DOES_NOT_EXIST_ID.equals(projectId)) {
+        boolean sendMessage =
+                (!combination.equals(applicationDTO.getApplicationCategory())
+                        && !PROJECT_DOES_NOT_EXIST_ID.equals(projectId)
+                        && devopsMessage);
+        if (sendMessage) {
             result =
                     producer.applyAndReturn(
                             StartSagaBuilder
@@ -125,7 +129,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         preUpdate(applicationDTO, applicationDO);
         ApplicationDO application = modelMapper.map(applicationDTO, ApplicationDO.class);
         ApplicationDO result;
-        if (devopsMessage) {
+        String combination = ApplicationCategory.COMBINATION.code();
+        if (devopsMessage && !combination.equals(applicationDO.getApplicationCategory())) {
             if (PROJECT_DOES_NOT_EXIST_ID.equals(targetProjectId)) {
                 if (!PROJECT_DOES_NOT_EXIST_ID.equals(originProjectId)) {
                     //send create event
@@ -196,7 +201,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationDO applicationDO = assertHelper.applicationNotExisted(id);
         applicationDO.setEnabled(enabled);
         String sagaCode = enabled ? APP_ENABLE : APP_DISABLE;
-        if (devopsMessage && !PROJECT_DOES_NOT_EXIST_ID.equals(applicationDO.getProjectId())) {
+        String combination = ApplicationCategory.COMBINATION.code();
+        boolean sendMessage =
+                (!combination.equals(applicationDO.getApplicationCategory())
+                        && !PROJECT_DOES_NOT_EXIST_ID.equals(applicationDO.getProjectId())
+                        && devopsMessage);
+        if (sendMessage) {
             return modelMapper.map(sendEvent(applicationDO, sagaCode), ApplicationDTO.class);
         } else {
             return modelMapper.map(doUpdate(applicationDO), ApplicationDTO.class);
@@ -232,10 +242,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.application.addToCombination.not.support");
         }
         Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
-        if (idSet.isEmpty()) {
-            throw new CommonException("error.application.add2combination.target.empty");
+        if(!idSet.isEmpty()) {
+            isApplicationsIllegal(organizationId, idSet);
         }
-        isApplicationsIllegal(organizationId, idSet);
 
         //查询直接儿子
         List<ApplicationExplorationDO> originDirectDescendant =
