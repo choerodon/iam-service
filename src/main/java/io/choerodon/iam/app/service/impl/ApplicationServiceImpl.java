@@ -242,7 +242,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.application.addToCombination.not.support");
         }
         Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
-        if(!idSet.isEmpty()) {
+        if (!idSet.isEmpty()) {
             isApplicationsIllegal(organizationId, idSet);
         }
 
@@ -370,8 +370,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    private void addToTopNode(Long id, String parentPath, Long rootId, Long key, boolean isRootNode, List<
-            ApplicationExplorationDO> applicationExplorations) {
+    private void addToTopNode(Long id, String parentPath, Long rootId, Long key, boolean isRootNode,
+                              List<ApplicationExplorationDO> applicationExplorations) {
         if (isRootNode) {
             applicationExplorationMapper.deleteDescendantByApplicationId(key);
             if (applicationExplorations.isEmpty()) {
@@ -401,16 +401,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 StringBuilder builder = new StringBuilder();
                 builder.append(SEPARATOR).append(key).append(SEPARATOR);
                 String suffix = path.substring(path.indexOf(builder.toString()));
-                StringBuilder sb = new StringBuilder().append(parentPath).append(suffix.substring(1));
-                ae.setPath(sb.toString());
+                path = new StringBuilder().append(parentPath).append(suffix.substring(1)).toString();
+                if (paths.contains(path)) {
+                    return;
+                }
+                ae.setPath(path);
                 if (key.equals(ae.getApplicationId())) {
                     ae.setParentId(id);
                 }
                 ae.setRootId(rootId);
-                ae.setHashcode(String.valueOf(sb.toString().hashCode()));
+                ae.setHashcode(String.valueOf(path.hashCode()));
                 ae.setId(null);
                 applicationExplorationMapper.insertSelective(ae);
-                paths.add(sb.toString());
+                paths.add(path);
             });
             if (paths.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
