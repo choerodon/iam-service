@@ -101,4 +101,11 @@ public interface ApplicationService {
      * @return
      */
     List<ApplicationDTO> queryEnabledApplication(Long organizationId, Long id);
+
+    /**
+     * 根据id查询应用详情
+     * @param id
+     * @return
+     */
+    ApplicationDTO query(Long id);
 }

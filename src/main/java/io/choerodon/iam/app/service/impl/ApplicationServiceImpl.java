@@ -295,11 +295,19 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<ApplicationDO> applications = applicationMapper.select(example);
         List<ApplicationExplorationDO> ancestors = applicationExplorationMapper.selectAncestorByApplicationId(id);
         Set<Long> ancestorIds = ancestors.stream().map(ApplicationExplorationDO::getApplicationId).collect(Collectors.toSet());
+        if (ancestorIds.isEmpty()) {
+            ancestorIds.add(id);
+        }
         List<ApplicationDO> apps =
                 applications.stream().filter(app -> !ancestorIds.contains(app.getId())).collect(Collectors.toList());
         return
                 modelMapper.map(apps, new TypeToken<List<ApplicationDTO>>() {
                 }.getType());
+    }
+
+    @Override
+    public ApplicationDTO query(Long id) {
+        return modelMapper.map(applicationMapper.selectByPrimaryKey(id), ApplicationDTO.class);
     }
 
     private void deleteTreeNode(Long id, List<Long> deleteList) {
