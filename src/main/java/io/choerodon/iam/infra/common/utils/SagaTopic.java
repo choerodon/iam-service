@@ -97,9 +97,6 @@ public final class SagaTopic {
         public static final String APP_UPDATE = "iam-update-application";
         public static final String APP_DISABLE = "iam-disable-application";
         public static final String APP_ENABLE = "iam-enable-application";
-        public static final String APP_ROLLBACK = "iam-rollback-application";
-        //devops端创建application失败，触发rollback操作
-        public static final String DEVOPS_CREATE_FAILED = "devops_create_app_err";
     }
 
     public static class ProjectRelationship {
