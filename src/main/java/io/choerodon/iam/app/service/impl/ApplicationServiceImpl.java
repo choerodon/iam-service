@@ -67,7 +67,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = APP_CREATE, description = "iam创建应用", inputSchemaClass = ApplicationDO.class)
+    @Saga(code = APP_CREATE, description = "iam创建应用", inputSchemaClass = ApplicationDTO.class)
     public ApplicationDTO create(ApplicationDTO applicationDTO) {
         assertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
         validate(applicationDTO);
@@ -98,8 +98,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                                     .withSagaCode(APP_CREATE),
                             builder -> {
                                 doInsert(applicationDO);
+                                ApplicationDTO dto = modelMapper.map(applicationDO, ApplicationDTO.class);
+                                dto.setFrom(applicationDTO.getFrom());
                                 builder
-                                        .withPayloadAndSerialize(applicationDO)
+                                        .withPayloadAndSerialize(dto)
                                         .withRefId(String.valueOf(applicationDO.getId()));
                                 return applicationDO;
                             });
@@ -277,7 +279,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
-        List<ApplicationExplorationDO> doList = applicationExplorationMapper.selectDescendantWithApplication(id);
+        List<ApplicationExplorationDO> doList = applicationExplorationMapper.selectDescendantApplicationExcludeSelf(id);
+        ApplicationDO app =applicationMapper.selectByPrimaryKey(id);
+        ApplicationExplorationDO self = new ApplicationExplorationDO();
+        self.setApplicationId(id);
+        self.setPath(SEPARATOR+id+SEPARATOR);
+        self.setApplicationName(app.getName());
+        self.setApplicationCode(app.getCode());
+        self.setApplicationCategory(app.getApplicationCategory());
+        self.setApplicationType(app.getApplicationType());
+        doList.add(self);
         return
                 modelMapper.map(doList, new TypeToken<List<ApplicationExplorationWithAppDTO>>() {
                 }.getType());

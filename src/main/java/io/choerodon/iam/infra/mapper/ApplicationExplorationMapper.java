@@ -39,11 +39,11 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
     List selectDescendantByApplicationId(@Param("id") Long id);
 
     /**
-     * 根据应用id查询该节点所有后代，包含自己，附带应用code,name,category,type信息
+     * 根据应用id查询该节点所有去重的后代，不包含自己，附带应用code,name,category,type信息
      * @param id
      * @return
      */
-    List selectDescendantWithApplication(@Param("id") Long id);
+    List selectDescendantApplicationExcludeSelf(@Param("id") Long id);
 
     /**
      * 根据应用id查询该节点所有祖先，包含自己
