@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -127,6 +128,10 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
     @Transactional
     public List<ProjectRelationshipDTO> batchUpdateRelationShipUnderProgram(Long orgId, List<ProjectRelationshipDTO> list) {
         //check list
+        if (CollectionUtils.isEmpty(list)) {
+            logger.info("The array for batch update relationships cannot be empty");
+            return Collections.emptyList();
+        }
         checkUpdateList(list);
         //update与create分区
         List<ProjectRelationshipDTO> updateNewList = new ArrayList<>();
