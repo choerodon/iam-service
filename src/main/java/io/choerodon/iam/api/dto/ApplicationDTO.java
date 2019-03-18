@@ -1,8 +1,8 @@
 package io.choerodon.iam.api.dto;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 /**

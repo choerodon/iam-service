@@ -64,6 +64,7 @@ public class ApplicationController {
                                                             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
                                                             @RequestParam(required = false) String name,
                                                             @RequestParam(required = false) String code,
+                                                            @RequestParam(required = false) String applicationType,
                                                             @RequestParam(required = false) Boolean enabled,
                                                             @RequestParam(required = false) String param) {
 
@@ -73,6 +74,7 @@ public class ApplicationController {
                         .setName(name)
                         .setCode(code)
                         .setEnabled(enabled)
+                        .setApplicationType(applicationType)
                         .setParam(param)), HttpStatus.OK);
     }
 
@@ -147,5 +149,14 @@ public class ApplicationController {
                                                                      @RequestParam(required = false) String code) {
         return new ResponseEntity<>(applicationService.queryApplicationList(pageRequest, id, name, code), HttpStatus.OK);
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据id查询应用详情")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApplicationDTO> query(@PathVariable("organization_id") Long organizationId,
+                                                @PathVariable("id") Long id) {
+        return new ResponseEntity<>(applicationService.query(id), HttpStatus.OK);
+    }
+
 
 }
