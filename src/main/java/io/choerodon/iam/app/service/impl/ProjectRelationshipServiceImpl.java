@@ -160,12 +160,16 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 throw new CommonException("error.relationship.exist");
             }
             // check date
-            ProjectRelationshipDO relationshipDO = new ProjectRelationshipDO();
-            BeanUtils.copyProperties(relationshipDTO, relationshipDO);
-            RelationshipCheckDTO relationshipCheckDTO = checkDate(relationshipDO);
-            if (!relationshipCheckDTO.getResult()) {
-                throw new CommonException("error.relationship.date.is.not.legal");
+            if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                ProjectRelationshipDO relationshipDO = new ProjectRelationshipDO();
+                BeanUtils.copyProperties(relationshipDTO, relationshipDO);
+                RelationshipCheckDTO relationshipCheckDTO = checkDate(relationshipDO);
+                if (!relationshipCheckDTO.getResult()) {
+                    throw new CommonException("error.relationship.date.is.not.legal");
+                }
             }
+
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
@@ -189,9 +193,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 ProjectRelationshipDO projectRelationshipDO = new ProjectRelationshipDO();
                 BeanUtils.copyProperties(relationshipDTO, projectRelationshipDO);
                 // check date
-                RelationshipCheckDTO relationshipCheckDTO = checkDate(projectRelationshipDO);
-                if (!relationshipCheckDTO.getResult()) {
-                    throw new CommonException("error.relationship.date.is.not.legal");
+                if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                        .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                    RelationshipCheckDTO relationshipCheckDTO = checkDate(projectRelationshipDO);
+                    if (!relationshipCheckDTO.getResult()) {
+                        throw new CommonException("error.relationship.date.is.not.legal");
+                    }
                 }
                 // update
                 projectRelationshipDO = projectRelationshipRepository.update(projectRelationshipDO);
