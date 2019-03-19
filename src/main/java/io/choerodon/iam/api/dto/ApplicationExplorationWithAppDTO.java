@@ -10,6 +10,8 @@ public class ApplicationExplorationWithAppDTO extends ApplicationExplorationDTO 
     private String applicationCode;
     private String applicationCategory;
     private String applicationType;
+    private Boolean applicationEnabled;
+    private Long projectId;
 
     public String getApplicationName() {
         return applicationName;
@@ -41,5 +43,21 @@ public class ApplicationExplorationWithAppDTO extends ApplicationExplorationDTO 
 
     public void setApplicationType(String applicationType) {
         this.applicationType = applicationType;
+    }
+
+    public Boolean getApplicationEnabled() {
+        return applicationEnabled;
+    }
+
+    public void setApplicationEnabled(Boolean applicationEnabled) {
+        this.applicationEnabled = applicationEnabled;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

@@ -279,18 +279,19 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
-        List<ApplicationExplorationDO> doList = applicationExplorationMapper.selectDescendantApplicationExcludeSelf(id);
-        ApplicationDO app =applicationMapper.selectByPrimaryKey(id);
+        List<ApplicationExplorationDO> result = new ArrayList<>();
+        ApplicationDO app = applicationMapper.selectByPrimaryKey(id);
         ApplicationExplorationDO self = new ApplicationExplorationDO();
         self.setApplicationId(id);
-        self.setPath(SEPARATOR+id+SEPARATOR);
+        self.setPath(SEPARATOR + id + SEPARATOR);
         self.setApplicationName(app.getName());
         self.setApplicationCode(app.getCode());
         self.setApplicationCategory(app.getApplicationCategory());
         self.setApplicationType(app.getApplicationType());
-        doList.add(self);
+        result.add(self);
+        result.addAll(applicationExplorationMapper.selectDescendantApplicationExcludeSelf(id));
         return
-                modelMapper.map(doList, new TypeToken<List<ApplicationExplorationWithAppDTO>>() {
+                modelMapper.map(result, new TypeToken<List<ApplicationExplorationWithAppDTO>>() {
                 }.getType());
     }
 
