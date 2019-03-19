@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
@@ -40,6 +41,9 @@ public class ApplicationDTO {
     private Long objectVersionNumber;
 
     private String param;
+
+    @ApiModelProperty(value = "发送saga事件，标记从哪里调用的")
+    private String from;
 
     public Long getId() {
         return id;
@@ -139,6 +143,14 @@ public class ApplicationDTO {
         this.appCount = appCount;
     }
 
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
     @Override
     public String toString() {
         return "ApplicationDTO{" +
@@ -153,6 +165,7 @@ public class ApplicationDTO {
                 ", appCount=" + appCount +
                 ", objectVersionNumber=" + objectVersionNumber +
                 ", param='" + param + '\'' +
+                ", from='" + from + '\'' +
                 '}';
     }
 }

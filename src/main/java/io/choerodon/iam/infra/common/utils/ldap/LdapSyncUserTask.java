@@ -143,7 +143,7 @@ public class LdapSyncUserTask {
                             List<UserDO> users = new ArrayList<>();
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
-                                logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
+                                logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
@@ -197,7 +197,7 @@ public class LdapSyncUserTask {
                             List<UserDO> users = new ArrayList<>();
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
-                                logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
+                                logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
@@ -210,6 +210,7 @@ public class LdapSyncUserTask {
                             users.clear();
                             errorUsers.clear();
                             ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
+                            page++;
                         } while (processor.hasMore());
                         return null;
                     }
