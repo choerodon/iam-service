@@ -15,7 +15,8 @@
 
 
     <select id="selectDescendantApplications" resultMap="ApplicationDO">
-        SELECT j.*, k.app_count FROM iam_application j
+        SELECT j.*, k.app_count/t2.root_path_count AS app_count
+        FROM iam_application j
         JOIN (
             SELECT ia.id, count(ia.id) AS app_count
             FROM iam_application ia
@@ -33,6 +34,11 @@
             WHERE ia.APPLICATION_CATEGORY = #{category}
             GROUP BY ia.id
         )k ON j.id = k.id
+        JOIN (
+            SELECT count(t1.application_id) AS root_path_count
+            FROM iam_application_exploration t1
+            WHERE t1.application_id = #{id}
+        ) t2 ON 1=1
         WHERE 1=1
         <if test="name != null">
             AND j.name LIKE concat(concat('%',#{name}),'%')

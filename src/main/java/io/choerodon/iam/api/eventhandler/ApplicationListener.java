@@ -18,7 +18,9 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 应用监听器
@@ -27,6 +29,9 @@ import java.util.List;
  */
 @Component
 public class ApplicationListener {
+
+    private static final String SUCCESSFUL = "successful";
+    private static final String FAILED = "failed";
 
     private final Logger logger = LoggerFactory.getLogger(ApplicationListener.class);
 
@@ -50,20 +55,30 @@ public class ApplicationListener {
     public void syncApplications(String message) throws IOException {
         List<ApplicationDO> applications = objectMapper.readValue(message, new TypeReference<List<ApplicationDO>>() {
         });
+        logger.info("begin to sync applications, total: {}", applications.size());
         if (applications.isEmpty()) {
             logger.warn("receiving no one application while syncing applications");
             return;
         }
+        Map<String, Integer> statisticsMap = new HashMap<>(2);
+        statisticsMap.put(SUCCESSFUL, 0);
+        statisticsMap.put(FAILED, 0);
         applications.forEach(app -> {
+            int successful = statisticsMap.get(SUCCESSFUL);
+            int failed = statisticsMap.get(FAILED);
             if (isIllegal(app)) {
+                statisticsMap.put(FAILED, ++failed);
                 return;
             }
             try {
                 applicationMapper.insertSelective(app);
+                statisticsMap.put(SUCCESSFUL, ++successful);
             } catch (Exception e) {
+                statisticsMap.put(FAILED, ++failed);
                 logger.error("insert application into db failed, application: {}, exception: {} ", app, e);
             }
         });
+        logger.info("syncing applications has done, successful: {}, failed: {}", statisticsMap.get(SUCCESSFUL), statisticsMap.get(FAILED));
     }
 
     private boolean isIllegal(ApplicationDO app) {
