@@ -33,7 +33,10 @@ public class ApplicationExplorationDO extends AuditDomain {
     private String applicationCategory;
     @Transient
     private String applicationType;
-
+    @Transient
+    private Boolean applicationEnabled;
+    @Transient
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -121,5 +124,21 @@ public class ApplicationExplorationDO extends AuditDomain {
 
     public void setApplicationType(String applicationType) {
         this.applicationType = applicationType;
+    }
+
+    public Boolean getApplicationEnabled() {
+        return applicationEnabled;
+    }
+
+    public void setApplicationEnabled(Boolean applicationEnabled) {
+        this.applicationEnabled = applicationEnabled;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

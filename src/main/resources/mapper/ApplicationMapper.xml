@@ -29,12 +29,16 @@
             <if test="example.applicationType != null">
                 AND application_type LIKE concat(concat('%',#{example.applicationType}),'%')
             </if>
+            <if test="example.applicationCategory != null">
+                AND application_category LIKE concat(concat('%',#{example.applicationCategory}),'%')
+            </if>
         </if>
         <if test="param != null">
             AND (
             NAME LIKE concat(concat('%',#{param}),'%')
             OR code LIKE concat(concat('%',#{param}),'%')
-            OR application_type LIKE concat(concat('%',#{example.applicationType}),'%')
+            OR application_type LIKE concat(concat('%',#{param}),'%')
+            OR application_category LIKE concat(concat('%',#{param}),'%')
             )
         </if>
     </select>

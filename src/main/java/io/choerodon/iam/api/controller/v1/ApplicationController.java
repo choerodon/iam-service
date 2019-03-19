@@ -65,9 +65,9 @@ public class ApplicationController {
                                                             @RequestParam(required = false) String name,
                                                             @RequestParam(required = false) String code,
                                                             @RequestParam(required = false) String applicationType,
+                                                            @RequestParam(required = false) String applicationCategory,
                                                             @RequestParam(required = false) Boolean enabled,
                                                             @RequestParam(required = false) String param) {
-
         return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,
                 new ApplicationDTO()
                         .setOrganizationId(organizationId)
@@ -75,6 +75,7 @@ public class ApplicationController {
                         .setCode(code)
                         .setEnabled(enabled)
                         .setApplicationType(applicationType)
+                        .setApplicationCategory(applicationCategory)
                         .setParam(param)), HttpStatus.OK);
     }
 
