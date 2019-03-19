@@ -288,6 +288,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         self.setApplicationCode(app.getCode());
         self.setApplicationCategory(app.getApplicationCategory());
         self.setApplicationType(app.getApplicationType());
+        self.setEnabled(app.getEnabled());
+        self.setProjectId(app.getProjectId());
         result.add(self);
         result.addAll(applicationExplorationMapper.selectDescendantApplicationExcludeSelf(id));
         return
