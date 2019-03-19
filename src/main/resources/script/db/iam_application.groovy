@@ -54,7 +54,7 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
                 constraintName: 'UK_IAM_APPLICATION_U2')
     }
 
-    changeSet(id: '2018-03-05-create-table-iam_application', author: 'superlee') {
+    changeSet(id: '2018-03-19-modify-unique-column', author: 'superlee') {
         dropUniqueConstraint(tableName:'IAM_APPLICATION', constraintName:'UK_IAM_APPLICATION_U2')
         //name在组织和项目下唯一
         addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'ORGANIZATION_ID,NAME,PROJECT_ID',
