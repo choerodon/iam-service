@@ -261,12 +261,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 !intersection.contains(item)).collect(Collectors.toList());
         //校验组合应用或应用 idSet 是否能放到 组合应用=id 下面。
         if (!insertList.isEmpty()) {
-            Map<Long, String> rootIdMap = getRootIdMap(id);
+            Map<Long, Set<String>> rootIdMap = getRootIdMap(id);
             Map<Long, List> map = canAddToCombination(id, new HashSet<>(insertList));
-            for (Map.Entry<Long, String> entry : rootIdMap.entrySet()) {
+            for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
                 Long rootId = entry.getKey();
-                String path = entry.getValue();
-                addTreeNode(id, map, rootId, path);
+                Set<String> paths = entry.getValue();
+                paths.forEach(path -> addTreeNode(id, map, rootId, path));
             }
         }
         if (!deleteList.isEmpty()) {
@@ -459,20 +459,28 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationExplorationMapper.insertSelective(ae);
     }
 
-    private Map<Long, String> getRootIdMap(Long id) {
+    private Map<Long, Set<String>> getRootIdMap(Long id) {
         List<ApplicationExplorationDO> ancestors =
                 applicationExplorationMapper.selectAncestorByApplicationId(id);
-        //key是applicationId = id的应用的rootId，value为当前的路径
-        Map<Long, String> map = new HashMap<>();
+        //key是applicationId = id的应用的rootId，value为在该root节点下所有的路径集合
+        Map<Long, Set<String>> map = new HashMap<>();
         ancestors.forEach(ancestor -> {
+            Long rootId = ancestor.getRootId();
+            Set<String> paths = map.get(rootId);
+            if (paths == null) {
+                paths = new HashSet<>();
+                map.put(rootId, paths);
+            }
             if (id.equals(ancestor.getApplicationId())) {
-                map.put(ancestor.getRootId(), ancestor.getPath());
+                paths.add(ancestor.getPath());
             }
         });
         //如果没有祖先，则自己是root节点
         if (map.isEmpty()) {
             String path = SEPARATOR + id + SEPARATOR;
-            map.put(id, path);
+            Set<String> paths = new HashSet<>(1);
+            paths.add(path);
+            map.put(id, paths);
             ApplicationExplorationDO root = new ApplicationExplorationDO();
             root.setApplicationId(id);
             root.setPath(path);

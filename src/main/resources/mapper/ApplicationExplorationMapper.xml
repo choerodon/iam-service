@@ -168,7 +168,7 @@
     </select>
 
     <select id="selectAncestorByApplicationId" resultMap="ApplicationExplorationDO">
-        SELECT i.*
+        SELECT DISTINCT i.*
         FROM iam_application_exploration i
         JOIN (
         SELECT path FROM iam_application_exploration j WHERE j.application_id = #{id}
