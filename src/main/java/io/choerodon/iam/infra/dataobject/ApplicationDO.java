@@ -117,4 +117,19 @@ public class ApplicationDO extends AuditDomain {
         this.appCount = appCount;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "ApplicationDO{" +
+                "id=" + id +
+                ", organizationId=" + organizationId +
+                ", projectId=" + projectId +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", enabled=" + enabled +
+                ", applicationCategory='" + applicationCategory + '\'' +
+                ", applicationType='" + applicationType + '\'' +
+                ", appCount=" + appCount +
+                '}';
+    }
 }

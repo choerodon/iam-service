@@ -97,6 +97,9 @@ public final class SagaTopic {
         public static final String APP_UPDATE = "iam-update-application";
         public static final String APP_DISABLE = "iam-disable-application";
         public static final String APP_ENABLE = "iam-enable-application";
+        public static final String APP_SYNC = "devops-sync-application";
+        public static final String IAM_SYNC_APP = "iam-sync-application";
+
     }
 
     public static class ProjectRelationship {

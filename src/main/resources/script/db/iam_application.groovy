@@ -30,8 +30,7 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
             column(name: 'APPLICATION_CATEGORY', type: 'VARCHAR(64)', remarks: '应用被划分为哪些类别(普通应用:application;组合应用:combination-application等)') {
                 constraints(nullable: false)
             }
-            column(name: 'APPLICATION_TYPE', type: 'VARCHAR(64)',
-                    remarks: '应用的分类(开发应用:development-application;测试应用:test-application)') {
+            column(name: 'APPLICATION_TYPE', type: 'VARCHAR(64)', remarks: '应用的分类(开发应用:normal;测试应用:test)') {
                 constraints(nullable: false)
             }
 
@@ -53,5 +52,12 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
         //name在组织下唯一
         addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'ORGANIZATION_ID,NAME',
                 constraintName: 'UK_IAM_APPLICATION_U2')
+    }
+
+    changeSet(id: '2018-03-05-create-table-iam_application', author: 'superlee') {
+        dropUniqueConstraint(tableName:'IAM_APPLICATION', constraintName:'UK_IAM_APPLICATION_U2')
+        //name在组织和项目下唯一
+        addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'ORGANIZATION_ID,NAME,PROJECT_ID',
+                constraintName: 'UK_IAM_APPLICATION_U3')
     }
 }

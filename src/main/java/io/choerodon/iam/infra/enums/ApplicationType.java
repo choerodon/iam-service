@@ -11,12 +11,12 @@ public enum ApplicationType {
     /**
      * 开发应用
      */
-    DEVELOPMENT("开发应用", "development-application"),
+    DEVELOPMENT("开发应用", "normal"),
 
     /**
      * 测试应用
      */
-    TEST("测试应用", "test-application");
+    TEST("测试应用", "test");
 
     private String value;
     private String code;
