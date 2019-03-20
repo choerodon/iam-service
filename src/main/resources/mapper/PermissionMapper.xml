@@ -6,6 +6,7 @@
         <id column="id" property="id"></id>
         <result column="fd_level" property="level" jdbcType="VARCHAR"/>
         <result column="fd_resource" property="resource" jdbcType="VARCHAR"/>
+        <result property="within" column="is_within" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="PermissionDO">
