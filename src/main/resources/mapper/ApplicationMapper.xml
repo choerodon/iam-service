@@ -8,38 +8,47 @@
     </resultMap>
 
     <select id="fuzzyQuery" resultMap="ApplicationDO">
-        SELECT * FROM iam_application
+        SELECT
+          ia.*,
+          fp.name as project_name,
+          fp.code as project_code,
+          fp.image_url as image_url
+        FROM iam_application ia
+        LEFT JOIN fd_project fp ON ia.project_id = fp.id
         WHERE 1=1
-        <if test="example != null">
-            <if test="example.name != null">
-                AND NAME LIKE concat(concat('%',#{example.name}),'%')
+        <if test="applicationSearchDTO != null">
+            <if test="applicationSearchDTO.name != null">
+                AND ia.NAME LIKE concat(concat('%',#{applicationSearchDTO.name}),'%')
             </if>
-            <if test="example.code != null">
-                AND code LIKE concat(concat('%',#{example.code}),'%')
+            <if test="applicationSearchDTO.code != null">
+                AND ia.code LIKE concat(concat('%',#{applicationSearchDTO.code}),'%')
             </if>
-            <if test="example.organizationId != null">
-                AND organization_id = #{example.organizationId}
+            <if test="applicationSearchDTO.organizationId != null">
+                AND ia.organization_id = #{applicationSearchDTO.organizationId}
             </if>
-            <if test="example.projectId != null">
-                AND projectId = #{example.projectId}
+            <if test="applicationSearchDTO.projectId != null">
+                AND ia.projectId = #{applicationSearchDTO.projectId}
             </if>
-            <if test="example.enabled != null">
-                AND is_enabled = #{example.enabled}
+            <if test="applicationSearchDTO.enabled != null">
+                AND ia.is_enabled = #{applicationSearchDTO.enabled}
             </if>
-            <if test="example.applicationType != null">
-                AND application_type LIKE concat(concat('%',#{example.applicationType}),'%')
+            <if test="applicationSearchDTO.applicationType != null">
+                AND ia.application_type = #{applicationSearchDTO.applicationType}
             </if>
-            <if test="example.applicationCategory != null">
-                AND application_category LIKE concat(concat('%',#{example.applicationCategory}),'%')
+            <if test="applicationSearchDTO.applicationCategory != null">
+                AND ia.application_category = #{applicationSearchDTO.applicationCategory}
             </if>
-        </if>
-        <if test="param != null">
-            AND (
-            NAME LIKE concat(concat('%',#{param}),'%')
-            OR code LIKE concat(concat('%',#{param}),'%')
-            OR application_type LIKE concat(concat('%',#{param}),'%')
-            OR application_category LIKE concat(concat('%',#{param}),'%')
-            )
+            <if test="applicationSearchDTO.projectName != null">
+                AND fp.name LIKE concat(concat('%',#{applicationSearchDTO.projectName}),'%')
+            </if>
+            <if test="applicationSearchDTO.param != null">
+                AND (
+                ia.NAME LIKE concat(concat('%',#{applicationSearchDTO.param}),'%')
+                OR ia.code LIKE concat(concat('%',#{applicationSearchDTO.param}),'%')
+                OR ia.application_type = #{applicationSearchDTO.param}
+                OR ia.application_category = #{applicationSearchDTO.param}
+                )
+            </if>
         </if>
     </select>
 

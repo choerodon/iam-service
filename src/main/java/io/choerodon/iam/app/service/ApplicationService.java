@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ApplicationDTO;
 import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
+import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -33,10 +34,10 @@ public interface ApplicationService {
      * 分页模糊查询applications
      *
      * @param pageRequest
-     * @param applicationDTO
+     * @param applicationSearchDTO
      * @return
      */
-    Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationDTO applicationDTO);
+    Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationSearchDTO applicationSearchDTO);
 
     /**
      * 启用

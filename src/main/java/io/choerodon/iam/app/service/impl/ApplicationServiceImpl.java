@@ -11,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
 import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
+import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.common.utils.AssertHelper;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
@@ -177,10 +178,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationDTO applicationDTO) {
-        String param = applicationDTO.getParam();
-        ApplicationDO example = modelMapper.map(applicationDTO, ApplicationDO.class);
-        Page<ApplicationDO> pages = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.fuzzyQuery(example, param));
+    public Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationSearchDTO applicationSearchDTO) {
+        Page<ApplicationDO> pages = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.fuzzyQuery(applicationSearchDTO));
         List<ApplicationDTO> dtoList =
                 modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
                 }.getType());

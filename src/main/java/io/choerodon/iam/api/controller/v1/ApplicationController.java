@@ -4,6 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
 import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
+import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -62,21 +63,8 @@ public class ApplicationController {
     public ResponseEntity<Page<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
                                                             @ApiIgnore
                                                             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                                            @RequestParam(required = false) String name,
-                                                            @RequestParam(required = false) String code,
-                                                            @RequestParam(required = false) String applicationType,
-                                                            @RequestParam(required = false) String applicationCategory,
-                                                            @RequestParam(required = false) Boolean enabled,
-                                                            @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,
-                new ApplicationDTO()
-                        .setOrganizationId(organizationId)
-                        .setName(name)
-                        .setCode(code)
-                        .setEnabled(enabled)
-                        .setApplicationType(applicationType)
-                        .setApplicationCategory(applicationCategory)
-                        .setParam(param)), HttpStatus.OK);
+                                                            ApplicationSearchDTO applicationSearchDTO) {
+        return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,applicationSearchDTO), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
