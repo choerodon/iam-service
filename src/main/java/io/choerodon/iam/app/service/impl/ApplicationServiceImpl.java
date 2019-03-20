@@ -288,6 +288,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         self.setApplicationCode(app.getCode());
         self.setApplicationCategory(app.getApplicationCategory());
         self.setApplicationType(app.getApplicationType());
+        self.setApplicationEnabled(app.getEnabled());
         self.setEnabled(app.getEnabled());
         self.setProjectId(app.getProjectId());
         result.add(self);
@@ -407,7 +408,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                     applicationExplorationMapper.insertSelective(ae);
                 });
             }
-
         } else {
             Set<String> paths = new HashSet<>();
             applicationExplorations.forEach(ae -> {
