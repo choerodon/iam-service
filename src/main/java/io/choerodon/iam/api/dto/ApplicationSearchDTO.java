@@ -6,6 +6,7 @@ package io.choerodon.iam.api.dto;
  */
 public class ApplicationSearchDTO {
 
+    private Long organizationId;
     private String name;
     private String code;
     private String applicationType;
@@ -68,5 +69,13 @@ public class ApplicationSearchDTO {
 
     public void setParam(String param) {
         this.param = param;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

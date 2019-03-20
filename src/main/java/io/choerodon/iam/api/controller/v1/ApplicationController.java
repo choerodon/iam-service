@@ -64,6 +64,7 @@ public class ApplicationController {
                                                             @ApiIgnore
                                                             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
                                                             ApplicationSearchDTO applicationSearchDTO) {
+        applicationSearchDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,applicationSearchDTO), HttpStatus.OK);
     }
 

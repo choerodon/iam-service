@@ -26,9 +26,6 @@
             <if test="applicationSearchDTO.organizationId != null">
                 AND ia.organization_id = #{applicationSearchDTO.organizationId}
             </if>
-            <if test="applicationSearchDTO.projectId != null">
-                AND ia.projectId = #{applicationSearchDTO.projectId}
-            </if>
             <if test="applicationSearchDTO.enabled != null">
                 AND ia.is_enabled = #{applicationSearchDTO.enabled}
             </if>
