@@ -37,6 +37,12 @@ public class ApplicationExplorationDO extends AuditDomain {
     private Boolean applicationEnabled;
     @Transient
     private Long projectId;
+    @Transient
+    private String projectCode;
+    @Transient
+    private String projectName;
+    @Transient
+    private String projectImageUrl;
 
     public Long getId() {
         return id;
@@ -140,5 +146,29 @@ public class ApplicationExplorationDO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectImageUrl() {
+        return projectImageUrl;
+    }
+
+    public void setProjectImageUrl(String projectImageUrl) {
+        this.projectImageUrl = projectImageUrl;
     }
 }

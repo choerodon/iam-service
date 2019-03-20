@@ -76,72 +76,99 @@
     </select>
 
     <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO">
+    SELECT
+      t1.*,
+      ia.name application_name,
+      ia.code application_code,
+      ia.application_category application_category,
+      ia.application_type application_type,
+      ia.is_enabled application_enabled,
+      ia.project_id project_id,
+      fp.name project_name,
+      fp.code project_code,
+      fp.image_url project_image_url
+    FROM (
       SELECT
           DISTINCT
-          iae.APPLICATION_ID,
+          iae.application_id,
           iae.parent_id,
-          SUBSTR(iae.path,POSITION(CONCAT(CONCAT('/',#{id}), '/') IN iae.path), LENGTH(iae.path)) AS path,
-          ia.name application_name,
-          ia.code application_code,
-          ia.application_category application_category,
-          ia.application_type application_type,
-          ia.is_enabled application_enabled,
-          ia.project_id project_id
+          SUBSTR(iae.path,POSITION(CONCAT(CONCAT('/',#{id}), '/') IN iae.path), LENGTH(iae.path)) AS path
       FROM iam_application_exploration iae
       JOIN (
           SELECT i.path
           FROM iam_application_exploration i
           WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
+      ) t
+      ON 1=1
       WHERE iae.path LIKE concat(t.path,'%')
       AND iae.application_id != #{id}
+    ) t1
+    JOIN iam_application ia ON t1.application_id = ia.id
+    LEFT JOIN fd_project fp ON ia.project_id = fp.id
     </select>
 
     <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO" databaseId="oracle">
+    SELECT
+      t1.*,
+      ia.name application_name,
+      ia.code application_code,
+      ia.application_category application_category,
+      ia.application_type application_type,
+      ia.is_enabled application_enabled,
+      ia.project_id project_id,
+      fp.name project_name,
+      fp.code project_code,
+      fp.image_url project_image_url
+    FROM (
       SELECT
           DISTINCT
-          iae.APPLICATION_ID,
+          iae.application_id,
           iae.parent_id,
-          SUBSTR(iae.path,INSTR(iae.path, CONCAT(CONCAT('/',#{id}), '/'), 1), LENGTH(iae.path)) AS path,
-          ia.name application_name,
-          ia.code application_code,
-          ia.application_category application_category,
-          ia.application_type application_type,
-          ia.is_enabled application_enabled,
-          ia.project_id project_id
+          SUBSTR(iae.path,INSTR(iae.path, CONCAT(CONCAT('/',#{id}), '/'), 1), LENGTH(iae.path)) AS path
       FROM iam_application_exploration iae
       JOIN (
           SELECT i.path
           FROM iam_application_exploration i
           WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
+      ) t
+      ON 1=1
       WHERE iae.path LIKE concat(t.path,'%')
       AND iae.application_id != #{id}
+    ) t1
+    JOIN iam_application ia ON t1.application_id = ia.id
+    LEFT JOIN fd_project fp ON ia.project_id = fp.id
     </select>
 
     <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO" databaseId="sqlserver">
+    SELECT
+      t1.*,
+      ia.name application_name,
+      ia.code application_code,
+      ia.application_category application_category,
+      ia.application_type application_type,
+      ia.is_enabled application_enabled,
+      ia.project_id project_id,
+      fp.name project_name,
+      fp.code project_code,
+      fp.image_url project_image_url
+    FROM (
       SELECT
           DISTINCT
-          iae.APPLICATION_ID,
+          iae.application_id,
           iae.parent_id,
-          SUBSTRING(iae.path,CHARINDEX(CONCAT(CONCAT('/',#{id}), '/'), iae.path), LEN(iae.path)) AS path,
-          ia.name application_name,
-          ia.code application_code,
-          ia.application_category application_category,
-          ia.application_type application_type,
-          ia.is_enabled application_enabled,
-          ia.project_id project_id
+          SUBSTRING(iae.path,CHARINDEX(CONCAT(CONCAT('/',#{id}), '/'), iae.path), LEN(iae.path)) AS path
       FROM iam_application_exploration iae
       JOIN (
           SELECT i.path
           FROM iam_application_exploration i
           WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
+      ) t
+      ON 1=1
       WHERE iae.path LIKE concat(t.path,'%')
       AND iae.application_id != #{id}
+    ) t1
+    JOIN iam_application ia ON t1.application_id = ia.id
+    LEFT JOIN fd_project fp ON ia.project_id = fp.id
     </select>
 
 

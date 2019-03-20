@@ -12,6 +12,9 @@ public class ApplicationExplorationWithAppDTO extends ApplicationExplorationDTO 
     private String applicationType;
     private Boolean applicationEnabled;
     private Long projectId;
+    private String projectCode;
+    private String projectName;
+    private String projectImageUrl;
 
     public String getApplicationName() {
         return applicationName;
@@ -59,5 +62,29 @@ public class ApplicationExplorationWithAppDTO extends ApplicationExplorationDTO 
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectImageUrl() {
+        return projectImageUrl;
+    }
+
+    public void setProjectImageUrl(String projectImageUrl) {
+        this.projectImageUrl = projectImageUrl;
     }
 }
