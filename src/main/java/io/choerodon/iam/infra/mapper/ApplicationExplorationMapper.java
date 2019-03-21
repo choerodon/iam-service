@@ -90,11 +90,13 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
     /**
      * 查询组合应用下指定类型的应用{@link io.choerodon.iam.infra.enums.ApplicationCategory}
      *
-     * @param id
+     * @param path
      * @param category
+     * @param code
+     * @param name
      * @return
      */
-    List selectDescendantApplications(@Param("id") Long id, @Param("category") String category,
+    List selectDescendantApplications(@Param("path") String path, @Param("category") String category,
                                       @Param("name") String name, @Param("code") String code);
 
     /**

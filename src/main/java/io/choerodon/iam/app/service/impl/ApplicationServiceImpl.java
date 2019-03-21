@@ -381,7 +381,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Page<ApplicationDTO> queryApplicationList(PageRequest pageRequest, Long id, String name, String code) {
         Page<ApplicationDO> pages =
                 PageHelper.doPageAndSort(pageRequest, () ->
-                        applicationExplorationMapper.selectDescendantApplications(id, ApplicationCategory.APPLICATION.code(), name, code));
+                        applicationExplorationMapper.selectDescendantApplications(generatePath(id), ApplicationCategory.APPLICATION.code(), name, code));
         List<ApplicationDTO> dtoList =
                 modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
                 }.getType());
