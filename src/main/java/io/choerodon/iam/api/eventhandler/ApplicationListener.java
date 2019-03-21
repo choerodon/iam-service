@@ -8,8 +8,10 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.common.utils.AssertHelper;
 import io.choerodon.iam.infra.dataobject.ApplicationDO;
+import io.choerodon.iam.infra.dataobject.ApplicationExplorationDO;
 import io.choerodon.iam.infra.enums.ApplicationCategory;
 import io.choerodon.iam.infra.enums.ApplicationType;
+import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper;
 import io.choerodon.iam.infra.mapper.ApplicationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,17 +34,22 @@ public class ApplicationListener {
 
     private static final String SUCCESSFUL = "successful";
     private static final String FAILED = "failed";
+    private static final String SEPARATOR = "/";
 
     private final Logger logger = LoggerFactory.getLogger(ApplicationListener.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private ApplicationMapper applicationMapper;
+    private ApplicationExplorationMapper applicationExplorationMapper;
     private AssertHelper assertHelper;
 
-    public ApplicationListener(ApplicationMapper applicationMapper, AssertHelper assertHelper) {
+    public ApplicationListener(ApplicationMapper applicationMapper,
+                               AssertHelper assertHelper,
+                               ApplicationExplorationMapper applicationExplorationMapper) {
         this.applicationMapper = applicationMapper;
         this.assertHelper = assertHelper;
+        this.applicationExplorationMapper = applicationExplorationMapper;
     }
 
 
@@ -72,6 +79,15 @@ public class ApplicationListener {
             }
             try {
                 applicationMapper.insertSelective(app);
+                long appId = app.getId();
+                ApplicationExplorationDO example = new ApplicationExplorationDO();
+                example.setApplicationId(appId);
+                String path = SEPARATOR + appId + SEPARATOR;
+                example.setPath(path);
+                example.setRootId(appId);
+                example.setHashcode(String.valueOf(path.hashCode()));
+                example.setEnabled(true);
+                applicationExplorationMapper.insertSelective(example);
                 statisticsMap.put(SUCCESSFUL, ++successful);
             } catch (Exception e) {
                 statisticsMap.put(FAILED, ++failed);

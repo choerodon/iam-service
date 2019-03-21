@@ -33,17 +33,10 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
     /**
      * 根据应用id查询该节点所有后代，包含自己
      *
-     * @param id
+     * @param path
      * @return
      */
-    List selectDescendantByApplicationId(@Param("id") Long id);
-
-    /**
-     * 根据应用id查询该节点所有去重的后代，不包含自己，附带应用code,name,category,type信息
-     * @param id
-     * @return
-     */
-    List selectDescendantApplicationExcludeSelf(@Param("id") Long id);
+    List selectDescendantByPath(@Param("path") String path);
 
     /**
      * 根据应用id查询该节点所有祖先，包含自己
@@ -103,4 +96,12 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      */
     List selectDescendantApplications(@Param("id") Long id, @Param("category") String category,
                                       @Param("name") String name, @Param("code") String code);
+
+    /**
+     * 根据应用id查询子代，包含自己，带上应用和项目信息
+     *
+     * @param path "/"+id+"/"
+     * @return
+     */
+    List<ApplicationExplorationDO> selectDescendants(@Param("path") String path);
 }
