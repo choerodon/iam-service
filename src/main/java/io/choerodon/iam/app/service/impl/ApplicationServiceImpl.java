@@ -110,6 +110,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             });
         } else {
             doInsert(applicationDO);
+            //关系表插入路径
+            insertExploration(applicationDO.getId());
             result = applicationDO;
         }
         result.setObjectVersionNumber(1L);
