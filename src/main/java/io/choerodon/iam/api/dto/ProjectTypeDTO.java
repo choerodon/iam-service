@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.Pattern;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -7,10 +9,13 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author superlee
  */
 public class ProjectTypeDTO {
+    private static final String CODE_REGULAR_EXPRESSION
+            = "^[a-zA-Z][a-zA-Z0-9-_.//]*$";
 
     private Long id;
 
     @ApiModelProperty(value = "项目类型编码")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.code.illegal")
     @NotEmpty(message = "error.code.empty")
     private String code;
 
