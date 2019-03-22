@@ -135,6 +135,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (ObjectUtils.isEmpty(organization)) {
             throw new CommonException("error.organization.notFound");
         }
+        organizationDTO.setId(organizationId);
         //code和创建人不可修改
         organizationDTO.setUserId(organization.getUserId());
         organizationDTO.setCode(organization.getCode());

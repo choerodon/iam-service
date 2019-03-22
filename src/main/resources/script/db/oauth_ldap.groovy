@@ -130,4 +130,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         }
     }
 
+    changeSet(author: 'superlee', id: '2019-03-20-rename-password-oauth-ldap') {
+        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "LDAP_PASSWORD", oldColumnName: "PASSWORD", remarks: 'ldap登陆密码', tableName: 'OAUTH_LDAP')
+    }
+
 }

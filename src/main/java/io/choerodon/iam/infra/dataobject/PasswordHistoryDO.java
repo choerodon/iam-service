@@ -4,6 +4,7 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -19,6 +20,7 @@ public class PasswordHistoryDO extends AuditDomain {
     @GeneratedValue
     private Long id;
     private Long userId;
+    @Column(name = "hash_password")
     private String password;
 
     public Long getId() {

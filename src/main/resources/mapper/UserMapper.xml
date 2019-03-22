@@ -9,6 +9,7 @@
         <result property="realName" column="real_name"/>
         <result property="enabled" column="is_enabled"/>
         <result property="admin" column="is_admin"/>
+        <result property="password" column="hash_password"/>
         <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
             <id property="id" column="role_id"/>
             <result property="name" column="name"/>
@@ -27,6 +28,7 @@
         <result property="enabled" column="is_enabled"/>
         <result property="roleNames" column="roles"/>
         <result property="projName" column="proj_name"/>
+        <result property="password" column="hash_password"/>
     </resultMap>
 
     <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
@@ -35,6 +37,7 @@
         <result property="locked" column="is_locked"/>
         <result property="ldap" column="is_ldap"/>
         <result property="admin" column="is_admin"/>
+        <result property="password" column="hash_password"/>
     </resultMap>
 
     <select id="listUsersByIds" resultMap="userDO">

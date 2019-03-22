@@ -36,6 +36,12 @@ public class ApplicationDO extends AuditDomain {
 
     @Transient
     private Integer appCount;
+    @Transient
+    private String projectName;
+    @Transient
+    private String projectCode;
+    @Transient
+    private String imageUrl;
 
     public Long getId() {
         return id;
@@ -116,5 +122,47 @@ public class ApplicationDO extends AuditDomain {
     public ApplicationDO setAppCount(Integer appCount) {
         this.appCount = appCount;
         return this;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "ApplicationDO{" +
+                "id=" + id +
+                ", organizationId=" + organizationId +
+                ", projectId=" + projectId +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", enabled=" + enabled +
+                ", applicationCategory='" + applicationCategory + '\'' +
+                ", applicationType='" + applicationType + '\'' +
+                ", appCount=" + appCount +
+                ", projectName='" + projectName + '\'' +
+                ", projectCode='" + projectCode + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 }

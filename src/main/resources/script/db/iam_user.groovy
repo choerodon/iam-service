@@ -80,4 +80,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
             column(name: 'INTERNATIONAL_TEL_CODE', type: 'VARCHAR(16)', defaultValue: "+86", remarks: '国际电话区号。',afterColumn: 'PHONE')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-03-20-rename-password-column') {
+        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "HASH_PASSWORD", oldColumnName: "PASSWORD", remarks: 'Hash后的用户密码', tableName: 'IAM_USER')
+    }
 }

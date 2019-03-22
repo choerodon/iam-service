@@ -45,6 +45,12 @@ public class ApplicationDTO {
     @ApiModelProperty(value = "发送saga事件，标记从哪里调用的")
     private String from;
 
+    private String projectName;
+
+    private String projectCode;
+
+    private String imageUrl;
+
     public Long getId() {
         return id;
     }
@@ -151,6 +157,30 @@ public class ApplicationDTO {
         this.from = from;
     }
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "ApplicationDTO{" +
@@ -166,6 +196,9 @@ public class ApplicationDTO {
                 ", objectVersionNumber=" + objectVersionNumber +
                 ", param='" + param + '\'' +
                 ", from='" + from + '\'' +
+                ", projectName='" + projectName + '\'' +
+                ", projectCode='" + projectCode + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
 }

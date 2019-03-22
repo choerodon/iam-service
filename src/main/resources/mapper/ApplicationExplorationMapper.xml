@@ -15,25 +15,14 @@
 
 
     <select id="selectDescendantApplications" resultMap="ApplicationDO">
-        SELECT j.*, k.app_count FROM iam_application j
-        JOIN (
-            SELECT ia.id, count(ia.id) AS app_count
-            FROM iam_application ia
-            JOIN (
-                SELECT iae.*
-                FROM iam_application_exploration iae
-                JOIN (
-                    SELECT i.path
-                    FROM iam_application_exploration i
-                    WHERE i.application_id = #{id}
-                ) t ON 1=1
-                WHERE iae.path LIKE concat(t.path,'%')
-            ) temp
-            ON ia.id = temp.APPLICATION_ID
-            WHERE ia.APPLICATION_CATEGORY = #{category}
-            GROUP BY ia.id
-        )k ON j.id = k.id
-        WHERE 1=1
+        select ia.*, t.app_count from iam_application ia
+        join(
+        select i.application_id, count(i.application_id) as app_count
+        from iam_application_exploration i
+        where i.path like concat(#{path},'%')
+        group by i.application_id
+        )t on t.application_id = ia.id
+        where ia.application_category = #{category}
         <if test="name != null">
             AND j.name LIKE concat(concat('%',#{name}),'%')
         </if>
@@ -58,86 +47,28 @@
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
-    <select id="selectDescendantByApplicationId" resultMap="ApplicationExplorationDO">
-        SELECT iae.*
-        FROM iam_application_exploration iae
-        JOIN (
-        SELECT i.path
-        FROM iam_application_exploration i
-        WHERE i.application_id = #{id}
-        ) t ON 1=1
-        WHERE iae.path LIKE concat(t.path,'%')
+    <select id="selectDescendantByPath" resultMap="ApplicationExplorationDO">
+          select i.* from iam_application_exploration i
+          where i.path like concat(#{path},'%') order by i.id asc
     </select>
 
-    <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO">
-      SELECT
-          DISTINCT
-          iae.APPLICATION_ID,
-          iae.parent_id,
-          SUBSTR(iae.path,POSITION(CONCAT(CONCAT('/',#{id}), '/') IN iae.path), LENGTH(iae.path)) AS path,
+    <select id="selectDescendants" resultMap="ApplicationExplorationDO">
+        select
+          i.*,
           ia.name application_name,
           ia.code application_code,
           ia.application_category application_category,
           ia.application_type application_type,
           ia.is_enabled application_enabled,
-          ia.project_id project_id
-      FROM iam_application_exploration iae
-      JOIN (
-          SELECT i.path
-          FROM iam_application_exploration i
-          WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
-      WHERE iae.path LIKE concat(t.path,'%')
-      AND iae.application_id != #{id}
+          ia.project_id project_id,
+          fp.name project_name,
+          fp.code project_code,
+          fp.image_url project_image_url
+        from iam_application_exploration i
+        join iam_application ia on i.application_id = ia.id
+        left join fd_project fp on ia.project_id = fp.id
+        where i.path like concat(#{path},'%') order by i.id asc
     </select>
-
-    <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO" databaseId="oracle">
-      SELECT
-          DISTINCT
-          iae.APPLICATION_ID,
-          iae.parent_id,
-          SUBSTR(iae.path,INSTR(iae.path, CONCAT(CONCAT('/',#{id}), '/'), 1), LENGTH(iae.path)) AS path,
-          ia.name application_name,
-          ia.code application_code,
-          ia.application_category application_category,
-          ia.application_type application_type,
-          ia.is_enabled application_enabled,
-          ia.project_id project_id
-      FROM iam_application_exploration iae
-      JOIN (
-          SELECT i.path
-          FROM iam_application_exploration i
-          WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
-      WHERE iae.path LIKE concat(t.path,'%')
-      AND iae.application_id != #{id}
-    </select>
-
-    <select id="selectDescendantApplicationExcludeSelf" resultMap="ApplicationExplorationDO" databaseId="sqlserver">
-      SELECT
-          DISTINCT
-          iae.APPLICATION_ID,
-          iae.parent_id,
-          SUBSTRING(iae.path,CHARINDEX(CONCAT(CONCAT('/',#{id}), '/'), iae.path), LEN(iae.path)) AS path,
-          ia.name application_name,
-          ia.code application_code,
-          ia.application_category application_category,
-          ia.application_type application_type,
-          ia.is_enabled application_enabled,
-          ia.project_id project_id
-      FROM iam_application_exploration iae
-      JOIN (
-          SELECT i.path
-          FROM iam_application_exploration i
-          WHERE i.application_id = #{id}
-      ) t ON 1=1
-      JOIN iam_application ia ON iae.APPLICATION_ID = ia.id
-      WHERE iae.path LIKE concat(t.path,'%')
-      AND iae.application_id != #{id}
-    </select>
-
 
     <select id="selectDescendantByApplicationIdsAndParentId" resultMap="ApplicationExplorationDO">
         SELECT distinct iae.*
@@ -168,7 +99,7 @@
     </select>
 
     <select id="selectAncestorByApplicationId" resultMap="ApplicationExplorationDO">
-        SELECT i.*
+        SELECT DISTINCT i.*
         FROM iam_application_exploration i
         JOIN (
         SELECT path FROM iam_application_exploration j WHERE j.application_id = #{id}

@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_history.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-03-20-rename-password-oauth-password-history') {
+        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "HASH_PASSWORD", oldColumnName: "PASSWORD", remarks: 'Hash后的用户密码', tableName: 'OAUTH_PASSWORD_HISTORY')
+    }
 }

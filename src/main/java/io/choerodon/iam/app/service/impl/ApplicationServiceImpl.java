@@ -11,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
 import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
+import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.common.utils.AssertHelper;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
@@ -98,6 +99,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                     .withSagaCode(APP_CREATE),
                             builder -> {
                                 doInsert(applicationDO);
+                                //关系表插入路径
+                                insertExploration(applicationDO.getId());
                                 ApplicationDTO dto = modelMapper.map(applicationDO, ApplicationDTO.class);
                                 dto.setFrom(applicationDTO.getFrom());
                                 builder
@@ -107,10 +110,28 @@ public class ApplicationServiceImpl implements ApplicationService {
                             });
         } else {
             doInsert(applicationDO);
+            //关系表插入路径
+            insertExploration(applicationDO.getId());
             result = applicationDO;
         }
         result.setObjectVersionNumber(1L);
         return modelMapper.map(result, ApplicationDTO.class);
+    }
+
+    private void insertExploration(Long appId) {
+        ApplicationExplorationDO example = new ApplicationExplorationDO();
+        example.setApplicationId(appId);
+        String path = generatePath(appId);
+        example.setPath(path);
+        example.setApplicationEnabled(true);
+        example.setRootId(appId);
+        example.setHashcode(String.valueOf(path.hashCode()));
+        applicationExplorationMapper.insertSelective(example);
+    }
+
+    private String generatePath(Long appId) {
+        StringBuilder builder = new StringBuilder();
+        return builder.append(SEPARATOR).append(appId).append(SEPARATOR).toString();
     }
 
     private void doInsert(ApplicationDO applicationDO) {
@@ -177,10 +198,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationDTO applicationDTO) {
-        String param = applicationDTO.getParam();
-        ApplicationDO example = modelMapper.map(applicationDTO, ApplicationDO.class);
-        Page<ApplicationDO> pages = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.fuzzyQuery(example, param));
+    public Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationSearchDTO applicationSearchDTO) {
+        Page<ApplicationDO> pages = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.fuzzyQuery(applicationSearchDTO));
         List<ApplicationDTO> dtoList =
                 modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
                 }.getType());
@@ -236,6 +255,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
+    /**
+     * id为目标应用，ids为子应用
+     *
+     * @param organizationId 组织id
+     * @param id             应用id，applicationCategory为combination-application {@link ApplicationCategory#COMBINATION}
+     * @param ids            需要被分配的应用或组合应用
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addToCombination(Long organizationId, Long id, Long[] ids) {
@@ -260,36 +286,92 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<Long> deleteList = originDirectDescendantIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
         //校验组合应用或应用 idSet 是否能放到 组合应用=id 下面。
+        //查询到达目标应用的所有路径，key为rootId,value为在该root节点下的所有路径
+        Map<Long, Set<String>> rootIdMap = getRootIdMap(id);
         if (!insertList.isEmpty()) {
-            Map<Long, String> rootIdMap = getRootIdMap(id);
-            Map<Long, List> map = canAddToCombination(id, new HashSet<>(insertList));
-            for (Map.Entry<Long, String> entry : rootIdMap.entrySet()) {
+            //查询子应用的所有后代，并校验是否构成环
+            Map<Long, List<ApplicationExplorationDO>> descendantMap = getDescendantMap(new HashSet<>(insertList));
+            canAddToCombination(id, idSet, descendantMap);
+            for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
                 Long rootId = entry.getKey();
-                String path = entry.getValue();
-                addTreeNode(id, map, rootId, path);
+                Set<String> paths = entry.getValue();
+                paths.forEach(path -> addTreeNode(id, descendantMap, rootId, path));
             }
         }
         if (!deleteList.isEmpty()) {
-            deleteTreeNode(id, deleteList);
+            Map<Long, List<ApplicationExplorationDO>> descendantMap = getDescendantMap(new HashSet<>(deleteList));
+            for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
+                Set<String> paths = entry.getValue();
+                paths.forEach(path -> deleteTreeNode(descendantMap, path));
+            }
         }
     }
+
+    private void addTreeNode(Long id, Map<Long, List<ApplicationExplorationDO>> descendantMap, Long rootId, String parentPath) {
+        for (Map.Entry<Long, List<ApplicationExplorationDO>> entry : descendantMap.entrySet()) {
+            Long key = entry.getKey();
+            List<ApplicationExplorationDO> applicationExplorations = entry.getValue();
+            applicationExplorations.forEach(ae -> {
+                StringBuilder builder =
+                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
+                String path = builder.toString();
+                ApplicationExplorationDO example = new ApplicationExplorationDO();
+                example.setApplicationId(ae.getApplicationId());
+                example.setPath(path);
+                example.setHashcode(String.valueOf(path.hashCode()));
+                example.setRootId(rootId);
+                if (ae.getApplicationId().equals(key)) {
+                    example.setParentId(id);
+                } else {
+                    example.setParentId(ae.getParentId());
+                }
+                example.setId(null);
+                example.setEnabled(true);
+                applicationExplorationMapper.insertSelective(example);
+            });
+        }
+    }
+
+    private void deleteTreeNode(Map<Long, List<ApplicationExplorationDO>> descendantMap, String parentPath) {
+        for (Map.Entry<Long, List<ApplicationExplorationDO>> entry : descendantMap.entrySet()) {
+            List<ApplicationExplorationDO> applicationExplorations = entry.getValue();
+            applicationExplorations.forEach(ae -> {
+                StringBuilder builder =
+                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
+                String path = builder.toString();
+                ApplicationExplorationDO example = new ApplicationExplorationDO();
+                example.setPath(path);
+                applicationExplorationMapper.delete(example);
+            });
+        }
+    }
+
+    private void canAddToCombination(Long id, Set<Long> idSet, Map<Long, List<ApplicationExplorationDO>> descendantMap) {
+        if (idSet.contains(id)) {
+            throw new CommonException("error.application.add2combination.circle", id, id);
+        }
+        Set<ApplicationExplorationDO> set = new HashSet<>();
+        for (Map.Entry<Long, List<ApplicationExplorationDO>> entry : descendantMap.entrySet()) {
+            set.addAll(entry.getValue());
+        }
+        List<Long> illegalIds =
+                set
+                        .stream()
+                        .filter(ae -> ae.getApplicationId().equals(id))
+                        .map(ApplicationExplorationDO::getRootId)
+                        .collect(Collectors.toList());
+        if (!illegalIds.isEmpty()) {
+            throw new CommonException("error.application.add2combination.circle", Arrays.toString(illegalIds.toArray()), id);
+        }
+    }
+
 
     @Override
     public List<ApplicationExplorationWithAppDTO> queryDescendant(Long id) {
         if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
-        List<ApplicationExplorationDO> result = new ArrayList<>();
-        ApplicationDO app = applicationMapper.selectByPrimaryKey(id);
-        ApplicationExplorationDO self = new ApplicationExplorationDO();
-        self.setApplicationId(id);
-        self.setPath(SEPARATOR + id + SEPARATOR);
-        self.setApplicationName(app.getName());
-        self.setApplicationCode(app.getCode());
-        self.setApplicationCategory(app.getApplicationCategory());
-        self.setApplicationType(app.getApplicationType());
-        result.add(self);
-        result.addAll(applicationExplorationMapper.selectDescendantApplicationExcludeSelf(id));
+        List<ApplicationExplorationDO> result = applicationExplorationMapper.selectDescendants(generatePath(id));
         return
                 modelMapper.map(result, new TypeToken<List<ApplicationExplorationWithAppDTO>>() {
                 }.getType());
@@ -299,7 +381,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Page<ApplicationDTO> queryApplicationList(PageRequest pageRequest, Long id, String name, String code) {
         Page<ApplicationDO> pages =
                 PageHelper.doPageAndSort(pageRequest, () ->
-                        applicationExplorationMapper.selectDescendantApplications(id, ApplicationCategory.APPLICATION.code(), name, code));
+                        applicationExplorationMapper.selectDescendantApplications(generatePath(id), ApplicationCategory.APPLICATION.code(), name, code));
         List<ApplicationDTO> dtoList =
                 modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
                 }.getType());
@@ -331,192 +413,30 @@ public class ApplicationServiceImpl implements ApplicationService {
         return modelMapper.map(applicationMapper.selectByPrimaryKey(id), ApplicationDTO.class);
     }
 
-    private void deleteTreeNode(Long id, List<Long> deleteList) {
-        //查要移除的节点下所有的子节点
-        Map<Long, List<ApplicationExplorationDO>> map = new HashMap<>(deleteList.size());
-        deleteList.forEach(deleteAppId -> {
-                    ApplicationExplorationDO example = new ApplicationExplorationDO();
-                    example.setApplicationId(deleteAppId);
-                    //查要移除的节点有没有其他父节点，如果有其他父节点的话，直接删除当前节点即可，不用重建树
-                    if (applicationExplorationMapper.select(example).size() <= 1) {
-                        map.put(deleteAppId, applicationExplorationMapper.selectDescendantByApplicationIdAndParentId(deleteAppId, id));
-                    }
-                }
-        );
-        applicationExplorationMapper.deleteDescendantByApplicationIdsAndParentId(new HashSet<>(deleteList), id);
-        for (Map.Entry<Long, List<ApplicationExplorationDO>> entry : map.entrySet()) {
-            Long appId = entry.getKey();
-            List<ApplicationExplorationDO> list = entry.getValue();
-            //如果只有一层节点，则不重建树
-            if (list.size() > 1) {
-                list.forEach(ae -> {
-                    String path = SEPARATOR + appId + SEPARATOR;
-                    if (appId.equals(ae.getApplicationId())) {
-                        ae.setPath(path);
-                        ae.setRootId(appId);
-                        ae.setParentId(null);
-                        ae.setHashcode(String.valueOf(path.hashCode()));
-                        applicationExplorationMapper.insertSelective(ae);
-                    } else {
-                        String newPath = ae.getPath().substring(ae.getPath().indexOf(path));
-                        ae.setPath(newPath);
-                        ae.setRootId(appId);
-                        Long parentId = getParentIdFromPath(ae.getApplicationId(), newPath);
-                        ae.setParentId(parentId);
-                        ae.setHashcode(String.valueOf(newPath.hashCode()));
-                        applicationExplorationMapper.insertSelective(ae);
-                    }
-                });
+    private Map<Long, Set<String>> getRootIdMap(Long id) {
+        ApplicationExplorationDO example = new ApplicationExplorationDO();
+        example.setApplicationId(id);
+        List<ApplicationExplorationDO> pathNodes = applicationExplorationMapper.select(example);
+        Map<Long, Set<String>> map = new HashMap<>();
+        pathNodes.forEach(node -> {
+            Long rootId = node.getRootId();
+            Set<String> paths = map.get(rootId);
+            if (paths == null) {
+                paths = new HashSet<>();
+                map.put(rootId, paths);
             }
-        }
-    }
-
-    private void addTreeNode(Long id, Map<Long, List> map, Long rootId, String parentPath) {
-        for (Map.Entry<Long, List> entry : map.entrySet()) {
-            Long key = entry.getKey();
-            boolean isRootNode = (boolean) entry.getValue().get(0);
-            List<ApplicationExplorationDO> applicationExplorations =
-                    (List<ApplicationExplorationDO>) entry.getValue().get(1);
-            //do insert
-            addToTopNode(id, parentPath, rootId, key, isRootNode, applicationExplorations);
-        }
-    }
-
-    private void addToTopNode(Long id, String parentPath, Long rootId, Long key, boolean isRootNode,
-                              List<ApplicationExplorationDO> applicationExplorations) {
-        if (isRootNode) {
-            applicationExplorationMapper.deleteDescendantByApplicationId(key);
-            if (applicationExplorations.isEmpty()) {
-                StringBuilder builder = new StringBuilder();
-                String path =
-                        builder.append(SEPARATOR).append(id).append(SEPARATOR).append(key).append(SEPARATOR).toString();
-                insert(id, rootId, key, path);
-            } else {
-                applicationExplorations.forEach(ae -> {
-                    StringBuilder builder =
-                            new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
-                    String path = builder.toString();
-                    ae.setPath(path);
-                    Long parentId = getParentIdFromPath(ae.getApplicationId(), path);
-                    ae.setParentId(parentId == null ? id : parentId);
-                    ae.setRootId(rootId);
-                    ae.setHashcode(String.valueOf(path.hashCode()));
-                    ae.setId(null);
-                    applicationExplorationMapper.insertSelective(ae);
-                });
-            }
-
-        } else {
-            Set<String> paths = new HashSet<>();
-            applicationExplorations.forEach(ae -> {
-                String path = ae.getPath();
-                StringBuilder builder = new StringBuilder();
-                builder.append(SEPARATOR).append(key).append(SEPARATOR);
-                String suffix = path.substring(path.indexOf(builder.toString()));
-                path = new StringBuilder().append(parentPath).append(suffix.substring(1)).toString();
-                if (paths.contains(path)) {
-                    return;
-                }
-                ae.setPath(path);
-                if (key.equals(ae.getApplicationId())) {
-                    ae.setParentId(id);
-                }
-                ae.setRootId(rootId);
-                ae.setHashcode(String.valueOf(path.hashCode()));
-                ae.setId(null);
-                applicationExplorationMapper.insertSelective(ae);
-                paths.add(path);
-            });
-            if (paths.isEmpty()) {
-                StringBuilder builder = new StringBuilder();
-                String path =
-                        builder.append(parentPath).append(key).append(SEPARATOR).toString();
-                insert(id, rootId, key, path);
-            }
-        }
-    }
-
-    private Long getParentIdFromPath(Long applicationId, String path) {
-        String[] array = path.split(SEPARATOR + applicationId + SEPARATOR);
-        if (array.length == 0 || StringUtils.isEmpty(array[0])) {
-            return null;
-        } else {
-            String str = array[0];
-            return Long.valueOf(str.substring(str.lastIndexOf(SEPARATOR) + 1));
-        }
-    }
-
-    private void insert(Long id, Long rootId, Long key, String path) {
-        ApplicationExplorationDO ae = new ApplicationExplorationDO();
-        ae.setApplicationId(key);
-        ae.setPath(path);
-        ae.setRootId(rootId);
-        Long parentId = getParentIdFromPath(key, path);
-        ae.setParentId(parentId == null ? id : parentId);
-        ae.setHashcode(String.valueOf(path.hashCode()));
-        applicationExplorationMapper.insertSelective(ae);
-    }
-
-    private Map<Long, String> getRootIdMap(Long id) {
-        List<ApplicationExplorationDO> ancestors =
-                applicationExplorationMapper.selectAncestorByApplicationId(id);
-        //key是applicationId = id的应用的rootId，value为当前的路径
-        Map<Long, String> map = new HashMap<>();
-        ancestors.forEach(ancestor -> {
-            if (id.equals(ancestor.getApplicationId())) {
-                map.put(ancestor.getRootId(), ancestor.getPath());
-            }
+            paths.add(node.getPath());
         });
-        //如果没有祖先，则自己是root节点
-        if (map.isEmpty()) {
-            String path = SEPARATOR + id + SEPARATOR;
-            map.put(id, path);
-            ApplicationExplorationDO root = new ApplicationExplorationDO();
-            root.setApplicationId(id);
-            root.setPath(path);
-            root.setRootId(id);
-            if (applicationExplorationMapper.select(root).isEmpty()) {
-                root.setHashcode(String.valueOf(path.hashCode()));
-                applicationExplorationMapper.insertSelective(root);
-            }
-        }
         return map;
     }
 
-    private Map<Long, List> canAddToCombination(Long id, Set<Long> idSet) {
-        if (idSet.contains(id)) {
-            throw new CommonException("error.application.add2combination.circle", id, id);
-        }
-        //查idSet的所有孩子节点，如果和id有重复的，则不能添加到组合
-        Set<ApplicationExplorationDO> set = new HashSet<>();
-        Map<Long, List> map = new HashMap<>(idSet.size());
+    private Map<Long, List<ApplicationExplorationDO>> getDescendantMap(Set<Long> idSet) {
+        Map<Long, List<ApplicationExplorationDO>> map = new HashMap<>(idSet.size());
         idSet.forEach(currentId -> {
             List<ApplicationExplorationDO> list =
-                    applicationExplorationMapper.selectDescendantByApplicationId(currentId);
+                    applicationExplorationMapper.selectDescendantByPath(generatePath(currentId));
             map.put(currentId, list);
-            set.addAll(list);
         });
-        List<Long> illegalIds =
-                set
-                        .stream()
-                        .filter(ae -> ae.getApplicationId().equals(id))
-                        .map(ApplicationExplorationDO::getRootId)
-                        .collect(Collectors.toList());
-        if (!illegalIds.isEmpty()) {
-            throw new CommonException("error.application.add2combination.circle", Arrays.toString(illegalIds.toArray()), id);
-        }
-
-        Set<Long> rootIds = new HashSet<>();
-        rootIds.addAll(set.stream().map(ApplicationExplorationDO::getRootId).collect(Collectors.toList()));
-        for (Map.Entry<Long, List> entry : map.entrySet()) {
-            Long key = entry.getKey();
-            List value = entry.getValue();
-            List list = new ArrayList(2);
-            //list.get(0)表示是不是root节点，list.get(1)是该节点的所有子节点
-            list.add(rootIds.contains(key));
-            list.add(value);
-            entry.setValue(list);
-        }
         return map;
     }
 
