@@ -34,8 +34,18 @@ public class IAMServiceApplication {
     public AsyncTaskExecutor asyncTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("ldap-executor");
-        executor.setMaxPoolSize(3);
-        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setCorePoolSize(3);
+        return executor;
+    }
+
+    @Bean
+    @Qualifier("ldap-disable-executor")
+    public AsyncTaskExecutor disableLdapUserExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("ldap-disable-executor");
+        executor.setMaxPoolSize(4);
+        executor.setCorePoolSize(3);
         return executor;
     }
 

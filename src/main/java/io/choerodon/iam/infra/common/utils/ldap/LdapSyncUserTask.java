@@ -63,9 +63,9 @@ public class LdapSyncUserTask {
         this.ldapErrorUserMapper = ldapErrorUserMapper;
     }
 
-    @Async("ldap-executor")
+    @Async("ldap-disable-executor")
     public void syncDisabledLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncUserTask.FinishFallback fallback) {
-        logger.info("@@@ start async user");
+        logger.info("@@@ start disable user");
 
         Long organizationId = ldap.getOrganizationId();
 
@@ -79,9 +79,9 @@ public class LdapSyncUserTask {
 
         LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
 
-        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport);
+        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistoryDO.getId());
 
-        logger.info("###total user count : {}", ldapSyncReport.getCount());
+        logger.info("@@@total user count : {}", ldapSyncReport.getCount());
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
         fallback.callback(ldapSyncReport, ldapHistoryDO);
@@ -103,14 +103,14 @@ public class LdapSyncUserTask {
 
         Long ldapHistoryId = ldapHistory.getId();
         getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistoryId);
-        logger.info("###total user count : {}", ldapSyncReport.getCount());
+        logger.info("@@@total user count : {}", ldapSyncReport.getCount());
         ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
         logger.info("async finished : {}", ldapSyncReport);
 
         fallback.callback(ldapSyncReport, ldapHistoryDO);
     }
 
-    public void disabledUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport) {
+    public void disabledUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport, Long ldapHistoryId) {
         //搜索控件
         final SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -152,6 +152,7 @@ public class LdapSyncUserTask {
                                 Long disabledCount = compareWithDbAndDisabled(users);
                                 ldapSyncReport.incrementUpdate(Long.valueOf(disabledCount));
                             }
+                            insertErrorUser(errorUsers, ldapHistoryId);
                             int legalUserSize = users.size();
                             attributesList.clear();
                             users.clear();
@@ -385,7 +386,6 @@ public class LdapSyncUserTask {
 
 
     private Long compareWithDbAndDisabled(List<UserDO> users) {
-        List<UserDO> disabledUsers = new ArrayList<>();
         //获取同步列表中的loginNameSet
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         //oracle In-list上限为1000，这里List size要小于1000
