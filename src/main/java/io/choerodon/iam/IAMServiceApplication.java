@@ -33,8 +33,8 @@ public class IAMServiceApplication {
     public AsyncTaskExecutor asyncTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("ldap-executor");
-        executor.setMaxPoolSize(3);
-        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(10);
+        executor.setCorePoolSize(5);
         return executor;
     }
 

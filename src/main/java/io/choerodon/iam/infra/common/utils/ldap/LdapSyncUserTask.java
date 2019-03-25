@@ -144,6 +144,7 @@ public class LdapSyncUserTask {
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
                                 logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
+                                break;
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
@@ -157,6 +158,7 @@ public class LdapSyncUserTask {
                             users.clear();
                             errorUsers.clear();
                             ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
+                            page++;
                         } while (processor.hasMore());
                         return null;
                     }
@@ -198,6 +200,7 @@ public class LdapSyncUserTask {
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
                                 logger.warn("can not find any attributes where filter is {}, page is {}", andFilter, page);
+                                break;
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
@@ -210,6 +213,7 @@ public class LdapSyncUserTask {
                             users.clear();
                             errorUsers.clear();
                             ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
+                            page++;
                         } while (processor.hasMore());
                         return null;
                     }
@@ -366,7 +370,7 @@ public class LdapSyncUserTask {
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
-            }else {
+            } else {
                 UserE userE = userRepository.selectByLoginName(loginName);
                 //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
                 if (userE.getLastUpdatedBy().equals(0L) && !userE.getEnabled()) {
