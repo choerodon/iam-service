@@ -14,7 +14,6 @@ import io.choerodon.iam.infra.enums.ApplicationType
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper
 import io.choerodon.iam.infra.mapper.ApplicationMapper
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
-import javafx.beans.binding.When
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
