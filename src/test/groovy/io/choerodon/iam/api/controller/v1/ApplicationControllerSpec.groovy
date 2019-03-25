@@ -1,14 +1,20 @@
 package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.asgard.saga.producer.TransactionalProducer
+import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ApplicationDTO
+import io.choerodon.iam.api.dto.ApplicationSearchDTO
 import io.choerodon.iam.app.service.ApplicationService
 import io.choerodon.iam.app.service.impl.ApplicationServiceImpl
 import io.choerodon.iam.infra.common.utils.AssertHelper
 import io.choerodon.iam.infra.dataobject.ApplicationDO
+import io.choerodon.iam.infra.enums.ApplicationCategory
+import io.choerodon.iam.infra.enums.ApplicationType
+import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper
 import io.choerodon.iam.infra.mapper.ApplicationMapper
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
+import javafx.beans.binding.When
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,6 +33,8 @@ class ApplicationControllerSpec extends Specification {
     ApplicationMapper applicationMapper
     @Autowired
     AssertHelper assertHelper
+    @Autowired
+    ApplicationExplorationMapper applicationExplorationMapper
 
     ModelMapper modelMapper = new ModelMapper()
 
@@ -35,7 +43,7 @@ class ApplicationControllerSpec extends Specification {
 
     def "setup"() {
         producer = Mock(TransactionalProducer)
-        ApplicationService service = new ApplicationServiceImpl(applicationMapper, assertHelper, producer)
+        ApplicationService service = new ApplicationServiceImpl(applicationMapper, assertHelper, producer, applicationExplorationMapper)
         controller = new ApplicationController(service)
     }
 
@@ -46,7 +54,7 @@ class ApplicationControllerSpec extends Specification {
                         .setCode("code")
                         .setName("name")
                         .setApplicationCategory("application")
-                        .setApplicationType("test-application")
+                        .setApplicationType("test")
                         .setOrganizationId(1L)
                         .setEnabled(true)
 
@@ -74,7 +82,7 @@ class ApplicationControllerSpec extends Specification {
         PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(1L, pageRequest, null, null, null, null)
+        def result = controller.pagingQuery(1L, pageRequest, new ApplicationSearchDTO())
         then:
         result.statusCode.is2xxSuccessful()
         result.body.size() > 0
@@ -98,7 +106,7 @@ class ApplicationControllerSpec extends Specification {
         when:
         def result = controller.types()
         then:
-        result.body.contains("test-application")
+        result.body.contains("test")
 
     }
 
@@ -134,5 +142,79 @@ class ApplicationControllerSpec extends Specification {
 
         then:
         noExceptionThrown()
+    }
+
+    def "addToCombination"() {
+        given: "初始化5个组合应用和一个普通应用"
+        ApplicationDTO dto = new ApplicationDTO()
+        dto.setOrganizationId(1L)
+        dto.setProjectId(0L)
+        dto.setEnabled(true)
+        dto.setApplicationType(ApplicationType.DEVELOPMENT.code())
+        for (int i = 0; i < 5; i++) {
+            dto.setId((i + 1) * 100)
+            dto.setName(i + "")
+            dto.setCode(i + "")
+            dto.setApplicationCategory(ApplicationCategory.COMBINATION.code())
+            controller.create(1L, dto)
+        }
+        dto.setName("n123")
+        dto.setCode("c123")
+        dto.setId(600L)
+        dto.setApplicationCategory(ApplicationCategory.APPLICATION.code())
+        controller.create(1L, dto)
+
+        when: "添加组"
+        def ids = [200L, 300L] as Long[]
+        controller.addToCombination(1L, 100L, ids)
+        then:
+        noExceptionThrown()
+
+        when: "移除300"
+        ids = [200L] as Long[]
+        controller.addToCombination(1L, 100L, ids)
+        then:
+        noExceptionThrown()
+
+        when: "添加自己"
+        ids = [100L] as Long[]
+        controller.addToCombination(1L, 100L, ids)
+        then:
+        thrown(CommonException)
+    }
+
+    def "queryDescendant"() {
+        when:
+        def result = controller.queryDescendant(1L, 100L)
+        then:
+        result.statusCode.is2xxSuccessful()
+        result.body.size() == 2
+    }
+
+    def "queryEnabledApplication"() {
+        when:
+        def result = controller.queryEnabledApplication(1, 100)
+        then:
+        result.statusCode.is2xxSuccessful()
+    }
+
+    def "queryApplicationList"() {
+        given:
+        PageRequest pageRequest = new PageRequest(0, 10)
+
+        when:
+        def result = controller.queryApplicationList(pageRequest, 1L, 100L, null, null)
+
+        then:
+        result.statusCode.is2xxSuccessful()
+    }
+
+    def "query"() {
+        when:
+        def result = controller.query(1,100)
+
+        then:
+        result.statusCode.is2xxSuccessful()
+        result.body.getName() == "0"
     }
 }

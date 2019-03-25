@@ -65,49 +65,22 @@ public class LdapSyncUserTask {
 
     @Async("ldap-disable-executor")
     public void syncDisabledLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncUserTask.FinishFallback fallback) {
-        logger.info("@@@ start disable user");
-
-        Long organizationId = ldap.getOrganizationId();
-
-        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
-        ldapSyncReport.setLdapId(ldap.getId());
-        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
-
-        LdapHistoryDO ldapHistory = new LdapHistoryDO();
-        ldapHistory.setLdapId(ldap.getId());
-        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
-
-        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
-
-        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistoryDO.getId());
-
-        logger.info("@@@total user count : {}", ldapSyncReport.getCount());
-        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
-        logger.info("async finished : {}", ldapSyncReport);
-        fallback.callback(ldapSyncReport, ldapHistoryDO);
+        logger.info("@@@ start to disable user");
+        LdapSyncReport ldapSyncReport = initLdapSyncReport(ldap);
+        LdapHistoryDO ldapHistory = initLdapHistory(ldap.getId());
+        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId());
+        logger.info("@@@syncing user finished : {}", ldapSyncReport);
+        fallback.callback(ldapSyncReport, ldapHistory);
     }
-
 
     @Async("ldap-executor")
     public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
-        logger.info("@@@ start async user");
-        Long organizationId = ldap.getOrganizationId();
-        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
-        ldapSyncReport.setLdapId(ldap.getId());
-        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
-
-        LdapHistoryDO ldapHistory = new LdapHistoryDO();
-        ldapHistory.setLdapId(ldap.getId());
-        ldapHistory.setSyncBeginTime(ldapSyncReport.getStartTime());
-        LdapHistoryDO ldapHistoryDO = ldapHistoryRepository.insertSelective(ldapHistory);
-
-        Long ldapHistoryId = ldapHistory.getId();
-        getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistoryId);
-        logger.info("@@@total user count : {}", ldapSyncReport.getCount());
-        ldapSyncReport.setEndTime(new Date(System.currentTimeMillis()));
-        logger.info("async finished : {}", ldapSyncReport);
-
-        fallback.callback(ldapSyncReport, ldapHistoryDO);
+        logger.info("@@@ start to sync user");
+        LdapSyncReport ldapSyncReport = initLdapSyncReport(ldap);
+        LdapHistoryDO ldapHistory = initLdapHistory(ldap.getId());
+        getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId());
+        logger.info("syncing user finished : {}", ldapSyncReport);
+        fallback.callback(ldapSyncReport, ldapHistory);
     }
 
     public void disabledUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport, Long ldapHistoryId) {
@@ -150,7 +123,7 @@ public class LdapSyncUserTask {
                             //当前页做用户停用
                             if (!users.isEmpty()) {
                                 Long disabledCount = compareWithDbAndDisabled(users);
-                                ldapSyncReport.incrementUpdate(Long.valueOf(disabledCount));
+                                ldapSyncReport.incrementUpdate(disabledCount);
                             }
                             insertErrorUser(errorUsers, ldapHistoryId);
                             int legalUserSize = users.size();
@@ -237,7 +210,6 @@ public class LdapSyncUserTask {
             if (ldap.getPhoneField() != null) {
                 phoneAttribute = attributes.get(ldap.getPhoneField());
             }
-
 
             String uuid;
             String loginName;
@@ -336,6 +308,14 @@ public class LdapSyncUserTask {
         return andFilter;
     }
 
+    private LdapSyncReport initLdapSyncReport(LdapDO ldap) {
+        Long organizationId = ldap.getOrganizationId();
+        LdapSyncReport ldapSyncReport = new LdapSyncReport(organizationId);
+        ldapSyncReport.setLdapId(ldap.getId());
+        ldapSyncReport.setStartTime(new Date(System.currentTimeMillis()));
+        return ldapSyncReport;
+    }
+
     private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport,
                                         List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
         List<UserDO> insertUsers = new ArrayList<>();
@@ -400,7 +380,7 @@ public class LdapSyncUserTask {
 
         nameSet.clear();
         subNameSet.clear();
-        return new Long(idsByExistedNames.size());
+        return Long.valueOf(idsByExistedNames.size());
     }
 
 
@@ -421,6 +401,13 @@ public class LdapSyncUserTask {
             ldapSyncReport.reduceInsert(errorCount);
             ldapSyncReport.incrementError(errorCount);
         }
+    }
+
+    private LdapHistoryDO initLdapHistory(Long ldapId) {
+        LdapHistoryDO ldapHistory = new LdapHistoryDO();
+        ldapHistory.setLdapId(ldapId);
+        ldapHistory.setSyncBeginTime(new Date(System.currentTimeMillis()));
+        return ldapHistoryRepository.insertSelective(ldapHistory);
     }
 
     private void cleanAfterDataPersistence(List<UserDO> insertUsers, Set<String> nameSet, Set<String> emailSet,
@@ -456,7 +443,7 @@ public class LdapSyncUserTask {
 
         @Override
         public LdapHistoryDO callback(LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) {
-            ldapHistoryDO.setSyncEndTime(ldapSyncReport.getEndTime());
+            ldapHistoryDO.setSyncEndTime(new Date(System.currentTimeMillis()));
             ldapHistoryDO.setNewUserCount(ldapSyncReport.getInsert());
             ldapHistoryDO.setUpdateUserCount(ldapSyncReport.getUpdate());
             ldapHistoryDO.setErrorUserCount(ldapSyncReport.getError());
