@@ -144,6 +144,7 @@ public class LdapSyncUserTask {
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
                                 logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
+                                break;
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
@@ -199,6 +200,7 @@ public class LdapSyncUserTask {
                             List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
                                 logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
+                                break;
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                             }
