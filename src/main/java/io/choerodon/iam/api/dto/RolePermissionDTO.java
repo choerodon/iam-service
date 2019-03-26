@@ -1,7 +1,8 @@
 package io.choerodon.iam.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author wuguokai
@@ -12,7 +13,7 @@ public class RolePermissionDTO {
     @ApiModelProperty(value = "角色ID/必填")
     private Long roleId;
     @ApiModelProperty(value = "权限ID/必填")
-    @NotEmpty(message = "errpr.rolePermission.permissionId.empty")
+    @NotEmpty(message = "error.rolePermission.permissionId.empty")
     private Long permissionId;
 
     public Long getId() {

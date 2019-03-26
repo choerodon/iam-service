@@ -115,4 +115,12 @@ public class MenuE {
     public String getRoute() {
         return route;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 }

@@ -28,12 +28,13 @@ public class RoleLabelRepositoryImpl implements RoleLabelRepository {
     }
 
     @Override
-    public void insertList(List<RoleLabelDO> roleLabelDOList) {
-        if (roleLabelDOList == null || roleLabelDOList.isEmpty()) {
-            return;
-        }
-        if (roleLabelMapper.insertList(roleLabelDOList) != roleLabelDOList.size()) {
-            throw new CommonException("error.roleLabel.create");
+    public void insertList(List<RoleLabelDO> roleLabels) {
+        if (roleLabels != null) {
+            try {
+                roleLabels.forEach(roleLabel -> roleLabelMapper.insertSelective(roleLabel));
+            } catch (Exception e) {
+                throw new CommonException("error.roleLabel.create");
+            }
         }
     }
 

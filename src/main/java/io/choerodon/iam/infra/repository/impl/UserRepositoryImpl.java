@@ -106,7 +106,6 @@ public class UserRepositoryImpl implements UserRepository {
                         roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
-        //TODO
         //筛选非空角色以及角色内部按id排序
         return new Page<>(userDOList, pageInfo, count);
     }
@@ -126,7 +125,6 @@ public class UserRepositoryImpl implements UserRepository {
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         //没有order by
-        //TODO
         //筛选非空角色以及角色内部按id排序
         return new Page<>(userDOList, pageInfo, count);
     }
@@ -147,7 +145,6 @@ public class UserRepositoryImpl implements UserRepository {
                             ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
             PageInfo pageInfo = new PageInfo(page, size);
             //没有order by
-            //TODO
             //筛选非空角色以及角色内部按id排序
             return new Page<>(userDOList, pageInfo, count);
         } else {

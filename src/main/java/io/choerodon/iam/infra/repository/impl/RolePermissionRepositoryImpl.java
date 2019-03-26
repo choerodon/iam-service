@@ -57,11 +57,12 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
 
     @Override
     public void insertList(List<RolePermissionDO> rolePermissionDOList) {
-        if (rolePermissionDOList == null || rolePermissionDOList.isEmpty()) {
-            return;
-        }
-        if (rolePermissionMapper.insertList(rolePermissionDOList) != rolePermissionDOList.size()) {
-            throw new CommonException("error.rolePermission.insert");
+        if (rolePermissionDOList != null) {
+            try {
+                rolePermissionDOList.forEach(r -> rolePermissionMapper.insertSelective(r));
+            }catch (Exception e) {
+                throw new CommonException("error.rolePermission.batch.insert");
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.BookMarkDTO;
 import io.choerodon.iam.app.service.BookMarkService;
 import io.choerodon.iam.domain.repository.BookMarkRepository;
@@ -44,7 +45,8 @@ public class BookMarkServiceImpl implements BookMarkService {
     }
 
     @Override
-    public List<BookMarkDTO> queryByUserId(Long userId) {
+    public List<BookMarkDTO> list() {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         return ConvertHelper.convertList(bookMarkRepository.queryByUserId(userId), BookMarkDTO.class);
     }
 

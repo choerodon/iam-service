@@ -56,7 +56,7 @@ public class ExcelImportUserTask {
     private FileFeignClient fileFeignClient;
     private IUserService iUserService;
     private UserPasswordValidator userPasswordValidator;
-    private final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
 
     public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, IUserService iUserService, UserPasswordValidator userPasswordValidator) {
@@ -317,6 +317,7 @@ public class ExcelImportUserTask {
      * 导入用户去重
      * 前置，loginName和email都是唯一的
      * 1. 先根据loginName和email分组，剔除loginName和email都重复的数据
+     *
      * @param users
      * @param errorUsers
      * @return
@@ -349,8 +350,7 @@ public class ExcelImportUserTask {
         //loginName去重
         List<UserDO> distinctNameList = distinctLoginName(errorUsers, distinct);
         //email去重
-        List<UserDO> returnList = distinctEmail(errorUsers, distinctNameList);
-        return returnList;
+        return distinctEmail(errorUsers, distinctNameList);
     }
 
     private List<UserDO> distinctLoginName(List<ErrorUserDTO> errorUsers, List<UserDO> distinct) {

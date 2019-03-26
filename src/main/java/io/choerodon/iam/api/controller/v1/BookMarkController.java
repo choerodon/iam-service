@@ -51,8 +51,7 @@ public class BookMarkController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "查询当前用户全部书签")
     @GetMapping
-    public ResponseEntity<List<BookMarkDTO>> list(@RequestParam(name = "userId", required = false) Long userId) {
-        userId = DetailsHelper.getUserDetails().getUserId();
-        return new ResponseEntity<>(bookMarkService.queryByUserId(userId), HttpStatus.OK);
+    public ResponseEntity<List<BookMarkDTO>> list() {
+        return new ResponseEntity<>(bookMarkService.list(), HttpStatus.OK);
     }
 }

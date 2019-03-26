@@ -1,11 +1,11 @@
 package io.choerodon.iam.api.dto;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.validator.UserValidator;

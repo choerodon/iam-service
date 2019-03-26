@@ -166,9 +166,6 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectDO projectDO = new ProjectDO();
         projectDO.setCode(code);
         ProjectDO checkDO = projectRepository.selectOne(projectDO);
-        if (checkDO == null) {
-            return true;
-        }
-        return false;
+        return checkDO == null;
     }
 }

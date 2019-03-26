@@ -10,7 +10,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.UserAccessTokenDTO;
 import io.choerodon.iam.app.service.AccessTokenService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -38,11 +37,9 @@ public class AccessTokenController {
     @GetMapping
     public ResponseEntity<Page<UserAccessTokenDTO>> list(@ApiIgnore
                                                          @SortDefault(value = "tokenId", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                                         @RequestParam(name = "userId", required = false) Long userId,
                                                          @RequestParam(value = "clientName", required = false) String clientName,
                                                          @RequestParam(value = "currentToken") String currentToken) {
-        userId = DetailsHelper.getUserDetails().getUserId();
-        return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(pageRequest, userId, clientName, currentToken), HttpStatus.OK);
+        return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(pageRequest, clientName, currentToken), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true, level = ResourceLevel.SITE)

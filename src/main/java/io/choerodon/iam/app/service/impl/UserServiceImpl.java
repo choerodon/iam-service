@@ -39,7 +39,6 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
-import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dataobject.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
@@ -135,7 +134,10 @@ public class UserServiceImpl implements UserService {
         if (!userId.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
-        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        boolean isAdmin = false;
+        if (customUserDetails.getAdmin() != null) {
+            isAdmin = customUserDetails.getAdmin();
+        }
         //superAdmin例外处理
         if (isAdmin) {
             return ConvertHelper.convertList(organizationRepository.selectAll(), OrganizationDTO.class);
@@ -148,7 +150,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled) {
         CustomUserDetails customUserDetails = checkLoginUser(id);
-        boolean isAdmin = customUserDetails.getAdmin() == null ? false : customUserDetails.getAdmin();
+        boolean isAdmin = false;
+        if (customUserDetails.getAdmin() != null) {
+            isAdmin = customUserDetails.getAdmin();
+        }
         //superAdmin例外处理
         if (isAdmin) {
             return ConvertHelper.convertList(projectRepository.selectAll(), ProjectDTO.class);
@@ -318,7 +323,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
-        OrganizationDO organizationDO=new OrganizationDO();
+        OrganizationDO organizationDO = new OrganizationDO();
         organizationDO.setCode(orgCode);
         organizationDO = organizationRepository.selectOne(organizationDO);
         UserE user = userRepository.selectByPrimaryKey(organizationDO.getUserId());
@@ -382,6 +387,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 校验在启用用户中手机号唯一
+     *
      * @param user 用户信息
      */
     private void checkPhone(UserDTO user) {

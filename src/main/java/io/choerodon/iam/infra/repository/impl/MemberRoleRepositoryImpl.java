@@ -122,7 +122,6 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     private Page<ClientDO> pageQueryingClientsWithRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
-        //TODO
         //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
@@ -130,8 +129,6 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
         PageInfo pageInfo = new PageInfo(page, size);
         int count = memberRoleMapper.selectCountClients(sourceId, sourceType, clientRoleSearchDTO, param);
         List<ClientDO> clientDOS = memberRoleMapper.selectClientsWithRoles(sourceId, sourceType, clientRoleSearchDTO, param, start, size);
-        //没有order by
-        //TODO
         //筛选非空角色以及角色内部按id排序
         return new Page<>(clientDOS, pageInfo, count);
     }

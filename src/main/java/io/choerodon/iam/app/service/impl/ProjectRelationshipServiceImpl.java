@@ -251,7 +251,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             }
         });
 
-        Set<Long> collect = list.stream().map(t -> t.getParentId()).collect(Collectors.toSet());
+        Set<Long> collect = list.stream().map(ProjectRelationshipDTO::getParentId).collect(Collectors.toSet());
         if (collect.size() != 1) {
             throw new CommonException("error.update.project.relationships.must.be.under.the.same.program");
         }
@@ -308,14 +308,14 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                             flag = false;
                         }
                     } else {
-                        if (!(end <= min)) {
+                        if (end > min) {
                             flag = false;
                         }
                     }
                 } else {
                     if (r.getEndDate() != null) {
                         long max = r.getEndDate().getTime();
-                        if (!(start >= max)) {
+                        if (start < max) {
                             flag = false;
                         }
                     } else {
