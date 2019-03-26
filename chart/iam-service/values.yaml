@@ -29,7 +29,7 @@ preJob:
       exclusion: iam_user.password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name
 
 metrics:
-  path: /prometheus
+  path: /actuator/prometheus
   group: spring-boot
 
 logs:
