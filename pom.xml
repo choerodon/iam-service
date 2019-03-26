@@ -13,6 +13,7 @@
     <properties>
         <choerodon.starters.version>0.10.0.RELEASE</choerodon.starters.version>
         <powermock.version>2.0.0-beta.5</powermock.version>
+        <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
     </properties>
     <dependencies>
         <dependency>
@@ -247,7 +248,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
-                    <argLine>-Xmx1024m</argLine>
+                    <argLine>@{argLine}</argLine>
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Spec.java</include>
