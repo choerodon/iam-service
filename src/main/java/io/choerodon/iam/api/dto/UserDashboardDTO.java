@@ -25,7 +25,6 @@ public class UserDashboardDTO {
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
-    // DashboardE
     @NotNull(message = "error.dashboard.id.null")
     private Long dashboardId;
     private String dashboardCode;
@@ -43,6 +42,8 @@ public class UserDashboardDTO {
     private Boolean needRoles;
 
     public UserDashboardDTO() {
+        this.sort = 0;
+        this.dashboardId = 0L;
     }
 
     public UserDashboardDTO(Long id,

@@ -33,7 +33,13 @@ public enum LdapErrorUserCause {
     /**
      * 邮箱已经存在
      */
-    EMAIL_ALREADY_EXISTED("email_already_existed");
+    EMAIL_ALREADY_EXISTED("email_already_existed"),
+
+    /**
+     * 禁用用户发送事件失败
+     */
+    SEND_MESSAGE_FAILED("send_message_failed");
+
 
     private String value;
 
