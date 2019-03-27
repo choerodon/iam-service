@@ -15,7 +15,6 @@ import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.iam.infra.dataobject.ProjectTypeDO;
-import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;

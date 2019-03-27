@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import io.choerodon.iam.infra.enums.LdapSyncType;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -158,7 +159,7 @@ public class LdapServiceImpl implements LdapService {
             throw new CommonException("error.ldap.attribute.match");
         }
         LdapTemplate ldapTemplate = (LdapTemplate) map.get(ILdapServiceImpl.LDAP_TEMPLATE);
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, finishFallback);
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, LdapSyncType.SYNC.value(), finishFallback);
     }
 
     @Override

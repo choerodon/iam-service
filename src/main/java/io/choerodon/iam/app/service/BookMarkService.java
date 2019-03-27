@@ -12,6 +12,7 @@ public interface BookMarkService {
 
     /**
      * 更新传入书签列表
+     *
      * @param bookMarkDTOS
      * @return
      */
@@ -19,9 +20,10 @@ public interface BookMarkService {
 
     /**
      * 查询用户下所有书签
+     *
      * @return
      */
-    List<BookMarkDTO> queryByUserId(Long userId);
+    List<BookMarkDTO> list();
 
     void delete(Long id);
 }

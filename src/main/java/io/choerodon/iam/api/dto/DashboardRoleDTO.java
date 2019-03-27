@@ -7,11 +7,11 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class DashboardRoleDTO {
     @ApiModelProperty(value = "ID/非必填")
-    Long id;
+    private Long id;
     @ApiModelProperty(value = "Dashboard ID/必填")
-    Long dashboardId;
+    private Long dashboardId;
     @ApiModelProperty(value = "角色Id")
-    Long roleId;
+    private Long roleId;
     @ApiModelProperty(value = "角色名")
     private String name;
     @ApiModelProperty(value = "角色编码")

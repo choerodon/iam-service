@@ -72,8 +72,10 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     @Override
     @Async("notify-executor")
     public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
-        logger.info("ready : send Notice to " + userIds.size() + " users");
-        if (userIds == null || userIds.isEmpty()) return new AsyncResult<>("userId is null");
+        logger.info("ready : send Notice to {} users", userIds.size());
+        if (userIds == null || userIds.isEmpty()) {
+            return new AsyncResult<>("userId is null");
+        }
         long beginTime = System.currentTimeMillis();
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(code);
@@ -99,9 +101,9 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
             }
         });
         noticeSendDTO.setTargetUsers(users);
-        logger.info("start : send Notice to " + userIds.size() + " users");
+        logger.info("start : send Notice to {} users", userIds.size());
         notifyFeignClient.postNotice(noticeSendDTO);
-        logger.info("end : send Notice to " + userIds.size() + " users");
+        logger.info("end : send Notice to {} users",userIds.size());
         return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
     }
 }

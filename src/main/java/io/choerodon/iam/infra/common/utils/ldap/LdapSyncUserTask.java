@@ -7,6 +7,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 
+import io.choerodon.core.exception.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -63,132 +64,85 @@ public class LdapSyncUserTask {
         this.ldapErrorUserMapper = ldapErrorUserMapper;
     }
 
-    @Async("ldap-disable-executor")
-    public void syncDisabledLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncUserTask.FinishFallback fallback) {
-        logger.info("@@@ start to disable user");
-        LdapSyncReport ldapSyncReport = initLdapSyncReport(ldap);
-        LdapHistoryDO ldapHistory = initLdapHistory(ldap.getId());
-        disabledUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId());
-        logger.info("@@@syncing user finished : {}", ldapSyncReport);
-        fallback.callback(ldapSyncReport, ldapHistory);
-    }
-
     @Async("ldap-executor")
-    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, FinishFallback fallback) {
-        logger.info("@@@ start to sync user");
+    public void syncLDAPUser(LdapTemplate ldapTemplate, LdapDO ldap, String syncType, FinishFallback fallback) {
+        logger.info("@@@ start to sync users from ldap server, sync type: {}", syncType);
         LdapSyncReport ldapSyncReport = initLdapSyncReport(ldap);
         LdapHistoryDO ldapHistory = initLdapHistory(ldap.getId());
-        getUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId());
-        logger.info("syncing user finished : {}", ldapSyncReport);
+        syncUsersFromLdapServer(ldapTemplate, ldap, ldapSyncReport, ldapHistory.getId(), syncType);
+        logger.info("@@@ syncing users has been finished, sync type: {}, ldapSyncReport: {}", syncType, ldapSyncReport);
         fallback.callback(ldapSyncReport, ldapHistory);
     }
 
-    public void disabledUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport, Long ldapHistoryId) {
+    private void syncUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap,
+                                         LdapSyncReport ldapSyncReport, Long ldapHistoryId,
+                                         String syncType) {
         //搜索控件
         final SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         //Filter
-        AndFilter andFilter = getAndFilterByObjectClass(ldap);
-        HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
-        andFilter.and(hardcodedFilter);
+        AndFilter andFilter = getFilter(ldap);
 
-        int batchSize = ldap.getSagaBatchSize();
         //分页PagedResultsDirContextProcessor
         final PagedResultsDirContextProcessor processor =
-                new PagedResultsDirContextProcessor(batchSize);
+                new PagedResultsDirContextProcessor(ldap.getSagaBatchSize());
+        AttributesMapper attributesMapper = getDefaultAttributesMapper();
+
         SingleContextSource.doWithSingleContext(
                 ldapTemplate.getContextSource(), new LdapOperationsCallback<List<UserDO>>() {
                     @Override
                     public List<UserDO> doWithLdapOperations(LdapOperations operations) {
                         Integer page = 1;
-                        AttributesMapper attributesMapper = new AttributesMapper() {
-                            @Override
-                            public Object mapFromAttributes(Attributes attributes) {
-                                return attributes;
-                            }
-                        };
-
                         do {
+                            List<UserDO> users = new ArrayList<>();
+                            List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             List<Attributes> attributesList =
                                     operations.search("", andFilter.toString(), searchControls,
                                             attributesMapper, processor);
                             //将当前分页的数据做插入处理
-                            List<UserDO> users = new ArrayList<>();
-                            List<LdapErrorUserDO> errorUsers = new ArrayList<>();
                             if (attributesList.isEmpty()) {
                                 logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
+                                break;
                             } else {
                                 processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
-                            }
-                            //当前页做用户停用
-                            if (!users.isEmpty()) {
-                                Long disabledCount = compareWithDbAndDisabled(users);
-                                ldapSyncReport.incrementUpdate(disabledCount);
-                            }
-                            insertErrorUser(errorUsers, ldapHistoryId);
-                            int legalUserSize = users.size();
-                            attributesList.clear();
-                            users.clear();
-                            errorUsers.clear();
-                            ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
-                        } while (processor.hasMore());
-                        return null;
-                    }
-                });
-    }
-
-    private void getUsersFromLdapServer(LdapTemplate ldapTemplate, LdapDO ldap, LdapSyncReport ldapSyncReport,
-                                        Long ldapHistoryId) {
-        //搜索控件
-        final SearchControls searchControls = new SearchControls();
-        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        //Filter
-        AndFilter andFilter = getAndFilterByObjectClass(ldap);
-        HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
-        andFilter.and(hardcodedFilter);
-
-        int batchSize = ldap.getSagaBatchSize();
-        //分页PagedResultsDirContextProcessor
-        final PagedResultsDirContextProcessor processor =
-                new PagedResultsDirContextProcessor(batchSize);
-        SingleContextSource.doWithSingleContext(
-                ldapTemplate.getContextSource(), new LdapOperationsCallback<List<UserDO>>() {
-                    @Override
-                    public List<UserDO> doWithLdapOperations(LdapOperations operations) {
-                        Integer page = 1;
-                        AttributesMapper attributesMapper = new AttributesMapper() {
-                            @Override
-                            public Object mapFromAttributes(Attributes attributes) {
-                                return attributes;
-                            }
-                        };
-
-                        do {
-                            List<Attributes> attributesList =
-                                    operations.search("", andFilter.toString(), searchControls,
-                                            attributesMapper, processor);
-                            //将当前分页的数据做插入处理
-                            List<UserDO> users = new ArrayList<>();
-                            List<LdapErrorUserDO> errorUsers = new ArrayList<>();
-                            if (attributesList.isEmpty()) {
-                                logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
-                            } else {
-                                processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
+                                attributesList.clear();
                             }
                             //当前页做数据写入
                             if (!users.isEmpty()) {
-                                compareWithDbAndInsert(users, ldapSyncReport, errorUsers, ldapHistoryId);
+                                switch (syncType) {
+                                    case "sync":
+                                        compareWithDbAndInsert(users, ldapSyncReport, errorUsers, ldapHistoryId);
+                                        break;
+                                    case "disable":
+                                        disable(users, ldapSyncReport, errorUsers, ldapHistoryId);
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
-                            int legalUserSize = users.size();
-                            attributesList.clear();
                             users.clear();
                             errorUsers.clear();
-                            ldapSyncReport.incrementCount(Long.valueOf(legalUserSize));
                             page++;
                         } while (processor.hasMore());
                         return null;
                     }
                 });
+    }
+
+    private AndFilter getFilter(LdapDO ldap) {
+        AndFilter andFilter = getAndFilterByObjectClass(ldap);
+        HardcodedFilter hardcodedFilter = new HardcodedFilter(ldap.getCustomFilter());
+        andFilter.and(hardcodedFilter);
+        return andFilter;
+    }
+
+    private AttributesMapper getDefaultAttributesMapper() {
+        return new AttributesMapper() {
+            @Override
+            public Object mapFromAttributes(Attributes attributes) {
+                return attributes;
+            }
+        };
     }
 
     private void processUserFromAttributes(LdapDO ldap, List<Attributes> attributesList,
@@ -318,6 +272,7 @@ public class LdapSyncUserTask {
 
     private void compareWithDbAndInsert(List<UserDO> users, LdapSyncReport ldapSyncReport,
                                         List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
+        ldapSyncReport.incrementCount(Long.valueOf(users.size()));
         List<UserDO> insertUsers = new ArrayList<>();
         Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
         Set<String> emailSet = users.stream().map(UserDO::getEmail).collect(Collectors.toSet());
@@ -348,7 +303,7 @@ public class LdapSyncUserTask {
                     insertUsers.add(user);
                     ldapSyncReport.incrementNewInsert();
                 }
-            }else {
+            } else {
                 UserE userE = userRepository.selectByLoginName(loginName);
                 //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
                 if (userE.getLastUpdatedBy().equals(0L) && !userE.getEnabled()) {
@@ -365,22 +320,31 @@ public class LdapSyncUserTask {
     }
 
 
-    private Long compareWithDbAndDisabled(List<UserDO> users) {
-        //获取同步列表中的loginNameSet
-        Set<String> nameSet = users.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
-        //oracle In-list上限为1000，这里List size要小于1000
-        List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
-        //获取数据库中已存在登录名的userIdSet
-        Set<Long> idsByExistedNames = new HashSet<>();
-        subNameSet.forEach(set -> idsByExistedNames.addAll(userRepository.getIdsByMatchLoginName(set)));
-        //oracle In-list上限为1000，这里List size要小于1000
-        List<Set<Long>> idsByExistedNamesList = CollectionUtils.subSet(idsByExistedNames, 999);
-
-        idsByExistedNamesList.forEach(set -> userRepository.disableByIdList(set));
-
-        nameSet.clear();
-        subNameSet.clear();
-        return Long.valueOf(idsByExistedNames.size());
+    private void disable(List<UserDO> users, LdapSyncReport ldapSyncReport,
+                         List<LdapErrorUserDO> errorUsers, Long ldapHistoryId) {
+        users.forEach(user -> {
+            UserE userE = userRepository.selectByLoginName(user.getLoginName());
+            if (userE == null) {
+                return;
+            }
+            if (userE.getEnabled()) {
+                try {
+                    organizationUserService.disableUser(userE.getOrganizationId(), userE.getId());
+                    ldapSyncReport.incrementUpdate();
+                } catch (CommonException e) {
+                    LdapErrorUserDO errorUser =
+                            new LdapErrorUserDO()
+                                    .setUuid(user.getUuid())
+                                    .setLoginName(user.getLoginName())
+                                    .setEmail(user.getEmail())
+                                    .setRealName(user.getRealName())
+                                    .setPhone(user.getPhone())
+                                    .setCause(LdapErrorUserCause.SEND_MESSAGE_FAILED.value());
+                    errorUsers.add(errorUser);
+                }
+            }
+        });
+        insertErrorUser(errorUsers, ldapHistoryId);
     }
 
 

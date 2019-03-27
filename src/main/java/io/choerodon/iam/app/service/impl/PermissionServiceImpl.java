@@ -99,13 +99,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin() != null && details.getAdmin()) {
-            for (CheckPermissionDTO dto : checkPermissionDTOList) {
-                if (permissionRepository.existByCode(dto.getCode().trim())) {
-                    dto.setApprove(true);
-                } else {
-                    dto.setApprove(false);
-                }
-            }
+            checkPermissionDTOList.forEach(dto -> dto.setApprove(permissionRepository.existByCode(dto.getCode().trim())));
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();

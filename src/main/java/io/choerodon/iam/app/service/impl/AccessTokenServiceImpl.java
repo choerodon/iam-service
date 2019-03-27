@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.choerodon.core.oauth.DetailsHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -46,7 +47,8 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public Page<UserAccessTokenDTO> pagingTokensByUserIdAndClient(PageRequest pageRequest, Long userId, String clientName, String currentToken) {
+    public Page<UserAccessTokenDTO> pagingTokensByUserIdAndClient(PageRequest pageRequest, String clientName, String currentToken) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         UserE userE = userRepository.selectByPrimaryKey(userId);
         if (userE == null) {
             throw new CommonException("error.user.not.exist");
@@ -108,13 +110,13 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     @Override
     public void deleteList(List<String> tokenIds, String currentToken) {
         List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectTokenList(tokenIds);
-        List<String> tokens = accessTokenDOS.stream().map(t -> ((DefaultOAuth2AccessToken)SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
+        List<String> tokens = accessTokenDOS.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
 
-        if(tokens!=null && !tokens.isEmpty() && tokens.contains(currentToken)){
+        if (tokens != null && !tokens.isEmpty() && tokens.contains(currentToken)) {
             throw new CommonException("error.delete.current.token");
         }
-        if(tokens.size()!=tokenIds.size()){
-            tokenIds = accessTokenDOS.stream().map(t -> t.getTokenId()).collect(Collectors.toList());
+        if (tokens != null && tokens.size() != tokenIds.size()) {
+            tokenIds = accessTokenDOS.stream().map(AccessTokenDO::getTokenId).collect(Collectors.toList());
         }
         oauthTokenFeignClient.deleteTokenList(tokenIds);
     }

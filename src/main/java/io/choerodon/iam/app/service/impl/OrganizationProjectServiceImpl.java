@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -324,7 +325,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     public Map<String, Object> getProjectsByType(Long organizationId) {
         //1.获取所有类型
         List<ProjectTypeDTO> list = projectTypeService.list();
-        List<String> legend = list.stream().map(type -> type.getName()).collect(Collectors.toList());
+        List<String> legend = list.stream().map(ProjectTypeDTO::getName).collect(Collectors.toList());
         List<Map<String, Object>> data = new ArrayList<>();
         //2.获取类型下所有项目名
         list.forEach(type -> {
@@ -365,7 +366,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //组织下全部敏捷项目
             List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
             //去除已与该项目群建立关系的敏捷项目
-            Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(r -> r.getProjectId()).collect(Collectors.toSet());
+            Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
             return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
         }
     }

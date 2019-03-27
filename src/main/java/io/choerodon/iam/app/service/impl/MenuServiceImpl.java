@@ -98,7 +98,10 @@ public class MenuServiceImpl implements MenuService {
         if (userDetails == null) {
             return new ArrayList<>();
         }
-        boolean isAdmin = userDetails.getAdmin() == null ? false : userDetails.getAdmin();
+        boolean isAdmin = false;
+        if (userDetails.getAdmin() != null) {
+            isAdmin = userDetails.getAdmin();
+        }
         //例外super admin,如果是的话能看到所有菜单
         List<MenuDTO> menus;
         if (isAdmin) {
@@ -271,8 +274,8 @@ public class MenuServiceImpl implements MenuService {
 
     private String selectProgramMenuCategory(String level, Long projectId) {
         if (ResourceLevel.PROJECT.value().equals(level)) {
-            ProjectDO projectDo = projectRepository.selectByPrimaryKey(projectId);
-            if (projectDo.getCategory() != null && !ProjectCategory.AGILE.value().equals(projectDo.getCategory().toLowerCase())) {
+            ProjectDO project = projectRepository.selectByPrimaryKey(projectId);
+            if (project.getCategory() != null && !ProjectCategory.AGILE.value().equalsIgnoreCase(project.getCategory())) {
                 return ProjectCategory.PROGRAM.value().toUpperCase();
             }
         }

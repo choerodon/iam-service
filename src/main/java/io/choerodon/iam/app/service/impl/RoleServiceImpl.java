@@ -36,18 +36,15 @@ public class RoleServiceImpl implements RoleService {
 
     private UserRepository userRepository;
 
-    private PermissionRepository permissionRepository;
-
     private RolePermissionRepository rolePermissionRepository;
 
     public RoleServiceImpl(RoleRepository roleRepository, IRoleService iRoleService,
                            UserRepository userRepository, RolePermissionRepository rolePermissionRepository,
-                           PermissionRepository permissionRepository, ClientRepository clientRepository) {
+                           ClientRepository clientRepository) {
         this.roleRepository = roleRepository;
         this.iRoleService = iRoleService;
         this.userRepository = userRepository;
         this.rolePermissionRepository = rolePermissionRepository;
-        this.permissionRepository = permissionRepository;
         this.clientRepository = clientRepository;
     }
 

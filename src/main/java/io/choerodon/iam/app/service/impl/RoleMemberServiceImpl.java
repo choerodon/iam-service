@@ -82,10 +82,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnSiteLevel(Boolean isEdit, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
-        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
-            memberType = memberRoleDTOList.get(0).getMemberType();
-        }
-
+        memberType = validate(memberRoleDTOList, memberType);
         // member type 为 'client' 时
         if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
             for (Long memberId : memberIds) {
@@ -117,9 +114,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
-        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
-            memberType = memberRoleDTOList.get(0).getMemberType();
-        }
+        memberType = validate(memberRoleDTOList, memberType);
 
         // member type 为 'client' 时
         if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {
@@ -146,6 +141,16 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                             ResourceLevel.ORGANIZATION.value()), MemberRoleDTO.class));
         }
         return memberRoleDTOS;
+    }
+
+    private String validate(List<MemberRoleDTO> memberRoleDTOList, String memberType) {
+        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
+            memberType = memberRoleDTOList.get(0).getMemberType();
+        }
+        if (memberRoleDTOList == null) {
+            throw new CommonException("error.memberRole.null");
+        }
+        return memberType;
     }
 
     @Override
@@ -192,9 +197,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     public List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType) {
         List<MemberRoleDTO> memberRoleDTOS = new ArrayList<>();
 
-        if (memberType == null && memberRoleDTOList != null && !memberRoleDTOList.isEmpty()) {
-            memberType = memberRoleDTOList.get(0).getMemberType();
-        }
+        memberType = validate(memberRoleDTOList, memberType);
 
         // member type 为 'client' 时
         if (memberType != null && memberType.equals(MemberType.CLIENT.value())) {

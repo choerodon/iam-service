@@ -3,11 +3,11 @@ package io.choerodon.iam.api.dto;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
