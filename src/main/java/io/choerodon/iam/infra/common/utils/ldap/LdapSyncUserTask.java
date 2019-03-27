@@ -54,18 +54,14 @@ public class LdapSyncUserTask {
 
     private LdapErrorUserMapper ldapErrorUserMapper;
 
-    private OrganizationUserService organizationUserService;
-
     public LdapSyncUserTask(UserRepository userRepository,
                             OrganizationUserService organizationUserService,
                             LdapHistoryRepository ldapHistoryRepository,
-                            LdapErrorUserMapper ldapErrorUserMapper,
-                            OrganizationUserService organizationUserService) {
+                            LdapErrorUserMapper ldapErrorUserMapper) {
         this.userRepository = userRepository;
         this.organizationUserService = organizationUserService;
         this.ldapHistoryRepository = ldapHistoryRepository;
         this.ldapErrorUserMapper = ldapErrorUserMapper;
-        this.organizationUserService = organizationUserService;
     }
 
     @Async("ldap-executor")

@@ -2,6 +2,8 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
+import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE
 import io.choerodon.iam.infra.dataobject.AccessTokenDO
@@ -20,17 +22,17 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken
 import org.springframework.security.oauth2.common.util.SerializationUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
 /**
- * @author Eugen
- * */
+ * @author Eugen* */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([PageHelper])
+@PrepareForTest([PageHelper, DetailsHelper])
 class AccessTokenServiceImplSpec extends Specification {
     private AccessTokenMapper accessTokenMapper = Mock(AccessTokenMapper)
     private RefreshTokenMapper refreshTokenMapper = Mock(RefreshTokenMapper)
@@ -93,8 +95,14 @@ class AccessTokenServiceImplSpec extends Specification {
         def clientName = clientDO.getName()
         and: "mock"
         userRepository.selectByPrimaryKey(userId) >> { return userE }
+        PowerMockito.mockStatic(DetailsHelper)
+        CustomUserDetails customUserDetails = Mock(CustomUserDetails)
+        customUserDetails.getUserId() >> 2L
+        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(customUserDetails)
+
+
         when: "用户不存在"
-        accessTokenService.pagingTokensByUserIdAndClient(pageRequest, 2, clientName, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(0).getToken())).getValue())
+        accessTokenService.pagingTokensByUserIdAndClient(pageRequest, clientName, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(0).getToken())).getValue())
         then: "结果分析"
         def e = thrown(CommonException)
         e.message == "error.user.not.exist"
