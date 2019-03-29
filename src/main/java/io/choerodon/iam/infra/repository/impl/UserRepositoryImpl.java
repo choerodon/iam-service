@@ -297,8 +297,12 @@ public class UserRepositoryImpl implements UserRepository {
 
 
     @Override
-    public Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectAllUsersSimplifiedInfo(param));
+    public Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param, Long organizationId) {
+        if (organizationId.equals(0L)) {
+            return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectAllUsersSimplifiedInfo(param));
+        } else {
+            return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectUsersOptional(param, organizationId));
+        }
     }
 
     @Override

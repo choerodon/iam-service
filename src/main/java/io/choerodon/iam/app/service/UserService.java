@@ -109,7 +109,7 @@ public interface UserService {
     OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId);
 
 
-    Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param);
+    Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
 
     Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
 

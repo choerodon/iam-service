@@ -550,6 +550,29 @@
         </if>
     </select>
 
+    <select id="selectUsersOptional" resultMap="simplifiedUserDTO">
+        select id, login_name, real_name, image_url
+        from iam_user
+        where organization_id = #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name LIKE concat(concat('%',#{params}),'%') OR
+            real_name LIKE concat(concat('%',#{params}),'%')
+            )
+        </if>
+        union
+        select id, login_name, real_name, image_url
+        from iam_user
+        where organization_id != #{organizationId}
+        and is_enabled = 1
+        <if test="params != null">
+            AND (
+            login_name  = #{params} OR
+            real_name = #{params}
+            )
+        </if>
+    </select>
 
     <select id="totalNumberOfUsers" resultType="java.lang.Integer">
         SELECT

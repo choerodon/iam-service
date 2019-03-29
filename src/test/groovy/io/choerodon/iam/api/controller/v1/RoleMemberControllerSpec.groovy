@@ -7,9 +7,11 @@ import io.choerodon.iam.api.dto.ClientRoleSearchDTO
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
+import io.choerodon.iam.app.service.UserService
 import io.choerodon.iam.infra.dataobject.*
 import io.choerodon.iam.infra.enums.MemberType
 import io.choerodon.iam.infra.mapper.*
+import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -23,8 +25,7 @@ import spock.lang.Stepwise
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan*  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Stepwise
@@ -32,6 +33,9 @@ class RoleMemberControllerSpec extends Specification {
     private static final String BASE_PATH = "/v1"
     @Autowired
     private TestRestTemplate restTemplate
+
+    @Autowired
+    private UserService userService
 
     @Autowired
     private MemberRoleMapper memberRoleMapper
@@ -774,7 +778,7 @@ class RoleMemberControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    def "queryAllUsers"() {
+    def "queryAllClients"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("size", 10)
@@ -788,17 +792,14 @@ class RoleMemberControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    def "queryAllClients"() {
+    def "queryAllUsers"() {
         given: "构造请求参数"
-        def paramsMap = new HashMap<String, Object>()
-        paramsMap.put("size", 10)
-        paramsMap.put("page", 0)
+        RoleMemberController controller = new RoleMemberController(null, userService, null, null, null)
+        PageRequest pageRequest = new PageRequest(0,20)
 
         when: "调用方法"
-        needClean = true
-        def entity = restTemplate.getForEntity(BASE_PATH + "/all/users", Page, paramsMap)
-
+        def result = controller.queryAllUsers(pageRequest,0L,"param")
         then: "校验结果"
-        entity.statusCode.is2xxSuccessful()
+        result.statusCode.is2xxSuccessful()
     }
 }

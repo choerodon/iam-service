@@ -25,8 +25,7 @@ import spock.lang.Specification
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan*  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class ExcelImportUserTaskSpec extends Specification {
@@ -126,6 +125,8 @@ class ExcelImportUserTaskSpec extends Specification {
 
         then: "校验结果"
         thrown(CommonException)
+        _ * userRepository.matchLoginName(_) >> new HashSet<String>()
+        _ * userRepository.matchEmail(_) >> new HashSet<String>()
     }
 
     def "ImportUsers"() {
@@ -205,6 +206,8 @@ class ExcelImportUserTaskSpec extends Specification {
         then: "校验结果"
         1 * fallback.callback(_)
         1 * 1 * fileFeignClient.uploadFile(_, _, _) >> { new ResponseEntity<String>(HttpStatus.OK) }
+        _ * userRepository.matchLoginName(_) >> new HashSet<String>()
+        _ * userRepository.matchEmail(_) >> new HashSet<String>()
     }
 
     def "ImportMemberRole"() {
