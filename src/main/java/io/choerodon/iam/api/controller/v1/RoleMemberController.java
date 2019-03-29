@@ -598,8 +598,9 @@ public class RoleMemberController extends BaseController {
     @GetMapping(value = "/all/users")
     public ResponseEntity<Page<SimplifiedUserDTO>> queryAllUsers(@ApiIgnore
                                                                  @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+                                                                 @RequestParam(value = "organization_id") Long organizationId,
                                                                  @RequestParam(value = "param", required = false) String param) {
-        return new ResponseEntity<>(userService.pagingQueryAllUser(pageRequest, param), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)

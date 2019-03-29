@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.domain.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -710,8 +711,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param) {
-        return userRepository.pagingAllUsersByParams(pageRequest, param);
+    public Page<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
+        if (StringUtils.isEmpty(param)) {
+            return new Page<>(new ArrayList<>(), new PageInfo(0, 20), 0);
+        }
+        return userRepository.pagingAllUsersByParams(pageRequest, param, organizationId);
     }
 
     @Override

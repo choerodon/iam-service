@@ -78,6 +78,14 @@ public interface UserMapper extends BaseMapper<UserDO> {
 
 
     /**
+     * 选择性查询用户，如果用户在组织下，则模糊查询，如果用户不在组织下精确匹配
+     * @param param
+     * @param organizationId
+     * @return
+     */
+    List<SimplifiedUserDTO> selectUsersOptional(@Param("params") String param, @Param("organizationId") Long organizationId);
+
+    /**
      * 全平台用户数（包括停用）
      *
      * @return 返回全平台用户数
@@ -92,6 +100,5 @@ public interface UserMapper extends BaseMapper<UserDO> {
     Integer newUsersByDate(@Param("begin") String begin,
                            @Param("end") String end);
 
-    List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params")String params);
-
+    List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params") String params);
 }
