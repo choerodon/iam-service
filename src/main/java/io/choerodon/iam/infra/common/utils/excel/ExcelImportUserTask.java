@@ -163,11 +163,15 @@ public class ExcelImportUserTask {
             String code = emr.getRoleCode().trim();
             //检查loginName是否存在
             UserDO userDO = getUser(errorMemberRoles, emr, loginName);
-            if (userDO == null) return;
+            if (userDO == null) {
+                return;
+            }
             Long userId = userDO.getId();
             //检查role code是否存在
             RoleDO role = getRole(errorMemberRoles, emr, code);
-            if (role == null) return;
+            if (role == null) {
+                return;
+            }
             if (!uploadHistory.getSourceType().equals(role.getLevel())) {
                 emr.setCause("导入角色层级与导入所在界面的层级不匹配");
                 errorMemberRoles.add(emr);
@@ -176,7 +180,9 @@ public class ExcelImportUserTask {
             Long roleId = role.getId();
             //检查memberRole是否存在
             MemberRoleDO memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
-            if (memberRole == null) return;
+            if (memberRole == null) {
+                return;
+            }
             iRoleMemberService.insertAndSendEvent(memberRole, loginName);
         });
         Integer failedCount = errorMemberRoles.size();
@@ -501,33 +507,32 @@ public class ExcelImportUserTask {
         String email = user.getEmail();
         String realName = user.getRealName();
         String phone = user.getPhone();
+        String password = user.getPassword();
         Boolean ok = false;
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
             //乐观认为大多数是正确的，所以new 对象放到了if 里面
-            ErrorUserDTO errorUser = getErrorUserDTO(user, "登录名或邮箱为空");
-            errorUsers.add(errorUser);
+            errorUsers.add(getErrorUserDTO(user, "登录名或邮箱为空"));
         } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
-            ErrorUserDTO errorUser = getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-128位之间");
-            errorUsers.add(errorUser);
+            errorUsers.add(getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-128位之间"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
-            ErrorUserDTO errorUser = getErrorUserDTO(user, "非法的邮箱格式");
-            errorUsers.add(errorUser);
-        } else if (!StringUtils.isEmpty(realName) && realName.length() > 32) {
-            ErrorUserDTO errorUser = getErrorUserDTO(user, "用户名超过32位");
-            errorUsers.add(errorUser);
+            errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
+        } else if (StringUtils.isEmpty(realName)) {
+            errorUsers.add(getErrorUserDTO(user, "用户名为空"));
+        } else if (realName.length() > 32) {
+            errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
-            ErrorUserDTO errorUser = getErrorUserDTO(user, "手机号格式不正确");
-            errorUsers.add(errorUser);
-        } else if (!userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), false)) {
+            errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
+        } else if (password != null && !userPasswordValidator.validate(password, user.getOrganizationId(), false)) {
             ErrorUserDTO errorUser = new ErrorUserDTO();
             BeanUtils.copyProperties(user, errorUser);
             String cause = "用户密码长度不符合系统设置中的范围";
             // 为了获取报错的密码长度，再进行一次校验，从Exception中拿到报错信息，乐观认为犯错是少数，所以这样处理
             try {
-                userPasswordValidator.validate(user.getPassword(), user.getOrganizationId(), true);
+                userPasswordValidator.validate(password, user.getOrganizationId(), true);
             } catch (CommonException c) {
-                if (c.getParameters().length >= 2)
+                if (c.getParameters().length >= 2) {
                     cause += "，长度应为" + c.getParameters()[0] + "-" + c.getParameters()[1];
+                }
             }
             errorUser.setCause(cause);
             errorUsers.add(errorUser);

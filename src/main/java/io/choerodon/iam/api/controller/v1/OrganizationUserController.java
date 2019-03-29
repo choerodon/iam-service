@@ -156,7 +156,7 @@ public class OrganizationUserController extends BaseController {
     @ApiOperation("从excel里面批量导入用户")
     @PostMapping("/users/batch_import")
     public ResponseEntity importUsersFromExcel(@PathVariable(name = "organization_id") Long id,
-                                                                 @RequestPart MultipartFile file) {
+                                               @RequestPart MultipartFile file) {
         excelService.importUsers(id, file);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
