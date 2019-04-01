@@ -1,4 +1,4 @@
-package db
+package script.db
 
 databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
     changeSet(id: '2018-03-05-create-table-iam_application', author: 'superlee') {
