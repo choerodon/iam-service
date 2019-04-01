@@ -36,3 +36,12 @@ src/main/resources/application-default.yml
 init-database.sh
 
 choerodon_temp/
+
+# frontend
+node_modules
+package-lock.json
+**/lib/dist/
+**/lib/assets/
+**/lib/fonts/
+
+/liquibase

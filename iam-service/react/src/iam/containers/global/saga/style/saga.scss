@@ -1,0 +1,22 @@
+.c7n-saga {
+  &-detail {
+    &-json {
+      border: 1px solid #f1f9ff;
+      background-color: #f1f9ff;
+      margin: 10px 0;
+      pre {
+        padding: 16px;
+        margin: 0;
+      }
+      code {
+        font-size: 14px;
+        line-height: 2;
+      }
+    }
+  }
+  &-sidebar {
+    &.ant-modal-sidebar .ant-modal-body {
+      height: calc(100% - 121px);
+    }
+  }
+}

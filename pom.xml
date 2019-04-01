@@ -55,6 +55,20 @@
                     </includes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.hand.hap</groupId>
+                <artifactId>hap-front-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                            <goal>extract</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

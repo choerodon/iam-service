@@ -1,0 +1,578 @@
+"iam":
+  icon: IAM
+  sort: 1
+  site:
+    - "organization":
+        icon: manage_organization
+        Routes: /iam/organization
+        sort: 1
+        permission:
+          - 'iam-service.organization.list'
+          - 'organization-service.organization.create'
+          - 'iam-service.organization.query'
+          - 'iam-service.organization.update'
+          - 'iam-service.organization.disableOrganization'
+          - 'iam-service.organization.enableOrganization'
+    - "system-setting":
+        icon: settings
+        Routes: /iam/system-setting
+        sort: 10
+        permission:
+          - 'iam-service.system-setting.addSetting'
+          - 'iam-service.system-setting.updateSetting'
+          - 'iam-service.system-setting.resetSetting'
+          - 'iam-service.system-setting.uploadFavicon'
+          - 'iam-service.system-setting.uploadLogo'
+    - "menu-management":
+        icon: view_list
+        Routes: /iam/menu-setting
+        sort: 6
+        permission:
+          - 'iam-service.menu.create'
+          - 'iam-service.menu.saveListTree'
+          - 'iam-service.menu.query'
+          - 'iam-service.menu.update'
+          - 'iam-service.menu.delete'
+    - "role-label":
+        icon: role_tag
+        Routes: /iam/role-label
+        sort: 2
+        permission:
+          - 'iam-service.label.listByType'
+    - "role":
+        icon: assignment_ind
+        Routes: /iam/role
+        sort: 3
+        permission:
+          - 'iam-service.role.create'
+          - 'iam-service.role.createBaseOnRoles'
+          - 'iam-service.role.check'
+          - 'iam-service.role.list'
+          - 'iam-service.role-member.listRolesWithUserCountOnSiteLevel'
+          - 'iam-service.role.queryWithPermissionsAndLabels'
+          - 'iam-service.role.update'
+          - 'iam-service.role.disableRole'
+          - 'iam-service.role.enableRole'
+          - 'iam-service.role-member.pagingQueryUsersByRoleIdOnSiteLevel'
+    - "member-role-global":
+        icon: person_add
+        Routes: /iam/member-role
+        sort: 4
+        permission:
+          - 'iam-service.role-member.createOrUpdateOnSiteLevel'
+          - 'iam-service.role-member.deleteOnSiteLevel'
+          - 'iam-service.role-member.pagingQueryUsersByRoleIdOnSiteLevel'
+          - 'iam-service.role-member.listRolesWithUserCountOnSiteLevel'
+          - 'iam-service.role-member.pagingQueryUsersWithSiteLevelRoles'
+          - 'iam-service.role-member.listRolesWithClientCountOnSiteLevel'
+          - 'iam-service.role-member.listRolesWithClientCountOnSiteLevel'
+          - 'iam-service.role-member.pagingQueryClientsWithSiteLevelRoles'
+    - "root-user":
+        icon: root
+        Routes: /iam/root-user
+        sort: 5
+        permission:
+          - 'iam-service.user.pagingQueryAdminUsers'
+          - 'iam-service.user.addDefaultUsers'
+          - 'iam-service.user.deleteDefaultUser'
+    - "dashboard-management":
+        icon: donut_small
+        Routes: /iam/dashboard-setting
+        sort: 7
+        permission:
+          - 'iam-service.dashboard.list'
+          - 'iam-service.dashboard.query'
+          - 'iam-service.dashboard.update'
+    - "site-statistics":
+        icon: timeline
+        Routes: /iam/site-statistics
+        sort: 9
+        delete: true
+        permission:
+        - 'manager-service.statistic.queryMenuClick'
+    - "project-type":
+        icon: project_list
+        Routes: /iam/project-type
+        sort: 8
+        permission:
+        - 'iam-service.project-type.pagingQuery'
+        - 'iam-service.project-type.create'
+        - 'iam-service.project-type.check'
+        - 'iam-service.project-type.update'
+
+# 微服务管理
+"microservice":
+  icon: pages
+  sort: 4
+  site:
+    - "micro":
+        icon: microservice
+        Routes: /iam/microservice
+        sort: 1
+        permission:
+          - 'manager-service.service.pageManager'
+    - "instance-management":
+        icon: instance_outline
+        Routes: /iam/instance
+        sort: 2
+        permission:
+          - 'manager-service.instance.list'
+          - 'manager-service.instance.query'
+    - "config-management":
+        icon: settings_input_composite
+        Routes: /iam/configuration
+        sort: 3
+        delete: true
+        permission:
+          - 'manager-service.config.query'
+          - 'manager-service.config.create'
+          - 'manager-service.config.delete'
+          - 'manager-service.config.queryYaml'
+          - 'manager-service.config.updateConfig'
+          - 'manager-service.config.updateConfigDefault'
+    - "route-management":
+        icon: routeroutline
+        Routes: /iam/route
+        sort: 4
+        permission:
+          - 'manager-service.route.list'
+          - 'manager-service.route.create'
+          - 'manager-service.route.update'
+          - 'manager-service.route.delete'
+    - "api-management":
+        icon: API
+        Routes: /iam/api-test
+        sort: 5
+        permission:
+        - 'manager-service.api.queryTreeMenu'
+        - 'manager-service.api.queryPathDetail'
+
+# api管理
+"api":
+  icon: API
+  sort: 2
+  delete: true
+  site:
+    - "api-test":
+        icon: APItest
+        Routes: /iam/api-test
+        sort: 2
+        delete: true
+        permission:
+        - 'manager-service.api.queryTreeMenu'
+        - 'manager-service.api.queryPathDetail'
+    - "api-overview":
+        icon: dashboard
+        Routes: /iam/api-overview
+        sort: 1
+        delete: true
+        permission:
+        - 'manager-service.api.queryInstancesAndApiCount'
+        - 'manager-service.api.queryApiInvoke'
+        - 'manager-service.api.queryServiceInvoke'
+
+# 消息中心
+"msg-center":
+  icon: center
+  sort: 2
+  site:
+    - "send-setting":
+        icon: mail_set
+        Routes: /iam/send-setting
+        sort: 1
+        permission:
+        - 'notify-service.send-setting-site.pageSite'
+    - "mail-template":
+        icon: application_model
+        Routes: /iam/mail-template
+        sort: 2
+        permission:
+        - 'notify-service.email-template-site.pageSite'
+        - 'notify-service.email-template-site.create'
+        - 'notify-service.email-template-site.update'
+        - 'notify-service.email-template-site.query'
+        - 'notify-service.send-setting-site.listNames'
+    - "inmail-template":
+        icon: inmail_template
+        Routes: /iam/inmail-template
+        sort: 3
+        permission:
+        - 'notify-service.pm-template-site.pageSite'
+        - 'notify-service.pm-template-site.create'
+        - 'notify-service.pm-template-site.update'
+        - 'notify-service.pm-template-site.query'
+        - 'notify-service.send-setting-site.listNames'
+    - "mail-setting":
+        icon: contact_mail
+        Routes: /iam/mail-setting
+        sort: 4
+        permission:
+        - 'notify-service.config.selectEmail'
+        - 'notify-service.config.testEmailConnect'
+        - 'notify-service.config.updateEmail'
+    - "msg-record":
+        icon: speaker_notes
+        Routes: /iam/msg-record
+        sort: 5
+        permission:
+        - 'notify-service.message-record-site.pageEmail'
+    - "announcement":
+        icon: volume_up
+        Routes: /iam/announcement
+        sort: 6
+        permission:
+        - 'notify-service.system-announcement.pagingQuery'
+        - 'notify-service.system-announcement.create'
+        - 'notify-service.system-announcement.update'
+        - 'notify-service.system-announcement.delete'
+
+# 任务调度
+"task-dispatch":
+  icon: task_schedule
+  sort: 3
+  site:
+    - "task-detail":
+        icon: subject
+        Routes: /iam/task-detail
+        sort: 1
+        permission:
+          - 'asgard-service.schedule-task-site.pagingQuery'
+          - 'asgard-service.schedule-task-site.create'
+          - 'asgard-service.schedule-task-site.enable'
+          - 'asgard-service.schedule-task-site.disable'
+          - 'asgard-service.schedule-task-site.delete'
+          - 'asgard-service.schedule-task-site.getTaskDetail'
+    - "execution-record":
+        icon: work_log
+        Routes: /iam/execution-record
+        sort: 2
+        permission:
+          - 'asgard-service.schedule-task-instance-site.pagingQuery'
+    - "task-classname":
+        icon: classname
+        Routes: /iam/executable-program
+        sort: 3
+        permission:
+          - 'asgard-service.schedule-method-site.pagingQuery'
+          - 'asgard-service.schedule-method-site.getParams'
+
+# 事务管理
+"global-transaction":
+  icon: developer_board
+  sort: 4
+  delete: true
+  site:
+    - "saga":
+        icon: saga_define
+        Routes: /iam/saga
+        sort: 1
+        delete: true
+        permission:
+          - 'asgard-service.saga.pagingQuery'
+          - 'asgard-service.saga.query'
+    - "saga-instance":
+        icon: instance_outline
+        Routes: /iam/saga-instance
+        sort: 2
+        delete: true
+        permission:
+          - 'asgard-service.saga-instance.pagingQuery'
+          - 'asgard-service.saga-instance.query'
+          - 'asgard-service.saga-instance.statistics'
+          - 'asgard-service.saga-instance.queryDetails'
+
+# 平台统计
+"statistics":
+  icon: bar_chart
+  sort: 5
+  site:
+    - "saga":
+        icon: saga_define
+        Routes: /iam/saga
+        sort: 1
+        permission:
+          - 'asgard-service.saga.pagingQuery'
+          - 'asgard-service.saga.query'
+    - "saga-instance":
+        icon: instance_outline
+        Routes: /iam/saga-instance
+        sort: 2
+        permission:
+          - 'asgard-service.saga-instance.pagingQuery'
+          - 'asgard-service.saga-instance.query'
+          - 'asgard-service.saga-instance.statistics'
+          - 'asgard-service.saga-instance.queryDetails'
+    - "api-report":
+        icon: dashboard
+        Routes: /iam/api-overview
+        sort: 3
+        permission:
+        - 'manager-service.api.queryInstancesAndApiCount'
+        - 'manager-service.api.queryApiInvoke'
+        - 'manager-service.api.queryServiceInvoke'
+    - "menu-report":
+        icon: timeline
+        Routes: /iam/site-statistics
+        sort: 4
+        permission:
+        - 'manager-service.statistic.queryMenuClick'
+
+
+
+# 组织设置
+"rentsetting":
+  icon: IAM
+  sort: 2
+  organization:
+    - "project":
+        icon: manage_project
+        Routes: /iam/project
+        sort: 1
+        permission:
+          - 'iam-service.organization-project.list'
+          - 'iam-service.organization-project.create'
+          - 'iam-service.organization-project.update'
+          - 'iam-service.organization-project.check'
+          - 'iam-service.organization-project.enableProject'
+          - 'iam-service.organization-project.disableProject'
+    - "user":
+        icon: manage_person
+        Routes: /iam/user
+        sort: 2
+        permission:
+          - 'iam-service.organization-user.create'
+          - 'iam-service.organization-user.list'
+          - 'iam-service.organization-user.query'
+          - 'iam-service.organization-user.update'
+          - 'iam-service.organization-user.delete'
+          - 'iam-service.organization-user.disableUser'
+          - 'iam-service.organization-user.enableUser'
+          - 'iam-service.organization-user.unlock'
+          - 'iam-service.organization-user.resetUserPassword'
+    - "member-role-organization":
+        icon: person_add
+        Routes: /iam/member-role
+        sort: 3
+        permission:
+          - 'iam-service.role-member.createOrUpdateOnOrganizationLevel'
+          - 'iam-service.role-member.deleteOnOrganizationLevel'
+          - 'iam-service.role-member.listRolesWithUserCountOnOrganizationLevel'
+          - 'iam-service.role-member.pagingQueryUsersByRoleIdOnOrganizationLevel'
+          - 'iam-service.role-member.pagingQueryUsersWithOrganizationLevelRoles'
+          - 'iam-service.role-member.listRolesWithClientCountOnOrganizationLevel'
+          - 'iam-service.role-member.pagingQueryClientsByRoleIdOnOrganizationLevel'
+          - 'iam-service.role-member.pagingQueryClientsWithOrganizationLevelRoles'
+    - "client":
+        icon: laptop_mac
+        Routes: /iam/client
+        sort: 4
+        permission:
+          - 'iam-service.client.check'
+          - 'iam-service.client.create'
+          - 'iam-service.client.delete'
+          - 'iam-service.client.list'
+          - 'iam-service.client.query'
+          - 'iam-service.client.queryByName'
+          - 'iam-service.client.update'
+    - "ldap":
+        icon: device_hub
+        Routes: /iam/ldap
+        sort: 5
+        permission:
+          - 'iam-service.ldap.create'
+          - 'iam-service.ldap.query'
+          - 'iam-service.ldap.queryByOrgId'
+          - 'iam-service.ldap.disableLdap'
+          - 'iam-service.ldap.enableLdap'
+          - 'iam-service.ldap.syncUsers'
+          - 'iam-service.ldap.testConnect'
+          - 'iam-service.ldap.update'
+          - 'iam-service.ldap.pagingQueryHistories'
+          - 'iam-service.ldap.pagingQueryErrorUsers'
+    - "password-policy":
+        icon: password
+        Routes: /iam/password-policy
+        sort: 6
+        permission:
+          - 'iam-service.password-policy.create'
+          - 'iam-service.password-policy.queryByOrganizationId'
+          - 'iam-service.password-policy.update'
+    - "saga-instance-organization":
+        icon: instance_outline
+        Routes: /iam/saga-instance
+        sort: 9
+        permission:
+        - 'asgard-service.saga-instance-org.pagingQuery'
+        - 'asgard-service.saga-instance-org.statistics'
+        - 'asgard-service.saga-instance-org.query'
+        - 'asgard-service.saga-instance-org.queryDetails'
+    - "organization-setting":
+        icon: settings_applications
+        Routes: /iam/organization-setting
+        sort: 10
+        permission:
+          - 'iam-service.organization.queryOrgLevel'
+
+# 组织层任务调度
+"task-dispatch-organization":
+  icon: task_schedule
+  sort: 4
+  organization:
+    - "task-detail-organization":
+        icon: subject
+        Routes: /iam/task-detail
+        sort: 1
+        permission:
+          - 'asgard-service.schedule-task-org.pagingQuery'
+          - 'asgard-service.schedule-task-org.create'
+          - 'asgard-service.schedule-task-org.enable'
+          - 'asgard-service.schedule-task-org.disable'
+          - 'asgard-service.schedule-task-org.delete'
+          - 'asgard-service.schedule-task-org.getTaskDetail'
+    - "execution-record-organization":
+        icon: work_log
+        Routes: /iam/execution-record
+        sort: 2
+        permission:
+          - 'asgard-service.schedule-task-instance-org.pagingQuery'
+    - "task-classname-organization":
+        icon: classname
+        Routes: /iam/executable-program
+        sort: 3
+        permission:
+          - 'asgard-service.schedule-method-org.pagingQuery'
+          - 'asgard-service.schedule-method-org.getParams'
+
+# 组织层应用
+"app-manager-organization":
+  icon: apps
+  sort: 5
+  organization:
+    - "app":
+        icon: widgets
+        Routes: /iam/application
+        sort: 1
+        permission:
+          - 'iam-service.application.pagingQuery'
+          - 'iam-service.application.create'
+          - 'iam-service.application.types'
+          - 'iam-service.application.update'
+          - 'iam-service.application.disable'
+          - 'iam-service.application.enabled'
+
+# 项目设置
+"prosetting":
+  icon: IAM
+  sort: 6
+  project:
+    - "member-role-project":
+        icon: person_add
+        Routes: /iam/member-role
+        sort: 1
+        permission:
+          - 'iam-service.role-member.createOrUpdateOnSiteLevel'
+          - 'iam-service.role-member.deleteOnProjectLevel'
+          - 'iam-service.role-member.listRolesWithUserCountOnProjectLevel'
+          - 'iam-service.role-member.pagingQueryUsersByRoleIdOnProjectLevel'
+          - 'iam-service.role-member.pagingQueryUsersWithProjectLevelRoles'
+          - 'iam-service.role-member.listRolesWithClientCountOnProjectLevel'
+          - 'iam-service.role-member.pagingQueryClientsWithProjectLevelRoles'
+          - 'iam-service.role-member.pagingQueryClientsByRoleIdOnProjectLevel'
+    - "proManage":
+        icon: settings_applications
+        Routes: /iam/project-setting
+        sort: 2
+        permission:
+          - 'iam-service.project.disableProject'
+          - 'iam-service.project.query'
+          - 'iam-service.project.update'
+    - "saga-instance-project":
+        icon: instance_outline
+        Routes: /iam/saga-instance
+        sort: 3
+        permission:
+        - 'asgard-service.saga-instance-project.pagingQuery'
+        - 'asgard-service.saga-instance-project.statistics'
+        - 'asgard-service.saga-instance-project.query'
+        - 'asgard-service.saga-instance-project.queryDetails'
+
+# 项目层任务调度
+"task-dispatch-project":
+  icon: task_schedule
+  sort: 7
+  project:
+    - "task-detail-project":
+        icon: subject
+        Routes: /iam/task-detail
+        sort: 1
+        permission:
+          - 'asgard-service.schedule-task-project.pagingQuery'
+          - 'asgard-service.schedule-task-project.create'
+          - 'asgard-service.schedule-task-project.enable'
+          - 'asgard-service.schedule-task-project.disable'
+          - 'asgard-service.schedule-task-project.delete'
+          - 'asgard-service.schedule-task-project.getTaskDetail'
+    - "execution-record-project":
+        icon: work_log
+        Routes: /iam/execution-record
+        sort: 2
+        permission:
+          - 'asgard-service.schedule-task-instance-project.pagingQuery'
+    - "task-classname-project":
+        icon: classname
+        Routes: /iam/executable-program
+        sort: 3
+        permission:
+          - 'asgard-service.schedule-method-project.pagingQuery'
+          - 'asgard-service.schedule-method-project.getParams'
+
+# 个人中心
+"usercenter":
+  icon: accessibility
+  sort: 1
+  user:
+    - "user-info":
+        icon: person
+        Routes: /iam/user-info
+        sort: 1
+        permission:
+          - 'iam-service.user.queryInfo'
+          - 'iam-service.user.updateInfo'
+          - 'iam-service.user.uploadPhoto'
+          - 'iam-service.user.querySelf'
+    - "password":
+        icon: vpn_key
+        Routes: /iam/password
+        sort: 2
+        permission:
+          - 'iam-service.user.selfUpdatePassword'
+    - "permission-info":
+        icon: project
+        Routes: /iam/permission-info
+        sort: 3
+        permission:
+        - 'iam-service.user.pagingQueryRole'
+    - "token-manager":
+        icon: authority
+        Routes: /iam/token-manager
+        sort: 4
+        permission:
+          - 'iam-service.access-token.list'
+          - 'iam-service.access-token.delete'
+    - "user-msg":
+        icon: message_notification
+        Routes: /iam/user-msg
+        sort: 6
+        permission:
+          - 'notify-service.site-msg-record.pagingQuery'
+          - 'notify-service.site-msg-record.batchDeleted'
+          - 'notify-service.site-msg-record.batchRead'
+          - 'notify-service.system-announcement.pagingQueryCompleted'
+    - "receive-setting":
+        icon: settings
+        Routes: /iam/receive-setting
+        sort: 7
+        permission:
+          - 'notify-service.receive-setting.queryByUserId'
+          - 'notify-service.receive-setting.updateByUserId'
+          - 'notify-service.receive-setting.update'

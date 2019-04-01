@@ -1,0 +1,103 @@
+{
+  "root": true,
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+    // "worker": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "babel",
+    "react"
+  ],
+  "extends": "airbnb",
+  "rules": {
+    "no-nested-ternary": "off",
+    "class-methods-use-this": "off",
+    "consistent-return": "off",
+    "global-require": "off",
+    "import/extensions": "off",
+    "import/no-duplicates": "off",
+    "import/no-dynamic-require": "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-unresolved": "off",
+    "jsx-a11y/anchor-has-content": "off",
+    "jsx-a11y/anchor-is-valid": [
+      "warn",
+      {
+        "aspects": [
+          "invalidHref"
+        ]
+      }
+    ],
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/href-no-hash": "off",
+    "jsx-a11y/interactive-supports-focus": "off",
+    "jsx-a11y/label-has-for": [ 2, {
+      "required": {
+        "every": [ "id" ]
+      }
+    }],
+    "jsx-a11y/no-static-element-interactions": "off",
+    "linebreak-style": "off",
+    "max-len": "off",
+    "no-bitwise": "off",
+    "no-console": "error",
+    "no-control-regex": "off",
+    "no-debugger": "off",
+    "no-else-return": "off",
+    "no-param-reassign": "off",
+    "no-trailing-spaces": "off",
+    "no-unused-vars": "off",
+    "prefer-destructuring": "off",
+    "operator-linebreak": "off",
+    "react/jsx-wrap-multilines": "off",
+    "react/jsx-closing-tag-location": "off",
+    "react/no-access-state-in-setstate": "off",
+    "object-curly-newline": "off",
+    "lines-between-class-members": "off",
+    "implicit-arrow-linebreak": "off",
+    "no-template-curly-in-string": "off",
+    "function-paren-newline": "off",
+    "eact/jsx-closing-tag-location": "off",
+    "react/no-unused-state": "off",
+    "react/destructuring-assignment": "off",
+    "react/jsx-filename-extension": "off",
+    "react/jsx-no-target-blank": "off",
+    "react/button-has-type": "off",
+    "react/jsx-no-bind": [
+      "error",
+      {
+        "ignoreRefs": true,
+        "allowArrowFunctions": true,
+        "allowBind": true
+      }
+    ],
+    "react/jsx-one-expression-per-line": "off",
+    "react/no-array-index-key": 0,
+    "react/no-unused-prop-types": "off",
+    "react/prefer-stateless-function": ["off",
+      {
+        "ignorePureComponents": true
+      }
+    ],
+    "react/prop-types": "off",
+    "react/require-default-props": "off",
+    "react/sort-comp": "off",
+    "react/jsx-curly-brace-presence": "off",
+    "jsx-a11y/label-has-associated-control": "off"
+  },
+  "globals": {
+    "Choerodon": true
+  }
+}

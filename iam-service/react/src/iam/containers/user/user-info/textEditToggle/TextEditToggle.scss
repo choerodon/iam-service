@@ -1,0 +1,55 @@
+.c7n-iam-TextEditToggle-text {
+  cursor: text;
+  position: relative;
+  border-bottom: 1px solid transparent;
+  padding: 0 20px 2px 0;
+}
+
+.c7n-iam-TextEditToggle-icon-container {
+  top: 24px;
+  position: absolute;
+  right: 0;
+}
+
+.c7n-iam-TextEditToggle-text .c7n-iam-TextEditToggle-text-icon {
+  color: rgba(0, 0, 0, .65);
+  display: none;
+  cursor: pointer;
+}
+
+.c7n-iam-TextEditToggle-text-active:hover {
+  border-bottom: 1px solid gray;
+}
+
+.c7n-iam-TextEditToggle-text-active:hover .c7n-iam-TextEditToggle-text-icon {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: block;
+  z-index: 10;
+  transform: translateY(-50%);
+}
+
+.c7n-iam-TextEditToggle-edit-icon {
+  // display: block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  color: rgba(0, 0, 0, .65);
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.c7n-iam-TextEditToggle-edit {
+  position: relative;
+  .ant-form-item {
+    padding: 0;
+    margin: 0;
+  }
+
+  .ant-form-explain {
+    position: absolute;
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "choerodon-front-iam",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app/iam/containers/IAMIndex.js",
+  "scripts": {
+    "start": "choerodon-front-boot start --config ../config.js",
+    "build": "choerodon-front-boot build --config ../config.js",
+    "lint": "npm run lint:es && npm run lint:style",
+    "lint:es": "eslint src/**/*.js ../config.js",
+    "lint:style": "stylelint src/**/*.scss --syntax scss",
+    "lint-staged": "lint-staged",
+    "lint-staged:es": "eslint"
+  },
+  "contributors": [
+    "choerodon"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "choerodon-front-boot": "^0.10.4",
+    "echarts": "^4.1.0",
+    "echarts-for-react": "^2.0.12",
+    "hjson": "^3.1.1",
+    "react-codemirror": "^1.0.0",
+    "react-image-lightbox": "^4.6.0",
+    "react-quill": "^1.2.6"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx}": [
+      "npm run lint-staged:es"
+    ],
+    "src/**/*.scss": "stylelint --syntax scss"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}
