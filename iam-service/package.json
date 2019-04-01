@@ -2,12 +2,12 @@
   "name": "choerodon-front-iam",
   "version": "1.0.0",
   "description": "",
-  "main": "src/app/iam/containers/IAMIndex.js",
+  "main": "react/src/iam/containers/IAMIndex.js",
   "scripts": {
-    "start": "choerodon-front-boot start --config ../config.js",
-    "build": "choerodon-front-boot build --config ../config.js",
+    "start": "choerodon-front-boot start --config ./react/config.js",
+    "build": "choerodon-front-boot build --config ./react/config.js",
     "lint": "npm run lint:es && npm run lint:style",
-    "lint:es": "eslint src/**/*.js ../config.js",
+    "lint:es": "eslint ./react/src/**/*.js ./react/config.js",
     "lint:style": "stylelint src/**/*.scss --syntax scss",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint"

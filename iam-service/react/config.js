@@ -7,22 +7,10 @@ const config = {
     'primary-color': '#3F51B5',
   },
   cookieServer: '', //  子域名token共享
-  server: 'https://api.choerodon.com.cn',
+  server: 'http://api.staging.saas.hand-china.com',
   fileServer: 'http://minio.staging.saas.hand-china.com',
   webSocketServer: 'ws://notify.staging.saas.hand-china.com',
-  dashboard: {
-    iam: {
-      components: 'src/app/iam/dashboard/*',
-      locale: 'src/app/iam/locale/dashboard/*',
-    },
-  },
-  guide: {
-    iam: {
-      components: 'src/app/iam/guide/*',
-      locale: 'src/app/iam/locale/guide/*',
-    },
-  },
-  port: 2233,
+  // port: 2233,
   // proxyTarget: 'http://hap4.staging.saas.hand-china.com',
 };
 
