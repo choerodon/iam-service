@@ -1,6 +1,6 @@
 {
-  "name": "choerodon-front-iam",
-  "version": "1.0.0",
+  "name": "iam-service",
+  "version": "0.16.0",
   "description": "",
   "main": "react/src/iam/containers/IAMIndex.js",
   "scripts": {
