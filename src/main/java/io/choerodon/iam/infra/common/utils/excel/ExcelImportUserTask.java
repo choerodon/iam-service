@@ -509,17 +509,18 @@ public class ExcelImportUserTask {
         String phone = user.getPhone();
         String password = user.getPassword();
         Boolean ok = false;
+        if (StringUtils.isEmpty(realName)) {
+            user.setRealName(loginName);
+        }
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
             //乐观认为大多数是正确的，所以new 对象放到了if 里面
             errorUsers.add(getErrorUserDTO(user, "登录名或邮箱为空"));
         } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
-            errorUsers.add(getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-128位之间"));
+            errorUsers.add(getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-32位之间"));
+        } else if (loginName.length() > 32 || realName.length() > 32) {
+            errorUsers.add(getErrorUserDTO(user, "登录名或用户名超过32位"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
-        } else if (StringUtils.isEmpty(realName)) {
-            errorUsers.add(getErrorUserDTO(user, "用户名为空"));
-        } else if (realName.length() > 32) {
-            errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
         } else if (password != null && !userPasswordValidator.validate(password, user.getOrganizationId(), false)) {
