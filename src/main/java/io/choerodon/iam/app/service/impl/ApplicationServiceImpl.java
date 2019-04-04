@@ -101,7 +101,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 doInsert(applicationDO);
                                 //关系表插入路径
                                 insertExploration(applicationDO.getId());
-                                ApplicationDTO dto = modelMapper.map(applicationDO, ApplicationDTO.class);
+                                ApplicationDTO dto = modelMapper.map(applicationMapper.selectByPrimaryKey(applicationDO.getId()), ApplicationDTO.class);
                                 dto.setFrom(applicationDTO.getFrom());
                                 builder
                                         .withPayloadAndSerialize(dto)
