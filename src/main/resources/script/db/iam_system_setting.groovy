@@ -47,4 +47,13 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             }
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-04-08-iam-add-column') {
+        addColumn(tableName: 'IAM_SYSTEM_SETTING') {
+            column(name: 'REGISTER_ENABLED', type: 'TINYINT UNSIGNED', remarks: '是否启用组织注册功能，默认为0，禁用', afterColumn: 'MAX_PASSWORD_LENGTH', defaultValue: 0) {
+                constraints(nullable: false)
+            }
+            column(name: 'REGISTER_URL', type: 'VARCHAR(255)', remarks: '注册组织链接', afterColumn: 'REGISTER_ENABLED')
+        }
+    }
 }
