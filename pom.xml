@@ -10,7 +10,7 @@
 
     <groupId>io.choerodon</groupId>
     <artifactId>iam-service-parent</artifactId>
-    <version>${revision}</version>
+    <version>0.16.0.RELEASE</version>
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -22,10 +22,10 @@
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
     </properties>
     <modules>
+        <module>iam-service</module>
         <module>choerodon-fnd-iam</module>
         <module>choerodon-fnd-resource</module>
         <module>choerodon-fnd-setting</module>
-        <module>iam-service</module>
     </modules>
 
     <dependencies>
@@ -124,30 +124,6 @@
         </dependency>
 
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>choerodon-fnd-iam</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>choerodon-fnd-resource</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>choerodon-fnd-setting</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>iam-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <build>
         <plugins>
             <plugin>

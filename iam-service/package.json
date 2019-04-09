@@ -18,7 +18,7 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "choerodon-boot-combine": "0.0.16",
+    "choerodon-boot-combine": "0.0.18",
     "choerodon-hap-ui": "0.12.9",
     "choerodon-ui": "0.6.0",
     "echarts": "^4.1.0",
