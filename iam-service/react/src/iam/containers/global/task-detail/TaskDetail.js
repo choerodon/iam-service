@@ -3,7 +3,7 @@ import { observable, action, configure } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Modal, Tabs, Col, Row } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import classnames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import TaskDetailStore from '../../../stores/global/task-detail';

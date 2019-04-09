@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { Button, Form, Icon, Input, Modal, Popover, Radio, Select, Tooltip } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import TestLdap from './TestLdap';

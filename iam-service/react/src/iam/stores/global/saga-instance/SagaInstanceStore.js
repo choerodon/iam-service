@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import { axios, store } from 'choerodon-boot-combine';
 import querystring from 'query-string';
 
 @store('SagaInstanceStore')

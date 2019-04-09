@@ -5,7 +5,7 @@ import moment from 'moment';
 import { Button, Table, Modal, Tooltip, Form, DatePicker, Input, Radio } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import './Announcement.scss';
 import StatusTag from '../../../components/statusTag';
 import Editor from '../../../components/editor';

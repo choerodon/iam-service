@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page } from 'choerodon-front-boot';
+import { Content, Header, Page } from 'choerodon-boot-combine';
 import { Col, Row, Table, Tabs, Spin } from 'choerodon-ui';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import AceEditor from '../../../components/yamlAce';

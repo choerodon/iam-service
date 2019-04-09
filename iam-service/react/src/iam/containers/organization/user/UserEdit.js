@@ -3,7 +3,7 @@ import { Form, Input, Select } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content } from 'choerodon-front-boot';
+import { Content } from 'choerodon-boot-combine';
 import CreateUserStore from '../../../stores/organization/user/CreateUserStore';
 
 const FormItem = Form.Item;

@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { axios as defaultAxios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { axios as defaultAxios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { Form, Table, Input, Button, Select, Tabs, Spin, Tooltip, Icon, Modal } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import querystring from 'query-string';

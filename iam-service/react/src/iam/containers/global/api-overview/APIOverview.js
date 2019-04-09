@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { Button, Icon, Select, Spin } from 'choerodon-ui';
 import _ from 'lodash';
 import moment from 'moment';

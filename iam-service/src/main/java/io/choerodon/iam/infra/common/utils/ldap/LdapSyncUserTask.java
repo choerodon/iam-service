@@ -1,13 +1,17 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.app.service.OrganizationUserService;
+import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.domain.repository.LdapHistoryRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.common.utils.CollectionUtils;
+import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
+import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
+import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.enums.LdapErrorUserCause;
+import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -23,17 +27,12 @@ import org.springframework.ldap.filter.HardcodedFilter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.repository.LdapHistoryRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.common.utils.CollectionUtils;
-import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.iam.infra.enums.LdapErrorUserCause;
-import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -104,17 +103,17 @@ public class LdapSyncUserTask {
                                 logger.warn("can not find any attributes while filter is {}, page is {}", andFilter, page);
                                 break;
                             } else {
-                                processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
+//                                processUserFromAttributes(ldap, attributesList, users, ldapSyncReport, errorUsers);
                                 attributesList.clear();
                             }
                             //当前页做数据写入
                             if (!users.isEmpty()) {
                                 switch (syncType) {
                                     case "sync":
-                                        compareWithDbAndInsert(users, ldapSyncReport, errorUsers, ldapHistoryId);
+//                                        compareWithDbAndInsert(users, ldapSyncReport, errorUsers, ldapHistoryId);
                                         break;
                                     case "disable":
-                                        disable(users, ldapSyncReport, errorUsers, ldapHistoryId);
+//                                        disable(users, ldapSyncReport, errorUsers, ldapHistoryId);
                                         break;
                                     default:
                                         break;
@@ -123,7 +122,8 @@ public class LdapSyncUserTask {
                             users.clear();
                             errorUsers.clear();
                             page++;
-                        } while (processor.hasMore());
+//                        } while (processor.hasMore());
+                        } while (processor.getCookie().getCookie() != null);
                         return null;
                     }
                 });

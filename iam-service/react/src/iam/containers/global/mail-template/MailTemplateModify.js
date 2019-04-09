@@ -3,7 +3,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Select, Tooltip, Modal, Form, Input, Popover, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page } from 'choerodon-front-boot';
+import { axios, Content, Header, Page } from 'choerodon-boot-combine';
 import MailTemplateStore from '../../../stores/global/mail-template';
 import './MailTemplate.scss';
 import Editor from '../../../components/editor';

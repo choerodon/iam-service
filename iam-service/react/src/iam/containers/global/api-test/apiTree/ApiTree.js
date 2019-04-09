@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Tree, Input, Icon, Tooltip } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios } from 'choerodon-front-boot';
+import { axios } from 'choerodon-boot-combine';
 import _ from 'lodash';
 import querystring from 'query-string';
 import classnames from 'classnames';

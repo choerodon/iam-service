@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Form, Input, Modal, Table, Tooltip, Row, Col, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import classnames from 'classnames';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

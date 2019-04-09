@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* the encode function is no necessary to lint */
 import React, { Component } from 'react';
-import { axios as authorizeAxios } from 'choerodon-front-boot';
+import { axios as authorizeAxios } from 'choerodon-boot-combine';
 import { Form, Modal, Button, Input } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { inject, observer } from 'mobx-react';

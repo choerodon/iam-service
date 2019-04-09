@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Icon, Input, Select } from 'choerodon-ui';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import UserInfoStore from '../../../stores/user/user-info/UserInfoStore';
 import AvatarUploader from './AvatarUploader';
 import './Userinfo.scss';

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer, trace } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Form, Icon, Input, Select, Spin, InputNumber, Popover, Modal } from 'choerodon-ui';
-import { axios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import './SystemSetting.scss';
 import '../../../common/ConfirmModal.scss';

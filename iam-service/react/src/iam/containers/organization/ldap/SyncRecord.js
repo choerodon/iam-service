@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Select, Table, Tooltip, Modal, Form, Input, Popover, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios, Content, Header, Page, Permission, Action } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission, Action } from 'choerodon-boot-combine';
 import { withRouter } from 'react-router-dom';
 import { handleFiltersParams } from '../../../common/util';
 import TaskDetailStore from '../../../stores/global/task-detail';

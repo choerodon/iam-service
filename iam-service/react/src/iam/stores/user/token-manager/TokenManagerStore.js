@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import { axios, store } from 'choerodon-boot-combine';
 import queryString from 'query-string';
 
 @store('TokenManagerStore')

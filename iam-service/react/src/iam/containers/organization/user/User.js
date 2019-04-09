@@ -3,7 +3,7 @@ import { Button, Modal, Table, Tooltip, Upload, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Action, axios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Action, axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import UserEdit from './UserEdit';
 import './User.scss';

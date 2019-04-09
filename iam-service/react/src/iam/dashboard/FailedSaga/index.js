@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DashBoardNavBar, DashBoardToolBar } from 'choerodon-front-boot';
+import { DashBoardNavBar, DashBoardToolBar } from 'choerodon-boot-combine';
 import { Link, withRouter } from 'react-router-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { inject, observer } from 'mobx-react';

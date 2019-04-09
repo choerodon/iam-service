@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Row, Col, Tooltip, Modal, Popover } from 'choerodon-ui';
-import { axios } from 'choerodon-front-boot';
+import { axios } from 'choerodon-boot-combine';
 import { injectIntl } from 'react-intl';
 
 @injectIntl

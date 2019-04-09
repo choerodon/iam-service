@@ -7,7 +7,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Select, Table, Tooltip, Form, Modal, Radio, InputNumber } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import SendSettingStore from '../../../stores/global/send-setting';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import './SendSetting.scss';

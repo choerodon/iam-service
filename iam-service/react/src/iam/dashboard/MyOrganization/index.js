@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { inject, observer } from 'mobx-react';
-import { DashBoardNavBar } from 'choerodon-front-boot';
+import { DashBoardNavBar } from 'choerodon-boot-combine';
 import { Table } from 'choerodon-ui';
 import OrganizationInfoStore from '../../stores/user/organization-info';
 import './index.scss';

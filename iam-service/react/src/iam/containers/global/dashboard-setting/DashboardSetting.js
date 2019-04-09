@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Icon, IconSelect, Input, Modal, Select, Table, Tooltip, Radio } from 'choerodon-ui';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import './DashboardSetting.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

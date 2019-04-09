@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { asyncRouter, nomatch } from 'choerodon-front-boot';
+import { asyncRouter, nomatch } from 'choerodon-boot-combine';
 
 const index = asyncRouter(() => import('./LDAP'), () => import('../../../stores/organization/ldap'));
 const syncRecord = asyncRouter(() => import('./SyncRecord'), () => import('../../../stores/organization/ldap'));

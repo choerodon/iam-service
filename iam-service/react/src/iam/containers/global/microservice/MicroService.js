@@ -6,7 +6,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Table } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page } from 'choerodon-front-boot';
+import { axios, Content, Header, Page } from 'choerodon-boot-combine';
 import querystring from 'query-string';
 import './MicroService.scss';
 import { handleFiltersParams } from '../../../common/util';

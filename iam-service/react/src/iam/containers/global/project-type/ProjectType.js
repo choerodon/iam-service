@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Table, Tooltip, Modal, Input } from 'choerodon-ui';
-import { axios, Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import './ProjectType.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

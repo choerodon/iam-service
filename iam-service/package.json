@@ -4,8 +4,8 @@
   "description": "",
   "main": "react/src/iam/containers/IAMIndex.js",
   "scripts": {
-    "start": "choerodon-front-boot start --config ./react/config.js",
-    "build": "choerodon-front-boot build --config ./react/config.js",
+    "start": "choerodon-hap-front-boot start --config ./react/config.js",
+    "build": "choerodon-hap-front-boot build --config ./react/config.js",
     "lint": "npm run lint:es && npm run lint:style",
     "lint:es": "eslint ./react/src/**/*.js ./react/config.js",
     "lint:style": "stylelint src/**/*.scss --syntax scss",
@@ -17,7 +17,9 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "choerodon-front-boot": "^0.10.4",
+    "choerodon-boot-combine": "0.0.16",
+    "choerodon-hap-ui": "0.12.9",
+    "choerodon-ui": "0.6.0",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
     "hjson": "^3.1.1",
@@ -35,5 +37,8 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "c7nConfig": {
+    "type": "choerodon"
   }
 }

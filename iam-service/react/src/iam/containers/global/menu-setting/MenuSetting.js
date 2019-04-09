@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { Button, Form, Icon, IconSelect, Input, Modal, Table, Tabs, Tooltip } from 'choerodon-ui';
-import { axios, Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
+import { axios, Content, Header, Page, Permission, stores } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import _ from 'lodash';
 import { adjustSort, canDelete, defineLevel, deleteNode, findParent, hasDirChild, isChild, normalizeMenus } from './util';

@@ -1,5 +1,5 @@
 import { action, computed, observable, toJS } from 'mobx';
-import { axios, store, stores } from 'choerodon-front-boot';
+import { axios, store, stores } from 'choerodon-boot-combine';
 import moment from 'moment';
 import querystring from 'query-string';
 

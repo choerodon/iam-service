@@ -1,4 +1,4 @@
-import { axios } from 'choerodon-front-boot';
+import { axios } from 'choerodon-boot-combine';
 import querystring from 'query-string';
 
 export const pageSize = 10;

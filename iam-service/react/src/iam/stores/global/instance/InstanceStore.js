@@ -2,7 +2,7 @@
  * Created by hulingfangzi on 2018/6/20.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-front-boot';
+import { axios, store, stores } from 'choerodon-boot-combine';
 
 @store('InstanceStore')
 class InstanceStore {

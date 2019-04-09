@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import { Button, Col, Form, Input, Modal, Row, Select, Table } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page } from 'choerodon-front-boot';
+import { Content, Header, Page } from 'choerodon-boot-combine';
 import _ from 'lodash';
 import RoleStore from '../../../stores/global/role/RoleStore';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

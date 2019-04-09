@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { inject, observer } from 'mobx-react';
 import ReactEcharts from 'echarts-for-react';
-import { WSHandler } from 'choerodon-front-boot';
+import { WSHandler } from 'choerodon-boot-combine';
 import { Button, Icon, Select, Spin } from 'choerodon-ui';
 import './index.scss';
 

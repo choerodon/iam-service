@@ -2,7 +2,7 @@
  * Created by hulingfangzi on 2018/5/28.
  */
 import { action, computed, observable } from 'mobx';
-import { store } from 'choerodon-front-boot';
+import { store } from 'choerodon-boot-combine';
 
 @store('RouteStore')
 class RouteStore {

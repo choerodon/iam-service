@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { Content, Header, Page } from 'choerodon-front-boot';
+import { Content, Header, Page } from 'choerodon-boot-combine';
 import { Table, Button, Checkbox, Modal, Tooltip } from 'choerodon-ui';
 import { Prompt } from 'react-router-dom';
 import ReceiveSettingStore from '../../../stores/user/receive-setting/ReceiveSettingStore';

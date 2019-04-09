@@ -4,7 +4,7 @@ import { Button, Col, Form, Input, Row } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { Content, Header, Page, Permission } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
 import UserInfoStore from '../../../stores/user/user-info/UserInfoStore';
 import './Password.scss';
 

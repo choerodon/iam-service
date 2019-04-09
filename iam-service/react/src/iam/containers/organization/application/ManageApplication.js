@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Button, Form, Modal, Table, Tooltip, Radio, Select, Input } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission, stores } from 'choerodon-boot-combine';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import { Tabs } from 'choerodon-ui';
