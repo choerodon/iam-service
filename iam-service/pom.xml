@@ -6,6 +6,7 @@
         <groupId>io.choerodon</groupId>
         <artifactId>iam-service-parent</artifactId>
         <version>0.16.0.RELEASE</version>
+        <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +14,14 @@
     <properties>
         <choerodon.mainClass>io.choerodon.iam.IAMServiceApplication</choerodon.mainClass>
     </properties>
+
     <dependencies>
+        <!--<dependency>-->
+            <!--<groupId>${project.groupId}</groupId>-->
+            <!--<artifactId>choerodon-fnd-iam</artifactId>-->
+            <!--<version>0.16.0.RELEASE</version>-->
+        <!--</dependency>-->
+
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>

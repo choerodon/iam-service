@@ -1,5 +1,6 @@
 {
   "name": "iam-service",
+  "routeName": "iam",
   "version": "0.16.0",
   "description": "",
   "main": "react/src/iam/containers/IAMIndex.js",
