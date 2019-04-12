@@ -74,10 +74,10 @@ public class ExcelImportUserTask {
     public void importUsers(Long userId, List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
-        List<UserDO> validateUsers = new CopyOnWriteArrayList<>();
-        List<ErrorUserDTO> errorUsers = new CopyOnWriteArrayList<>();
+        List<UserDO> validateUsers = new ArrayList<>();
+        List<ErrorUserDTO> errorUsers = new ArrayList<>();
         long begin = System.currentTimeMillis();
-        users.parallelStream().forEach(u -> {
+        users.forEach(u -> {
                     u.setOrganizationId(organizationId);
                     processUsers(u, errorUsers, validateUsers);
                 }
@@ -510,6 +510,7 @@ public class ExcelImportUserTask {
         String password = user.getPassword();
         Boolean ok = false;
         if (StringUtils.isEmpty(realName)) {
+            realName = loginName;
             user.setRealName(loginName);
         }
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
