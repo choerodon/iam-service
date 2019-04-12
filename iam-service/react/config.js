@@ -10,6 +10,12 @@ const config = {
   server: 'http://api.staging.saas.hand-china.com',
   fileServer: 'http://minio.staging.saas.hand-china.com',
   webSocketServer: 'ws://notify.staging.saas.hand-china.com',
+  dashboard: {
+    iam: {
+      components: 'src/iam/dashboard/*',
+      locale: 'src/iam/locale/dashboard/*',
+    },
+  },
   // port: 2233,
   // proxyTarget: 'http://hap4.staging.saas.hand-china.com',
 };
