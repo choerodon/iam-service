@@ -1,5 +1,6 @@
 package io.choerodon.iam.infra.common.utils.ldap;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.naming.NamingException;
@@ -87,7 +88,21 @@ public class LdapSyncUserTask {
         final PagedResultsDirContextProcessor processor =
                 new PagedResultsDirContextProcessor(ldap.getSagaBatchSize());
         AttributesMapper attributesMapper = getDefaultAttributesMapper();
-
+        //反射获取ldapTemplate的ignorePartialResultException和ignoreNameNotFoundException值
+        boolean ignorePartialResultException = false;
+        boolean ignoreNameNotFoundException = false;
+        try {
+            Field ignorePartialResultExceptionField = ldapTemplate.getClass().getDeclaredField("ignorePartialResultException");
+            Field ignoreNameNotFoundExceptionField = ldapTemplate.getClass().getDeclaredField("ignoreNameNotFoundException");
+            ignorePartialResultExceptionField.setAccessible(true);
+            ignoreNameNotFoundExceptionField.setAccessible(true);
+            ignorePartialResultException = (boolean) ignorePartialResultExceptionField.get(ldapTemplate);
+            ignoreNameNotFoundException = (boolean) ignoreNameNotFoundExceptionField.get(ldapTemplate);
+        } catch (NoSuchFieldException e) {
+            logger.warn("reflect to get field failed, exception: {}", e);
+        } catch (IllegalAccessException e) {
+            logger.warn("reflect to get field value failed, exception: {}", e);
+        }
         SingleContextSource.doWithSingleContext(
                 ldapTemplate.getContextSource(), new LdapOperationsCallback<List<UserDO>>() {
                     @Override
@@ -126,7 +141,7 @@ public class LdapSyncUserTask {
                         } while (processor.hasMore());
                         return null;
                     }
-                });
+                }, false, ignorePartialResultException, ignoreNameNotFoundException);
     }
 
     private AndFilter getFilter(LdapDO ldap) {
