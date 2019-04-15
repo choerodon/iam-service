@@ -1,19 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -25,6 +12,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
+import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.api.dto.ProjectTypeDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.api.service.ProjectTypeService;
@@ -32,7 +20,13 @@ import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.domain.repository.LabelRepository;
+import io.choerodon.iam.domain.repository.MemberRoleRepository;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.dataobject.LabelDO;
 import io.choerodon.iam.infra.dataobject.OrganizationDO;
@@ -42,6 +36,25 @@ import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_ENABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -368,6 +381,20 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //去除已与该项目群建立关系的敏捷项目
             Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
             return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId) {
+        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
+        if (projectDO == null) {
+            throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
+        } else {
+            return projectRepository.selectGroupInfoByEnableProject(organizationId, projectId);
         }
     }
 }
