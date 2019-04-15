@@ -5,10 +5,14 @@ import io.choerodon.mybatis.annotation.MultiLanguageField;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
+/**
+ * @author superlee
+ * @since 2019-04-15
+ */
 @MultiLanguage
-@Table(name="iam_menu_b")
+@Table(name = "iam_menu_b")
 public class MenuDTO {
 
     @Id
@@ -21,9 +25,8 @@ public class MenuDTO {
     private String name;
     @NotEmpty
     private String pagePermissionCode;
-    private String serviceCode;
-    @NotNull
     private Long parentId;
+    @NotEmpty
     private String resourceLevel;
     @NotEmpty
     private String type;
@@ -32,6 +35,10 @@ public class MenuDTO {
     private String icon;
     private String category;
     private String condition;
+    @Transient
+    private List<PermissionDTO> permissions;
+    @Transient
+    private List<MenuDTO> menus;
 
     public Long getId() {
         return id;
@@ -63,14 +70,6 @@ public class MenuDTO {
 
     public void setPagePermissionCode(String pagePermissionCode) {
         this.pagePermissionCode = pagePermissionCode;
-    }
-
-    public String getServiceCode() {
-        return serviceCode;
-    }
-
-    public void setServiceCode(String serviceCode) {
-        this.serviceCode = serviceCode;
     }
 
     public Long getParentId() {
@@ -135,5 +134,21 @@ public class MenuDTO {
 
     public void setCondition(String condition) {
         this.condition = condition;
+    }
+
+    public List<PermissionDTO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<PermissionDTO> permissions) {
+        this.permissions = permissions;
+    }
+
+    public List<MenuDTO> getMenus() {
+        return menus;
+    }
+
+    public void setMenus(List<MenuDTO> menus) {
+        this.menus = menus;
     }
 }

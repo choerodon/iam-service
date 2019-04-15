@@ -21,7 +21,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'LEVEL', type: 'VARCHAR(64)', remarks: '权限的层级') {
+            column(name: 'RESOURCE_LEVEL', type: 'VARCHAR(64)', remarks: '权限的层级') {
                 constraints(nullable: false)
             }
 
@@ -31,20 +31,28 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'RESOURCE', type: 'VARCHAR(128)', remarks: '权限资源类型') {
+            column(name: 'CONTROLLER', type: 'VARCHAR(128)', remarks: 'controller名') {
                 constraints(nullable: false)
             }
 
-            column(name: 'PUBLIC_ACCESS', type: 'TINYINT UNSIGNED', remarks: '是否公开的权限') {
+            column(name: 'IS_PUBLIC_ACCESS', type: 'TINYINT UNSIGNED', remarks: '是否公开的权限') {
                 constraints(nullable: false)
             }
 
-            column(name: 'LOGIN_ACCESS', type: 'TINYINT UNSIGNED', remarks: '是否需要登录才能访问的权限') {
+            column(name: 'IS_LOGIN_ACCESS', type: 'TINYINT UNSIGNED', remarks: '是否需要登录才能访问的权限') {
                 constraints(nullable: false)
             }
 
-            column(name: 'SERVICE_NAME', type: 'VARCHAR(128)', remarks: '权限所在的服务名称') {
+            column(name: 'SERVICE_CODE', type: 'VARCHAR(128)', remarks: '服务code') {
                 constraints(nullable: false)
+            }
+            addColumn(tableName: 'IAM_PERMISSION') {
+                column(name: 'IS_WITHIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为内部接口') {
+                    constraints(nullable: true)
+                }
+            }
+            addColumn(tableName: 'IAM_PERMISSION') {
+                column(name: 'PERMISSION_TYPE', type: 'VARCHAR(128)', remarks: '类型包括url/api/page等', afterColumn: 'SERVICE_CODE')
             }
 
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
@@ -59,36 +67,36 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'ACTION,RESOURCE,SERVICE_NAME', constraintName: 'UK_IAM_PERMISSION_U2')
-        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'PATH,LEVEL,SERVICE_NAME,METHOD,CODE', constraintName: 'UK_IAM_PERMISSION_U3')
+        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'ACTION,CONTROLLER,SERVICE_NAME', constraintName: 'UK_IAM_PERMISSION_U2')
+        addUniqueConstraint(tableName: 'IAM_PERMISSION', columnNames: 'PATH,RESOURCE_LEVEL,SERVICE_CODE,METHOD,CODE', constraintName: 'UK_IAM_PERMISSION_U3')
     }
 
-    changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
-        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
-        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "FD_RESOURCE", oldColumnName: "RESOURCE", remarks: '权限资源类型', tableName: 'IAM_PERMISSION')
-    }
+//    changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
+//        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
+//        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "FD_RESOURCE", oldColumnName: "RESOURCE", remarks: '权限资源类型', tableName: 'IAM_PERMISSION')
+//    }
 
-    changeSet(author: 'longhe1996@icloud.com', id: '2018-09-04-add-column-within') {
-        addColumn(tableName: 'IAM_PERMISSION') {
-            column(name: 'WITHIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为内部接口') {
-                constraints(nullable: true)
-            }
-        }
-    }
+//    changeSet(author: 'longhe1996@icloud.com', id: '2018-09-04-add-column-within') {
+//        addColumn(tableName: 'IAM_PERMISSION') {
+//            column(name: 'WITHIN', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否为内部接口') {
+//                constraints(nullable: true)
+//            }
+//        }
+//    }
 
-    changeSet(author: 'superlee', id: '2019-03-20-rename-within-column') {
-        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_WITHIN", oldColumnName: "WITHIN", remarks: '是否为内部接口', tableName: 'IAM_PERMISSION')
-    }
+//}changeSet(author: 'superlee', id: '2019-03-20-rename-within-column') {
+//        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_WITHIN", oldColumnName: "WITHIN", remarks: '是否为内部接口', tableName: 'IAM_PERMISSION')
+//
 
-    changeSet(author: 'superlee', id: '2019-04-14-rename-resource-column') {
-        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "CONTROLLER", oldColumnName: "FD_RESOURCE", remarks: 'controller名', tableName: 'IAM_PERMISSION')
-        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "SERVICE_CODE", oldColumnName: "SERVICE_NAME", remarks: '权限所在的服务code', tableName: 'IAM_PERMISSION')
-        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "RESOURCE_LEVEL", oldColumnName: "FD_LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
-        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_PUBLIC_ACCESS", oldColumnName: "PUBLIC_ACCESS", remarks: '是否公开的权限', tableName: 'IAM_PERMISSION')
-        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_LOGIN_ACCESS", oldColumnName: "LOGIN_ACCESS", remarks: '是否需要登录才能访问的权限', tableName: 'IAM_PERMISSION')
-        addColumn(tableName: 'IAM_PERMISSION') {
-            column(name: 'PERMISSION_TYPE', type: 'VARCHAR(128)', remarks: '类型包括url/api/page等', afterColumn:'SERVICE_CODE')
-        }
-    }
+//    changeSet(author: 'superlee', id: '2019-04-14-rename-resource-column') {
+//        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "CONTROLLER", oldColumnName: "FD_RESOURCE", remarks: 'controller名', tableName: 'IAM_PERMISSION')
+//        renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "SERVICE_CODE", oldColumnName: "SERVICE_NAME", remarks: '权限所在的服务code', tableName: 'IAM_PERMISSION')
+//        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "RESOURCE_LEVEL", oldColumnName: "FD_LEVEL", remarks: '权限的层级', tableName: 'IAM_PERMISSION')
+//        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_PUBLIC_ACCESS", oldColumnName: "PUBLIC_ACCESS", remarks: '是否公开的权限', tableName: 'IAM_PERMISSION')
+//        renameColumn(columnDataType: 'TINYINT UNSIGNED', newColumnName: "IS_LOGIN_ACCESS", oldColumnName: "LOGIN_ACCESS", remarks: '是否需要登录才能访问的权限', tableName: 'IAM_PERMISSION')
+//        addColumn(tableName: 'IAM_PERMISSION') {
+//            column(name: 'PERMISSION_TYPE', type: 'VARCHAR(128)', remarks: '类型包括url/api/page等', afterColumn:'SERVICE_CODE')
+//        }
+//    }
 
 }
