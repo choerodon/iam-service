@@ -161,20 +161,23 @@
                     </includes>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>com.hand.hap</groupId>-->
-            <!--<artifactId>hap-front-plugin</artifactId>-->
-            <!--<version>1.0-SNAPSHOT</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<phase>generate-sources</phase>-->
-            <!--<goals>-->
-            <!--<goal>copy</goal>-->
-            <!--<goal>extract</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>io.choerodon</groupId>
+                <artifactId>choerodon-maven-plugin</artifactId>
+                <version>${choerodon.starters.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy</goal>
+                            <goal>extract</goal>
+                            <goal>permission</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <serviceBuild>true</serviceBuild>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
