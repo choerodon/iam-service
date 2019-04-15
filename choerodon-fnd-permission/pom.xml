@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <artifactId>choerodon-fnd-iam</artifactId>
+    <artifactId>choerodon-fnd-permission</artifactId>
     <dependencies>
         <dependency>
             <groupId>io.choerodon</groupId>
@@ -23,12 +23,6 @@
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-swagger</artifactId>
             <version>${choerodon.starters.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-fnd-permission</artifactId>
-            <version>0.16.0.RELEASE</version>
         </dependency>
     </dependencies>
     <build>
