@@ -9,7 +9,6 @@ import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
-import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-public class MenuServiceImpl extends BaseServiceImpl<MenuDTO> implements MenuService {
+public class MenuServiceImpl implements MenuService {
 
     private MenuAssertHelper menuAssertHelper;
 
@@ -32,20 +31,22 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuDTO> implements MenuSer
 
     @Override
     public MenuDTO query(Long id) {
-        return mapper.selectByPrimaryKey(id);
+        return menuMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public MenuDTO create(MenuDTO menuDTO) {
         preCreate(menuDTO);
-        return insertSelective(menuDTO);
+        menuMapper.insertSelective(menuDTO);
+        return menuDTO;
     }
 
     @Override
     public MenuDTO update(Long id, MenuDTO menuDTO) {
         menuAssertHelper.menuNotExisted(id);
         menuDTO.setId(id);
-        return updateByPrimaryKeySelective(menuDTO);
+        menuMapper.updateByPrimaryKeySelective(menuDTO);
+        return menuDTO;
     }
 
     @Override

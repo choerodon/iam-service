@@ -1,10 +1,10 @@
 spring:
-  application:
-    name: choerodon-fnd-iam
   datasource:
     url: jdbc:mysql://localhost:3306/iam_service_upgrade?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: root
     password: root
+  profiles:
+    active: @activatedProperties@ #取pom.profiles.profile.id=run的activatedProperties
 logging:
   level:
     io.choerodon.iam: debug
@@ -15,12 +15,4 @@ mybatis:
     mapUnderscoreToCamelCase: true
 db:
   type: mysql
-server:
-  port: 8080
-management:
-  server:
-    port: 8031
-  endpoints:
-    web:
-      exposure:
-        include: '*'
+

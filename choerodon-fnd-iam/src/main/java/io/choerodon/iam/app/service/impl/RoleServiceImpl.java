@@ -13,7 +13,6 @@ import io.choerodon.iam.infra.dto.RolePermissionDTO;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import io.choerodon.iam.infra.mapper.RolePermissionMapper;
 import io.choerodon.iam.infra.asserts.RoleAssertHelper;
-import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
  * @since 2019-04-15
  */
 @Service
-public class RoleServiceImpl extends BaseServiceImpl<RoleDTO> implements RoleService {
+public class RoleServiceImpl implements RoleService {
 
     private RoleMapper roleMapper;
 
@@ -47,10 +46,10 @@ public class RoleServiceImpl extends BaseServiceImpl<RoleDTO> implements RoleSer
     @Override
     public RoleDTO create(RoleDTO roleDTO) {
         preCreate(roleDTO);
-        insertSelective(roleDTO);
+        roleMapper.insertSelective(roleDTO);
         insertRolePermission(roleDTO);
         //todo insert role_label
-        return selectByPrimaryKey(roleDTO);
+        return roleMapper.selectByPrimaryKey(roleDTO);
     }
 
     private void insertRolePermission(RoleDTO roleDTO) {
@@ -84,7 +83,7 @@ public class RoleServiceImpl extends BaseServiceImpl<RoleDTO> implements RoleSer
             role.setName(roleDTO.getName());
             role.setDescription(roleDTO.getDescription());
             role.setEnabled(roleDTO.getEnabled());
-            updateByPrimaryKeySelective(role);
+            roleMapper.updateByPrimaryKeySelective(role);
 
             updateRolePermission(roleDTO);
         }

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.choerodon.iam.infra.config.SecurityConfiguration,\
+io.choerodon.iam.infra.config.SpringBootScanConfig

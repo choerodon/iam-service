@@ -30,20 +30,24 @@
             <artifactId>choerodon-fnd-permission</artifactId>
             <version>0.16.0.RELEASE</version>
         </dependency>
-
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-boot</artifactId>
-            <version>${choerodon.starters.version}</version>
-        </dependency>
     </dependencies>
     <build>
         <finalName>app</finalName>
+        <!-- 使用package.target值，替换配置文件中 @package.target@ -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
     <profiles>
         <profile>
             <id>run</id>
+            <properties>
+                <activatedProperties>localhost</activatedProperties>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>io.choerodon</groupId>
@@ -55,21 +59,6 @@
                     <groupId>mysql</groupId>
                     <artifactId>mysql-connector-java</artifactId>
                 </dependency>
-
-                <!--<dependency>-->
-                    <!--<groupId>org.springframework.boot</groupId>-->
-                    <!--<artifactId>spring-boot-starter-undertow</artifactId>-->
-                <!--</dependency>-->
-                <!--<dependency>-->
-                    <!--<groupId>org.springframework.boot</groupId>-->
-                    <!--<artifactId>spring-boot-starter-web</artifactId>-->
-                    <!--<exclusions>-->
-                        <!--<exclusion>-->
-                            <!--<groupId>org.springframework.boot</groupId>-->
-                            <!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
-                        <!--</exclusion>-->
-                    <!--</exclusions>-->
-                <!--</dependency>-->
 
             </dependencies>
         </profile>
