@@ -11,6 +11,7 @@ import java.util.List;
 public interface MenuService {
     /**
      * 根据id查询菜单
+     *
      * @param id
      * @return
      */
@@ -18,6 +19,7 @@ public interface MenuService {
 
     /**
      * 新建菜单
+     *
      * @param menuDTO
      * @return
      */
@@ -25,6 +27,7 @@ public interface MenuService {
 
     /**
      * 更新菜单
+     *
      * @param id
      * @param menuDTO
      * @return
@@ -33,6 +36,7 @@ public interface MenuService {
 
     /**
      * 查询当前登录用户可以查看的菜单
+     *
      * @param level
      * @param sourceId
      * @return
@@ -41,13 +45,15 @@ public interface MenuService {
 
     /**
      * menuConfig界面根据层级查询树形菜单，菜单下包含权限信息
-      * @param level
+     *
+     * @param code
      * @return
      */
-    List<MenuDTO> menuConfig(String level);
+    MenuDTO menuConfig(String code, String level, String type);
 
     /**
      * 根据前端传入的树形菜单，更新后端的树形结构
+     *
      * @param level
      * @param menus
      */

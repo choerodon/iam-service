@@ -3,10 +3,7 @@ package io.choerodon.iam.infra.dto;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author wuguokai
@@ -15,7 +12,7 @@ import javax.persistence.Table;
 @Table(name = "iam_permission")
 public class PermissionDTO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String code;
     private String path;

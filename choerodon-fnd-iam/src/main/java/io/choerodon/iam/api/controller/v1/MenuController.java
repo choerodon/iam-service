@@ -37,15 +37,17 @@ public class MenuController {
     @ApiOperation("获取可以访问的菜单列表")
     @GetMapping
     public ResponseEntity<List<MenuDTO>> menus(@RequestParam String level,
-                                      @RequestParam(name = "source_id") Long sourceId) {
+                                               @RequestParam(name = "source_id") Long sourceId) {
         return new ResponseEntity<>(menuService.menus(level, sourceId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation("菜单配置界面根据层级查菜单")
+    @ApiOperation("菜单配置界面根据code查菜单")
     @GetMapping("/menu_config")
-    public ResponseEntity<List<MenuDTO>> menuConfig(@RequestParam String level) {
-        return new ResponseEntity<>(menuService.menuConfig(level), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code,
+                                              @RequestParam String level,
+                                              @RequestParam String type) {
+        return new ResponseEntity<>(menuService.menuConfig(code, level, type), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)

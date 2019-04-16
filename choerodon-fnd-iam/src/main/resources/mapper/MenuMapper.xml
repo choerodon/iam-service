@@ -79,7 +79,7 @@
         </choose>
     </select>
 
-    <select id="selectMenusAfterCheckPermission" resultMap="Menu">
+    <select id="selectMenusWithPermission" resultMap="Menu">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         select
             imb.id,

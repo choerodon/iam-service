@@ -7,8 +7,8 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
-import io.choerodon.iam.infra.utils.DetailsHelperAssert;
-import io.choerodon.iam.infra.utils.MenuAssertHelper;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +59,14 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuDTO> implements MenuSer
         List<MenuDTO> topMenus = getTopMenus(level);
         List<MenuDTO> menus;
         if (isAdmin) {
-            menus = null;
+            MenuDTO dto = new MenuDTO();
+            if (ResourceType.isProject(level)) {
+                //todo menuRepository.queryProjectMenusWithCategoryByRootUser(this.selectProgramMenuCategory(level, sourceId));
+                menus = null;
+            } else {
+                dto.setResourceLevel(level);
+                menus = menuMapper.select(dto);
+            }
         } else {
             String category = null;
             if (ResourceType.isProject(level)) {
@@ -78,12 +85,18 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuDTO> implements MenuSer
     }
 
     @Override
-    public List<MenuDTO> menuConfig(String level) {
-        List<MenuDTO> topMenus = getTopMenus(level);
+    public MenuDTO menuConfig(String code, String level, String type) {
+        MenuDTO dto = new MenuDTO();
+        dto.setCode(code);
+        dto.setResourceLevel(level);
+        dto.setType(type);
+        MenuDTO menu = menuMapper.selectOne(dto);
+        if (menu == null) {
+            throw new CommonException("error.menu.top.not.existed");
+        }
         List<MenuDTO> menus = menuMapper.selectMenusWithPermission(level);
-        topMenus.forEach(top -> toTreeMenu(top, menus));
-        topMenus.sort(Comparator.comparing(MenuDTO::getSort));
-        return topMenus;
+        toTreeMenu(menu, menus);
+        return menu;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -149,6 +162,7 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuDTO> implements MenuSer
         }
         return topMenus;
     }
+
 
     private void toTreeMenu(MenuDTO parentMenu, List<MenuDTO> menus) {
         Long id = parentMenu.getId();

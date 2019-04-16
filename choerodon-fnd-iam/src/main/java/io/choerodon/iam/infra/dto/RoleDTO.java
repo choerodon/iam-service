@@ -4,6 +4,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * @author superlee
@@ -13,7 +14,7 @@ import javax.validation.constraints.NotEmpty;
 public class RoleDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotEmpty
     private String name;
@@ -30,6 +31,9 @@ public class RoleDTO extends BaseDTO {
     private Boolean enableForbidden;
     @Column(name = "is_built_in")
     private Boolean builtIn;
+
+    @Transient
+    private List<PermissionDTO> permissions;
 
     public Long getId() {
         return id;
@@ -101,5 +105,13 @@ public class RoleDTO extends BaseDTO {
 
     public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
+    }
+
+    public List<PermissionDTO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<PermissionDTO> permissions) {
+        this.permissions = permissions;
     }
 }

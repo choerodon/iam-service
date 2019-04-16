@@ -2,9 +2,9 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.controller.query.RoleQuery;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
@@ -29,10 +29,11 @@ public class RoleController {
 
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "分页查询角色")
-    @CustomPageRequest
     @PostMapping(value = "/search")
-    public ResponseEntity<Page<RoleDTO>> pagedSearch() {
-        return null;
+    public ResponseEntity<Page<RoleDTO>> pagedSearch(@RequestParam(defaultValue = "0") final int page,
+                                                     @RequestParam(defaultValue = "10") final int size,
+                                                     @RequestBody RoleQuery roleQuery) {
+        return new ResponseEntity<>(roleService.pagedSearch(page, size, roleQuery), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.SITE)
@@ -45,7 +46,7 @@ public class RoleController {
     @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "更新角色")
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDTO> create(@PathVariable Long id, @RequestBody RoleDTO roleDTO) {
-        return null;
+    public ResponseEntity<RoleDTO> update(@PathVariable Long id, @RequestBody RoleDTO roleDTO) {
+        return new ResponseEntity<>(roleService.update(id, roleDTO), HttpStatus.OK);
     }
 }

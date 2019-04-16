@@ -17,7 +17,7 @@ import java.util.List;
 public class MenuDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotEmpty
     private String code;

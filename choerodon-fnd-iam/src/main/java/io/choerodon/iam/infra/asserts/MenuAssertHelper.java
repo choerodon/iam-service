@@ -1,4 +1,4 @@
-package io.choerodon.iam.infra.utils;
+package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.MenuDTO;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class MenuAssertHelper {
-
 
     private MenuMapper menuMapper;
 

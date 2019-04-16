@@ -10,7 +10,7 @@
 
     <groupId>io.choerodon</groupId>
     <artifactId>iam-service-parent</artifactId>
-    <version>${properties.revision}</version>
+    <version>0.16.0.RELEASE</version>
 
     <modelVersion>4.0.0</modelVersion>
 

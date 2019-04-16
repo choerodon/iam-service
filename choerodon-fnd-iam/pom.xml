@@ -30,9 +30,56 @@
             <artifactId>choerodon-fnd-permission</artifactId>
             <version>0.16.0.RELEASE</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-boot</artifactId>
+            <version>${choerodon.starters.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>app</finalName>
     </build>
+
+    <profiles>
+        <profile>
+            <id>run</id>
+            <dependencies>
+                <dependency>
+                    <groupId>io.choerodon</groupId>
+                    <artifactId>choerodon-starter-boot</artifactId>
+                    <version>${choerodon.starters.version}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </dependency>
+
+                <!--<dependency>-->
+                    <!--<groupId>org.springframework.boot</groupId>-->
+                    <!--<artifactId>spring-boot-starter-undertow</artifactId>-->
+                <!--</dependency>-->
+                <!--<dependency>-->
+                    <!--<groupId>org.springframework.boot</groupId>-->
+                    <!--<artifactId>spring-boot-starter-web</artifactId>-->
+                    <!--<exclusions>-->
+                        <!--<exclusion>-->
+                            <!--<groupId>org.springframework.boot</groupId>-->
+                            <!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
+                        <!--</exclusion>-->
+                    <!--</exclusions>-->
+                <!--</dependency>-->
+
+            </dependencies>
+        </profile>
+        <profile>
+            <id>module</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
 
 </project>

@@ -1,4 +1,4 @@
-package io.choerodon.iam.infra.utils;
+package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.RoleDTO;
@@ -26,5 +26,17 @@ public class RoleAssertHelper {
         if(!roleMapper.select(dto).isEmpty()) {
             throw new CommonException("error.role.code.existed");
         }
+    }
+
+    public RoleDTO roleNotExisted(Long id) {
+        return roleNotExisted(id, "error.role.not.exist");
+    }
+
+    public RoleDTO roleNotExisted(Long id, String message) {
+        RoleDTO dto = roleMapper.selectByPrimaryKey(id);
+        if (dto == null) {
+            throw new CommonException(message, id);
+        }
+        return dto;
     }
 }
