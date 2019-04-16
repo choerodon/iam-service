@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 0.16.0
  */
 @RestController
-@RequestMapping(value = "/v1/users")
+@RequestMapping(value = "/v1/permissions")
 public class PermissionController {
 }

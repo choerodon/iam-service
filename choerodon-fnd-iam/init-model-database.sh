@@ -8,6 +8,6 @@ fi
 java -Dspring.datasource.url="jdbc:mysql://localhost/iam_service_upgrade?useUnicode=true&characterEncoding=utf-8&useSSL=false" \
  -Dspring.datasource.username=root \
  -Dspring.datasource.password=root \
- -Ddata.drop=true -Ddata.init=true \
+ -Ddata.drop=false -Ddata.init=true \
  -Ddata.dir=src/main/resources \
  -jar choerodon_temp/choerodon-tool-liquibase.jar

@@ -32,7 +32,7 @@
           imb.page_permission_code
         from iam_menu_b imb
         inner join iam_menu_permission imp
-        on imb.code = imp.menu_code
+        on imb.id = imp.menu_id
         inner join (
             select distinct t2.code from(
                 select * from iam_permission ip
@@ -107,7 +107,7 @@
         on imb.id = imt.id
         and imt.lang = #{lang}
         on imp.permission_code = ip.code
-        on imb.code = imp.menu_code
+        on imb.id = imp.menu_id
         where imb.type != 'top'
         and imb.resource_level = #{level}
     </select>

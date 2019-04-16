@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.dto;
 
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -13,7 +14,7 @@ import java.util.List;
  */
 @MultiLanguage
 @Table(name = "iam_menu_b")
-public class MenuDTO {
+public class MenuDTO extends BaseDTO {
 
     @Id
     @GeneratedValue
@@ -30,6 +31,8 @@ public class MenuDTO {
     private String resourceLevel;
     @NotEmpty
     private String type;
+    @NotEmpty
+    private String serviceCode;
     private Integer sort;
     private Boolean isDefault;
     private String icon;
@@ -150,5 +153,13 @@ public class MenuDTO {
 
     public void setMenus(List<MenuDTO> menus) {
         this.menus = menus;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
     }
 }
