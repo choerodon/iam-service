@@ -8,16 +8,22 @@
         <version>0.10.0.RELEASE</version>
     </parent>
 
-    <groupId>io.choerodon</groupId>
     <artifactId>iam-service-parent</artifactId>
     <version>0.16.0.RELEASE</version>
 
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>pom</packaging>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Choerodon Release</id>
+            <name>Choerodon Release Repository</name>
+            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
+        </pluginRepository>
+    </pluginRepositories>
     <properties>
-        <revision>0.16.0.RELEASE</revision>
-        <choerodon.starters.version>0.10.1.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.11.0.RELEASE</choerodon.starters.version>
         <powermock.version>2.0.0-beta.5</powermock.version>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
     </properties>

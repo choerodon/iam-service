@@ -2,6 +2,8 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.api.dto.RoleDTO;
 import io.choerodon.iam.api.dto.RoleSearchDTO;
@@ -22,7 +23,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -47,7 +47,7 @@ public class RoleController extends BaseController {
      * @param pageRequest 分页封装对象
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询角色")
     @CustomPageRequest
     @PostMapping(value = "/search")
@@ -74,7 +74,7 @@ public class RoleController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过id查询角色")
     @GetMapping(value = "/{id}")
     public ResponseEntity<RoleDTO> queryWithPermissionsAndLabels(@PathVariable Long id) {
@@ -105,7 +105,7 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "创建角色")
     @PostMapping
     public ResponseEntity<RoleDTO> create(@RequestBody @Validated RoleDTO roleDTO) {
@@ -113,7 +113,7 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.create(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "基于已有角色创建角色")
     @PostMapping("/base_on_roles")
     public ResponseEntity<RoleDTO> createBaseOnRoles(@RequestBody @Validated RoleDTO roleDTO) {
@@ -121,7 +121,7 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.createBaseOnRoles(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改角色")
     @PutMapping(value = "/{id}")
     public ResponseEntity<RoleDTO> update(@PathVariable Long id,
@@ -133,21 +133,21 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.update(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "启用角色")
     @PutMapping(value = "/{id}/enable")
     public ResponseEntity<RoleDTO> enableRole(@PathVariable Long id) {
         return new ResponseEntity<>(roleService.enableRole(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "禁用角色")
     @PutMapping(value = "/{id}/disable")
     public ResponseEntity<RoleDTO> disableRole(@PathVariable Long id) {
         return new ResponseEntity<>(roleService.disableRole(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "角色信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody RoleDTO role) {
@@ -155,7 +155,7 @@ public class RoleController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据角色id查看角色对应的权限")
     @GetMapping("/{id}/permissions")
     public ResponseEntity<Page<PermissionDTO>> listPermissionById(

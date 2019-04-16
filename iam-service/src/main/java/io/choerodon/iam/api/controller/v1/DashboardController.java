@@ -1,5 +1,7 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -9,7 +11,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
@@ -17,7 +18,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author dongfan117@gmail.com
@@ -38,7 +38,7 @@ public class DashboardController extends BaseController {
      * @param dashboardDto Dashboard对象
      * @return 更新成功的Dashboard对象
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改dashboard")
     @PostMapping(value = "/{dashboard_id}")
     public ResponseEntity<DashboardDTO> update(
@@ -55,7 +55,7 @@ public class DashboardController extends BaseController {
      * @param dashboardId DashboardE Id
      * @return 查询到的Dashboard对象
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过id查询Dashboard")
     @GetMapping(value = "/{dashboard_id}")
     public ResponseEntity<DashboardDTO> query(@PathVariable("dashboard_id") Long dashboardId) {
@@ -70,7 +70,7 @@ public class DashboardController extends BaseController {
      * @param params      模糊查询参数
      * @return 查询到的Dashboard分页对象
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询Dashboard")
     @CustomPageRequest
     @GetMapping
@@ -95,7 +95,7 @@ public class DashboardController extends BaseController {
         return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("重置仪表盘配置数据")
     @PutMapping("/reset")
     public void reset(@RequestParam(value = "dashboard_id", required = false) Long dashboardId) {

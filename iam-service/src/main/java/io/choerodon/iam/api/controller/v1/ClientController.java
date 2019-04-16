@@ -2,6 +2,8 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
@@ -44,7 +45,7 @@ public class ClientController extends BaseController {
      * @param clientDTO      客户端对象
      * @return 创建成功的客户端对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建客户端")
     @PostMapping
     public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid ClientDTO clientDTO) {
@@ -58,7 +59,7 @@ public class ClientController extends BaseController {
      * @param organizationId 组织id
      * @return 客户端创建信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
     public ResponseEntity<ClientCreateDTO> createInfo(@PathVariable("organization_id") Long organizationId) {
@@ -73,7 +74,7 @@ public class ClientController extends BaseController {
      * @param clientDTO      客户端对象
      * @return 更新成功的客户端对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "修改客户端")
     @PostMapping(value = "/{client_id}")
     public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId,
@@ -91,7 +92,7 @@ public class ClientController extends BaseController {
      * @param clientId       客户端id
      * @return 删除是否成功
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "删除客户端")
     @DeleteMapping(value = "/{client_id}")
     public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
@@ -105,7 +106,7 @@ public class ClientController extends BaseController {
      * @param clientId       客户端id
      * @return 查询到的客户端对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "通过id查询客户端")
     @GetMapping(value = "/{client_id}")
     public ResponseEntity<ClientDTO> query(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
@@ -119,7 +120,7 @@ public class ClientController extends BaseController {
      * @param clientName     客户端名称
      * @return 查询到的客户端对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "通过名称查询客户端")
     @GetMapping("/query_by_name")
     public ResponseEntity<ClientDTO> queryByName(@PathVariable("organization_id") Long organizationId, @RequestParam(value = "client_name") String clientName) {
@@ -135,7 +136,7 @@ public class ClientController extends BaseController {
      * @param params         模糊查询参数
      * @return 查询到的客户端分页对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询客户端")
     @CustomPageRequest
     @GetMapping
@@ -159,7 +160,7 @@ public class ClientController extends BaseController {
      * @param client         客户端对象
      * @return 验证成功，否则失败
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "客户端信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,

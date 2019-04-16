@@ -1,17 +1,17 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LanguageDTO;
 import io.choerodon.iam.app.service.LanguageService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class LanguageController extends BaseController {
      *
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改Language")
     @PutMapping(value = "/{id}")
     public ResponseEntity<LanguageDTO> update(@PathVariable Long id,
@@ -61,7 +61,7 @@ public class LanguageController extends BaseController {
      * @param languageDTO 请求参数封装对象
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "分页查询Language")
     @CustomPageRequest
     @GetMapping
@@ -72,7 +72,7 @@ public class LanguageController extends BaseController {
         return new ResponseEntity<>(languageService.pagingQuery(pageRequest, languageDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "查询language列表")
     @GetMapping(value = "/list")
     public ResponseEntity<List<LanguageDTO>> listAll() {
@@ -86,7 +86,7 @@ public class LanguageController extends BaseController {
      * @param code Language
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "通过code查询Language")
     @GetMapping(value = "/code")
     public ResponseEntity<LanguageDTO> queryByCode(@RequestParam(name = "value") String code) {
