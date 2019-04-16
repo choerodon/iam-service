@@ -14,7 +14,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<packaging>pom</packaging>-->
+    <packaging>pom</packaging>
     <properties>
         <revision>0.16.0.RELEASE</revision>
         <choerodon.starters.version>0.10.1.RELEASE</choerodon.starters.version>
