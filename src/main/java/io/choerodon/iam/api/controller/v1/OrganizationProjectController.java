@@ -159,9 +159,9 @@ public class OrganizationProjectController extends BaseController {
     /**
      * @param organizationId 组织Id
      * @param projectId      项目Id
-     * @return 当前项目生效的项目群信息
+     * @return 当前项目生效的普通项目群信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询当前项目生效的普通项目群信息(项目为启用状态且当前时间在其有效期内)")
     @GetMapping(value = "/{project_id}/program")
     public ResponseEntity<ProjectDTO> getGroupInfoByEnableProject(@PathVariable(name = "organization_id") Long organizationId,
