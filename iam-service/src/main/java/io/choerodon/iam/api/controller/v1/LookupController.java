@@ -1,16 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LookupDTO;
 import io.choerodon.iam.app.service.LookupService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +39,7 @@ public class LookupController extends BaseController {
      * @param lookupDTO 需要创建的lookupDTO对象
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "创建快码")
     @PostMapping
     public ResponseEntity<LookupDTO> create(@RequestBody @Valid LookupDTO lookupDTO) {
@@ -53,7 +53,7 @@ public class LookupController extends BaseController {
      * @param id lookup id
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "删除快码")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
@@ -64,7 +64,7 @@ public class LookupController extends BaseController {
     /**
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改快码")
     @PutMapping(value = "/{id}")
     public ResponseEntity<LookupDTO> update(@PathVariable Long id,
@@ -83,7 +83,7 @@ public class LookupController extends BaseController {
      * @param lookupDTO   查询封装对象
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询快码")
     @CustomPageRequest
     @GetMapping
@@ -94,7 +94,7 @@ public class LookupController extends BaseController {
         return new ResponseEntity<>(lookupService.pagingQuery(pageRequest, lookupDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过code查询快码")
     @GetMapping(value = "/code")
     public ResponseEntity<LookupDTO> listByCode(@RequestParam(name = "value") String code) {
@@ -106,7 +106,7 @@ public class LookupController extends BaseController {
      *
      * @return 返回信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过id查询快码")
     @GetMapping(value = "/{id}")
     public ResponseEntity<LookupDTO> queryById(@PathVariable Long id) {

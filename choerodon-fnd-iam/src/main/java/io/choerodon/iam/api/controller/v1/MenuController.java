@@ -1,9 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.infra.dto.MenuDTO;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +26,14 @@ public class MenuController {
         this.menuService = menuService;
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("根据id查询目录")
     @GetMapping("/{id}")
     public ResponseEntity<MenuDTO> query(@PathVariable("id") Long id) {
         return new ResponseEntity<>(menuService.query(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("获取可以访问的菜单列表")
     @GetMapping
     public ResponseEntity<List<MenuDTO>> menus(@RequestParam String level,
@@ -41,14 +41,14 @@ public class MenuController {
         return new ResponseEntity<>(menuService.menus(level, sourceId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置界面根据层级查菜单")
     @GetMapping("/menu_config")
     public ResponseEntity<List<MenuDTO>> menuConfig(@RequestParam String level) {
         return new ResponseEntity<>(menuService.menuConfig(level), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置保存")
     @PostMapping("/menu_config")
     public ResponseEntity saveMenuConfig(@RequestParam String level, @RequestBody List<MenuDTO> menus) {
@@ -56,14 +56,14 @@ public class MenuController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("创建目录")
     @PostMapping
     public ResponseEntity<MenuDTO> create(@RequestBody @Valid MenuDTO menuDTO) {
         return new ResponseEntity<>(menuService.create(menuDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("更新目录")
     @PutMapping("/{id}")
     public ResponseEntity<MenuDTO> update(@PathVariable("id") Long id,

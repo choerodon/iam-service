@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +15,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.app.service.OrganizationProjectService;
@@ -22,7 +23,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author flyleft
@@ -44,7 +44,7 @@ public class OrganizationProjectController extends BaseController {
      * @param project 项目信息
      * @return 项目信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建项目")
     @PostMapping
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
@@ -60,7 +60,7 @@ public class OrganizationProjectController extends BaseController {
      * @param pageRequest 分页请求参数封装对象
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @GetMapping
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目")
@@ -85,7 +85,7 @@ public class OrganizationProjectController extends BaseController {
                 HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @PutMapping(value = "/{project_id}")
     @ApiOperation(value = "修改项目")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
@@ -100,7 +100,7 @@ public class OrganizationProjectController extends BaseController {
 
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "启用项目")
     @PutMapping(value = "/{project_id}/enable")
     public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
@@ -109,7 +109,7 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity<>(organizationProjectService.enableProject(organizationId, projectId, userId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
@@ -119,7 +119,7 @@ public class OrganizationProjectController extends BaseController {
                 organizationId, projectId, userId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "项目信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
@@ -129,7 +129,7 @@ public class OrganizationProjectController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "查询组织下的项目类型及类下项目数及项目")
     @GetMapping("/under_the_type")
     public ResponseEntity<Map<String, Object>> getProjectsByType(@PathVariable(name = "organization_id") Long organizationId) {
@@ -142,7 +142,7 @@ public class OrganizationProjectController extends BaseController {
      * @param projectId      项目Id
      * @return 组织下的敏捷项目（除去已被该项目群选择的敏捷项目）
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询项目群下可选的敏捷项目")
     @GetMapping("/{project_id}/agile")
     public ResponseEntity<List<ProjectDTO>> getProjectsNotGroup(@PathVariable(name = "organization_id") Long organizationId,

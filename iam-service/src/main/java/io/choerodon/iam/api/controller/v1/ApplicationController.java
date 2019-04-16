@@ -1,7 +1,8 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationDTO;
 import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
@@ -10,7 +11,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,7 @@ public class ApplicationController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建应用")
     @PostMapping
     public ResponseEntity<ApplicationDTO> create(@PathVariable("organization_id") Long organizationId,
@@ -44,7 +44,7 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.create(applicationDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "更新应用")
     @PostMapping("/{id}")
     public ResponseEntity<ApplicationDTO> update(@PathVariable("organization_id") Long organizationId,
@@ -56,7 +56,7 @@ public class ApplicationController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页查询应用")
     @CustomPageRequest
     @GetMapping
@@ -68,21 +68,21 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,applicationSearchDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "启用应用")
     @PutMapping(value = "/{id}/enable")
     public ResponseEntity<ApplicationDTO> enabled(@PathVariable Long id) {
         return new ResponseEntity<>(applicationService.enable(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "禁用应用")
     @PutMapping(value = "/{id}/disable")
     public ResponseEntity<ApplicationDTO> disable(@PathVariable Long id) {
         return new ResponseEntity<>(applicationService.disable(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "获取application的类型列表")
     @GetMapping(value = "/types")
     public ResponseEntity<List<String>> types() {
@@ -90,7 +90,7 @@ public class ApplicationController {
 
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "重名校验")
     @PostMapping("/check")
     public ResponseEntity check(@PathVariable("organization_id") Long organizationId,
@@ -100,7 +100,7 @@ public class ApplicationController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "将应用/组合应用添加到组合应用中")
     @PostMapping("/{id}/add_to_combination")
     public ResponseEntity addToCombination(@PathVariable("organization_id") Long organizationId,
@@ -111,7 +111,7 @@ public class ApplicationController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组合应用的后代")
     @GetMapping("/{id}/descendant")
     public ResponseEntity<List<ApplicationExplorationWithAppDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
@@ -119,7 +119,7 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.queryDescendant(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询可以向指定组合应用添加的后代，判别标准是不构成环")
     @GetMapping("/{id}/enabled_app")
     public ResponseEntity<List<ApplicationDTO>> queryEnabledApplication(@PathVariable("organization_id") Long organizationId,
@@ -127,7 +127,7 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.queryEnabledApplication(organizationId, id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组合应用下普通应用清单")
     @CustomPageRequest
     @GetMapping("/{id}/app_list")
@@ -140,7 +140,7 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.queryApplicationList(pageRequest, id, name, code), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据id查询应用详情")
     @GetMapping("/{id}")
     public ResponseEntity<ApplicationDTO> query(@PathVariable("organization_id") Long organizationId,

@@ -1,11 +1,12 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.UserDashboardDTO;
 import io.choerodon.iam.api.service.UserDashboardService;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class UserDashboardController {
      * @param level    dashboard层级
      * @param sourceId 组织或项目id
      */
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据层级获取用户首页dashboard")
     @GetMapping("/dashboard")
     public ResponseEntity<List<UserDashboardDTO>> list(
@@ -53,7 +54,7 @@ public class UserDashboardController {
      * @param sourceId      组织或项目id
      * @param dashboardList 需要保存的Dashboard list
      */
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据层级修改用户dashboard")
     @PostMapping("/dashboard")
     public ResponseEntity<List<UserDashboardDTO>> update(
@@ -68,7 +69,7 @@ public class UserDashboardController {
     }
 
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据用户、层级、sourceId重置dashboard")
     @PutMapping("/dashboard/reset")
     public void reset(@RequestParam(name = "level") String level,

@@ -1,7 +1,8 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
@@ -10,7 +11,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class PermissionController {
         return new ResponseEntity<>(permissionService.checkPermission(checkPermissions), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级查询权限列表")
     @CustomPageRequest
     @GetMapping
@@ -55,14 +55,14 @@ public class PermissionController {
                 ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过角色查询权限列表")
     @PostMapping
     public ResponseEntity<Set<PermissionDTO>> queryByRoleIds(@RequestBody List<Long> roleIds) {
         return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
     public ResponseEntity<List<PermissionDTO>> query(@RequestParam("level") String level,
@@ -78,7 +78,7 @@ public class PermissionController {
      * @param code the code of permission
      * @return
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("根据permission code删除permission, 只能删除废弃的permission")
     @DeleteMapping
     public ResponseEntity deleteByCode(@RequestParam String code) {

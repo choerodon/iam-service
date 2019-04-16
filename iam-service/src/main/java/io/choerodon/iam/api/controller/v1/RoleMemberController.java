@@ -3,6 +3,8 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import javax.validation.Valid;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -26,7 +28,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author superlee
@@ -66,7 +67,7 @@ public class RoleMemberController extends BaseController {
      * <p>
      * is_edit 是否是编辑，如果false就表示新建角色，true表示是在是编辑角色
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层批量分配给用户/客户端角色")
     @PostMapping(value = "/site/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnSiteLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
@@ -81,7 +82,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在organization层分配角色
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层批量分配给用户角色/客户端")
     @PostMapping(value = "/organizations/{organization_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnOrganizationLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
@@ -97,7 +98,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在project层分配角色
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层批量分配给用户/客户端角色")
     @PostMapping(value = "/projects/{project_id}/role_members")
     public ResponseEntity<List<MemberRoleDTO>> createOrUpdateOnProjectLevel(@RequestParam(value = "is_edit", required = false) Boolean isEdit,
@@ -113,7 +114,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在site层根据成员id和角色id删除角色
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层批量移除用户/客户端的角色")
     @PostMapping(value = "/site/role_members/delete")
     public ResponseEntity deleteOnSiteLevel(@RequestBody @Valid RoleAssignmentDeleteDTO roleAssignmentDeleteDTO) {
@@ -126,7 +127,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在organization层根据成员id和角色id删除角色
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层批量移除用户/客户端的角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members/delete")
     public ResponseEntity deleteOnOrganizationLevel(@PathVariable(name = "organization_id") Long sourceId,
@@ -140,7 +141,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在project层根据id删除角色
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层批量移除用户/客户端的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/delete")
     public ResponseEntity deleteOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
@@ -158,7 +159,7 @@ public class RoleMemberController extends BaseController {
      * @param roleAssignmentSearchDTO
      * @return
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users")
@@ -175,7 +176,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 根据角色Id分页查询该角色被分配的客户端
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层分页查询角色下的客户端")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/clients")
@@ -187,7 +188,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(clientService.pagingQueryUsersByRoleIdOnSiteLevel(pageRequest, clientRoleSearchDTO, roleId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/users")
@@ -202,7 +203,7 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层分页查询角色下的客户端")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients")
@@ -223,7 +224,7 @@ public class RoleMemberController extends BaseController {
      * @param doPage                  是否分页，如果为false，则不分页
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的用户")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
@@ -238,7 +239,7 @@ public class RoleMemberController extends BaseController {
                 pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的客户端")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/clients")
@@ -256,7 +257,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/site/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnSiteLevel(
@@ -270,7 +271,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/site/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnSiteLevel(
@@ -283,7 +284,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层分页查询site层有角色的用户")
     @GetMapping(value = "/site/role_members/users")
     public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnSiteLevel(@ApiIgnore
@@ -300,7 +301,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnOrganizationLevel(
@@ -315,7 +316,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnOrganizationLevel(
@@ -330,7 +331,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询角色列表以及该角色下的用户数量")
     @PostMapping(value = "/projects/{project_id}/role_members/users/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
@@ -345,7 +346,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnProjectLevel(
@@ -360,7 +361,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles")
@@ -377,7 +378,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR, InitRoleCode.SITE_DEVELOPER})
+    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR, InitRoleCode.SITE_DEVELOPER})
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/users/roles/for_all")
@@ -394,7 +395,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param clientRoleSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层查询客户端列表以及该客户端拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/site/role_members/clients/roles")
@@ -410,7 +411,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param roleAssignmentSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/roles")
@@ -428,7 +429,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param clientRoleSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层查询客户端列表以及该客户端拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/roles")
@@ -449,7 +450,7 @@ public class RoleMemberController extends BaseController {
      * @param doPage                  做不做分页，如果为false，返回一个page对象，context里为所有数据，没有做分页处理
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
@@ -469,7 +470,7 @@ public class RoleMemberController extends BaseController {
      *
      * @param clientRoleSearchDTO 搜索条件
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询客户端列表以及该客户端拥有的角色")
     @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/clients/roles")
@@ -485,7 +486,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 organization 层根据 用户Id 及 组织Id 查询用户及该用户在此组织下拥有的角色
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据用户Id及组织Id查询用户及该用户拥有的角色")
     @GetMapping(value = "/organizations/{organization_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithOrgLevelRolesByUserId(@PathVariable(name = "organization_id") Long organizationId,
@@ -496,7 +497,7 @@ public class RoleMemberController extends BaseController {
     /**
      * 在 project 层根据 用户Id 及 项目Id 查询用户及该用户在此项目下拥有的角色
      */
-    @Permission(level = ResourceLevel.PROJECT, permissionLogin = true)
+    @Permission(type = ResourceType.PROJECT, permissionLogin = true)
     @ApiOperation(value = "项目层根据用户Id及项目Id查询用户及该用户拥有的角色")
     @GetMapping(value = "/projects/{project_id}/role_members/users/{user_id}")
     public ResponseEntity<List<RoleDTO>> getUserWithProjLevelRolesByUserId(@PathVariable(name = "project_id") Long projectId,
@@ -510,7 +511,7 @@ public class RoleMemberController extends BaseController {
      *
      * @return
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层下载excel导入模板")
     @GetMapping(value = "/site/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnSite() {
@@ -523,7 +524,7 @@ public class RoleMemberController extends BaseController {
      * @param organizationId
      * @return
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层下载excel导入模板")
     @GetMapping(value = "/organizations/{organization_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnOrganization(@PathVariable(name = "organization_id") Long organizationId) {
@@ -536,14 +537,14 @@ public class RoleMemberController extends BaseController {
      * @param projectId
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层下载excel导入模板")
     @GetMapping(value = "/projects/{project_id}/role_members/download_templates")
     public ResponseEntity<Resource> downloadTemplatesOnProject(@PathVariable(name = "project_id") Long projectId) {
         return roleMemberService.downloadTemplates(ExcelSuffix.XLSX.value());
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("site层从excel里面批量导入用户角色关系")
     @PostMapping("/site/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnSite(@RequestPart MultipartFile file) {
@@ -551,7 +552,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation("组织层从excel里面批量导入用户角色关系")
     @PostMapping("/organizations/{organization_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
@@ -560,7 +561,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation("项目层从excel里面批量导入用户角色关系")
     @PostMapping("/projects/{project_id}/role_members/batch_import")
     public ResponseEntity import2MemberRoleOnProject(@PathVariable(name = "project_id") Long projectId,
@@ -569,14 +570,14 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("查site层的历史")
     @GetMapping("/site/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnSite(@PathVariable(name = "user_id") Long userId) {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, 0L, ResourceLevel.SITE.value()), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation("查组织层的历史")
     @GetMapping("/organizations/{organization_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnOrganization(@PathVariable(name = "organization_id") Long organizationId,
@@ -584,7 +585,7 @@ public class RoleMemberController extends BaseController {
         return new ResponseEntity<>(uploadHistoryService.latestHistory(userId, MEMBER_ROLE, organizationId, ResourceLevel.ORGANIZATION.value()), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation("查项目层的历史")
     @GetMapping("/projects/{project_id}/member_role/users/{user_id}/upload/history")
     public ResponseEntity latestHistoryOnProject(@PathVariable(name = "project_id") Long projectId,

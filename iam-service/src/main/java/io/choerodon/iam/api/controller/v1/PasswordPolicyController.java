@@ -1,16 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.validator.PasswordPolicyValidator;
 import io.choerodon.iam.app.service.PasswordPolicyService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
@@ -32,7 +32,7 @@ public class PasswordPolicyController {
      *
      * @return 目标组织密码策略
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组织的密码策略")
     @GetMapping
     public ResponseEntity<PasswordPolicyDTO> queryByOrganizationId(@PathVariable("organization_id") Long organizationId) {
@@ -51,7 +51,7 @@ public class PasswordPolicyController {
      * @param passwordPolicyDTO 要更新的密码策略
      * @return 更新后的密码策略
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "修改组织的密码策略")
     @PostMapping("/{id}")
     public ResponseEntity<PasswordPolicyDTO> update(@PathVariable("organization_id") Long organizationId,

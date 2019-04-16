@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.Valid;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author wuguokai
@@ -45,7 +46,7 @@ public class OrganizationController extends BaseController {
      *
      * @return 修改成功后的组织信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层修改组织")
     @PutMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> update(@PathVariable(name = "organization_id") Long id,
@@ -59,7 +60,7 @@ public class OrganizationController extends BaseController {
      *
      * @return 修改成功后的组织信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层修改组织")
     @PutMapping(value = "/{organization_id}/organization_level")
     public ResponseEntity<OrganizationDTO> updateOnOrganizationLevel(@PathVariable(name = "organization_id") Long id,
@@ -75,7 +76,7 @@ public class OrganizationController extends BaseController {
      * @param id 所要查询的组织id号
      * @return 组织信息
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层根据组织id查询组织")
     @GetMapping(value = "/{organization_id}")
     public ResponseEntity<OrganizationDTO> query(@PathVariable(name = "organization_id") Long id) {
@@ -88,14 +89,14 @@ public class OrganizationController extends BaseController {
      * @param id 所要查询的组织id号
      * @return 组织信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "组织层根据组织id查询组织，并查询被分配的角色")
     @GetMapping(value = "/{organization_id}/org_level")
     public ResponseEntity<OrganizationDTO> queryOrgLevel(@PathVariable(name = "organization_id") Long id) {
         return new ResponseEntity<>(organizationService.queryOrganizationWithRoleById(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询组织")
     @CustomPageRequest
     @GetMapping
@@ -114,7 +115,7 @@ public class OrganizationController extends BaseController {
                 ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
     @CustomPageRequest
     @GetMapping(value = "/all")
@@ -138,7 +139,7 @@ public class OrganizationController extends BaseController {
     }
 
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "启用组织")
     @PutMapping(value = "/{organization_id}/enable")
     public ResponseEntity<OrganizationDTO> enableOrganization(@PathVariable(name = "organization_id") Long id) {
@@ -146,7 +147,7 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.enableOrganization(id, userId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "禁用组织")
     @PutMapping(value = "/{organization_id}/disable")
     public ResponseEntity<OrganizationDTO> disableOrganization(@PathVariable(name = "organization_id") Long id) {
@@ -154,7 +155,7 @@ public class OrganizationController extends BaseController {
         return new ResponseEntity<>(organizationService.disableOrganization(id, userId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "组织信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody OrganizationDTO organization) {
@@ -165,7 +166,7 @@ public class OrganizationController extends BaseController {
     /**
      * 根据organizationId和param模糊查询loginName和realName两列
      */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @CustomPageRequest
     @GetMapping(value = "/{organization_id}/users")

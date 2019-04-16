@@ -1,9 +1,9 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +25,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "查询当前用户信息")
     @GetMapping(value = "/self")
     public ResponseEntity<UserDTO> querySelf() {
         return new ResponseEntity<>(userService.querySelf(), HttpStatus.OK);
     }
 
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "根据id查询用户信息")
 //    @GetMapping(value = "/{id}/info")
 //    public ResponseEntity<UserDTO> queryInfo(@PathVariable Long id) {
@@ -52,7 +52,7 @@ public class UserController {
 //    }
 //
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "修改用户信息")
 //    @PutMapping(value = "/{id}/info")
 //    public ResponseEntity<UserDTO> updateInfo(@PathVariable Long id,
@@ -71,7 +71,7 @@ public class UserController {
 //    /**
 //     * 上传头像到文件服务返回头像url
 //     */
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "用户头像上传")
 //    @PostMapping(value = "/{id}/upload_photo")
 //    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
@@ -82,7 +82,7 @@ public class UserController {
 //    /**
 //     * 上传头像，支持裁剪，旋转，并保存
 //     */
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "用户头像上传裁剪，旋转并保存")
 //    @PostMapping(value = "/{id}/save_photo")
 //    public ResponseEntity<String> savePhoto(@PathVariable Long id,
@@ -101,7 +101,7 @@ public class UserController {
 //    }
 //
 //
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "查询用户所在组织列表")
 //    @GetMapping(value = "/{id}/organizations")
 //    public ResponseEntity<List<OrganizationDTO>> queryOrganizations(@PathVariable Long id,
@@ -110,7 +110,7 @@ public class UserController {
 //        return new ResponseEntity<>(userService.queryOrganizations(id, includedDisabled), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "查询用户所在项目列表")
 //    @GetMapping(value = "/{id}/projects")
 //    public ResponseEntity<List<ProjectDTO>> queryProjects(@PathVariable Long id,
@@ -119,7 +119,7 @@ public class UserController {
 //        return new ResponseEntity<>(userService.queryProjects(id, includedDisabled), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "分页查询当前登录用户所有项目列表")
 //    @CustomPageRequest
 //    @GetMapping(value = "/self/projects/paging_query")
@@ -130,7 +130,7 @@ public class UserController {
 //        return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "分页查询当前登录用户所有组织列表")
 //    @CustomPageRequest
 //    @GetMapping(value = "/self/organizations/paging_query")
@@ -152,7 +152,7 @@ public class UserController {
 //     */
 //    @ApiIgnore
 //    @Deprecated
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "查询当前用户在某组织下所在的项目列表")
 //    @GetMapping(value = "/{id}/organizations/{organization_id}/projects")
 //    public ResponseEntity<List<ProjectDTO>> queryProjectsByOrganizationId(@PathVariable Long id,
@@ -165,14 +165,14 @@ public class UserController {
 //     */
 //    @ApiIgnore
 //    @Deprecated
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "查询当前用户所在组织列表以及用户在该组织下所在的项目列表")
 //    @GetMapping(value = "/self/organizations_projects")
 //    public ResponseEntity<List<OrganizationDTO>> queryOrganizationWithProjects() {
 //        return new ResponseEntity<>(userService.queryOrganizationWithProjects(), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+//    @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
 //    @ApiOperation(value = "根据用户名查询用户信息")
 //    @GetMapping
 //    public ResponseEntity<UserDTO> query(@RequestParam(name = "login_name") String loginName) {
@@ -181,7 +181,7 @@ public class UserController {
 //                .orElseThrow(NotFoundException::new);
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @ApiOperation(value = "修改密码")
 //    @PutMapping(value = "/{id}/password")
 //    public ResponseEntity selfUpdatePassword(@PathVariable Long id,
@@ -190,7 +190,7 @@ public class UserController {
 //        return new ResponseEntity(HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+//    @Permission(type = ResourceType.SITE, permissionPublic = true)
 //    @ApiOperation(value = "用户信息校验")
 //    @PostMapping(value = "/check")
 //    public ResponseEntity check(@RequestBody UserDTO user) {
@@ -204,7 +204,7 @@ public class UserController {
 //     * @param pageRequest 分页信息
 //     * @return 分页的admin用户
 //     */
-//    @Permission(level = ResourceLevel.SITE)
+//    @Permission(type = ResourceType.SITE)
 //    @ApiOperation(value = "分页模糊查询管理员用户列表")
 //    @CustomPageRequest
 //    @GetMapping("/admin")
@@ -226,7 +226,7 @@ public class UserController {
 //    }
 //
 //
-//    @Permission(level = ResourceLevel.SITE)
+//    @Permission(type = ResourceType.SITE)
 //    @ApiOperation(value = "批量给用户添加管理员身份")
 //    @PostMapping("/admin")
 //    public ResponseEntity<Page<UserDTO>> addDefaultUsers(@ModelAttribute("id") long[] ids) {
@@ -234,7 +234,7 @@ public class UserController {
 //        return new ResponseEntity<>(HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE)
+//    @Permission(type = ResourceType.SITE)
 //    @ApiOperation(value = "清除用户的管理员身份")
 //    @DeleteMapping("/admin/{id}")
 //    public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
@@ -256,7 +256,7 @@ public class UserController {
 //        return new ResponseEntity<>(userService.listUsersByEmails(emails), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @CustomPageRequest
 //    @ApiOperation("根据id分页获取组织列表和角色")
 //    @GetMapping("/{id}/organization_roles")
@@ -268,7 +268,7 @@ public class UserController {
 //        return new ResponseEntity<>(userService.pagingQueryOrganizationsWithRoles(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
 //    }
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @CustomPageRequest
 //    @ApiOperation("根据id分页获取项目列表和角色")
 //    @GetMapping("/{id}/project_roles")
@@ -315,7 +315,7 @@ public class UserController {
 //    }
 //
 //
-//    @Permission(level = ResourceLevel.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
+//    @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
 //    @ApiOperation(value = "卡片：新增用户统计")
 //    @GetMapping("/new")
 //    public ResponseEntity<Map<String, Object>> queryNewAndAllUsers() {
@@ -323,7 +323,7 @@ public class UserController {
 //    }
 //
 //
-//    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+//    @Permission(type = ResourceType.SITE, permissionLogin = true)
 //    @CustomPageRequest
 //    @ApiOperation("根据id分页获取用户所有角色列表")
 //    @GetMapping("/{id}/roles")
