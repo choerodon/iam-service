@@ -37,7 +37,7 @@ public class MenuDTO extends BaseDTO {
     private Boolean isDefault;
     private String icon;
     private String category;
-    private String condition;
+    private String searchCondition;
     @Transient
     private List<PermissionDTO> permissions;
     @Transient
@@ -131,12 +131,12 @@ public class MenuDTO extends BaseDTO {
         this.category = category;
     }
 
-    public String getCondition() {
-        return condition;
+    public String getSearchCondition() {
+        return searchCondition;
     }
 
-    public void setCondition(String condition) {
-        this.condition = condition;
+    public void setSearchCondition(String searchCondition) {
+        this.searchCondition = searchCondition;
     }
 
     public List<PermissionDTO> getPermissions() {

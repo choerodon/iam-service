@@ -12,6 +12,10 @@
     <!--<packaging>pom</packaging>-->
 
     <artifactId>choerodon-fnd-iam</artifactId>
+
+    <!--<properties>-->
+        <!--<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>-->
+    <!--</properties>-->
     <dependencies>
         <dependency>
             <groupId>io.choerodon</groupId>
@@ -22,6 +26,12 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-swagger</artifactId>
+            <version>${choerodon.starters.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-oauth-resource</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
 
@@ -59,7 +69,6 @@
                     <groupId>mysql</groupId>
                     <artifactId>mysql-connector-java</artifactId>
                 </dependency>
-
             </dependencies>
         </profile>
         <profile>

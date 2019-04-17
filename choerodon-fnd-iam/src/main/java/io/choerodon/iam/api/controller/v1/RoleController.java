@@ -49,4 +49,13 @@ public class RoleController {
     public ResponseEntity<RoleDTO> update(@PathVariable Long id, @RequestBody RoleDTO roleDTO) {
         return new ResponseEntity<>(roleService.update(id, roleDTO), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "根据id查询角色")
+    @GetMapping("/{id}")
+    public ResponseEntity<RoleDTO> query(@PathVariable Long id) {
+        return new ResponseEntity<>(roleService.query(id), HttpStatus.OK);
+    }
+
+
 }

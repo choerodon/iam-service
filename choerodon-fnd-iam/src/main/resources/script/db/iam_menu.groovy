@@ -80,7 +80,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
             column(name: 'SERVICE_CODE', type: 'VARCHAR(128)', remarks: '服务code', afterColumn:'PAGE_PERMISSION_CODE', defaultValue: 'iam-service'){
                 constraints(nullable: false)
             }
-            column(name: 'CONDITION', type: 'TEXT', remarks: '条件表达式', afterColumn:'PAGE_PERMISSION_CODE')
+            column(name: 'SEARCH_CONDITION', type: 'TEXT', remarks: '条件表达式', afterColumn:'PAGE_PERMISSION_CODE')
         }
         addColumn(tableName: 'IAM_MENU_TL') {
             column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {

@@ -90,6 +90,11 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.selectByPrimaryKey(id);
     }
 
+    @Override
+    public RoleDTO query(Long id) {
+        return roleMapper.selectByPrimaryKey(id);
+    }
+
     private void updateRolePermission(RoleDTO roleDTO) {
         long roleId = roleDTO.getId();
         String level = roleDTO.getResourceLevel();

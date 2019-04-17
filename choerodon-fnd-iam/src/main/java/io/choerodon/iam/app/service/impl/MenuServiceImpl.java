@@ -51,7 +51,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuDTO> menus(String level, Long sourceId) {
-        if (ResourceType.contains(level)) {
+        if (!ResourceType.contains(level)) {
             throw new CommonException("error.illegal.menu.level", level);
         }
         CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();

@@ -33,4 +33,11 @@ public interface RoleService {
      * @return
      */
     RoleDTO update(Long id, RoleDTO roleDTO);
+
+    /**
+     * 根据id查角色
+     * @param id
+     * @return
+     */
+    RoleDTO query(Long id);
 }

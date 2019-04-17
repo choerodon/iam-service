@@ -41,25 +41,25 @@ public class RoleController extends BaseController {
         this.permissionService = permissionService;
     }
 
-    /**
-     * 分页查询角色
-     *
-     * @param pageRequest 分页封装对象
-     * @return 查询结果
-     */
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "分页查询角色")
-    @CustomPageRequest
-    @PostMapping(value = "/search")
-    public ResponseEntity<Page<RoleDTO>> list(@ApiIgnore
-                                              @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                              @RequestParam(value = "need_users", required = false) Boolean needUsers,
-                                              @RequestParam(value = "source_id", required = false) Long sourceId,
-                                              @RequestParam(value = "source_type", required = false) String sourceType,
-                                              @RequestBody(required = false) RoleSearchDTO role) {
-        return new ResponseEntity<>(roleService.pagingQuery(
-                pageRequest, needUsers, sourceId, sourceType, role), HttpStatus.OK);
-    }
+//    /**
+//     * 分页查询角色
+//     *
+//     * @param pageRequest 分页封装对象
+//     * @return 查询结果
+//     */
+//    @Permission(type = ResourceType.SITE)
+//    @ApiOperation(value = "分页查询角色")
+//    @CustomPageRequest
+//    @PostMapping(value = "/search")
+//    public ResponseEntity<Page<RoleDTO>> list(@ApiIgnore
+//                                              @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+//                                              @RequestParam(value = "need_users", required = false) Boolean needUsers,
+//                                              @RequestParam(value = "source_id", required = false) Long sourceId,
+//                                              @RequestParam(value = "source_type", required = false) String sourceType,
+//                                              @RequestBody(required = false) RoleSearchDTO role) {
+//        return new ResponseEntity<>(roleService.pagingQuery(
+//                pageRequest, needUsers, sourceId, sourceType, role), HttpStatus.OK);
+//    }
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "通过label查询关联角色列表")
@@ -69,17 +69,17 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.queryIdsByLabelNameAndLabelType(labelName, labelType), HttpStatus.OK);
     }
 
-    /**
-     * 根据角色id查询角色
-     *
-     * @return 查询结果
-     */
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "通过id查询角色")
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<RoleDTO> queryWithPermissionsAndLabels(@PathVariable Long id) {
-        return new ResponseEntity<>(roleService.queryWithPermissionsAndLabels(id), HttpStatus.OK);
-    }
+//    /**
+//     * 根据角色id查询角色
+//     *
+//     * @return 查询结果
+//     */
+//    @Permission(type = ResourceType.SITE)
+//    @ApiOperation(value = "通过id查询角色")
+//    @GetMapping(value = "/{id}")
+//    public ResponseEntity<RoleDTO> queryWithPermissionsAndLabels(@PathVariable Long id) {
+//        return new ResponseEntity<>(roleService.queryWithPermissionsAndLabels(id), HttpStatus.OK);
+//    }
 
     /**
      * 根据角色code查询角色
@@ -105,13 +105,13 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "创建角色")
-    @PostMapping
-    public ResponseEntity<RoleDTO> create(@RequestBody @Validated RoleDTO roleDTO) {
-        roleDTO.insertCheck();
-        return new ResponseEntity<>(roleService.create(roleDTO), HttpStatus.OK);
-    }
+//    @Permission(type = ResourceType.SITE)
+//    @ApiOperation(value = "创建角色")
+//    @PostMapping
+//    public ResponseEntity<RoleDTO> create(@RequestBody @Validated RoleDTO roleDTO) {
+//        roleDTO.insertCheck();
+//        return new ResponseEntity<>(roleService.create(roleDTO), HttpStatus.OK);
+//    }
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "基于已有角色创建角色")
@@ -121,17 +121,17 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.createBaseOnRoles(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "修改角色")
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<RoleDTO> update(@PathVariable Long id,
-                                          @RequestBody RoleDTO roleDTO) {
-        roleDTO.setId(id);
-        roleDTO.updateCheck();
-        //更新操作不能改level
-        roleDTO.setLevel(null);
-        return new ResponseEntity<>(roleService.update(roleDTO), HttpStatus.OK);
-    }
+//    @Permission(type = ResourceType.SITE)
+//    @ApiOperation(value = "修改角色")
+//    @PutMapping(value = "/{id}")
+//    public ResponseEntity<RoleDTO> update(@PathVariable Long id,
+//                                          @RequestBody RoleDTO roleDTO) {
+//        roleDTO.setId(id);
+//        roleDTO.updateCheck();
+//        //更新操作不能改level
+//        roleDTO.setLevel(null);
+//        return new ResponseEntity<>(roleService.update(roleDTO), HttpStatus.OK);
+//    }
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "启用角色")
