@@ -1,26 +1,17 @@
 package io.choerodon.iam.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
-import java.io.Serializable;
 
 /**
  * @author zmf
  * @since 2018-10-15
  */
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SystemSettingDTO implements Serializable {
+public class SystemSettingDTO {
     @ApiModelProperty(value = "平台徽标，非必填字段，图片地址，大小缩放显示")
     private String favicon;
 
@@ -53,6 +44,100 @@ public class SystemSettingDTO implements Serializable {
     @Range(min = 0, max = 65535, message = "error.maxLength")
     private Integer maxPasswordLength;
 
+    @ApiModelProperty(value = "是否启用注册组织")
+    private Boolean registerEnabled;
+
+    @ApiModelProperty(value = "注册组织链接")
+    private String registerUrl;
+
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
+
+    public String getFavicon() {
+        return favicon;
+    }
+
+    public void setFavicon(String favicon) {
+        this.favicon = favicon;
+    }
+
+    public String getSystemLogo() {
+        return systemLogo;
+    }
+
+    public void setSystemLogo(String systemLogo) {
+        this.systemLogo = systemLogo;
+    }
+
+    public String getSystemTitle() {
+        return systemTitle;
+    }
+
+    public void setSystemTitle(String systemTitle) {
+        this.systemTitle = systemTitle;
+    }
+
+    public String getSystemName() {
+        return systemName;
+    }
+
+    public void setSystemName(String systemName) {
+        this.systemName = systemName;
+    }
+
+    public String getDefaultPassword() {
+        return defaultPassword;
+    }
+
+    public void setDefaultPassword(String defaultPassword) {
+        this.defaultPassword = defaultPassword;
+    }
+
+    public String getDefaultLanguage() {
+        return defaultLanguage;
+    }
+
+    public void setDefaultLanguage(String defaultLanguage) {
+        this.defaultLanguage = defaultLanguage;
+    }
+
+    public Integer getMinPasswordLength() {
+        return minPasswordLength;
+    }
+
+    public void setMinPasswordLength(Integer minPasswordLength) {
+        this.minPasswordLength = minPasswordLength;
+    }
+
+    public Integer getMaxPasswordLength() {
+        return maxPasswordLength;
+    }
+
+    public void setMaxPasswordLength(Integer maxPasswordLength) {
+        this.maxPasswordLength = maxPasswordLength;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getRegisterEnabled() {
+        return registerEnabled;
+    }
+
+    public void setRegisterEnabled(Boolean registerEnabled) {
+        this.registerEnabled = registerEnabled;
+    }
+
+    public String getRegisterUrl() {
+        return registerUrl;
+    }
+
+    public void setRegisterUrl(String registerUrl) {
+        this.registerUrl = registerUrl;
+    }
 }

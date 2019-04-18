@@ -30,6 +30,8 @@ public class UserRoleDTO {
     @ApiModelProperty(value = "项目名称")
     private String projName;
 
+    private Long organizationId;
+
     @JsonIgnore
     private String roleNames;
 
@@ -104,5 +106,13 @@ public class UserRoleDTO {
 
     public void setRoleNames(String roleNames) {
         this.roleNames = roleNames;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

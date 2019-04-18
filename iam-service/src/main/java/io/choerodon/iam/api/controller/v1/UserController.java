@@ -348,10 +348,9 @@ public class UserController extends BaseController {
     @CustomPageRequest
     @ApiOperation("根据id分页获取用户所有角色列表")
     @GetMapping("/{id}/roles")
-    public ResponseEntity<Page<UserRoleDTO>> pagingQueryRole(
-            @ApiIgnore PageRequest pageRequest,
-            @PathVariable("id") Long id,
-            @RequestParam(required = false) String params) {
+    public ResponseEntity<Page<UserRoleDTO>> pagingQueryRole(@ApiIgnore PageRequest pageRequest,
+                                                             @PathVariable("id") Long id,
+                                                             @RequestParam(required = false) String params) {
         return new ResponseEntity<>(userService.pagingQueryRole(pageRequest, params, id), HttpStatus.OK);
     }
 

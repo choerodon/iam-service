@@ -74,10 +74,10 @@ public class ExcelImportUserTask {
     public void importUsers(Long userId, List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
-        List<UserDO> validateUsers = new CopyOnWriteArrayList<>();
-        List<ErrorUserDTO> errorUsers = new CopyOnWriteArrayList<>();
+        List<UserDO> validateUsers = new ArrayList<>();
+        List<ErrorUserDTO> errorUsers = new ArrayList<>();
         long begin = System.currentTimeMillis();
-        users.parallelStream().forEach(u -> {
+        users.forEach(u -> {
                     u.setOrganizationId(organizationId);
                     processUsers(u, errorUsers, validateUsers);
                 }
@@ -509,17 +509,19 @@ public class ExcelImportUserTask {
         String phone = user.getPhone();
         String password = user.getPassword();
         Boolean ok = false;
+        if (StringUtils.isEmpty(realName)) {
+            realName = loginName;
+            user.setRealName(loginName);
+        }
         if (StringUtils.isEmpty(loginName) || StringUtils.isEmpty(email)) {
             //乐观认为大多数是正确的，所以new 对象放到了if 里面
             errorUsers.add(getErrorUserDTO(user, "登录名或邮箱为空"));
         } else if (!Pattern.matches(UserDTO.LOGIN_NAME_REG, loginName)) {
-            errorUsers.add(getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-128位之间"));
+            errorUsers.add(getErrorUserDTO(user, "登录名只能使用字母和数字，长度在1-32位之间"));
+        } else if (loginName.length() > 32 || realName.length() > 32) {
+            errorUsers.add(getErrorUserDTO(user, "登录名或用户名超过32位"));
         } else if (!Pattern.matches(UserDTO.EMAIL_REG, email)) {
             errorUsers.add(getErrorUserDTO(user, "非法的邮箱格式"));
-        } else if (StringUtils.isEmpty(realName)) {
-            errorUsers.add(getErrorUserDTO(user, "用户名为空"));
-        } else if (realName.length() > 32) {
-            errorUsers.add(getErrorUserDTO(user, "用户名超过32位"));
         } else if (!StringUtils.isEmpty(phone) && !Pattern.matches(UserDTO.PHONE_REG, phone)) {
             errorUsers.add(getErrorUserDTO(user, "手机号格式不正确"));
         } else if (password != null && !userPasswordValidator.validate(password, user.getOrganizationId(), false)) {

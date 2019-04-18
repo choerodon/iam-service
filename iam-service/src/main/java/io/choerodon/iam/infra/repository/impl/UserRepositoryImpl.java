@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.repository.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -31,9 +32,11 @@ public class UserRepositoryImpl implements UserRepository {
 
     public static final String ERROR_USER_UPDATE = "error.user.update";
     private UserMapper mapper;
+    private ProjectMapper projectMapper;
 
-    public UserRepositoryImpl(UserMapper mapper) {
+    public UserRepositoryImpl(UserMapper mapper,ProjectMapper projectMapper) {
         this.mapper = mapper;
+        this.projectMapper = projectMapper;
     }
 
     @Override
@@ -336,6 +339,9 @@ public class UserRepositoryImpl implements UserRepository {
                 list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], roleEnabled));
             }
             i.setRoles(list);
+            if(ResourceLevel.PROJECT.value().equals(i.getLevel())) {
+                i.setOrganizationId(projectMapper.selectByPrimaryKey(i.getId()).getOrganizationId());
+            }
         });
         return page;
     }
