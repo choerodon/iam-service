@@ -14,4 +14,20 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role_permission.groovy') {
         }
         addUniqueConstraint(tableName: 'IAM_ROLE_PERMISSION', columnNames: 'ROLE_ID, PERMISSION_ID', constraintName: 'UK_IAM_ROLE_PERM_U1')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-16-role-permission-upgrade') {
+        addColumn(tableName: 'IAM_ROLE_PERMISSION') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }

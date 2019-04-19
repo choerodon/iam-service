@@ -65,4 +65,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
     changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
         renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '角色级别', tableName: 'IAM_ROLE')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-16-role-upgrade') {
+        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "RESOURCE_LEVEL", oldColumnName: "FD_LEVEL", remarks: '角色层级site/organization/project', tableName: 'IAM_ROLE')
+        dropColumn(tableName: 'IAM_ROLE', ColumnName: 'IS_ASSIGNABLE')
+    }
+
 }

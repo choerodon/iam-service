@@ -13,6 +13,7 @@ import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
 import io.choerodon.iam.infra.dataobject.*;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -254,20 +255,12 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     private void validate(RoleE role, Long permissionId) {
         checkIdNotNull(permissionId);
-        PermissionE permission = permissionRepository.selectByPrimaryKey(permissionId);
-        checkPermission(permissionId, permission);
-        checkLevel(permission, role.getLevel());
-    }
-
-    private void checkLevel(PermissionE permission, String roleLevel) {
-        if (!permission.getLevel().equals(roleLevel)) {
-            throw new CommonException("error.role.level.not.equals.to.permission.level");
-        }
-    }
-
-    private void checkPermission(Long permissionId, PermissionE permission) {
+        PermissionDTO permission = permissionRepository.selectByPrimaryKey(permissionId);
         if (permission == null) {
             throw new CommonException("error.permission.not.exist", permissionId);
+        }
+        if (!permission.getResourceLevel().equals(role.getLevel())) {
+            throw new CommonException("error.role.level.not.equals.to.permission.level");
         }
     }
 

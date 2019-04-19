@@ -1,17 +1,14 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.PermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
-import io.choerodon.iam.infra.dataobject.PermissionDO;
 import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.iam.infra.mapper.PermissionMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import org.springframework.stereotype.Component;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Set;
@@ -29,13 +26,15 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public List<PermissionDO> select(PermissionDO permissionDO) {
-        return permissionMapper.select(permissionDO);
+    public List<PermissionDTO> select(PermissionDTO permissionDTO) {
+        return permissionMapper.select(permissionDTO);
     }
 
     @Override
     public boolean existByCode(String code) {
-        return permissionMapper.selectOne(new PermissionDO(code)) != null;
+        PermissionDTO example = new PermissionDTO();
+        example.setCode(code);
+        return permissionMapper.selectOne(example) != null;
     }
 
     @Override
@@ -44,46 +43,41 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, PermissionDO permissionDO, String param) {
-        return
-                PageHelper.doPageAndSort(
-                        pageRequest, () -> permissionMapper.fulltextSearch(permissionDO, param));
+    public Page<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> permissionMapper.fuzzyQuery(permissionDTO, param));
     }
 
     @Override
-    public List<PermissionDO> selectByRoleId(Long roleId) {
+    public List<PermissionDTO> selectByRoleId(Long roleId) {
         return permissionMapper.selectByRoleId(roleId, null);
     }
 
     @Override
-    public PermissionE selectByCode(String code) {
-        PermissionDO permissionDO = new PermissionDO();
-        permissionDO.setCode(code);
-        return ConvertHelper.convert(permissionMapper.selectOne(permissionDO), PermissionE.class);
+    public PermissionDTO selectByCode(String code) {
+        PermissionDTO example = new PermissionDTO();
+        example.setCode(code);
+        return permissionMapper.selectOne(example);
     }
 
     @Override
-    public PermissionE insertSelective(PermissionE permissionE) {
-        PermissionDO permissionDO = ConvertHelper.convert(permissionE, PermissionDO.class);
-        if (permissionMapper.insertSelective(permissionDO) != 1) {
+    public PermissionDTO insertSelective(PermissionDTO permissionDTO) {
+        if (permissionMapper.insertSelective(permissionDTO) != 1) {
             throw new CommonException("error.permission.insert");
         }
-        return ConvertHelper.convert(permissionMapper.selectByPrimaryKey(permissionDO.getId()), PermissionE.class);
+        return permissionMapper.selectByPrimaryKey(permissionDTO);
     }
 
     @Override
-    public PermissionE updateSelective(PermissionE permissionE) {
-        PermissionDO permissionDO = ConvertHelper.convert(permissionE, PermissionDO.class);
-        if (permissionMapper.updateByPrimaryKeySelective(permissionDO) != 1) {
+    public PermissionDTO updateSelective(PermissionDTO permissionDTO) {
+        if (permissionMapper.updateByPrimaryKeySelective(permissionDTO) != 1) {
             throw new CommonException("error.permission.update");
         }
-        permissionDO = permissionMapper.selectByPrimaryKey(permissionDO.getId());
-        return ConvertHelper.convert(permissionMapper.selectByPrimaryKey(permissionDO.getId()), PermissionE.class);
+        return permissionMapper.selectByPrimaryKey(permissionDTO.getId());
     }
 
     @Override
-    public PermissionE selectByPrimaryKey(Object key) {
-        return ConvertHelper.convert(permissionMapper.selectByPrimaryKey(key), PermissionE.class);
+    public PermissionDTO selectByPrimaryKey(Object key) {
+        return permissionMapper.selectByPrimaryKey(key);
     }
 
     @Override
@@ -92,23 +86,23 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public List<PermissionE> query(String level, String serviceName, String code) {
-        PermissionDO permissionDO = new PermissionDO();
-        permissionDO.setLevel(level);
-        permissionDO.setServiceName(serviceName);
-        permissionDO.setCode(code);
-        Sort sort = PageHelper.getLocalSort();
-        return ConvertHelper.convertList(PageHelper.doSort(sort, () -> permissionMapper.select(permissionDO)), PermissionE.class);
+    public List<PermissionDTO> query(String level, String serviceName, String code) {
+        Example example = new Example(PermissionDTO.class);
+        example.setOrderByClause("code asc");
+        example.createCriteria()
+                .andEqualTo("resource_level", level)
+                .andEqualTo("service_code", serviceName)
+                .andEqualTo("code", code);
+        return permissionMapper.selectByExample(example);
     }
 
     @Override
-    public Page<PermissionDO> pagingQuery(PageRequest pageRequest, Long id, String params) {
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> permissionMapper.selectByRoleId(id, params));
+    public Page<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> permissionMapper.selectByRoleId(id, params));
     }
 
     @Override
-    public List<PermissionDO> selectErrorLevelPermissionByRole(RoleDO roleDO) {
+    public List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDO roleDO) {
         return permissionMapper.selectErrorLevelPermissionByRole(roleDO);
     }
 }
