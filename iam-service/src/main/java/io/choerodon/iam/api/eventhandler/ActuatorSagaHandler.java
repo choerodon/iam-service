@@ -1,4 +1,4 @@
-package io.choerodon.iam.eventhandler;
+package io.choerodon.iam.api.eventhandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.annotation.entity.PermissionDescription;
@@ -46,9 +46,10 @@ public class ActuatorSagaHandler {
         PermissionDO permission = new PermissionDO();
         permission.setCode(code);
         permission.setAction(action);
-        permission.setMethod(description.getMethod().name());
-        permission.setPath(description.getPath());
+        permission.setResource(resource);
         permission.setServiceName(service);
+        permission.setPath(description.getPath());
+        permission.setMethod(description.getMethod().name());
         PermissionEntity permissionEntity = description.getPermission();
         if (permissionEntity == null){
             return;
