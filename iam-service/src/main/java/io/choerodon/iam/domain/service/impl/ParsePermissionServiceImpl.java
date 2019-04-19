@@ -160,6 +160,35 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             }
         }
     }
+    @Override
+    public String processPermission(String[] roles, String path, String method, String description, PermissionData permission, String serviceName, String resourceCode, Map<String, RoleDO> initRoleMap){
+        String action = permission.getAction();
+        String code = serviceName + "." + resourceCode + "." + action;
+        PermissionE permissionE = permissionRepository.selectByCode(code);
+        if (permissionE == null) {
+            //插入操作
+            PermissionE newPermission =
+                    new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
+                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, null);
+            PermissionE returnPermission = permissionRepository.insertSelective(newPermission);
+            if (returnPermission != null) {
+                insertRolePermission(returnPermission, initRoleMap, roles);
+                logger.debug("###insert permission, {}", newPermission);
+            }
+        } else {
+            //更新操作
+            PermissionE newPermission =
+                    new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
+                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, permissionE.getObjectVersionNumber());
+            newPermission.setId(permissionE.getId());
+            if (!permissionE.equals(newPermission)) {
+                permissionRepository.updateSelective(newPermission);
+            }
+            updateRolePermission(newPermission, initRoleMap, roles);
+            logger.debug("###update permission, {}", newPermission);
+        }
+        return code;
+    }
 
     private String processPermission(SwaggerExtraData extraData, String path, Map.Entry<String, JsonNode> methodNode,
                                      String serviceName, String resourceCode, Map<String, RoleDO> initRoleMap) {
@@ -301,7 +330,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         return null;
     }
 
-    private Map<String, RoleDO> queryInitRoleByCode() {
+    @Override
+    public Map<String, RoleDO> queryInitRoleByCode() {
         Map<String, RoleDO> map = new HashMap<>(10);
         String[] codes = InitRoleCode.values();
         for (String code : codes) {

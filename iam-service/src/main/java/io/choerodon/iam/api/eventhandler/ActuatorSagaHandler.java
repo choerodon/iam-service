@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.iam.infra.dataobject.PermissionDO;
-import io.choerodon.iam.infra.mapper.PermissionMapper;
+import io.choerodon.core.swagger.PermissionData;
+import io.choerodon.iam.domain.service.ParsePermissionService;
+import io.choerodon.iam.infra.dataobject.RoleDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,7 @@ public class ActuatorSagaHandler {
     private static final String PERMISSION_REFRESH_TASK_SAGA_CODE = "iam-permission-task-refresh";
 
     @Autowired
-    private PermissionMapper permissionMapper;
+    private ParsePermissionService parsePermissionService;
 
     @SagaTask(code = PERMISSION_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE,
             seq = 1, description = "刷新权限表数据")
@@ -30,41 +31,29 @@ public class ActuatorSagaHandler {
         Map permissionNode = (Map) actuator.get("permission");
         String permissionJson = OBJECT_MAPPER.writeValueAsString(permissionNode);
         Map <String, PermissionDescription> descriptions = OBJECT_MAPPER.readValue(permissionJson, OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, PermissionDescription.class));
+        Map<String, RoleDO> initRoleMap = parsePermissionService.queryInitRoleByCode();
         for (Map.Entry<String, PermissionDescription> entry: descriptions.entrySet()){
-            processDescription(service, entry.getKey(), entry.getValue());
+            processDescription(service, entry.getKey(), entry.getValue(), initRoleMap);
         }
     }
 
-    private void processDescription(String service, String key, PermissionDescription description){
+    private void processDescription(String service, String key, PermissionDescription description, Map<String, RoleDO> initRoleMap){
         String[] names = key.split("\\.");
         String controllerClassName = names[names.length - 2];
         String action = names[names.length - 1];
         String resource = camelToHyphenLine(controllerClassName).replace("-controller", "");
-        String code = makeCode(service, resource, action);
-        PermissionDO example = new PermissionDO();
-        example.setCode(code);
-        PermissionDO permission = new PermissionDO();
-        permission.setCode(code);
-        permission.setAction(action);
-        permission.setResource(resource);
-        permission.setServiceName(service);
-        permission.setPath(description.getPath());
-        permission.setMethod(description.getMethod().name());
         PermissionEntity permissionEntity = description.getPermission();
         if (permissionEntity == null){
             return;
         }
-        permission.setLevel(permissionEntity.getType());
-        permission.setLoginAccess(permissionEntity.isPermissionLogin());
-        permission.setPublicAccess(permissionEntity.isPermissionPublic());
-        permission.setWithin(permissionEntity.isPermissionWithin());
-        example = permissionMapper.selectOne(example);
-        if(example != null) {
-            permission.setId(example.getId());
-            permissionMapper.updateByPrimaryKey(permission);
-        } else {
-            permissionMapper.insert(permission);
-        }
+        PermissionData permissionData = new PermissionData();
+        permissionData.setAction(action);
+        permissionData.setPermissionLevel(permissionEntity.getType());
+        permissionData.setPermissionLogin(permissionEntity.isPermissionLogin());
+        permissionData.setPermissionPublic(permissionEntity.isPermissionPublic());
+        permissionData.setPermissionWithin(permissionEntity.isPermissionWithin());
+        permissionData.setRoles(permissionEntity.getRoles());
+        parsePermissionService.processPermission(permissionEntity.getRoles(), action, description.getMethod().name(), null, permissionData, service, resource, initRoleMap);
     }
 
     /**
@@ -91,13 +80,5 @@ public class ActuatorSagaHandler {
             }
         }
         return sb.toString();
-    }
-
-    private static String makeCode(String service, String resource, String action){
-        String code = resource + "." + action;
-        if (service != null){
-            code = service + "." + code;
-        }
-        return code;
     }
 }
