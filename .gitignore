@@ -31,7 +31,7 @@ rebel.xml
 rebel-remote.xml
 
 /temp
-src/main/resources/application-default.yml
+application-default.yml
 
 init-database.sh
 
