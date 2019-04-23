@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.iam.infra.dto.LdapDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,18 +18,13 @@ import org.springframework.stereotype.Component;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.ldap.DirectoryType;
-import io.choerodon.iam.api.dto.LdapDTO;
-import io.choerodon.iam.api.dto.OrganizationDTO;
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
 import io.choerodon.iam.api.dto.payload.OrganizationRegisterEventPayload;
 import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
 
 
 /**
@@ -101,15 +100,15 @@ public class OrganizationListener {
                 mapper.readValue(message, OrganizationRegisterEventPayload.class);
         LOGGER.info("Iam receives Saga event '{}' and triggers task: {},payload: {}",
                 ORG_REGISTER, TASK_ORG_REGISTER_INIT_PROJ, organizationRegisterEventPayload);
-        ProjectE projectE = new ProjectE();
-        projectE.setName("公司内销平台");
-        projectE.setType("type/develop-platform");
-        projectE.setOrganizationId(organizationRegisterEventPayload.getOrganization().getId());
-        projectE.setCode(randomProjCode());
-        projectE.setEnabled(true);
-        projectE = projectRepository.create(projectE);
+        ProjectDTO dto = new ProjectDTO();
+        dto.setName("公司内销平台");
+        dto.setType("type/develop-platform");
+        dto.setOrganizationId(organizationRegisterEventPayload.getOrganization().getId());
+        dto.setCode(randomProjCode());
+        dto.setEnabled(true);
+        dto = projectRepository.create(dto);
         organizationRegisterEventPayload.setProject(
-                new OrganizationRegisterEventPayload.Project(projectE.getId(), projectE.getCode(), projectE.getName()));
+                new OrganizationRegisterEventPayload.Project(dto.getId(), dto.getCode(), dto.getName()));
         return organizationRegisterEventPayload;
     }
 
@@ -172,9 +171,9 @@ public class OrganizationListener {
         boolean flag = false;
         while (!flag) {
             projectCode = "proj-" + generateString(false, 8);
-            ProjectDO projectDO = new ProjectDO();
-            projectDO.setCode(projectCode);
-            ProjectDO projByCode = projectRepository.selectOne(projectDO);
+            ProjectDTO projectDTO = new ProjectDTO();
+            projectDTO.setCode(projectCode);
+            ProjectDTO projByCode = projectRepository.selectOne(projectDTO);
             if (projByCode == null) {
                 flag = true;
             }

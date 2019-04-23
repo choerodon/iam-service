@@ -2,25 +2,20 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.dto.ClientDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ClientCreateDTO;
-import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.validator.ClientValidator;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -62,7 +57,7 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
-    public ResponseEntity<ClientCreateDTO> createInfo(@PathVariable("organization_id") Long organizationId) {
+    public ResponseEntity<ClientDTO> createInfo(@PathVariable("organization_id") Long organizationId) {
         return new ResponseEntity<>(clientService.getDefaultCreatedata(organizationId), HttpStatus.OK);
     }
 
@@ -141,16 +136,15 @@ public class ClientController extends BaseController {
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<ClientDTO>> list(@PathVariable("organization_id") Long organizationId,
-                                                @ApiIgnore
-                                                @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                        PageRequest pageRequest,
+                                                @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                 @RequestParam(required = false) String name,
                                                 @RequestParam(required = false) String[] params) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);
 
-        return new ResponseEntity<>(clientService.list(clientDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(clientService.list(clientDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**

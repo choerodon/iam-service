@@ -4,7 +4,6 @@ import io.choerodon.core.excel.ExcelExportHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.ErrorUserDTO;
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
@@ -15,10 +14,10 @@ import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
@@ -71,10 +70,10 @@ public class ExcelImportUserTask {
     }
 
     @Async("excel-executor")
-    public void importUsers(Long userId, List<UserDO> users, Long organizationId, UploadHistoryDO uploadHistory, FinishFallback fallback) {
+    public void importUsers(Long userId, List<UserDTO> users, Long organizationId, UploadHistoryDTO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
         //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
-        List<UserDO> validateUsers = new ArrayList<>();
+        List<UserDTO> validateUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
         long begin = System.currentTimeMillis();
         users.forEach(u -> {
@@ -83,11 +82,11 @@ public class ExcelImportUserTask {
                 }
         );
         //根据loginName和email去重，返回
-        List<UserDO> distinctUsers = distinctUsers(validateUsers, errorUsers);
-        List<UserDO> insertUsers = compareWithDb(distinctUsers, errorUsers);
+        List<UserDTO> distinctUsers = distinctUsers(validateUsers, errorUsers);
+        List<UserDTO> insertUsers = compareWithDb(distinctUsers, errorUsers);
         long end = System.currentTimeMillis();
         logger.info("process user for {} millisecond", (end - begin));
-        List<List<UserDO>> list = CollectionUtils.subList(insertUsers, 1000);
+        List<List<UserDTO>> list = CollectionUtils.subList(insertUsers, 1000);
         list.forEach(l -> {
             if (!l.isEmpty()) {
                 organizationUserService.batchCreateUsers(l);
@@ -112,33 +111,33 @@ public class ExcelImportUserTask {
         logger.info("batch import user send station letter.");
     }
 
-    private void uploadAndFallback(UploadHistoryDO uploadHistoryDO, FinishFallback fallback, List<ErrorUserDTO> errorUsers) {
+    private void uploadAndFallback(UploadHistoryDTO uploadHistoryDTO, FinishFallback fallback, List<ErrorUserDTO> errorUsers) {
         String url = "";
-        if (uploadHistoryDO.getFailedCount() > 0) {
+        if (uploadHistoryDTO.getFailedCount() > 0) {
             //失败的用户导出到excel
             try {
                 long begin = System.currentTimeMillis();
                 url = exportAndUpload(errorUsers);
                 long end = System.currentTimeMillis();
                 logger.info("export and upload file for {} millisecond", (end - begin));
-                uploadHistoryDO.setFinished(true);
+                uploadHistoryDTO.setFinished(true);
             } catch (CommonException e) {
-                uploadHistoryDO.setFinished(false);
+                uploadHistoryDTO.setFinished(false);
                 throw e;
             } finally {
-                uploadHistoryDO.setUrl(url);
-                fallback.callback(uploadHistoryDO);
+                uploadHistoryDTO.setUrl(url);
+                fallback.callback(uploadHistoryDTO);
             }
         } else {
             //插入uploadHistory
-            uploadHistoryDO.setUrl(url);
-            uploadHistoryDO.setFinished(true);
-            fallback.callback(uploadHistoryDO);
+            uploadHistoryDTO.setUrl(url);
+            uploadHistoryDTO.setFinished(true);
+            fallback.callback(uploadHistoryDTO);
         }
     }
 
     @Async("excel-executor")
-    public void importMemberRole(List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDO uploadHistory,
+    public void importMemberRole(List<ExcelMemberRoleDTO> memberRoles, UploadHistoryDTO uploadHistory,
                                  FinishFallback finishFallback) {
         Integer total = memberRoles.size();
         logger.info("### begin to import member-role from excel, total size : {}", total);
@@ -162,24 +161,24 @@ public class ExcelImportUserTask {
             String loginName = emr.getLoginName().trim();
             String code = emr.getRoleCode().trim();
             //检查loginName是否存在
-            UserDO userDO = getUser(errorMemberRoles, emr, loginName);
-            if (userDO == null) {
+            UserDTO userDTO = getUser(errorMemberRoles, emr, loginName);
+            if (userDTO == null) {
                 return;
             }
-            Long userId = userDO.getId();
+            Long userId = userDTO.getId();
             //检查role code是否存在
-            RoleDO role = getRole(errorMemberRoles, emr, code);
+            RoleDTO role = getRole(errorMemberRoles, emr, code);
             if (role == null) {
                 return;
             }
-            if (!uploadHistory.getSourceType().equals(role.getLevel())) {
+            if (!uploadHistory.getSourceType().equals(role.getResourceLevel())) {
                 emr.setCause("导入角色层级与导入所在界面的层级不匹配");
                 errorMemberRoles.add(emr);
                 return;
             }
             Long roleId = role.getId();
             //检查memberRole是否存在
-            MemberRoleDO memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
+            MemberRoleDTO memberRole = getMemberRole(uploadHistory.getSourceId(), uploadHistory.getSourceType(), errorMemberRoles, emr, userId, roleId);
             if (memberRole == null) {
                 return;
             }
@@ -208,8 +207,8 @@ public class ExcelImportUserTask {
         }
     }
 
-    private MemberRoleDO getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
-        MemberRoleDO memberRole = new MemberRoleDO();
+    private MemberRoleDTO getMemberRole(Long sourceId, String sourceType, List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, Long userId, Long roleId) {
+        MemberRoleDTO memberRole = new MemberRoleDTO();
         memberRole.setSourceType(sourceType);
         memberRole.setSourceId(sourceId);
         memberRole.setMemberType("user");
@@ -223,10 +222,10 @@ public class ExcelImportUserTask {
         return memberRole;
     }
 
-    private RoleDO getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setCode(code);
-        RoleDO role = roleRepository.selectOne(roleDO);
+    private RoleDTO getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code) {
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setCode(code);
+        RoleDTO role = roleRepository.selectOne(roleDTO);
         if (role == null) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
@@ -235,16 +234,16 @@ public class ExcelImportUserTask {
         return role;
     }
 
-    private UserDO getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
-        UserDO user = new UserDO();
+    private UserDTO getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
+        UserDTO user = new UserDTO();
         user.setLoginName(loginName);
-        UserDO userDO = userRepository.selectOne(user);
-        if (userDO == null) {
+        UserDTO userDTO = userRepository.selectOne(user);
+        if (userDTO == null) {
             emr.setCause("登录名不存在");
             errorMemberRoles.add(emr);
             return null;
         }
-        return userDO;
+        return userDTO;
     }
 
     /**
@@ -278,19 +277,19 @@ public class ExcelImportUserTask {
         return distinctList;
     }
 
-    private List<UserDO> compareWithDb(List<UserDO> validateUsers, List<ErrorUserDTO> errorUsers) {
-        List<UserDO> insertList = new ArrayList<>();
+    private List<UserDTO> compareWithDb(List<UserDTO> validateUsers, List<ErrorUserDTO> errorUsers) {
+        List<UserDTO> insertList = new ArrayList<>();
         if (!validateUsers.isEmpty()) {
-            Set<String> nameSet = validateUsers.stream().map(UserDO::getLoginName).collect(Collectors.toSet());
+            Set<String> nameSet = validateUsers.stream().map(UserDTO::getLoginName).collect(Collectors.toSet());
             //oracle In-list上限为1000，这里List size要小于1000
             List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
             Set<String> existedNames = new HashSet<>();
             subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
-            Set<String> emailSet = validateUsers.stream().map(UserDO::getEmail).collect(Collectors.toSet());
+            Set<String> emailSet = validateUsers.stream().map(UserDTO::getEmail).collect(Collectors.toSet());
             List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
             Set<String> existedEmails = new HashSet<>();
             subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
-            for (UserDO user : validateUsers) {
+            for (UserDTO user : validateUsers) {
                 boolean loginNameExisted = false;
                 boolean emailExisted = false;
                 if (existedNames.contains(user.getLoginName())) {
@@ -328,18 +327,18 @@ public class ExcelImportUserTask {
      * @param errorUsers
      * @return
      */
-    private List<UserDO> distinctUsers(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
-        List<UserDO> distinctNameAndEmail = distinctNameAndEmail(users, errorUsers);
-        Map<String, List<UserDO>> loginNameMap =
-                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDO::getLoginName));
-        Map<String, List<UserDO>> emailMap =
-                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDO::getEmail));
-        List<UserDO> distinct = new ArrayList<>();
+    private List<UserDTO> distinctUsers(List<UserDTO> users, List<ErrorUserDTO> errorUsers) {
+        List<UserDTO> distinctNameAndEmail = distinctNameAndEmail(users, errorUsers);
+        Map<String, List<UserDTO>> loginNameMap =
+                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDTO::getLoginName));
+        Map<String, List<UserDTO>> emailMap =
+                distinctNameAndEmail.stream().collect(Collectors.groupingBy(UserDTO::getEmail));
+        List<UserDTO> distinct = new ArrayList<>();
         //去除loginName和email与其他对象相同的情况
-        for (Map.Entry<String, List<UserDO>> entry : loginNameMap.entrySet()) {
-            List<UserDO> list = entry.getValue();
+        for (Map.Entry<String, List<UserDTO>> entry : loginNameMap.entrySet()) {
+            List<UserDTO> list = entry.getValue();
             if (list.size() > 1) {
-                for (UserDO user : list) {
+                for (UserDTO user : list) {
                     String email = user.getEmail();
                     if (emailMap.get(email).size() > 1) {
                         ErrorUserDTO dto = getErrorUserDTO(user, "Excel中存在重复的登录名和密码");
@@ -354,16 +353,16 @@ public class ExcelImportUserTask {
             }
         }
         //loginName去重
-        List<UserDO> distinctNameList = distinctLoginName(errorUsers, distinct);
+        List<UserDTO> distinctNameList = distinctLoginName(errorUsers, distinct);
         //email去重
         return distinctEmail(errorUsers, distinctNameList);
     }
 
-    private List<UserDO> distinctLoginName(List<ErrorUserDTO> errorUsers, List<UserDO> distinct) {
-        List<UserDO> distinctNameList = new ArrayList<>();
-        Map<String, List<UserDO>> loginNameMap = distinct.stream().collect(Collectors.groupingBy(UserDO::getLoginName));
-        for (Map.Entry<String, List<UserDO>> entry : loginNameMap.entrySet()) {
-            List<UserDO> list = entry.getValue();
+    private List<UserDTO> distinctLoginName(List<ErrorUserDTO> errorUsers, List<UserDTO> distinct) {
+        List<UserDTO> distinctNameList = new ArrayList<>();
+        Map<String, List<UserDTO>> loginNameMap = distinct.stream().collect(Collectors.groupingBy(UserDTO::getLoginName));
+        for (Map.Entry<String, List<UserDTO>> entry : loginNameMap.entrySet()) {
+            List<UserDTO> list = entry.getValue();
             distinctNameList.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
@@ -375,12 +374,12 @@ public class ExcelImportUserTask {
         return distinctNameList;
     }
 
-    private List<UserDO> distinctEmail(List<ErrorUserDTO> errorUsers, List<UserDO> distinctNameList) {
-        List<UserDO> returnList = new ArrayList<>();
-        Map<String, List<UserDO>> emailMap
-                = distinctNameList.stream().collect(Collectors.groupingBy(UserDO::getEmail));
-        for (Map.Entry<String, List<UserDO>> entry : emailMap.entrySet()) {
-            List<UserDO> list = entry.getValue();
+    private List<UserDTO> distinctEmail(List<ErrorUserDTO> errorUsers, List<UserDTO> distinctNameList) {
+        List<UserDTO> returnList = new ArrayList<>();
+        Map<String, List<UserDTO>> emailMap
+                = distinctNameList.stream().collect(Collectors.groupingBy(UserDTO::getEmail));
+        for (Map.Entry<String, List<UserDTO>> entry : emailMap.entrySet()) {
+            List<UserDTO> list = entry.getValue();
             returnList.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
@@ -399,17 +398,17 @@ public class ExcelImportUserTask {
      * @param errorUsers
      * @return
      */
-    private List<UserDO> distinctNameAndEmail(List<UserDO> users, List<ErrorUserDTO> errorUsers) {
-        List<UserDO> distinctNameAndEmail = new ArrayList<>();
-        Map<Map<String, String>, List<UserDO>> nameAndEmailMap =
+    private List<UserDTO> distinctNameAndEmail(List<UserDTO> users, List<ErrorUserDTO> errorUsers) {
+        List<UserDTO> distinctNameAndEmail = new ArrayList<>();
+        Map<Map<String, String>, List<UserDTO>> nameAndEmailMap =
                 users.stream().collect(Collectors.groupingBy(u -> {
                     Map<String, String> map = new HashMap<>();
                     map.put(u.getLoginName(), u.getEmail());
                     return map;
                 }));
         //去掉两个字段全重复的对象
-        for (Map.Entry<Map<String, String>, List<UserDO>> entry : nameAndEmailMap.entrySet()) {
-            List<UserDO> list = entry.getValue();
+        for (Map.Entry<Map<String, String>, List<UserDTO>> entry : nameAndEmailMap.entrySet()) {
+            List<UserDTO> list = entry.getValue();
             distinctNameAndEmail.add(list.get(0));
             if (list.size() > 1) {
                 for (int i = 1; i < list.size(); i++) {
@@ -478,7 +477,7 @@ public class ExcelImportUserTask {
         return upload(hssfWorkbook, "errorMemberRole.xls", "error-member-role");
     }
 
-    private void processUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> validateUsers) {
+    private void processUsers(UserDTO user, List<ErrorUserDTO> errorUsers, List<UserDTO> validateUsers) {
         //只有校验通过的用户才进行其他字段设置
         if (validateUsers(user, errorUsers, validateUsers)) {
             //excel中用户密码为空，设置默认密码为abcd1234
@@ -502,7 +501,7 @@ public class ExcelImportUserTask {
         }
     }
 
-    private Boolean validateUsers(UserDO user, List<ErrorUserDTO> errorUsers, List<UserDO> insertUsers) {
+    private Boolean validateUsers(UserDTO user, List<ErrorUserDTO> errorUsers, List<UserDTO> insertUsers) {
         String loginName = user.getLoginName();
         String email = user.getEmail();
         String realName = user.getRealName();
@@ -546,7 +545,7 @@ public class ExcelImportUserTask {
         return ok;
     }
 
-    private void setUserField(UserDO user) {
+    private void setUserField(UserDTO user) {
         user.setLoginName(user.getLoginName().trim());
         if (!StringUtils.isEmpty(user.getRealName())) {
             user.setRealName(user.getRealName().trim());
@@ -560,7 +559,7 @@ public class ExcelImportUserTask {
         }
     }
 
-    private ErrorUserDTO getErrorUserDTO(final UserDO user, final String cause) {
+    private ErrorUserDTO getErrorUserDTO(final UserDTO user, final String cause) {
         ErrorUserDTO errorUser = new ErrorUserDTO();
         BeanUtils.copyProperties(user, errorUser);
         errorUser.setCause(cause);
@@ -574,7 +573,7 @@ public class ExcelImportUserTask {
          *
          * @param uploadHistoryDO 历史纪录
          */
-        void callback(UploadHistoryDO uploadHistoryDO);
+        void callback(UploadHistoryDTO uploadHistoryDTO);
     }
 
 
@@ -588,15 +587,15 @@ public class ExcelImportUserTask {
         }
 
         @Override
-        public void callback(UploadHistoryDO uploadHistoryDO) {
-            UploadHistoryDO history = uploadHistoryRepository.selectByPrimaryKey(uploadHistoryDO.getId());
+        public void callback(UploadHistoryDTO uploadHistoryDTO) {
+            UploadHistoryDTO history = uploadHistoryRepository.selectByPrimaryKey(uploadHistoryDTO.getId());
             history.setEndTime(new Date((System.currentTimeMillis())));
-            history.setSuccessfulCount(uploadHistoryDO.getSuccessfulCount());
-            history.setFailedCount(uploadHistoryDO.getFailedCount());
-            history.setUrl(uploadHistoryDO.getUrl());
-            history.setFinished(uploadHistoryDO.getFinished());
-            history.setSourceId(uploadHistoryDO.getSourceId());
-            history.setSourceType(uploadHistoryDO.getSourceType());
+            history.setSuccessfulCount(uploadHistoryDTO.getSuccessfulCount());
+            history.setFailedCount(uploadHistoryDTO.getFailedCount());
+            history.setUrl(uploadHistoryDTO.getUrl());
+            history.setFinished(uploadHistoryDTO.getFinished());
+            history.setSourceId(uploadHistoryDTO.getSourceId());
+            history.setSourceType(uploadHistoryDTO.getSourceType());
             uploadHistoryRepository.updateByPrimaryKeySelective(history);
         }
     }

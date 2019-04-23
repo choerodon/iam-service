@@ -1,8 +1,7 @@
 package io.choerodon.iam.domain.service;
 
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.iam.domain.iam.entity.MemberRoleE;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
 
 import java.util.List;
 
@@ -12,11 +11,11 @@ import java.util.List;
  */
 public interface IRoleMemberService {
 
-    List<MemberRoleE> insertOrUpdateRolesOfUserByMemberId(
-            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType);
+    List<MemberRoleDTO> insertOrUpdateRolesOfUserByMemberId(
+            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType);
 
-    List<MemberRoleE> insertOrUpdateRolesOfClientByMemberId(
-            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleE> memberRoleEList, String sourceType);
+    List<MemberRoleDTO> insertOrUpdateRolesOfClientByMemberId(
+            Boolean isEdit, Long sourceId, Long memberId, List<MemberRoleDTO> memberRoles, String sourceType);
 
     void delete(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
@@ -28,5 +27,5 @@ public interface IRoleMemberService {
      */
     void deleteClientAndRole(RoleAssignmentDeleteDTO roleAssignmentDeleteDTO, String sourceType);
 
-    void insertAndSendEvent(MemberRoleDO memberRole, String loginName);
+    void insertAndSendEvent(MemberRoleDTO memberRole, String loginName);
 }

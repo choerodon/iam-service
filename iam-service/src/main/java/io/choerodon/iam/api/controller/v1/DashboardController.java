@@ -1,22 +1,19 @@
 package io.choerodon.iam.api.controller.v1;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.dto.DashboardDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -75,8 +72,8 @@ public class DashboardController extends BaseController {
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<DashboardDTO>> list(
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String level,
@@ -92,7 +89,7 @@ public class DashboardController extends BaseController {
         dashboardDTO.setLevel(level);
         dashboardDTO.setNamespace(nameSpace);
         dashboardDTO.setNeedRoles(needRoles);
-        return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(dashboardService.list(dashboardDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)

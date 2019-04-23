@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
+
 import java.util.List;
 
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
 
 /**
  * @author Eugen
@@ -23,7 +23,7 @@ public interface ProjectRelationshipRepository {
      * @param projectRelationshipDTO 项目组
      * @return
      */
-    ProjectRelationshipDO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO);
+    ProjectRelationshipDTO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * 删除一个group
@@ -38,7 +38,7 @@ public interface ProjectRelationshipRepository {
      * @param id 主键
      * @return
      */
-    ProjectRelationshipDO selectByPrimaryKey(Long id);
+    ProjectRelationshipDTO selectByPrimaryKey(Long id);
 
     /**
      * 更新项目群
@@ -46,7 +46,7 @@ public interface ProjectRelationshipRepository {
      * @param projectRelationshipDO
      * @return
      */
-    ProjectRelationshipDO update(ProjectRelationshipDO projectRelationshipDO);
+    ProjectRelationshipDTO update(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * selectOne
@@ -54,12 +54,12 @@ public interface ProjectRelationshipRepository {
      * @param projectRelationshipDO
      * @return
      */
-    ProjectRelationshipDO selectOne(ProjectRelationshipDO projectRelationshipDO);
+    ProjectRelationshipDTO selectOne(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * select
      * @param projectRelationshipDO
      * @return
      */
-    List<ProjectRelationshipDO> select(ProjectRelationshipDO projectRelationshipDO);
+    List<ProjectRelationshipDTO> select(ProjectRelationshipDTO projectRelationshipDTO);
 }

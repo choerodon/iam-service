@@ -1,35 +1,33 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
-import io.choerodon.iam.domain.oauth.entity.ClientE;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.ClientDTO;
 
 /**
  * @author wuguokai
  */
 public interface ClientRepository {
-    ClientE create(ClientE clientE);
+    ClientDTO create(ClientDTO clientDTO);
 
     Boolean delete(Long clientId);
 
-    ClientE query(Long clientId);
+    ClientDTO query(Long clientId);
 
-    ClientE queryByClientName(String clientName);
+    ClientDTO queryByClientName(String clientName);
 
-    ClientE update(Long clientId, ClientE clientE);
+    ClientDTO update(Long clientId, ClientDTO clientDTO);
 
-    Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String param);
+    Page<ClientDTO> pagingQuery(int page,int size, ClientDTO clientDTO, String param);
 
-    ClientDO selectOne(ClientDO clientDO);
+    ClientDTO selectOne(ClientDTO clientDTO);
 
     Integer selectClientCountFromMemberRoleByOptions(Long roleId, Long sourceId, String sourceType, ClientRoleSearchDTO clientRoleSearchDTO, String param);
 
-    Page<ClientDO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType);
+    Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType);
 
-    Page<SimplifiedClientDTO> pagingAllClientsByParams(PageRequest pageRequest, String params);
+    Page<SimplifiedClientDTO> pagingAllClientsByParams(int page,int size, String params);
 
 
 }

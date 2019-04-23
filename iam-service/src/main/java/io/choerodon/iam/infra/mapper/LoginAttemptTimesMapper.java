@@ -1,10 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.LoginAttemptTimesDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.LoginAttemptTimesDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author wuguokai
  */
-public interface LoginAttemptTimesMapper extends BaseMapper<LoginAttemptTimesDO> {
+public interface LoginAttemptTimesMapper extends Mapper<LoginAttemptTimesDTO> {
 }

@@ -1,9 +1,9 @@
 package io.choerodon.iam.infra.common.utils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.infra.dataobject.ApplicationDO;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.dto.ApplicationDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.ApplicationMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
@@ -27,36 +27,36 @@ public class AssertHelper {
     @Autowired
     private ApplicationMapper applicationMapper;
 
-    public OrganizationDO organizationNotExisted(Long id) {
-        OrganizationDO organizationDO = organizationMapper.selectByPrimaryKey(id);
-        if (ObjectUtils.isEmpty(organizationDO)) {
+    public OrganizationDTO organizationNotExisted(Long id) {
+        OrganizationDTO dto = organizationMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(dto)) {
             throw new CommonException("error.organization.notFound", id);
         }
-        return organizationDO;
+        return dto;
     }
 
-    public OrganizationDO organizationNotExisted(Long id, String message) {
-        OrganizationDO organizationDO = organizationMapper.selectByPrimaryKey(id);
-        if (ObjectUtils.isEmpty(organizationDO)) {
+    public OrganizationDTO organizationNotExisted(Long id, String message) {
+        OrganizationDTO dto = organizationMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(dto)) {
             throw new CommonException(message, id);
         }
-        return organizationDO;
+        return dto;
     }
 
-    public ProjectDO projectNotExisted(Long id) {
-        ProjectDO projectDO = projectMapper.selectByPrimaryKey(id);
-        if (ObjectUtils.isEmpty(projectDO)) {
+    public ProjectDTO projectNotExisted(Long id) {
+        ProjectDTO dto = projectMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(dto)) {
             throw new CommonException("error.project.not.exist", id);
         }
-        return projectDO;
+        return dto;
     }
 
-    public ProjectDO projectNotExisted(Long id, String message) {
-        ProjectDO projectDO = projectMapper.selectByPrimaryKey(id);
+    public ProjectDTO projectNotExisted(Long id, String message) {
+        ProjectDTO dto = projectMapper.selectByPrimaryKey(id);
         if (ObjectUtils.isEmpty(projectMapper.selectByPrimaryKey(id))) {
             throw new CommonException(message, id);
         }
-        return projectDO;
+        return dto;
     }
 
     public void objectVersionNumberNotNull(Long objectVersionNumber){
@@ -65,19 +65,19 @@ public class AssertHelper {
         }
     }
 
-    public ApplicationDO applicationNotExisted(Long id) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(id);
-        if (ObjectUtils.isEmpty(applicationDO)) {
+    public ApplicationDTO applicationNotExisted(Long id) {
+        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(applicationDTO)) {
             throw new CommonException("error.application.not.exist");
         }
-        return applicationDO;
+        return applicationDTO;
     }
 
-    public ApplicationDO applicationNotExisted(Long id, String message) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(id);
-        if (ObjectUtils.isEmpty(applicationDO)) {
+    public ApplicationDTO applicationNotExisted(Long id, String message) {
+        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(applicationDTO)) {
             throw new CommonException(message);
         }
-        return applicationDO;
+        return applicationDTO;
     }
 }

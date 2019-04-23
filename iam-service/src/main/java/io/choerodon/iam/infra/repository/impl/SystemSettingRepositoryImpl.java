@@ -1,11 +1,9 @@
 package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
-import io.choerodon.iam.infra.dataobject.SystemSettingDO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.choerodon.iam.infra.mapper.SystemSettingMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,49 +24,43 @@ public class SystemSettingRepositoryImpl implements SystemSettingRepository {
 
 
     @Override
-    public SystemSettingDTO addSetting(SystemSettingDO systemSettingDO) {
-        List<SystemSettingDO> records = queryAll();
+    public SystemSettingDTO addSetting(SystemSettingDTO systemSettingDTO) {
+        List<SystemSettingDTO> records = queryAll();
         if (!records.isEmpty()) {
             throw new CommonException("error.setting.already.one");
         }
-        if (systemSettingMapper.insertSelective(systemSettingDO) != 1) {
+        if (systemSettingMapper.insertSelective(systemSettingDTO) != 1) {
             throw new CommonException("error.setting.insert.failed");
         }
-        return convert(systemSettingMapper.selectByPrimaryKey(systemSettingDO.getId()));
+        return systemSettingMapper.selectByPrimaryKey(systemSettingDTO.getId());
     }
 
     @Override
-    public SystemSettingDTO updateSetting(SystemSettingDO systemSettingDO) {
-        List<SystemSettingDO> records = queryAll();
+    public SystemSettingDTO updateSetting(SystemSettingDTO systemSettingDTO) {
+        List<SystemSettingDTO> records = queryAll();
         if (records.isEmpty()) {
             throw new CommonException("error.setting.update.invalid");
         }
-        systemSettingDO.setId(records.get(0).getId());
-        systemSettingMapper.updateByPrimaryKeySelective(systemSettingDO);
-        return convert(systemSettingMapper.selectByPrimaryKey(systemSettingDO.getId()));
+        systemSettingDTO.setId(records.get(0).getId());
+        systemSettingMapper.updateByPrimaryKeySelective(systemSettingDTO);
+        return systemSettingMapper.selectByPrimaryKey(systemSettingDTO.getId());
     }
 
     @Override
     public void resetSetting() {
-        List<SystemSettingDO> records = systemSettingMapper.selectAll();
-        for (SystemSettingDO domain : records) {
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        for (SystemSettingDTO domain : records) {
             systemSettingMapper.deleteByPrimaryKey(domain.getId());
         }
     }
 
     @Override
     public SystemSettingDTO getSetting() {
-        List<SystemSettingDO> records = queryAll();
-        return records.isEmpty() ? null : convert(records.get(0));
+        List<SystemSettingDTO> records = queryAll();
+        return records.isEmpty() ? null : records.get(0);
     }
 
-    private List<SystemSettingDO> queryAll() {
+    private List<SystemSettingDTO> queryAll() {
         return systemSettingMapper.selectAll();
-    }
-
-    private SystemSettingDTO convert(SystemSettingDO record) {
-        SystemSettingDTO dto = new SystemSettingDTO();
-        BeanUtils.copyProperties(record, dto);
-        return dto;
     }
 }

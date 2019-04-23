@@ -1,9 +1,11 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.*;
-import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import com.github.pagehelper.Page;
+import io.choerodon.iam.api.dto.LdapAccountDTO;
+import io.choerodon.iam.api.dto.LdapConnectionDTO;
+import io.choerodon.iam.infra.dto.LdapDTO;
+import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
+import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 
 /**
  * @author wuguokai
@@ -34,7 +36,7 @@ public interface LdapService {
      */
     void syncLdapUser(Long organizationId, Long id);
 
-    LdapDO validateLdap(Long organizationId, Long id);
+    LdapDTO validateLdap(Long organizationId, Long id);
 
     /**
      * 根据ldap id 查询最新的一条记录
@@ -56,7 +58,7 @@ public interface LdapService {
      * @param ldapId
      * @return
      */
-    Page<LdapHistoryDTO> pagingQueryHistories(PageRequest pageRequest, Long ldapId);
+    Page<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId);
 
-    Page<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long id, LdapErrorUserDTO ldapErrorUserDTO);
+    Page<LdapErrorUserDTO> pagingQueryErrorUsers(int page,int size, Long id, LdapErrorUserDTO ldapErrorUserDTO);
 }

@@ -1,10 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.ApplicationDTO;
-import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
+import com.github.pagehelper.Page;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.ApplicationDTO;
+import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 
 import java.util.List;
 
@@ -37,7 +36,7 @@ public interface ApplicationService {
      * @param applicationSearchDTO
      * @return
      */
-    Page<ApplicationDTO> pagingQuery(PageRequest pageRequest, ApplicationSearchDTO applicationSearchDTO);
+    Page<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO);
 
     /**
      * 启用
@@ -84,7 +83,7 @@ public interface ApplicationService {
      * @param id
      * @return
      */
-    List<ApplicationExplorationWithAppDTO> queryDescendant(Long id);
+    List<ApplicationExplorationDTO> queryDescendant(Long id);
 
     /**
      * 根据组合应用id查询下面所有的普通应用{@link io.choerodon.iam.infra.enums.ApplicationCategory#APPLICATION}
@@ -92,7 +91,7 @@ public interface ApplicationService {
      * @param id
      * @return
      */
-    Page<ApplicationDTO> queryApplicationList(PageRequest pageRequest, Long id, String name, String code);
+    Page<ApplicationDTO> queryApplicationList(int page, int size, Long id, String name, String code);
 
     /**
      * 查询可以向指定组合应用添加的后代，判别标准是不构成环
@@ -105,6 +104,7 @@ public interface ApplicationService {
 
     /**
      * 根据id查询应用详情
+     *
      * @param id
      * @return
      */

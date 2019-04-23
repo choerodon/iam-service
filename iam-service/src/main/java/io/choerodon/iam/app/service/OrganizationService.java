@@ -3,11 +3,10 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.OrganizationDTO;
+import com.github.pagehelper.Page;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.api.dto.UserDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 /**
  * @author wuguokai
@@ -20,7 +19,7 @@ public interface OrganizationService {
 
     OrganizationDTO queryOrganizationWithRoleById(Long organizationId);
 
-    Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param);
+    Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page,int size, String param);
 
     OrganizationDTO enableOrganization(Long organizationId, Long userId);
 
@@ -29,7 +28,7 @@ public interface OrganizationService {
     void check(OrganizationDTO organization);
 
     Page<UserDTO> pagingQueryUsersInOrganization(Long organizationId,
-                                                 Long userId, String email, PageRequest pageRequest, String param);
+                                                 Long userId, String email, int page, int size, String param);
 
     List<OrganizationDTO> queryByIds(Set<Long> ids);
 
@@ -38,6 +37,6 @@ public interface OrganizationService {
      *
      * @return list
      */
-    List<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest);
+    Page<OrganizationSimplifyDTO> getAllOrgs(int page, int size);
 
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LabelMapper">
 
-    <resultMap id="labelDO" type="io.choerodon.iam.infra.dataobject.LabelDO">
+    <resultMap id="labelDO" type="io.choerodon.iam.infra.dto.LabelDTO">
         <id property="id" column="id"/>
         <result property="level" column="FD_LEVEL"/>
     </resultMap>

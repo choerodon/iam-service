@@ -3,7 +3,7 @@ package io.choerodon.iam.infra.repository.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.domain.repository.BookMarkRepository;
-import io.choerodon.iam.infra.dataobject.BookMarkDO;
+import io.choerodon.iam.infra.dto.BookMarkDTO;
 import io.choerodon.iam.infra.mapper.BookMarkMapper;
 import org.springframework.stereotype.Component;
 
@@ -21,26 +21,26 @@ public class BookMarkRepositoryImpl implements BookMarkRepository {
     }
 
     @Override
-    public BookMarkDO create(BookMarkDO bookMarkDO) {
-        bookMarkMapper.insert(bookMarkDO);
-        return bookMarkDO;
+    public BookMarkDTO create(BookMarkDTO bookMarkDTO) {
+        bookMarkMapper.insert(bookMarkDTO);
+        return bookMarkDTO;
     }
 
     @Override
-    public BookMarkDO update(BookMarkDO bookMarkDO) {
-        validatorCurrentUser(bookMarkDO.getId());
-        bookMarkDO.setUserId(DetailsHelper.getUserDetails().getUserId());
-        if (bookMarkMapper.updateByPrimaryKey(bookMarkDO) != 1) {
+    public BookMarkDTO update(BookMarkDTO bookMarkDTO) {
+        validatorCurrentUser(bookMarkDTO.getId());
+        bookMarkDTO.setUserId(DetailsHelper.getUserDetails().getUserId());
+        if (bookMarkMapper.updateByPrimaryKey(bookMarkDTO) != 1) {
             throw new CommonException("error.bookMark.update");
         }
-        return bookMarkDO;
+        return bookMarkDTO;
     }
 
     @Override
-    public List<BookMarkDO> queryByUserId(Long userId) {
-        BookMarkDO bookMarkDO = new BookMarkDO();
-        bookMarkDO.setUserId(userId);
-        return bookMarkMapper.select(bookMarkDO);
+    public List<BookMarkDTO> queryByUserId(Long userId) {
+        BookMarkDTO bookMarkDTO = new BookMarkDTO();
+        bookMarkDTO.setUserId(userId);
+        return bookMarkMapper.select(bookMarkDTO);
     }
 
     @Override
@@ -50,12 +50,14 @@ public class BookMarkRepositoryImpl implements BookMarkRepository {
     }
 
     private void validatorCurrentUser(Long id) {
-        if (id == null) return;
-        BookMarkDO bookMarkDO = bookMarkMapper.selectByPrimaryKey(id);
-        if (bookMarkDO == null) {
+        if (id == null) {
+            return;
+        }
+        BookMarkDTO bookMarkDTO = bookMarkMapper.selectByPrimaryKey(id);
+        if (bookMarkDTO == null) {
             throw new CommonException("error.bookMark.notExist");
         }
-        if (!DetailsHelper.getUserDetails().getUserId().equals(bookMarkDO.getUserId())) {
+        if (!DetailsHelper.getUserDetails().getUserId().equals(bookMarkDTO.getUserId())) {
             throw new CommonException("error.bookMark.notCurrentUser");
         }
     }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LdapHistoryMapper">
 
-    <select id="selectAllEnd" resultType="io.choerodon.iam.infra.dataobject.LdapHistoryDO">
+    <select id="selectAllEnd" resultType="io.choerodon.iam.infra.dto.LdapHistoryDTO">
         SELECT
             *
         FROM

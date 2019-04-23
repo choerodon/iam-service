@@ -3,17 +3,14 @@ package io.choerodon.iam.infra.repository.impl;
 import java.util.Comparator;
 import java.util.List;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.LdapHistoryDTO;
 import io.choerodon.iam.domain.repository.LdapHistoryRepository;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
 import io.choerodon.iam.infra.mapper.LdapHistoryMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author superlee
@@ -28,37 +25,36 @@ public class LdapHistoryRepositoryImpl implements LdapHistoryRepository {
     }
 
     @Override
-    public LdapHistoryDO insertSelective(LdapHistoryDO ldapHistory) {
+    public LdapHistoryDTO insertSelective(LdapHistoryDTO ldapHistory) {
         if (ldapHistoryMapper.insertSelective(ldapHistory) != 1) {
             throw new CommonException("error.ldapHistory.insert");
         }
-        return ldapHistoryMapper.selectByPrimaryKey(ldapHistory.getId());
+        return ldapHistoryMapper.selectByPrimaryKey(ldapHistory);
     }
 
     @Override
-    public LdapHistoryDO queryLatestHistory(Long ldapId) {
-        LdapHistoryDO example = new LdapHistoryDO();
+    public LdapHistoryDTO queryLatestHistory(Long ldapId) {
+        LdapHistoryDTO example = new LdapHistoryDTO();
         example.setLdapId(ldapId);
-        List<LdapHistoryDO> ldapHistoryList = ldapHistoryMapper.select(example);
+        List<LdapHistoryDTO> ldapHistoryList = ldapHistoryMapper.select(example);
         if (ldapHistoryList.isEmpty()) {
             return null;
         } else {
-            ldapHistoryList.sort(Comparator.comparing(LdapHistoryDO::getId).reversed());
+            ldapHistoryList.sort(Comparator.comparing(LdapHistoryDTO::getId).reversed());
             return ldapHistoryList.get(0);
         }
     }
 
     @Override
-    public LdapHistoryDO updateByPrimaryKeySelective(LdapHistoryDO ldapHistoryDO) {
-        if (ldapHistoryMapper.updateByPrimaryKeySelective(ldapHistoryDO) != 1) {
+    public LdapHistoryDTO updateByPrimaryKeySelective(LdapHistoryDTO ldapHistoryDTO) {
+        if (ldapHistoryMapper.updateByPrimaryKeySelective(ldapHistoryDTO) != 1) {
             throw new CommonException("error.ldapHistory.update");
         }
-        return ldapHistoryMapper.selectByPrimaryKey(ldapHistoryDO.getId());
+        return ldapHistoryMapper.selectByPrimaryKey(ldapHistoryDTO.getId());
     }
 
     @Override
-    public Page<LdapHistoryDTO> pagingQuery(PageRequest pageRequest, Long ldapId) {
-        return ConvertPageHelper.convertPage(
-                PageHelper.doPageAndSort(pageRequest, () -> ldapHistoryMapper.selectAllEnd(ldapId)), LdapHistoryDTO.class);
+    public Page<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> ldapHistoryMapper.selectAllEnd(ldapId));
     }
 }

@@ -8,8 +8,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ExcelService;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -54,11 +54,11 @@ public class ExcelServiceImpl implements ExcelService {
         ExcelReadConfig excelReadConfig = initExcelReadConfig();
         long begin = System.currentTimeMillis();
         try {
-            List<UserDO> users = ExcelReadHelper.read(multipartFile, UserDO.class, excelReadConfig);
+            List<UserDTO> users = ExcelReadHelper.read(multipartFile, UserDTO.class, excelReadConfig);
             if (users.isEmpty()) {
                 throw new CommonException("error.excel.user.empty");
             }
-            UploadHistoryDO uploadHistory = initUploadHistory(organizationId);
+            UploadHistoryDTO uploadHistory = initUploadHistory(organizationId);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
             Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -70,8 +70,8 @@ public class ExcelServiceImpl implements ExcelService {
         }
     }
 
-    private UploadHistoryDO initUploadHistory(Long organizationId) {
-        UploadHistoryDO uploadHistory = new UploadHistoryDO();
+    private UploadHistoryDTO initUploadHistory(Long organizationId) {
+        UploadHistoryDTO uploadHistory = new UploadHistoryDTO();
         uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
         uploadHistory.setType("user");
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());

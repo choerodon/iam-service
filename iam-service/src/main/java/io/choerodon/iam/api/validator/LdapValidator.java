@@ -1,7 +1,7 @@
 package io.choerodon.iam.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dto.LdapDTO;
 import org.springframework.util.StringUtils;
 
 /**
@@ -12,7 +12,7 @@ public class LdapValidator {
     private LdapValidator() {
     }
 
-    public static void validate(LdapDO ldap) {
+    public static void validate(LdapDTO ldap) {
         if (StringUtils.isEmpty(ldap.getServerAddress())) {
             throw new CommonException("error.ldap.serverAddress.empty");
         }

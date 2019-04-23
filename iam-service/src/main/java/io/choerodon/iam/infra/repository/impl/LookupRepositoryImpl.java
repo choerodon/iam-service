@@ -1,14 +1,11 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.LookupE;
 import io.choerodon.iam.domain.repository.LookupRepository;
-import io.choerodon.iam.infra.dataobject.LookupDO;
+import io.choerodon.iam.infra.dto.LookupDTO;
 import io.choerodon.iam.infra.mapper.LookupMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,53 +23,54 @@ public class LookupRepositoryImpl implements LookupRepository {
     }
 
     @Override
-    public LookupE insert(LookupE lookupE) {
-        LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
-        if (mapper.insertSelective(lookupDO) != 1) {
+    public LookupDTO insert(LookupDTO lookupDTO) {
+//        LookupDO lookupDO = ConvertHelper.convert(lookupDTO, LookupDO.class);
+        if (mapper.insertSelective(lookupDTO) != 1) {
             throw new CommonException("error.repo.lookup.insert");
         }
-        return ConvertHelper.convert(
-                mapper.selectByPrimaryKey(lookupDO.getId()), LookupE.class);
+        return
+                mapper.selectByPrimaryKey(lookupDTO);
     }
 
     @Override
-    public Page<LookupDO> pagingQuery(PageRequest pageRequest, LookupDO lookupDO, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(lookupDO, param));
+    public Page<LookupDTO> pagingQuery(int page,int size, LookupDTO lookupDTO, String param) {
+        return PageHelper.startPage(page,size).doSelectPage(()->mapper.fulltextSearch(lookupDTO, param));
+//        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(lookupDO, param));
     }
 
     @Override
-    public void delete(LookupE lookupE) {
-        LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
-        if (mapper.delete(lookupDO) != 1) {
+    public void delete(LookupDTO lookupDTO) {
+//        LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
+        if (mapper.delete(lookupDTO) != 1) {
             throw new CommonException("error.repo.lookup.delete");
         }
     }
 
     @Override
-    public LookupE update(LookupE lookupE, Long id) {
-        LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
+    public LookupDTO update(LookupDTO lookupDTO, Long id) {
+//        LookupDO lookupDO = ConvertHelper.convert(lookupDTO, LookupDO.class);
         if (mapper.selectByPrimaryKey(id) == null) {
             throw new CommonException("error.repo.lookup.notExist");
         }
-        if (mapper.updateByPrimaryKeySelective(lookupDO) != 1) {
+        if (mapper.updateByPrimaryKeySelective(lookupDTO) != 1) {
             throw new CommonException("error.repo.lookup.update");
         }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(lookupDO.getId()), LookupE.class);
+        return mapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public LookupE selectById(Long id) {
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(id), LookupE.class);
+    public LookupDTO selectById(Long id) {
+        return mapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public List<LookupE> select(LookupE lookupE) {
-        return ConvertHelper.convertList(mapper.select(ConvertHelper.convert(lookupE, LookupDO.class)), LookupE.class);
+    public List<LookupDTO> select(LookupDTO lookupDTO) {
+        return mapper.select(lookupDTO);
     }
 
     @Override
     public void deleteById(Long id) {
-        LookupDO lookup = mapper.selectByPrimaryKey(id);
+        LookupDTO lookup = mapper.selectByPrimaryKey(id);
         if (lookup == null) {
             throw new CommonException("error.lookup.not.exist", id);
         } else {
@@ -81,7 +79,7 @@ public class LookupRepositoryImpl implements LookupRepository {
     }
 
     @Override
-    public LookupDO listByCodeWithLookupValues(String code) {
+    public LookupDTO listByCodeWithLookupValues(String code) {
         return mapper.selectByCodeWithLookupValues(code);
     }
 }

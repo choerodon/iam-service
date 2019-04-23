@@ -1,8 +1,8 @@
 package io.choerodon.iam.api.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.ProjectTypeDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public interface ProjectTypeService {
 
     List<ProjectTypeDTO> list();
 
-    Page<ProjectTypeDTO> pagingQuery(PageRequest pageRequest, String name, String code, String param);
+    Page<ProjectTypeDTO> pagingQuery(int page, int size, String name, String code, String param);
 
     ProjectTypeDTO create(ProjectTypeDTO projectTypeDTO);
 

@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.iam.domain.repository.LabelRepository;
-import io.choerodon.iam.infra.dataobject.LabelDO;
+import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.mapper.LabelMapper;
 import org.springframework.stereotype.Component;
 
@@ -21,27 +21,27 @@ public class LabelRepositoryImpl implements LabelRepository {
     }
 
     @Override
-    public List<LabelDO> listByOption(LabelDO label) {
+    public List<LabelDTO> listByOption(LabelDTO label) {
         return labelMapper.listByOption(label);
     }
 
     @Override
-    public LabelDO selectByPrimaryKey(Long labelId) {
+    public LabelDTO selectByPrimaryKey(Long labelId) {
         return labelMapper.selectByPrimaryKey(labelId);
     }
 
     @Override
-    public List<LabelDO> selectByRoleId(Long roleId) {
+    public List<LabelDTO> selectByRoleId(Long roleId) {
         return labelMapper.selectByRoleId(roleId);
     }
 
     @Override
-    public LabelDO selectOne(LabelDO labelDO) {
-        return labelMapper.selectOne(labelDO);
+    public LabelDTO selectOne(LabelDTO labelDTO) {
+        return labelMapper.selectOne(labelDTO);
     }
 
     @Override
-    public List<LabelDO> selectByUserId(Long id) {
+    public List<LabelDTO> selectByUserId(Long id) {
         return labelMapper.selectByUserId(id);
     }
 

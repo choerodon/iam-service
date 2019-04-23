@@ -1,21 +1,18 @@
 package io.choerodon.iam.api.controller.v1;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.ApplicationDTO;
-import io.choerodon.iam.api.dto.ApplicationExplorationWithAppDTO;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.iam.infra.dto.ApplicationDTO;
+import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -61,11 +58,11 @@ public class ApplicationController {
     @CustomPageRequest
     @GetMapping
     public ResponseEntity<Page<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
-                                                            @ApiIgnore
-                                                            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+                                                            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                             ApplicationSearchDTO applicationSearchDTO) {
         applicationSearchDTO.setOrganizationId(organizationId);
-        return new ResponseEntity<>(applicationService.pagingQuery(pageRequest,applicationSearchDTO), HttpStatus.OK);
+        return new ResponseEntity<>(applicationService.pagingQuery(page,size,applicationSearchDTO), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
@@ -114,8 +111,8 @@ public class ApplicationController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组合应用的后代")
     @GetMapping("/{id}/descendant")
-    public ResponseEntity<List<ApplicationExplorationWithAppDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
-                                                                                  @PathVariable("id") Long id) {
+    public ResponseEntity<List<ApplicationExplorationDTO>> queryDescendant(@PathVariable("organization_id") Long organizationId,
+                                                                           @PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.queryDescendant(id), HttpStatus.OK);
     }
 
@@ -131,13 +128,13 @@ public class ApplicationController {
     @ApiOperation(value = "查询组合应用下普通应用清单")
     @CustomPageRequest
     @GetMapping("/{id}/app_list")
-    public ResponseEntity<Page<ApplicationDTO>> queryApplicationList(@ApiIgnore
-                                                                     @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+    public ResponseEntity<Page<ApplicationDTO>> queryApplicationList(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                      @PathVariable("organization_id") Long organizationId,
                                                                      @PathVariable("id") Long id,
                                                                      @RequestParam(required = false) String name,
                                                                      @RequestParam(required = false) String code) {
-        return new ResponseEntity<>(applicationService.queryApplicationList(pageRequest, id, name, code), HttpStatus.OK);
+        return new ResponseEntity<>(applicationService.queryApplicationList(page,size, id, name, code), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)

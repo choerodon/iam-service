@@ -1,15 +1,15 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 
 /**
  * @author superlee
  */
 public interface UploadHistoryRepository {
 
-    UploadHistoryDO insertSelective(UploadHistoryDO uploadHistoryDO);
+    UploadHistoryDTO insertSelective(UploadHistoryDTO uploadHistoryDTO);
 
-    UploadHistoryDO selectByPrimaryKey(Object primaryKey);
+    UploadHistoryDTO selectByPrimaryKey(Object primaryKey);
 
-    UploadHistoryDO updateByPrimaryKeySelective(UploadHistoryDO history);
+    UploadHistoryDTO updateByPrimaryKeySelective(UploadHistoryDTO history);
 }

@@ -1,10 +1,11 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
+
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 
 /**
  * @author wuguokai
  */
 public interface MenuPermissionRepository {
-    void delete(MenuPermissionDO menuPermissionDO);
+    void delete(MenuPermissionDTO menuPermissionDTO);
 }

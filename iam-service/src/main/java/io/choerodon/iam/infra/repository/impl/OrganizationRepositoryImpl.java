@@ -3,20 +3,16 @@ package io.choerodon.iam.infra.repository.impl;
 import java.util.List;
 import java.util.Set;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.domain.iam.entity.OrganizationE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -34,31 +30,25 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public OrganizationE create(OrganizationE organizationE) {
-        OrganizationDO organizationDO = ConvertHelper.convert(organizationE, OrganizationDO.class);
-        int isInsert = organizationMapper.insertSelective(organizationDO);
+    public OrganizationDTO create(OrganizationDTO organizationDTO) {
+        int isInsert = organizationMapper.insertSelective(organizationDTO);
         if (isInsert != 1) {
-            int count = organizationMapper.selectCount(new OrganizationDO(organizationDO.getName()));
-            if (count > 0) {
-                throw new CommonException("error.organization.existed");
-            }
             throw new CommonException("error.organization.create");
         }
-        return ConvertHelper.convert(organizationMapper.selectByPrimaryKey(
-                organizationDO.getId()), OrganizationE.class);
+        return organizationMapper.selectByPrimaryKey(organizationDTO);
     }
 
     @Override
-    public OrganizationDO update(OrganizationDO organizationDO) {
-        int isUpdate = organizationMapper.updateByPrimaryKey(organizationDO);
+    public OrganizationDTO update(OrganizationDTO organizationDTO) {
+        int isUpdate = organizationMapper.updateByPrimaryKey(organizationDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.organization.update");
         }
-        return organizationMapper.selectByPrimaryKey(organizationDO.getId());
+        return organizationMapper.selectByPrimaryKey(organizationDTO.getId());
     }
 
     @Override
-    public OrganizationDO selectByPrimaryKey(Long organizationId) {
+    public OrganizationDTO selectByPrimaryKey(Long organizationId) {
         return organizationMapper.selectByPrimaryKey(organizationId);
     }
 
@@ -72,54 +62,53 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.fulltextSearch(organizationDO, param));
+    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> organizationMapper.fulltextSearch(organizationDTO, param));
     }
 
     @Override
-    public List<OrganizationDO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled) {
+    public List<OrganizationDTO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled) {
         return organizationMapper.selectFromMemberRoleByMemberId(userId, includedDisabled);
     }
 
     @Override
-    public List<OrganizationDO> selectOrgByUserAndPros(Long userId, Boolean includedDisabled) {
+    public List<OrganizationDTO> selectOrgByUserAndPros(Long userId, Boolean includedDisabled) {
         return organizationMapper.selectOrgByUserAndPros(userId, includedDisabled);
     }
 
     @Override
-    public List<OrganizationDO> selectAll() {
+    public List<OrganizationDTO> selectAll() {
         return organizationMapper.selectAll();
     }
 
     @Override
-    public List<OrganizationDO> selectAllOrganizationsWithEnabledProjects() {
+    public List<OrganizationDTO> selectAllOrganizationsWithEnabledProjects() {
         return organizationMapper.selectAllWithEnabledProjects();
     }
 
     @Override
-    public List<OrganizationDO> select(OrganizationDO organizationDO) {
-        return organizationMapper.select(organizationDO);
+    public List<OrganizationDTO> select(OrganizationDTO organizationDTO) {
+        return organizationMapper.select(organizationDTO);
     }
 
     @Override
-    public OrganizationDO selectOne(OrganizationDO organizationDO) {
-        return organizationMapper.selectOne(organizationDO);
+    public OrganizationDTO selectOne(OrganizationDTO organizationDTO) {
+        return organizationMapper.selectOne(organizationDTO);
     }
 
     @Override
-    public Page<OrganizationDO> pagingQueryOrganizationAndRoleById(PageRequest pageRequest, Long id, String params) {
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
+    public Page<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params) {
+        Page<OrganizationDTO> result = new Page<>(page, size, true);
         int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
         int count = memberRoleMapper.selectCountBySourceId(id, "organization");
-        List<OrganizationDO> organizationList = organizationMapper.selectOrganizationsWithRoles(id, start, size, params);
-        return new Page<>(organizationList, pageInfo, count);
+        result.setTotal(count);
+        result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
+        return result;
     }
 
     @Override
-    public Page<OrganizationDO> pagingQueryByUserId(Long userId, OrganizationDO organizationDO, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectOrganizationsByUserId(userId, organizationDO, param));
+    public Page<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param) {
+        return PageHelper.startPage(page,size).doSelectPage(()->organizationMapper.selectOrganizationsByUserId(userId, organizationDTO, param));
     }
 
     @Override
@@ -128,12 +117,12 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public List<OrganizationDO> queryByIds(Set<Long> ids) {
+    public List<OrganizationDTO> queryByIds(Set<Long> ids) {
         return organizationMapper.selectByIds(ids);
     }
 
     @Override
-    public List<OrganizationSimplifyDTO> selectAllOrgIdAndName(PageRequest pageRequest) {
-        return PageHelper.doPageAndSort(pageRequest, () -> organizationMapper.selectAllOrgIdAndName());
+    public Page<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size) {
+        return PageHelper.startPage(page,size).doSelectPage(() ->organizationMapper.selectAllOrgIdAndName());
     }
 }

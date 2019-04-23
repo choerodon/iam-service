@@ -1,10 +1,8 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.LookupValueE;
 import io.choerodon.iam.domain.repository.LookupValueRepository;
-import io.choerodon.iam.infra.dataobject.LookupValueDO;
+import io.choerodon.iam.infra.dto.LookupValueDTO;
 import io.choerodon.iam.infra.mapper.LookupValueMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,20 +25,19 @@ public class LookupValueRepositoryImpl implements LookupValueRepository {
     }
 
     @Override
-    public LookupValueE insert(LookupValueE lookupValueE) {
-        LookupValueDO lookupValueDO = ConvertHelper.convert(lookupValueE, LookupValueDO.class);
-        if (mapper.insertSelective(lookupValueDO) != 1) {
-            LOGGER.debug("insert lookup value fail:{}", lookupValueDO);
+    public LookupValueDTO insert(LookupValueDTO lookupValueDTO) {
+        if (mapper.insertSelective(lookupValueDTO) != 1) {
+            LOGGER.debug("insert lookup value fail:{}", lookupValueDTO);
             throw new CommonException("error.lookupValue.insert");
         }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(lookupValueDO.getId()), LookupValueE.class);
+        return mapper.selectByPrimaryKey(lookupValueDTO);
     }
 
     @Override
-    public List<LookupValueDO> selectByLookupId(Long id) {
-        LookupValueDO lookupValueDO = new LookupValueDO();
-        lookupValueDO.setLookupId(id);
-        return mapper.select(lookupValueDO);
+    public List<LookupValueDTO> selectByLookupId(Long id) {
+        LookupValueDTO lookupValueDTO = new LookupValueDTO();
+        lookupValueDTO.setLookupId(id);
+        return mapper.select(lookupValueDTO);
     }
 
     @Override
@@ -51,16 +48,16 @@ public class LookupValueRepositoryImpl implements LookupValueRepository {
     }
 
     @Override
-    public LookupValueE updateById(LookupValueDO lookupValueDO, Long id) {
+    public LookupValueDTO updateById(LookupValueDTO lookupValueDTO, Long id) {
         if (mapper.selectByPrimaryKey(id) == null) {
             throw new CommonException("error.lookupValue.notExist");
         }
-        mapper.updateByPrimaryKeySelective(lookupValueDO);
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(id), LookupValueE.class);
+        mapper.updateByPrimaryKeySelective(lookupValueDTO);
+        return mapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public void delete(LookupValueDO lookupValue) {
+    public void delete(LookupValueDTO lookupValue) {
         mapper.delete(lookupValue);
     }
 }

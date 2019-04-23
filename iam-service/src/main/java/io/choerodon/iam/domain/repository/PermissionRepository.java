@@ -1,9 +1,8 @@
 package io.choerodon.iam.domain.repository;
 
 import com.github.pagehelper.Page;
-import io.choerodon.iam.domain.iam.entity.PermissionE;
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -38,5 +37,5 @@ public interface PermissionRepository {
 
     Page<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params);
 
-    List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDO roleDO);
+    List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDTO roleDTO);
 }

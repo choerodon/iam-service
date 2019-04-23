@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,5 +22,5 @@ public interface PermissionMapper extends Mapper<PermissionDTO> {
     Set<String> checkPermission(@Param("member_id") Long memberId, @Param("source_type") String sourceType,
                                 @Param("source_id") Long sourceId, @Param("codes") Set<String> codes);
 
-    List<PermissionDTO> selectErrorLevelPermissionByRole(@Param("role") RoleDO role);
+    List<PermissionDTO> selectErrorLevelPermissionByRole(@Param("role") RoleDTO role);
 }

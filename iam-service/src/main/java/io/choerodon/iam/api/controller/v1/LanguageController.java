@@ -1,22 +1,19 @@
 package io.choerodon.iam.api.controller.v1;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
-import io.choerodon.iam.api.dto.LanguageDTO;
 import io.choerodon.iam.app.service.LanguageService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.iam.infra.dto.LanguageDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -65,11 +62,11 @@ public class LanguageController extends BaseController {
     @ApiOperation(value = "分页查询Language")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<LanguageDTO>> pagingQuery(@ApiIgnore
-                                                         @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                                 PageRequest pageRequest,
-                                                         LanguageDTO languageDTO) {
-        return new ResponseEntity<>(languageService.pagingQuery(pageRequest, languageDTO), HttpStatus.OK);
+    public ResponseEntity<Page<LanguageDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                         LanguageDTO languageDTO,
+                                                         @RequestParam(required = false)String param) {
+        return new ResponseEntity<>(languageService.pagingQuery(page,size, languageDTO,param), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)

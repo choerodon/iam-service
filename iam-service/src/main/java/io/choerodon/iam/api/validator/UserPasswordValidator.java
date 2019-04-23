@@ -1,10 +1,10 @@
 package io.choerodon.iam.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.domain.repository.PasswordPolicyRepository;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

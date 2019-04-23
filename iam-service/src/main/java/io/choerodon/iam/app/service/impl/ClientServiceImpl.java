@@ -2,25 +2,20 @@ package io.choerodon.iam.app.service.impl;
 
 import java.util.Random;
 
+import com.github.pagehelper.Page;
+import io.choerodon.iam.infra.dto.ClientDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ClientCreateDTO;
-import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.app.service.ClientService;
-import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -44,36 +39,35 @@ public class ClientServiceImpl implements ClientService {
         isOrgExist(orgId);
         clientDTO.setId(null);
         clientDTO.setOrganizationId(orgId);
-        return ConvertHelper.convert(
-                clientRepository.create(ConvertHelper.convert(clientDTO, ClientE.class)), ClientDTO.class);
+        return clientRepository.create(clientDTO);
     }
 
     /**
      * 创建客户端时生成随机的clientId和secret
      */
     @Override
-    public ClientCreateDTO getDefaultCreatedata(Long orgId) {
+    public ClientDTO getDefaultCreatedata(Long orgId) {
         String name = "";
         boolean flag = false;
         while (!flag) {
             name = generateString(new Random(), SOURCES, 12);
-            ClientDO clientDO = new ClientDO();
-            clientDO.setName(name);
-            ClientDO clientByName = clientRepository.selectOne(clientDO);
+            ClientDTO clientDTO = new ClientDTO();
+            clientDTO.setName(name);
+            ClientDTO clientByName = clientRepository.selectOne(clientDTO);
             if (clientByName == null) {
                 flag = true;
             }
         }
-        String secret = generateString(new Random(), SOURCES, 16);
-        return new ClientCreateDTO(name, secret);
+        ClientDTO clientDTO = new ClientDTO();
+        clientDTO.setName(name);
+        clientDTO.setSecret(generateString(new Random(), SOURCES, 16));
+        return clientDTO;
     }
 
     @Override
     public ClientDTO update(Long orgId, Long clientId, ClientDTO clientDTO) {
         isOrgExist(orgId);
-        return ConvertHelper.convert(
-                clientRepository.update(clientId, ConvertHelper.convert(clientDTO, ClientE.class)),
-                ClientDTO.class);
+        return clientRepository.update(clientId, clientDTO);
     }
 
     @Transactional
@@ -111,12 +105,9 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String param) {
+    public Page<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param) {
         isOrgExist(clientDTO.getOrganizationId());
-        return ConvertPageHelper.convertPage(
-                clientRepository.pagingQuery(pageRequest,
-                        ConvertHelper.convert(clientDTO, ClientDO.class),
-                        param), ClientDTO.class);
+        return clientRepository.pagingQuery(page,size,clientDTO,param);
     }
 
     @Override
@@ -130,34 +121,34 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
-        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, 0L, ResourceLevel.SITE.value()), ClientDTO.class);
+    public Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
+        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, 0L, ResourceLevel.SITE.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
-        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value()), ClientDTO.class);
+    public Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
-        return ConvertPageHelper.convertPage(clientRepository.pagingQueryClientsByRoleIdAndOptions(pageRequest, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value()), ClientDTO.class);
+    public Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value());
     }
 
     private void checkName(ClientDTO client) {
         Boolean createCheck = StringUtils.isEmpty(client.getId());
         String name = client.getName();
-        ClientDO clientDO = new ClientDO();
-        clientDO.setName(name);
+        ClientDTO clientDTO = new ClientDTO();
+        clientDTO.setName(name);
         if (createCheck) {
-            Boolean existed = clientRepository.selectOne(clientDO) != null;
+            Boolean existed = clientRepository.selectOne(clientDTO) != null;
             if (existed) {
                 throw new CommonException("error.clientName.exist");
             }
         } else {
             Long id = client.getId();
-            ClientDO clientDO1 = clientRepository.selectOne(clientDO);
-            Boolean existed = clientDO1 != null && !id.equals(clientDO1.getId());
+            ClientDTO dto = clientRepository.selectOne(clientDTO);
+            Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.clientName.exist");
             }
@@ -180,7 +171,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<SimplifiedClientDTO> pagingQueryAllClients(PageRequest pageRequest, String params) {
-        return clientRepository.pagingAllClientsByParams(pageRequest, params);
+    public Page<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params) {
+        return clientRepository.pagingAllClientsByParams(page,size, params);
     }
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.iam.infra.mapper.UserMapper">
-    <resultMap id="userWithRoles" type="io.choerodon.iam.infra.dataobject.UserDO">
+    <resultMap id="userWithRoles" type="io.choerodon.iam.infra.dto.UserDTO">
         <id property="id" column="id"/>
         <result property="loginName" column="login_name"/>
         <result property="email" column="email"/>
@@ -10,7 +10,7 @@
         <result property="enabled" column="is_enabled"/>
         <result property="admin" column="is_admin"/>
         <result property="password" column="hash_password"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
+        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO">
             <id property="id" column="role_id"/>
             <result property="name" column="name"/>
             <result property="code" column="code"/>
@@ -31,7 +31,7 @@
         <result property="password" column="hash_password"/>
     </resultMap>
 
-    <resultMap id="userDO" type="io.choerodon.iam.infra.dataobject.UserDO">
+    <resultMap id="userDTO" type="io.choerodon.iam.infra.dto.UserDTO">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled"/>
         <result property="locked" column="is_locked"/>
@@ -40,7 +40,7 @@
         <result property="password" column="hash_password"/>
     </resultMap>
 
-    <select id="listUsersByIds" resultMap="userDO">
+    <select id="listUsersByIds" resultMap="userDTO">
         SELECT * FROM iam_user
         WHERE id IN
         <foreach item="id" index="index" collection="ids"
@@ -52,7 +52,7 @@
         </if>
     </select>
 
-    <select id="listUsersByEmails" resultMap="userDO">
+    <select id="listUsersByEmails" resultMap="userDTO">
         SELECT * FROM iam_user
         WHERE email IN
         <foreach item="email" index="index" collection="emails"
@@ -62,34 +62,34 @@
         AND is_enabled = 1
     </select>
 
-    <select id="fulltextSearch" resultMap="userDO">
+    <select id="fulltextSearch" resultMap="userDTO">
         SELECT * FROM iam_user WHERE 1=1
-        <if test="userDO.loginName!= null">
-            AND login_name LIKE concat(concat('%',#{userDO.loginName}),'%')
+        <if test="userSearchDTO.loginName!= null">
+            AND login_name LIKE concat(concat('%',#{userSearchDT.loginName}),'%')
         </if>
-        <if test="userDO.organizationId != null">
-            AND organization_id = #{userDO.organizationId}
+        <if test="userSearchDTO.organizationId != null">
+            AND organization_id = #{userSearchDTO.organizationId}
         </if>
-        <if test="userDO.ldap != null">
-            AND is_ldap = #{userDO.ldap}
+        <if test="userSearchDTO.ldap != null">
+            AND is_ldap = #{userSearchDTO.ldap}
         </if>
-        <if test="userDO.realName != null">
-            AND real_name LIKE concat(concat('%',#{userDO.realName}),'%')
+        <if test="userSearchDTO.realName != null">
+            AND real_name LIKE concat(concat('%',#{userSearchDTO.realName}),'%')
         </if>
-        <if test="userDO.enabled != null">
-            AND is_enabled = #{userDO.enabled}
+        <if test="userSearchDTO.enabled != null">
+            AND is_enabled = #{userSearchDTO.enabled}
         </if>
-        <if test="userDO.locked != null">
-            AND is_locked = #{userDO.locked}
+        <if test="userSearchDTO.locked != null">
+            AND is_locked = #{userSearchDTO.locked}
         </if>
-        <if test="userDO.admin != null">
-            AND is_admin = #{userDO.admin}
+        <if test="userSearchDTO.admin != null">
+            AND is_admin = #{userSearchDTO.admin}
         </if>
-        <if test="userDO.email != null">
-            AND email LIKE concat(concat('%',#{userDO.email}),'%')
+        <if test="userSearchDTO.email != null">
+            AND email LIKE concat(concat('%',#{userSearchDTO.email}),'%')
         </if>
-        <if test="userDO.language != null">
-            AND `language` LIKE concat(concat('%',#{userDO.language}),'%')
+        <if test="userSearchDTO.language != null">
+            AND language LIKE concat(concat('%',#{userSearchDTO.language}),'%')
         </if>
         <if test="param != null">
             AND(
@@ -102,7 +102,7 @@
 
     <!-- 根据databaseId找指定的sql，既不是mysql也不是oracle走这条sql，默认是使用mysql的sql -->
     <select id="selectUserWithRolesByOption" resultMap="userWithRoles">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <!--<bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>-->
         SELECT
         iu.id,
         iu.login_name,
@@ -110,7 +110,7 @@
         iu.real_name,
         iu.is_enabled,
         role.id AS role_id,
-        irt.name AS name,
+        role.name,
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
@@ -156,8 +156,8 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
-        LEFT JOIN iam_role_tl irt ON role.id = irt.id
-        AND irt.lang = #{lang}
+--         LEFT JOIN iam_role_tl irt ON role.id = irt.id
+--         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
@@ -165,7 +165,7 @@
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="mysql" resultMap="userWithRoles">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <!--<bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>-->
         SELECT
         iu.id,
         iu.login_name,
@@ -173,7 +173,7 @@
         iu.real_name,
         iu.is_enabled,
         role.id AS role_id,
-        irt.name AS name,
+        role.name,
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
@@ -219,8 +219,8 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
-        LEFT JOIN iam_role_tl irt ON role.id = irt.id
-        AND irt.lang = #{lang}
+--         LEFT JOIN iam_role_tl irt ON role.id = irt.id
+--         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
@@ -228,7 +228,7 @@
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="oracle" resultMap="userWithRoles">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <!--<bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>-->
         SELECT
         iu.id,
         iu.login_name,
@@ -236,7 +236,7 @@
         iu.real_name,
         iu.is_enabled,
         role.id AS role_id,
-        irt.name AS name,
+        role.name,
         role.code,
         role.is_enabled as role_is_enabled,
         role.is_built_in as role_is_built_in,
@@ -297,8 +297,8 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
-        LEFT JOIN iam_role_tl irt ON role.id = irt.id
-        AND irt.lang = #{lang}
+--         LEFT JOIN iam_role_tl irt ON role.id = irt.id
+--         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
@@ -365,7 +365,7 @@
         ) t
     </select>
 
-    <select id="selectUsersFromMemberRoleByOptions" resultMap="userDO">
+    <select id="selectUsersFromMemberRoleByOptions" resultMap="userDTO">
         SELECT iu.*,imr.source_id
         FROM iam_user iu
         INNER JOIN iam_member_role imr
@@ -394,7 +394,7 @@
         </if>
     </select>
 
-    <select id="selectUsersByProjectIdAndOptions" resultMap="userDO">
+    <select id="selectUsersByProjectIdAndOptions" resultMap="userDTO">
         SELECT iam_user.*
         FROM iam_user
         JOIN
@@ -424,7 +424,7 @@
         </if>
     </select>
 
-    <select id="selectUsersByLevelAndOptions" resultMap="userDO">
+    <select id="selectUsersByLevelAndOptions" resultMap="userDTO">
         SELECT iam_user.*
         FROM iam_user
         JOIN
@@ -454,19 +454,19 @@
         </if>
     </select>
 
-    <select id="selectAdminUserPage" resultMap="userDO">
+    <select id="selectAdminUserPage" resultMap="userDTO">
         SELECT * FROM iam_user WHERE is_admin = 1
-        <if test="userDO.loginName!= null">
-            AND login_name LIKE concat(concat('%',#{userDO.loginName}),'%')
+        <if test="userDTO.loginName!= null">
+            AND login_name LIKE concat(concat('%',#{userDTO.loginName}),'%')
         </if>
-        <if test="userDO.realName != null">
-            AND real_name LIKE concat(concat('%',#{userDO.realName}),'%')
+        <if test="userDTO.realName != null">
+            AND real_name LIKE concat(concat('%',#{userDTO.realName}),'%')
         </if>
-        <if test="userDO.enabled != null">
-            AND is_enabled = #{userDO.enabled}
+        <if test="userDTO.enabled != null">
+            AND is_enabled = #{userDTO.enabled}
         </if>
-        <if test="userDO.locked != null">
-            AND is_locked = #{userDO.locked}
+        <if test="userDTO.locked != null">
+            AND is_locked = #{userDTO.locked}
         </if>
         <if test="params != null">
             AND (

@@ -1,10 +1,8 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.oauth.entity.LdapE;
 import io.choerodon.iam.domain.repository.LdapRepository;
-import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dto.LdapDTO;
 import io.choerodon.iam.infra.mapper.LdapMapper;
 import org.springframework.stereotype.Component;
 
@@ -20,17 +18,15 @@ public class LdapRepositoryImpl implements LdapRepository {
     }
 
     @Override
-    public LdapE create(LdapE ldapE) {
-        LdapDO ldapDO = ConvertHelper.convert(ldapE, LdapDO.class);
-        if (ldapMapper.insertSelective(ldapDO) != 1) {
+    public LdapDTO create(LdapDTO ldapDTO) {
+        if (ldapMapper.insertSelective(ldapDTO) != 1) {
             throw new CommonException("error.ldap.insert");
         }
-        ldapDO = ldapMapper.selectByPrimaryKey(ldapDO.getId());
-        return ConvertHelper.convert(ldapDO, LdapE.class);
+        return ldapMapper.selectByPrimaryKey(ldapDTO);
     }
 
     @Override
-    public LdapDO update(Long id, LdapDO ldap) {
+    public LdapDTO update(Long id, LdapDTO ldap) {
         ldap.setId(id);
         if (ldapMapper.updateByPrimaryKey(ldap) != 1) {
             throw new CommonException("error.ldap.update");
@@ -39,15 +35,15 @@ public class LdapRepositoryImpl implements LdapRepository {
     }
 
     @Override
-    public LdapDO queryById(Long id) {
+    public LdapDTO queryById(Long id) {
         return ldapMapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public LdapDO queryByOrgId(Long orgId) {
-        LdapDO ldapDO = new LdapDO();
-        ldapDO.setOrganizationId(orgId);
-        return ldapMapper.selectOne(ldapDO);
+    public LdapDTO queryByOrgId(Long orgId) {
+        LdapDTO ldapDTO = new LdapDTO();
+        ldapDTO.setOrganizationId(orgId);
+        return ldapMapper.selectOne(ldapDTO);
     }
 
     @Override

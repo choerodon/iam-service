@@ -3,24 +3,19 @@ package io.choerodon.iam.infra.repository.impl;
 import java.util.List;
 import java.util.Set;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.dataobject.ProjectTypeDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
@@ -47,121 +42,125 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public ProjectE create(ProjectE projectE) {
-        if (!organizationMapper.existsWithPrimaryKey(projectE.getOrganizationId())) {
+    public ProjectDTO create(ProjectDTO projectDTO) {
+        if (!organizationMapper.existsWithPrimaryKey(projectDTO.getOrganizationId())) {
             throw new CommonException("error.organization.notFound");
         }
-        ProjectDO projectDO = ConvertHelper.convert(projectE, ProjectDO.class);
-        ProjectDO project = new ProjectDO();
-        project.setCode(projectE.getCode());
-        project.setOrganizationId(projectE.getOrganizationId());
+        ProjectDTO project = new ProjectDTO();
+        project.setCode(projectDTO.getCode());
+        project.setOrganizationId(projectDTO.getOrganizationId());
         if (projectMapper.selectOne(project) != null) {
             throw new CommonException("error.project.code.duplicated");
         }
-        if (projectMapper.insertSelective(projectDO) != 1) {
+        if (projectMapper.insertSelective(projectDTO) != 1) {
             throw new CommonException("error.project.create");
         }
-        if (projectDO.getType() != null && projectTypeMapper.selectCount(new ProjectTypeDO(projectDO.getType())) != 1) {
+        ProjectTypeDTO projectTypeDTO = new ProjectTypeDTO();
+        projectTypeDTO.setCode(projectDTO.getType());
+        if (projectDTO.getType() != null && projectTypeMapper.selectCount(projectTypeDTO) != 1) {
             throw new CommonException("error.project.type.notExist");
         }
-        return ConvertHelper.convert(projectMapper.selectByPrimaryKey(projectDO.getId()), ProjectE.class);
+        return projectMapper.selectByPrimaryKey(projectDTO);
     }
 
     @Override
-    public ProjectDO selectByPrimaryKey(Long projectId) {
-        ProjectDO projectDO = projectMapper.selectByPrimaryKey(projectId);
-        if (projectDO == null) {
+    public ProjectDTO selectByPrimaryKey(Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
             throw new CommonException("error.project.not.exist");
         }
-        return projectDO;
+        return projectDTO;
     }
 
     @Override
-    public List<ProjectDO> query(ProjectDO projectDO) {
-        return projectMapper.fulltextSearch(projectDO, null);
+    public List<ProjectDTO> query(ProjectDTO projectDTO) {
+        return projectMapper.fulltextSearch(projectDTO, null);
     }
 
     @Override
-    public Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.fulltextSearch(projectDO, param));
+    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> projectMapper.fulltextSearch(projectDTO, param));
     }
 
     @Override
-    public Page<ProjectDO> pagingQueryByUserId(Long userId, ProjectDO projectDO, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDO, param));
+    public Page<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDTO, param));
     }
 
     @Override
-    public ProjectE updateSelective(ProjectDO projectDO) {
-        ProjectDO project = projectMapper.selectByPrimaryKey(projectDO.getId());
+    public ProjectDTO updateSelective(ProjectDTO projectDTO) {
+        ProjectDTO project = projectMapper.selectByPrimaryKey(projectDTO.getId());
         if (project == null) {
             throw new CommonException("error.project.not.exist");
         }
-        if (projectDO.getType() != null && projectTypeMapper.selectCount(new ProjectTypeDO(projectDO.getType())) != 1) {
+        ProjectTypeDTO projectTypeDTO = new ProjectTypeDTO();
+        projectTypeDTO.setCode(projectDTO.getType());
+        if (projectDTO.getType() != null && projectTypeMapper.selectCount(projectTypeDTO) != 1) {
             throw new CommonException("error.project.type.notExist");
         }
-        if (!StringUtils.isEmpty(projectDO.getName())) {
-            project.setName(projectDO.getName());
+        if (!StringUtils.isEmpty(projectDTO.getName())) {
+            project.setName(projectDTO.getName());
         }
-        if (!StringUtils.isEmpty(projectDO.getCode())) {
-            project.setCode(projectDO.getCode());
+        if (!StringUtils.isEmpty(projectDTO.getCode())) {
+            project.setCode(projectDTO.getCode());
         }
-        if (projectDO.getEnabled() != null) {
-            project.setEnabled(projectDO.getEnabled());
+        if (projectDTO.getEnabled() != null) {
+            project.setEnabled(projectDTO.getEnabled());
         }
-        if (projectDO.getImageUrl() != null) {
-            project.setImageUrl(projectDO.getImageUrl());
+        if (projectDTO.getImageUrl() != null) {
+            project.setImageUrl(projectDTO.getImageUrl());
         }
-        project.setType(projectDO.getType());
+        project.setType(projectDTO.getType());
         if (projectMapper.updateByPrimaryKey(project) != 1) {
             throw new CommonException("error.project.update");
         }
-        ProjectDO returnProject = projectMapper.selectByPrimaryKey(projectDO.getId());
+        ProjectDTO returnProject = projectMapper.selectByPrimaryKey(projectDTO.getId());
         if (returnProject.getType() != null) {
-            ProjectTypeDO projectTypeDO = projectTypeMapper.selectOne(new ProjectTypeDO(project.getType()));
-            returnProject.setTypeName(projectTypeDO.getName());
+            ProjectTypeDTO dto = new ProjectTypeDTO();
+            dto.setCode(project.getType());
+            returnProject.setTypeName(projectTypeMapper.selectOne(dto).getName());
         }
-        return ConvertHelper.convert(returnProject, ProjectE.class);
+        return returnProject;
     }
 
 
     @Override
-    public List<ProjectDO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDO projectDO) {
-        return projectMapper.selectProjectsByUserId(userId, projectDO);
+    public List<ProjectDTO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDTO projectDTO) {
+        return projectMapper.selectProjectsByUserId(userId, projectDTO);
     }
 
     @Override
-    public List<ProjectDO> selectAll() {
+    public List<ProjectDTO> selectAll() {
         return projectMapper.selectAllWithProjectType();
     }
 
     @Override
-    public ProjectDO selectOne(ProjectDO projectDO) {
-        return projectMapper.selectOne(projectDO);
+    public ProjectDTO selectOne(ProjectDTO projectDTO) {
+        return projectMapper.selectOne(projectDTO);
     }
 
     @Override
-    public List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled) {
+    public List<ProjectDTO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled) {
         return projectMapper.selectUserProjectsUnderOrg(userId, orgId, isEnabled);
     }
 
     @Override
-    public List<ProjectDO> selectByOrgId(Long organizationId) {
-        ProjectDO projectDO = new ProjectDO();
-        projectDO.setOrganizationId(organizationId);
-        return projectMapper.select(projectDO);
+    public List<ProjectDTO> selectByOrgId(Long organizationId) {
+        ProjectDTO dto = new ProjectDTO();
+        dto.setOrganizationId(organizationId);
+        return projectMapper.select(dto);
     }
 
 
     @Override
-    public Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
+    public Page<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
         int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
         int count = memberRoleMapper.selectCountBySourceId(id, "project");
-        List<ProjectDO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-        return new Page<>(projectList, pageInfo, count);
+        Page<ProjectDTO> result = new Page<>(page, size, true);
+        result.setTotal(count);
+        List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+        result.addAll(projectList);
+        return result;
     }
 
     @Override

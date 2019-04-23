@@ -1,24 +1,27 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.query.RoleQuery;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.RoleService;
-import io.choerodon.iam.domain.iam.entity.RoleE;
 import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dataobject.RoleDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -49,41 +52,67 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleDTO> pagingQuery(PageRequest pageRequest, Boolean needUsers, Long sourceId, String sourceType, RoleSearchDTO role) {
-        if (sourceType != null) {
-            role.setLevel(sourceType);
-        }
-        Page<RoleDO> roleDOPage = roleRepository.pagingQuery(
-                pageRequest, ConvertHelper.convert(role, RoleDO.class), ParamUtils.arrToStr(role.getParams()));
-        Page<RoleDTO> roleDTOPage = ConvertPageHelper.convertPage(roleDOPage, RoleDTO.class);
-        if (needUsers != null && needUsers) {
-            roleDTOPage.getContent().forEach(roleDTO -> {
-                if (sourceType == null || ResourceLevel.SITE.value().equals(sourceType)) {
-                    roleDTO.setUsers(ConvertHelper.convertList(
-                            userRepository.listUsersByRoleIdOnSiteLevel(roleDTO.getId()), UserDTO.class));
-                } else if (ResourceLevel.ORGANIZATION.value().equals(sourceType) && sourceId != null) {
-                    roleDTO.setUsers(ConvertHelper.convertList(
-                            userRepository.listUsersByRoleIdOnOrganizationLevel(
-                                    sourceId, roleDTO.getId()), UserDTO.class));
-                } else if (ResourceLevel.PROJECT.value().equals(sourceType) && sourceId != null) {
-                    roleDTO.setUsers(ConvertHelper.convertList(
-                            userRepository.listUsersByRoleIdOnProjectLevel(
-                                    sourceId, roleDTO.getId()), UserDTO.class));
+    public Page<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery) {
+        boolean isWithUser = (roleQuery.getWithUser() != null && roleQuery.getWithUser() == true);
+        final String level = roleQuery.getLevel();
+        final Long sourceId = roleQuery.getSourceId();
+        Page<RoleDTO> roles = roleRepository.pagingQuery(page, size, roleQuery);
+        if (isWithUser) {
+            roles.getResult().forEach(role -> {
+                Long roleId = role.getId();
+                if (level == null || ResourceType.isSite(level)) {
+                    role.setUsers(userRepository.listUsersByRoleIdOnSiteLevel(roleId));
+                }
+                if (ResourceType.isOrganization(level)) {
+                    role.setUsers(userRepository.listUsersByRoleIdOnOrganizationLevel(sourceId, roleId));
+                }
+                if (ResourceType.isProject(level)) {
+                    role.setUsers(userRepository.listUsersByRoleIdOnProjectLevel(sourceId, roleId));
                 }
             });
         }
-        return roleDTOPage;
+        return roles;
     }
 
 
     @Override
     public RoleDTO create(RoleDTO roleDTO) {
-        return ConvertHelper.convert(
-                iRoleService.create(ConvertHelper.convert(roleDTO, RoleE.class)), RoleDTO.class);
+        insertCheck(roleDTO);
+        return iRoleService.create(roleDTO);
+    }
+
+    private void insertCheck(RoleDTO roleDTO) {
+        ResourceLevelValidator.validate(roleDTO.getResourceLevel());
+        validateCode(roleDTO.getCode());
+        validatePermissions(roleDTO.getPermissions());
+    }
+
+    private void validatePermissions(List<PermissionDTO> permissions) {
+        if (permissions == null || permissions.isEmpty()) {
+            throw new CommonException("error.role_permission.empty");
+        }
+    }
+
+    private void validateCode(String code) {
+        if (StringUtils.isEmpty(code)) {
+            throw new CommonException("error.role.code.empty");
+        }
+        if (code.length() > 128) {
+            throw new CommonException("error.role.code.length");
+        }
+        String[] codes = code.split("/");
+        String lastCode = codes[codes.length - 1];
+        Pattern p = Pattern.compile("^[a-z]([-a-z0-9]*[a-z0-9])$");
+        Matcher m = p.matcher(lastCode);
+        boolean isCheck = m.matches();
+        if (!isCheck) {
+            throw new CommonException("error.role.code.regular.illegal");
+        }
     }
 
     @Override
     public RoleDTO createBaseOnRoles(RoleDTO roleDTO) {
+        insertCheck(roleDTO);
         List<Long> roleIds = roleDTO.getRoleIds();
         if (!roleRepository.judgeRolesSameLevel(roleIds)) {
             throw new CommonException("error.roles.in.same.level");
@@ -104,8 +133,23 @@ public class RoleServiceImpl implements RoleService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     public RoleDTO update(RoleDTO roleDTO) {
-        return ConvertHelper.convert(
-                iRoleService.update(ConvertHelper.convert(roleDTO, RoleE.class)), RoleDTO.class);
+        updateCheck(roleDTO);
+        return iRoleService.update(roleDTO);
+    }
+
+    private void updateCheck(RoleDTO roleDTO) {
+        if (StringUtils.isEmpty(roleDTO.getName())) {
+            throw new CommonException("error.role.name.empty");
+        }
+        if (roleDTO.getName().length() > 64) {
+            throw new CommonException("error.role.name.size");
+        }
+        ResourceLevelValidator.validate(roleDTO.getResourceLevel());
+        validateCode(roleDTO.getCode());
+        if (roleDTO.getObjectVersionNumber() == null) {
+            throw new CommonException("error.role.objectVersionNumber.empty");
+        }
+        validatePermissions(roleDTO.getPermissions());
     }
 
     @Override
@@ -115,32 +159,31 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO queryById(Long id) {
-        RoleE roleE = roleRepository.selectByPrimaryKey(id);
-        if (roleE == null) {
+        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(id);
+        if (roleDTO == null) {
             throw new CommonException("error.role.not.exist");
         }
-        return ConvertHelper.convert(roleE, RoleDTO.class);
+        return roleDTO;
     }
 
     @Override
     public RoleDTO enableRole(Long id) {
-        return ConvertHelper.convert(iRoleService.updateRoleEnabled(id), RoleDTO.class);
+        return iRoleService.updateRoleEnabled(id);
     }
 
     @Override
     public RoleDTO disableRole(Long id) {
-        return ConvertHelper.convert(iRoleService.updateRoleDisabled(id), RoleDTO.class);
+        return iRoleService.updateRoleDisabled(id);
     }
 
     @Override
     public RoleDTO queryWithPermissionsAndLabels(Long id) {
-        return ConvertHelper.convert(
-                roleRepository.selectRoleWithPermissionsAndLabels(id), RoleDTO.class);
+        return roleRepository.selectRoleWithPermissionsAndLabels(id);
     }
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnSiteLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.SITE.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.SITE.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -152,7 +195,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnSiteLevel(ClientRoleSearchDTO clientRoleSearchDTO) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.SITE.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.SITE.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
@@ -164,7 +207,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -176,7 +219,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
@@ -188,7 +231,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.PROJECT.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
@@ -200,7 +243,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = ConvertHelper.convertList(roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.PROJECT.value()), RoleDTO.class);
+        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
             Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
@@ -221,17 +264,17 @@ public class RoleServiceImpl implements RoleService {
 
     private void checkCode(RoleDTO role) {
         Boolean createCheck = StringUtils.isEmpty(role.getId());
-        RoleDO roleDO = new RoleDO();
-        roleDO.setCode(role.getCode());
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setCode(role.getCode());
         if (createCheck) {
-            Boolean existed = roleRepository.selectOne(roleDO) != null;
+            Boolean existed = roleRepository.selectOne(roleDTO) != null;
             if (existed) {
                 throw new CommonException("error.role.code.exist");
             }
         } else {
             Long id = role.getId();
-            RoleDO roleDO1 = roleRepository.selectOne(roleDO);
-            Boolean existed = roleDO1 != null && !id.equals(roleDO1.getId());
+            RoleDTO roleDTO1 = roleRepository.selectOne(roleDTO);
+            Boolean existed = roleDTO1 != null && !id.equals(roleDTO1.getId());
             if (existed) {
                 throw new CommonException("error.role.code.exist");
             }
@@ -241,20 +284,19 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType) {
-        List<RoleDO> roles = roleRepository.selectRolesByLabelNameAndType(labelName, labelType);
-        return roles.stream().map(RoleDO::getId).collect(Collectors.toList());
+        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(labelName, labelType);
+        return roles.stream().map(RoleDTO::getId).collect(Collectors.toList());
     }
 
     @Override
     public List<RoleDTO> listRolesBySourceIdAndTypeAndUserId(String sourceType, Long sourceId, Long userId) {
-        return ConvertHelper.convertList(
-                roleRepository.selectUsersRolesBySourceIdAndType(sourceType, sourceId, userId), RoleDTO.class);
+        return roleRepository.selectUsersRolesBySourceIdAndType(sourceType, sourceId, userId);
     }
 
     @Override
     public RoleDTO queryByCode(String code) {
-        RoleDO roleDO = new RoleDO();
-        roleDO.setCode(code);
-        return ConvertHelper.convert(roleRepository.selectOne(roleDO), RoleDTO.class);
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setCode(code);
+        return roleRepository.selectOne(roleDTO);
     }
 }

@@ -1,7 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.domain.oauth.entity.PasswordPolicyE;
+
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 
 /**
  * @author wuguokai
@@ -11,8 +11,8 @@ public interface PasswordPolicyRepository {
 
     PasswordPolicyDTO queryByOrgId(Long orgId);
 
-    PasswordPolicyE create(PasswordPolicyE passwordPolicyE);
+    PasswordPolicyDTO create(PasswordPolicyDTO passwordPolicyDTO);
 
-    PasswordPolicyE update(Long id, PasswordPolicyE passwordPolicyE);
+    PasswordPolicyDTO update(Long id, PasswordPolicyDTO passwordPolicyDTO);
 
 }

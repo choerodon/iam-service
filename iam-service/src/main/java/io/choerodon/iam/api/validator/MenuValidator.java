@@ -1,8 +1,7 @@
 package io.choerodon.iam.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.MenuDTO;
-import io.choerodon.iam.infra.dataobject.MenuDO;
+import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
 import org.springframework.stereotype.Component;
 
@@ -19,13 +18,13 @@ public class MenuValidator {
 
     //code不能重复
     public void create(MenuDTO menuDTO) {
-        String level = menuDTO.getLevel();
+        String level = menuDTO.getResourceLevel();
         String type = menuDTO.getType();
         MenuTypeValidator.validate(type);
         ResourceLevelValidator.validate(level);
-        MenuDO menu = new MenuDO();
+        MenuDTO menu = new MenuDTO();
         menu.setCode(menuDTO.getCode());
-        menu.setLevel(level);
+        menu.setResourceLevel(level);
         menu.setType(type);
         if (!menuMapper.select(menu).isEmpty()) {
             throw new CommonException("error.menuCode.exist");
@@ -40,8 +39,6 @@ public class MenuValidator {
         MenuDTO menuDTO1 = new MenuDTO();
         menuDTO1.setId(menuId);
         menuDTO1.setName(menuDTO.getName());
-        menuDTO1.setZhName(menuDTO.getZhName());
-        menuDTO1.setEnName(menuDTO.getEnName());
         menuDTO1.setIcon(menuDTO.getIcon());
         menuDTO1.setObjectVersionNumber(menuDTO.getObjectVersionNumber());
         return menuDTO1;
@@ -49,16 +46,16 @@ public class MenuValidator {
 
     //有子节点的目录不能删除
     public void delete(Long menuId) {
-        MenuDO menuDO = new MenuDO();
-        menuDO.setParentId(menuId);
-        if (!menuMapper.select(menuDO).isEmpty()) {
+        MenuDTO menuDTO = new MenuDTO();
+        menuDTO.setParentId(menuId);
+        if (!menuMapper.select(menuDTO).isEmpty()) {
             throw new CommonException("error.menu.have.children");
         }
-        menuDO = menuMapper.selectByPrimaryKey(menuId);
-        if (menuDO == null) {
+        menuDTO = menuMapper.selectByPrimaryKey(menuId);
+        if (menuDTO == null) {
             throw new CommonException("error.menu.not.exist");
         }
-        if (menuDO.getDefault()) {
+        if (menuDTO.getDefault()) {
             throw new CommonException("error.menu.default");
         }
     }

@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectRelationshipMapper">
 
-    <select id="seleteProjectsByParentId" resultType="io.choerodon.iam.api.dto.ProjectRelationshipDTO">
+    <select id="selectProjectsByParentId" resultType="io.choerodon.iam.infra.dto.ProjectRelationshipDTO">
         SELECT
             fpr.*,
             fpr.IS_ENABLED AS enabled,

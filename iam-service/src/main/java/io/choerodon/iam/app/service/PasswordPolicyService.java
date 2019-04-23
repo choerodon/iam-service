@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
+
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 
 /**
  * @author wuguokai

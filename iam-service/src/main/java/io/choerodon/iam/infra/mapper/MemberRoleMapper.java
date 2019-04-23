@@ -1,9 +1,9 @@
 package io.choerodon.iam.infra.mapper;
 
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author carllhw
  */
-public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
+public interface MemberRoleMapper extends Mapper<MemberRoleDTO> {
 
 
     List<Long> selectDeleteList(@Param("memberId") long memberId, @Param("sourceId") long sourceId, @Param("memberType") String memberType, @Param("sourceType") String sourceType, @Param("list") List<Long> deleteList);
@@ -26,7 +26,7 @@ public interface MemberRoleMapper extends BaseMapper<MemberRoleDO> {
                            @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
                            @Param("param") String param);
 
-    List<ClientDO> selectClientsWithRoles(
+    List<ClientDTO> selectClientsWithRoles(
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,
             @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,

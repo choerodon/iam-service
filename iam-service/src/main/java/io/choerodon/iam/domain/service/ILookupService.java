@@ -1,22 +1,21 @@
 package io.choerodon.iam.domain.service;
 
-import io.choerodon.iam.domain.iam.entity.LookupE;
-import io.choerodon.iam.infra.dataobject.LookupDO;
-import io.choerodon.mybatis.service.BaseService;
+
+import io.choerodon.iam.infra.dto.LookupDTO;
 
 /**
  * @author superlee
  */
-public interface ILookupService extends BaseService<LookupDO> {
+public interface ILookupService {
 
-    LookupE create(LookupE lookupE);
+    LookupDTO create(LookupDTO lookupDTO);
 
     void delete(Long id);
 
-    LookupE update(LookupE lookupE);
+    LookupDTO update(LookupDTO lookupDTO);
 
-    LookupE queryById(LookupE lookupE);
+    LookupDTO queryById(LookupDTO lookupDTO);
 
-    LookupE queryByCode(LookupE lookupE);
+    LookupDTO queryByCode(LookupDTO lookupDTO);
 
 }

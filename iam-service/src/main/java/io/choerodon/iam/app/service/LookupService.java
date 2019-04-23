@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.LookupDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import io.choerodon.iam.infra.dto.LookupDTO;
 
 /**
  * @author superlee
@@ -11,7 +11,7 @@ public interface LookupService {
 
     LookupDTO create(LookupDTO lookupDTO);
 
-    Page<LookupDTO> pagingQuery(PageRequest pageRequest, LookupDTO lookupDTO);
+    Page<LookupDTO> pagingQuery(int page,int size, LookupDTO lookupDTO, String param);
 
     void delete(Long id);
 

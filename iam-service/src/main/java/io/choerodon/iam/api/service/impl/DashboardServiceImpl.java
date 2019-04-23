@@ -2,20 +2,17 @@ package io.choerodon.iam.api.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.DashboardDTO;
 import io.choerodon.iam.api.dto.DashboardPositionDTO;
 import io.choerodon.iam.api.service.DashboardService;
-import io.choerodon.iam.domain.iam.entity.DashboardE;
-import io.choerodon.iam.domain.iam.entity.DashboardRoleE;
-import io.choerodon.iam.domain.iam.entity.UserDashboardE;
+import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.iam.infra.dto.DashboardRoleDTO;
+import io.choerodon.iam.infra.dto.UserDashboardDTO;
 import io.choerodon.iam.infra.mapper.DashboardMapper;
 import io.choerodon.iam.infra.mapper.DashboardRoleMapper;
 import io.choerodon.iam.infra.mapper.UserDashboardMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +44,18 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardDTO update(Long dashboardId, DashboardDTO dashboardDTO, Boolean updateRole) {
-        DashboardE dashboard = new DashboardE(
-                dashboardId,
-                dashboardDTO.getName(),
-                dashboardDTO.getTitle(),
-                dashboardDTO.getDescription(),
-                dashboardDTO.getIcon(),
-                dashboardDTO.getNeedRoles(),
-                dashboardDTO.getObjectVersionNumber());
-        dashboard.setEnabled(dashboardDTO.getEnabled());
-        dashboard.setPosition(convertPositionDTOToJson(dashboardDTO.getPositionDTO()));
-        int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboard);
+        dashboardDTO.setId(dashboardId);
+//        DashboardE dashboard = new DashboardE(
+//                dashboardId,
+//                dashboardDTO.getName(),
+//                dashboardDTO.getTitle(),
+//                dashboardDTO.getDescription(),
+//                dashboardDTO.getIcon(),
+//                dashboardDTO.getNeedRoles(),
+//                dashboardDTO.getObjectVersionNumber());
+//        dashboard.setEnabled(dashboardDTO.getEnabled());
+        dashboardDTO.setPosition(convertPositionDTOToJson(dashboardDTO.getPositionDTO()));
+        int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboardDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.dashboard.not.exist");
         }
@@ -71,10 +69,10 @@ public class DashboardServiceImpl implements DashboardService {
         if (roleIds != null && !roleIds.isEmpty()) {
             dashboardRoleMapper.deleteByDashboardId(select.getId());
             for (Long roleId : roleIds) {
-                DashboardRoleE dashboardRoleE = new DashboardRoleE();
-                dashboardRoleE.setRoleId(roleId);
-                dashboardRoleE.setDashboardId(dashboardId);
-                dashboardRoleMapper.insertSelective(dashboardRoleE);
+                DashboardRoleDTO dto = new DashboardRoleDTO();
+                dto.setRoleId(roleId);
+                dto.setDashboardId(dashboardId);
+                dashboardRoleMapper.insertSelective(dto);
             }
         }
         select.setRoleIds(dashboardRoleMapper.selectRoleIds(select.getId()));
@@ -83,7 +81,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardDTO query(Long dashboardId) {
-        DashboardE dashboard = new DashboardE();
+        DashboardDTO dashboard = new DashboardDTO();
         dashboard.setId(dashboardId);
         dashboard = dashboardMapper.selectByPrimaryKey(dashboardId);
 
@@ -94,17 +92,18 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Page<DashboardDTO> list(DashboardDTO dashboardDTO, PageRequest pageRequest, String param) {
-        Page<DashboardE> dashboardPage = PageHelper.doPageAndSort(
-                pageRequest, () -> dashboardMapper.fulltextSearch(
-                        modelMapper.map(dashboardDTO, DashboardE.class), param));
-
-        return ConvertPageHelper.convertPage(dashboardPage, DashboardDTO.class);
+    public Page<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPage(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
+//        Page<DashboardE> dashboardPage = PageHelper.doPageAndSort(
+//                pageRequest, () -> dashboardMapper.fulltextSearch(
+//                        modelMapper.map(dashboardDTO, DashboardE.class), param));
+//
+//        return ConvertPageHelper.convertPage(dashboardPage, DashboardDTO.class);
     }
 
     @Override
     public void reset(Long dashboardId) {
-        UserDashboardE deleteCondition = new UserDashboardE();
+        UserDashboardDTO deleteCondition = new UserDashboardDTO();
         deleteCondition.setSourceId(dashboardId);
         long num = userDashboardMapper.delete(deleteCondition);
         LOGGER.info("reset userDashboard by dashboardId: {}, delete num: {}", dashboardId, num);

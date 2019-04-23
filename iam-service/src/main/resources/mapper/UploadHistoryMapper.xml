@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.iam.infra.mapper.UploadHistoryMapper">
 
     <!-- 根据databaseId找指定的sql，既不是mysql也不是oracle走这条sql，默认是使用mysql的sql -->
-    <select id="latestHistory" resultType="io.choerodon.iam.infra.dataobject.UploadHistoryDO">
+    <select id="latestHistory" resultType="io.choerodon.iam.infra.dto.UploadHistoryDTO">
         SELECT *
         FROM iam_upload_history
         WHERE user_id = #{userId}
@@ -18,7 +18,7 @@
         limit 1
     </select>
 
-    <select id="latestHistory" databaseId="mysql" resultType="io.choerodon.iam.infra.dataobject.UploadHistoryDO">
+    <select id="latestHistory" databaseId="mysql" resultType="io.choerodon.iam.infra.dto.UploadHistoryDTO">
         SELECT *
         FROM iam_upload_history
         WHERE user_id = #{userId}
@@ -33,7 +33,7 @@
         limit 1
     </select>
 
-    <select id="latestHistory" databaseId="oracle" resultType="io.choerodon.iam.infra.dataobject.UploadHistoryDO">
+    <select id="latestHistory" databaseId="oracle" resultType="io.choerodon.iam.infra.dto.UploadHistoryDTO">
         SELECT t.*
         FROM
         (

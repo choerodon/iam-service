@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.api.dto.RelationshipCheckDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 
 /**
  * @author Eugen

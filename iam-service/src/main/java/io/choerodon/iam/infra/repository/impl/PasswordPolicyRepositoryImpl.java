@@ -1,11 +1,8 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.domain.oauth.entity.PasswordPolicyE;
 import io.choerodon.iam.domain.repository.PasswordPolicyRepository;
-import io.choerodon.iam.infra.dataobject.PasswordPolicyDO;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.stereotype.Component;
 
@@ -23,38 +20,38 @@ public class PasswordPolicyRepositoryImpl implements PasswordPolicyRepository {
 
     @Override
     public PasswordPolicyDTO query(Long id) {
-        PasswordPolicyDO passwordPolicyDO = passwordPolicyMapper.selectByPrimaryKey(id);
-        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
+        return passwordPolicyMapper.selectByPrimaryKey(id);
+//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
     }
 
     @Override
     public PasswordPolicyDTO queryByOrgId(Long orgId) {
-        PasswordPolicyDO passwordPolicy = new PasswordPolicyDO();
-        passwordPolicy.setOrganizationId(orgId);
-        PasswordPolicyDO passwordPolicyDO = passwordPolicyMapper.selectOne(passwordPolicy);
-        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
+        PasswordPolicyDTO dto = new PasswordPolicyDTO();
+        dto.setOrganizationId(orgId);
+        return passwordPolicyMapper.selectOne(dto);
+//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
     }
 
     @Override
-    public PasswordPolicyE create(PasswordPolicyE passwordPolicyE) {
-        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyE, PasswordPolicyDO.class);
-        int isInsert = passwordPolicyMapper.insertSelective(passwordPolicyDO);
+    public PasswordPolicyDTO create(PasswordPolicyDTO passwordPolicyDTO) {
+//        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyDTO, PasswordPolicyDO.class);
+        int isInsert = passwordPolicyMapper.insertSelective(passwordPolicyDTO);
         if (isInsert != 1) {
             throw new CommonException("error.passwordPolicy.create");
         }
-        passwordPolicyDO = passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDO.getId());
-        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
+        return  passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
+//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
     }
 
     @Override
-    public PasswordPolicyE update(Long id, PasswordPolicyE passwordPolicyE) {
-        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyE, PasswordPolicyDO.class);
-        passwordPolicyDO.setId(id);
-        int isUpdate = passwordPolicyMapper.updateByPrimaryKeySelective(passwordPolicyDO);
+    public PasswordPolicyDTO update(Long id, PasswordPolicyDTO passwordPolicyDTO) {
+//        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyDTO, PasswordPolicyDO.class);
+        passwordPolicyDTO.setId(id);
+        int isUpdate = passwordPolicyMapper.updateByPrimaryKeySelective(passwordPolicyDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.passwordPolicy.update");
         }
-        passwordPolicyDO = passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDO.getId());
-        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
+        return passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
+//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
     }
 }

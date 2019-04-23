@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_config.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-04-23-drop-menu-config') {
+        dropTable(tableName:'IAM_MENU_CONFIG')
+    }
 }

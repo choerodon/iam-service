@@ -3,23 +3,22 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.ProjectService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -69,13 +68,12 @@ public class ProjectController extends BaseController {
     @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
     public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long id,
-                                              @ApiIgnore
-                                              @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                      PageRequest pageRequest,
+                                              @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                               @RequestParam(required = false, name = "id") Long userId,
                                               @RequestParam(required = false) String email,
                                               @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, pageRequest, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, page, size, param), HttpStatus.OK);
     }
 
     /**
@@ -86,7 +84,15 @@ public class ProjectController extends BaseController {
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
                                              @RequestBody ProjectDTO projectDTO) {
-        projectDTO.updateCheck();
+        if (StringUtils.isEmpty(projectDTO.getName())) {
+            throw new CommonException("error.project.name.empty");
+        }
+        if (projectDTO.getName().length() < 1 || projectDTO.getName().length() > 32) {
+            throw new CommonException("error.project.code.size");
+        }
+        if (projectDTO.getObjectVersionNumber() == null) {
+            throw new CommonException("error.objectVersionNumber.null");
+        }
         projectDTO.setId(id);
         //项目code不可编辑
         projectDTO.setCode(null);

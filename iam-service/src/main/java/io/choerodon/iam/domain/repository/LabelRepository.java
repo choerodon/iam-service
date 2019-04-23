@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.infra.dataobject.LabelDO;
+
+import io.choerodon.iam.infra.dto.LabelDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -10,13 +11,13 @@ import java.util.Set;
  */
 public interface LabelRepository {
 
-    List<LabelDO> listByOption(LabelDO labelDO);
+    List<LabelDTO> listByOption(LabelDTO labelDTO);
 
-    LabelDO selectByPrimaryKey(Long labelId);
+    LabelDTO selectByPrimaryKey(Long labelId);
 
-    List<LabelDO> selectByRoleId(Long roleId);
+    List<LabelDTO> selectByRoleId(Long roleId);
 
-    LabelDO selectOne(LabelDO labelDO);
+    LabelDTO selectOne(LabelDTO labelDTO);
 
     /**
      * 根据用户id查询用户角色所有的label.name
@@ -24,7 +25,7 @@ public interface LabelRepository {
      * @param id userId
      * @return List<LabelDO> labelDos
      */
-    List<LabelDO> selectByUserId(Long id);
+    List<LabelDTO> selectByUserId(Long id);
 
     Set<String> selectLabelNamesInRoleIds(List<Long> roleIds);
 }

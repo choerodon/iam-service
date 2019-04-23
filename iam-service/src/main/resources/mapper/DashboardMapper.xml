@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.DashboardMapper">
 
-    <resultMap id="Dashboard" type="io.choerodon.iam.domain.iam.entity.DashboardE">
+    <resultMap id="Dashboard" type="io.choerodon.iam.infra.dto.DashboardDTO">
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
         <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>

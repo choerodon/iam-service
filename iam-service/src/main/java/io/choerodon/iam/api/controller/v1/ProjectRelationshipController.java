@@ -7,13 +7,13 @@ import javax.validation.Valid;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.api.dto.RelationshipCheckDTO;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 

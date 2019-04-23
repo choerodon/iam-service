@@ -1,7 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
-import io.choerodon.iam.infra.dataobject.RolePermissionDO;
+
+import io.choerodon.iam.infra.dto.RolePermissionDTO;
 
 import java.util.List;
 
@@ -9,15 +9,15 @@ import java.util.List;
  * @author wuguokai
  */
 public interface RolePermissionRepository {
-    RolePermissionE selectOne(RolePermissionE rolePermissionE);
+    RolePermissionDTO selectOne(RolePermissionDTO rolePermissionDTO);
 
-    RolePermissionE insert(RolePermissionE rolePermissionE);
+    RolePermissionDTO insert(RolePermissionDTO rolePermissionDTO);
 
-    void delete(RolePermissionE rolePermissionE);
+    void delete(RolePermissionDTO rolePermissionDTO);
 
-    List<RolePermissionE> select(RolePermissionE rolePermissionE);
+    List<RolePermissionDTO> select(RolePermissionDTO rolePermissionDTO);
 
     List<Long> queryExistingPermissionIdsByRoleIds(List<Long> roles);
 
-    void insertList(List<RolePermissionDO> rolePermissionDOList);
+    void insertList(List<RolePermissionDTO> rolePermissionDOList);
 }

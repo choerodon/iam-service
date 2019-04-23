@@ -31,7 +31,7 @@ class RoleServiceImplSpec extends Specification {
         RoleSearchDTO role = new RoleSearchDTO()
 
         when: "调用方法[site层]"
-        Page<RoleDTO> page = roleService.pagingQuery(pageRequest, needUsers, sourceId, sourceType, role)
+        Page<RoleDTO> page = roleService.pagingSearch(pageRequest, needUsers, sourceId, sourceType, role)
 
         then: "校验参数"
         page.totalPages != 0
@@ -40,7 +40,7 @@ class RoleServiceImplSpec extends Specification {
         when: "调用方法[organization层]"
         sourceId = 1L
         sourceType = "organization"
-        page = roleService.pagingQuery(pageRequest, needUsers, sourceId, sourceType, role)
+        page = roleService.pagingSearch(pageRequest, needUsers, sourceId, sourceType, role)
 
         then: "校验参数"
         page.totalPages != 0
@@ -49,7 +49,7 @@ class RoleServiceImplSpec extends Specification {
         when: "调用方法[project层]"
         sourceId = 0L
         sourceType = "project"
-        page = roleService.pagingQuery(pageRequest, needUsers, sourceId, sourceType, role)
+        page = roleService.pagingSearch(pageRequest, needUsers, sourceId, sourceType, role)
 
         then: "校验参数"
         page.totalPages != 0

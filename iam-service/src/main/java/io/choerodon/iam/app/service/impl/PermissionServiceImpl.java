@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.netflix.appinfo.InstanceInfo;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -13,12 +12,12 @@ import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.MenuPermissionRepository;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
-import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RolePermissionDTO;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
@@ -138,7 +137,9 @@ public class PermissionServiceImpl implements PermissionService {
             Long orgId = entry.getKey();
             if (orgId != null) {
                 Boolean orgEnabled = organizationMapper.organizationEnabled(orgId);
-                if (orgEnabled != null && !orgEnabled) continue;
+                if (orgEnabled != null && !orgEnabled) {
+                    continue;
+                }
             }
             Set<String> searchOrganizationCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchOrganizationCodes = permissionRepository.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes);
@@ -165,7 +166,9 @@ public class PermissionServiceImpl implements PermissionService {
             Long projectId = entry.getKey();
             if (projectId != null) {
                 Boolean projectEnabled = projectMapper.projectEnabled(projectId);
-                if (projectEnabled != null && !projectEnabled) continue;
+                if (projectEnabled != null && !projectEnabled) {
+                    continue;
+                }
             }
             Set<String> searchProjectCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchProjectCodes = permissionRepository.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes);
@@ -206,9 +209,10 @@ public class PermissionServiceImpl implements PermissionService {
                         .orElseThrow(() -> new CommonException("error.permission.does.not.exist"));
         if (deleted) {
             permissionRepository.deleteById(permissionDTO.getId());
-            RolePermissionE rolePermission = new RolePermissionE(null, null, permissionDTO.getId());
+            RolePermissionDTO rolePermission = new RolePermissionDTO();
+            rolePermission.setPermissionId(permissionDTO.getId());
             rolePermissionRepository.delete(rolePermission);
-            MenuPermissionDO menuPermission = new MenuPermissionDO();
+            MenuPermissionDTO menuPermission = new MenuPermissionDTO();
             menuPermission.setPermissionCode(code);
             menuPermissionRepository.delete(menuPermission);
         } else {

@@ -5,14 +5,13 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.SystemSettingDTO;
 import io.choerodon.iam.api.dto.payload.SystemSettingEventPayload;
 import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.domain.repository.SystemSettingRepository;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.common.utils.SagaTopic;
-import io.choerodon.iam.infra.dataobject.SystemSettingDO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
@@ -73,7 +72,7 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         validateLength(systemSettingDTO);
 
         // 执行业务代码
-        SystemSettingDTO dto = systemSettingRepository.addSetting(convert(systemSettingDTO));
+        SystemSettingDTO dto = systemSettingRepository.addSetting(systemSettingDTO);
 
         // 触发 saga 流程
         triggerSagaFlow(dto);
@@ -87,7 +86,7 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         validateLength(systemSettingDTO);
 
         // 执行业务代码
-        SystemSettingDTO dto = systemSettingRepository.updateSetting(convert(systemSettingDTO));
+        SystemSettingDTO dto = systemSettingRepository.updateSetting(systemSettingDTO);
 
         // 触发 saga 流程
         triggerSagaFlow(dto);
@@ -132,11 +131,11 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         return fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
-    private SystemSettingDO convert(SystemSettingDTO systemSettingDTO) {
-        SystemSettingDO systemSettingDO = new SystemSettingDO();
-        BeanUtils.copyProperties(systemSettingDTO, systemSettingDO);
-        return systemSettingDO;
-    }
+//    private SystemSettingDO convert(SystemSettingDTO systemSettingDTO) {
+//        SystemSettingDO systemSettingDO = new SystemSettingDO();
+//        BeanUtils.copyProperties(systemSettingDTO, systemSettingDO);
+//        return systemSettingDO;
+//    }
 
     /**
      * If the value is empty, default value is to be set.

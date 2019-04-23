@@ -2,13 +2,11 @@ package io.choerodon.iam.infra.repository.impl;
 
 import java.util.List;
 
-import org.springframework.beans.BeanUtils;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
-import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
 import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
 
 /**
@@ -24,17 +22,15 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
 
     @Override
     public List<ProjectRelationshipDTO> seleteProjectsByParentId(Long parentId) {
-        return projectRelationshipMapper.seleteProjectsByParentId(parentId);
+        return projectRelationshipMapper.selectProjectsByParentId(parentId);
     }
 
     @Override
-    public ProjectRelationshipDO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO) {
-        ProjectRelationshipDO projectRelationshipDO = new ProjectRelationshipDO();
-        BeanUtils.copyProperties(projectRelationshipDTO, projectRelationshipDO);
-        if (projectRelationshipMapper.insertSelective(projectRelationshipDO) != 1) {
+    public ProjectRelationshipDTO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO) {
+        if (projectRelationshipMapper.insertSelective(projectRelationshipDTO) != 1) {
             throw new CommonException("error.create.project.group");
         }
-        return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDO.getId());
+        return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDTO.getId());
     }
 
     @Override
@@ -48,25 +44,25 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
     }
 
     @Override
-    public ProjectRelationshipDO selectByPrimaryKey(Long id) {
+    public ProjectRelationshipDTO selectByPrimaryKey(Long id) {
         return projectRelationshipMapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public ProjectRelationshipDO update(ProjectRelationshipDO projectRelationshipDO) {
-        if (projectRelationshipMapper.updateByPrimaryKeySelective(projectRelationshipDO) != 1) {
+    public ProjectRelationshipDTO update(ProjectRelationshipDTO projectRelationshipDTO) {
+        if (projectRelationshipMapper.updateByPrimaryKeySelective(projectRelationshipDTO) != 1) {
             throw new CommonException("error.project.group.update");
         }
-        return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDO.getId());
+        return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDTO.getId());
     }
 
     @Override
-    public ProjectRelationshipDO selectOne(ProjectRelationshipDO projectRelationshipDO) {
-        return projectRelationshipMapper.selectOne(projectRelationshipDO);
+    public ProjectRelationshipDTO selectOne(ProjectRelationshipDTO projectRelationshipDTO) {
+        return projectRelationshipMapper.selectOne(projectRelationshipDTO);
     }
 
     @Override
-    public List<ProjectRelationshipDO> select(ProjectRelationshipDO projectRelationshipDO) {
-        return projectRelationshipMapper.select(projectRelationshipDO);
+    public List<ProjectRelationshipDTO> select(ProjectRelationshipDTO projectRelationshipDTO) {
+        return projectRelationshipMapper.select(projectRelationshipDTO);
     }
 }

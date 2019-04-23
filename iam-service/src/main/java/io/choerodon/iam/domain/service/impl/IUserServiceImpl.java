@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -13,10 +14,8 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.feign.NotifyFeignClient;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 
@@ -25,7 +24,7 @@ import io.choerodon.mybatis.service.BaseServiceImpl;
  * @data 2018/4/12
  */
 @Service
-public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserService {
+public class IUserServiceImpl extends BaseServiceImpl<UserDTO> implements IUserService {
 
     private UserRepository userRepository;
     private NotifyFeignClient notifyFeignClient;
@@ -37,29 +36,29 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
     }
 
     @Override
-    public UserE updateUserEnabled(Long userId) {
-        UserE userE = userRepository.selectByPrimaryKey(userId);
-        if (userE == null) {
+    public UserDTO updateUserEnabled(Long userId) {
+        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+        if (userDTO == null) {
             throw new CommonException("error.user.not.exist");
         }
-        userE.enable();
-        return userRepository.updateSelective(userE).hiddenPassword();
+        userDTO.setEnabled(true);
+        return userRepository.updateSelective(userDTO);
     }
 
     @Override
-    public UserE updateUserDisabled(Long userId) {
-        UserE userE = userRepository.selectByPrimaryKey(userId);
-        if (userE == null) {
+    public UserDTO updateUserDisabled(Long userId) {
+        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+        if (userDTO == null) {
             throw new CommonException("error.user.not.exist");
         }
-        userE.disable();
-        return userRepository.updateSelective(userE).hiddenPassword();
+        userDTO.setEnabled(false);
+        return userRepository.updateSelective(userDTO);
     }
 
 
     @Override
-    public UserE updateUserInfo(UserE userE) {
-        return userRepository.updateUserInfo(userE);
+    public UserDTO updateUserInfo(UserDTO userDTO) {
+        return userRepository.updateUserInfo(userDTO);
     }
 
     @Override
@@ -90,10 +89,10 @@ public class IUserServiceImpl extends BaseServiceImpl<UserDO> implements IUserSe
             user.setId(id);
             //如果是发送给所有人，我们无需查看是否有角色分配，全部发送，避免查表
             if (!sendAll) {
-                UserE userE = userRepository.selectByPrimaryKey(id);
-                if (userE != null) {
+                UserDTO userDTO = userRepository.selectByPrimaryKey(id);
+                if (userDTO != null) {
                     //有角色分配，但是角色已经删除
-                    user.setEmail(userE.getEmail());
+                    user.setEmail(userDTO.getEmail());
                     users.add(user);
                 }
             } else {

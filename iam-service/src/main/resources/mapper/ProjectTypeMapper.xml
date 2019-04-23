@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectTypeMapper">
-    <select id="fuzzyQuery" resultType="io.choerodon.iam.infra.dataobject.ProjectTypeDO">
+    <select id="fuzzyQuery" resultType="io.choerodon.iam.infra.dto.ProjectTypeDTO">
         SELECT * FROM fd_project_type
         WHERE 1=1
         <if test="name != null">

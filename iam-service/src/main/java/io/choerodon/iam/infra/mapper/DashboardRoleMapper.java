@@ -2,15 +2,14 @@ package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.iam.infra.dto.DashboardRoleDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.iam.domain.iam.entity.DashboardRoleE;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author dongfan117@gmail.com
  */
-public interface DashboardRoleMapper extends BaseMapper<DashboardRoleE> {
+public interface DashboardRoleMapper extends Mapper<DashboardRoleDTO> {
 
     List<Long> selectRoleIds(@Param("dashboardId") Long dashboardId);
 

@@ -4,18 +4,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import io.choerodon.iam.domain.iam.entity.UserE;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 /**
  * @author superlee
  * @data 2018/4/12
  */
 public interface IUserService {
-    UserE updateUserEnabled(Long userId);
+    UserDTO updateUserEnabled(Long userId);
 
-    UserE updateUserDisabled(Long userId);
+    UserDTO updateUserDisabled(Long userId);
 
-    UserE updateUserInfo(UserE userE);
+    UserDTO updateUserInfo(UserDTO userDTO);
 
     /**
      * 异步

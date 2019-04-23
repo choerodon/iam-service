@@ -1,32 +1,31 @@
 package io.choerodon.iam.app.service.impl;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.infra.dto.AccessTokenDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.schedule.annotation.JobTask;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.UserAccessTokenDTO;
 import io.choerodon.iam.app.service.AccessTokenService;
-import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.domain.oauth.entity.UserAccessTokenE;
 import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.dataobject.AccessTokenDO;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.iam.infra.mapper.AccessTokenMapper;
 import io.choerodon.iam.infra.mapper.RefreshTokenMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author Eugen
@@ -47,60 +46,68 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public Page<UserAccessTokenDTO> pagingTokensByUserIdAndClient(PageRequest pageRequest, String clientName, String currentToken) {
+    public Page<AccessTokenDTO> pagingTokensByUserIdAndClient(int page, int size, String clientName, String currentToken) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        UserE userE = userRepository.selectByPrimaryKey(userId);
-        if (userE == null) {
+        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+        if (userDTO == null) {
             throw new CommonException("error.user.not.exist");
         }
-        return pageConvert(pageRequest, userE.getLoginName(), clientName, currentToken);
+        return pageConvert(page, size, userDTO.getLoginName(), clientName, currentToken);
     }
 
-    public Page<UserAccessTokenDTO> pageConvert(PageRequest pageRequest, String loginName, String clientName, String currentToken) {
+    public Page<AccessTokenDTO> pageConvert(int page, int size, String loginName, String clientName, String currentToken) {
         //原分页信息
-        Page<UserAccessTokenE> pageOri = PageHelper.doPageAndSort(pageRequest, () -> accessTokenMapper.selectTokens(loginName, clientName));
+        Page<AccessTokenDTO> pageOri = PageHelper.startPage(page, size).doSelectPage(() -> accessTokenMapper.selectTokens(loginName, clientName));
+//                PageHelper.doPageAndSort(pageRequest, () -> accessTokenMapper.selectTokens(loginName, clientName));
         //所有token信息
-        List<UserAccessTokenE> userAccessTokenES = accessTokenMapper.selectTokens(loginName, clientName);
+        List<AccessTokenDTO> userAccessTokens = accessTokenMapper.selectTokens(loginName, clientName);
 
-        Page<UserAccessTokenDTO> pageBack = new Page<>();
-        pageBack.setNumber(pageOri.getNumber());
-        pageBack.setSize(pageOri.getSize());
-        pageBack.setNumberOfElements(pageOri.getNumberOfElements());
-        pageBack.setTotalElements(pageOri.getTotalElements());
-        pageBack.setTotalPages(pageOri.getTotalPages());
-        if (pageOri.getContent().isEmpty()) {
-            return pageBack;
+        Page<AccessTokenDTO> result = new Page<>(page,size,true);
+        BeanUtils.copyProperties(pageOri,result);
+        if (pageOri.getResult().isEmpty()) {
+            return result;
         } else {
             //todo 此处还需优化修改
             //1.提取tokenDTO
-            List<UserAccessTokenDTO> userAccessTokenDTOS = userAccessTokenES.stream().map(tokenE ->
-                    new UserAccessTokenDTO(tokenE, currentToken)
-            ).collect(Collectors.toList());
+            List<AccessTokenDTO> userAccessTokenDTOS = userAccessTokens.stream().map(token -> {
+                AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
+                accessTokenDTO.setTokenId(token.getTokenId());
+                accessTokenDTO.setClientId(token.getClientId());
+                accessTokenDTO.setRedirectUri(token.getRedirectUri());
+                DefaultOAuth2AccessToken defaultToken = SerializationUtils.deserialize(token.getToken());
+                accessTokenDTO.setAccesstoken(defaultToken.getValue());
+                accessTokenDTO.setExpirationTime(defaultToken.getExpiration());
+                accessTokenDTO.setExpire(defaultToken.isExpired());
+                accessTokenDTO.setCreateTime((Date) defaultToken.getAdditionalInformation().get("createTime"));
+                accessTokenDTO.setCurrentToken(currentToken.equalsIgnoreCase(accessTokenDTO.getAccesstoken()));
+                return accessTokenDTO;
+            }).collect(Collectors.toList());
             //2.过滤老token（没有createTime）
-            List<UserAccessTokenDTO> oldTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() == null).collect(Collectors.toList());
+            List<AccessTokenDTO> oldTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() == null).collect(Collectors.toList());
             //3.过滤并按创建时间将新token排序（有createTime）
-            List<UserAccessTokenDTO> newAndSortedTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() != null).sorted(Comparator.comparing(UserAccessTokenDTO::getCreateTime).reversed()).collect(Collectors.toList());
+            List<AccessTokenDTO> newAndSortedTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() != null).sorted(Comparator.comparing(AccessTokenDTO::getCreateTime).reversed()).collect(Collectors.toList());
             //4.排序：当前token + newAndSortedTokens + oldTokens
-            List<UserAccessTokenDTO> result = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
-            result.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
-            result.addAll(oldTokens);
+            List<AccessTokenDTO> resultDTO = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
+            resultDTO.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
+            resultDTO.addAll(oldTokens);
 
-            pageBack.setContent(getFromIndexAndtoIndex(pageBack.getSize(), pageBack.getNumber(), result));
-            return pageBack;
+            result.getResult().clear();
+            result.getResult().addAll(getFromIndexAndtoIndex(size, page, result));
+            return result;
         }
     }
 
-    List<UserAccessTokenDTO> getFromIndexAndtoIndex(Integer size, Integer page, List result) {
+    List<AccessTokenDTO> getFromIndexAndtoIndex(Integer size, Integer page, List result) {
         return result.subList(size * page, (size * page + size) < result.size() ? (size * page + size) : result.size());
     }
 
     @Override
     public void delete(String tokenId, String currentToken) {
-        AccessTokenDO accessTokenDO = accessTokenMapper.selectByPrimaryKey(tokenId);
-        if (accessTokenDO == null) {
+        AccessTokenDTO accessTokenDTO = accessTokenMapper.selectByPrimaryKey(tokenId);
+        if (accessTokenDTO == null) {
             throw new CommonException("error.token.not.exist");
         }
-        if (((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenDO.getToken())).getValue().equalsIgnoreCase(currentToken)) {
+        if (((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenDTO.getToken())).getValue().equalsIgnoreCase(currentToken)) {
             throw new CommonException("error.delete.current.token");
         }
         oauthTokenFeignClient.deleteToken(tokenId);
@@ -109,14 +116,14 @@ public class AccessTokenServiceImpl implements AccessTokenService {
 
     @Override
     public void deleteList(List<String> tokenIds, String currentToken) {
-        List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectTokenList(tokenIds);
-        List<String> tokens = accessTokenDOS.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
+        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectTokenList(tokenIds);
+        List<String> tokens = accessTokens.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
 
         if (tokens != null && !tokens.isEmpty() && tokens.contains(currentToken)) {
             throw new CommonException("error.delete.current.token");
         }
         if (tokens != null && tokens.size() != tokenIds.size()) {
-            tokenIds = accessTokenDOS.stream().map(AccessTokenDO::getTokenId).collect(Collectors.toList());
+            tokenIds = accessTokens.stream().map(AccessTokenDTO::getTokenId).collect(Collectors.toList());
         }
         oauthTokenFeignClient.deleteTokenList(tokenIds);
     }
@@ -124,9 +131,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
     @Override
     public void deleteAllExpiredToken(Map<String, Object> map) {
-        List<AccessTokenDO> accessTokenDOS = accessTokenMapper.selectAll();
+        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectAll();
         //过滤出所有失效token
-        List<AccessTokenDO> allExpired = accessTokenDOS.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).isExpired()).collect(Collectors.toList());
+        List<AccessTokenDTO> allExpired = accessTokens.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).isExpired()).collect(Collectors.toList());
         allExpired.forEach(t -> {
             accessTokenMapper.deleteByPrimaryKey(t.getTokenId());
             refreshTokenMapper.deleteByPrimaryKey(t.getRefreshToken());

@@ -2,18 +2,17 @@ package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.api.dto.ClientWithRoleDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author wuguokai
  */
-public interface ClientMapper extends BaseMapper<ClientDO> {
+public interface ClientMapper extends Mapper<ClientDTO> {
 
     /**
      * 分页模糊查询客户端
@@ -22,7 +21,7 @@ public interface ClientMapper extends BaseMapper<ClientDO> {
      * @param param    客户端模糊查询参数
      * @return 客户端集合
      */
-    List<ClientDO> fulltextSearch(@Param("clientDO") ClientDO clientDO,
+    List<ClientDTO> fulltextSearch(@Param("clientDTO") ClientDTO clientDTO,
                                   @Param("param") String param);
 
     Integer selectClientCountFromMemberRoleByOptions(
@@ -32,7 +31,7 @@ public interface ClientMapper extends BaseMapper<ClientDO> {
             @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
             @Param("param") String param);
 
-    List<ClientWithRoleDTO> selectClientsByRoleIdAndOptions(
+    List<ClientDTO> selectClientsByRoleIdAndOptions(
             @Param("roleId") Long roleId,
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,

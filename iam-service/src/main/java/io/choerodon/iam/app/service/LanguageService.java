@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.LanguageDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import io.choerodon.iam.infra.dto.LanguageDTO;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface LanguageService {
 
-    Page<LanguageDTO> pagingQuery(PageRequest pageRequest, LanguageDTO languageDTO);
+    Page<LanguageDTO> pagingQuery(int page,int size, LanguageDTO languageDTO, String param);
 
     LanguageDTO update(LanguageDTO languageDTO);
 

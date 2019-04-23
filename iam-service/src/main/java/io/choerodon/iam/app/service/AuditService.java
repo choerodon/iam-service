@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.AuditDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import io.choerodon.iam.infra.dto.AuditDTO;
 
 /**
  * Created by Eugen on 01/03/2019.
@@ -25,5 +25,5 @@ public interface AuditService {
      * @param pageRequest  分页请求
      * @return 分页结果
      */
-    Page<AuditDTO> pagingQuery(Long userId, String businessType, String dataType, PageRequest pageRequest);
+    Page<AuditDTO> pagingQuery(Long userId, String businessType, String dataType, int page, int size);
 }

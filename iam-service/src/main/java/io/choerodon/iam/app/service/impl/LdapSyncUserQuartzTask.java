@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import io.choerodon.iam.infra.dto.LdapDTO;
+import io.choerodon.iam.infra.dto.LdapHistoryDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.enums.LdapSyncType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +24,6 @@ import io.choerodon.iam.domain.service.ILdapService;
 import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncReport;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
-import io.choerodon.iam.infra.dataobject.LdapDO;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import org.springframework.util.StringUtils;
 
@@ -102,7 +102,7 @@ public class LdapSyncUserQuartzTask {
                 Optional
                         .ofNullable((String) map.get(ORGANIZATION_CODE))
                         .orElseThrow(() -> new CommonException("error.syncLdapUser.organizationCodeEmpty"));
-        LdapDO ldap = getLdapByOrgCode(orgCode);
+        LdapDTO ldap = getLdapByOrgCode(orgCode);
         if (!StringUtils.isEmpty(filter)) {
             ldap.setCustomFilter(filter);
         }
@@ -113,10 +113,10 @@ public class LdapSyncUserQuartzTask {
         LdapTemplate ldapTemplate = (LdapTemplate) returnMap.get(ILdapServiceImpl.LDAP_TEMPLATE);
         CountDownLatch latch = new CountDownLatch(1);
         //开始同步
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap,syncType, (LdapSyncReport ldapSyncReport, LdapHistoryDO ldapHistoryDO) -> {
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap,syncType, (LdapSyncReport ldapSyncReport, LdapHistoryDTO ldapHistoryDTO) -> {
             latch.countDown();
             LdapSyncUserTask.FinishFallback fallback = ldapSyncUserTask.new FinishFallbackImpl(ldapHistoryRepository);
-            return fallback.callback(ldapSyncReport, ldapHistoryDO);
+            return fallback.callback(ldapSyncReport, ldapHistoryDTO);
         });
         try {
             latch.await();
@@ -132,14 +132,14 @@ public class LdapSyncUserQuartzTask {
      * @param orgCode 组织编码
      * @return ldap
      */
-    private LdapDO getLdapByOrgCode(String orgCode) {
-        OrganizationDO organizationDO = new OrganizationDO();
-        organizationDO.setCode(orgCode);
-        organizationDO = organizationMapper.selectOne(organizationDO);
-        if (organizationDO == null) {
+    private LdapDTO getLdapByOrgCode(String orgCode) {
+        OrganizationDTO organizationDTO = new OrganizationDTO();
+        organizationDTO.setCode(orgCode);
+        organizationDTO = organizationMapper.selectOne(organizationDTO);
+        if (organizationDTO == null) {
             throw new CommonException("error.ldapSyncUserTask.organizationNotNull");
         }
-        Long organizationId = organizationDO.getId();
+        Long organizationId = organizationDTO.getId();
         Long ldapId = ldapService.queryByOrganizationId(organizationId).getId();
         logger.info("LdapSyncUserQuartzTask starting sync ldap user,id:{},organizationId:{}", ldapId, organizationId);
         return ldapService.validateLdap(organizationId, ldapId);

@@ -2,19 +2,16 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
+import com.github.pagehelper.Page;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.iam.infra.dto.AuditDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.AuditDTO;
 import io.choerodon.iam.app.service.AuditService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -42,11 +39,11 @@ public class AuditController {
     @ApiOperation(value = "分页查询审计记录")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<AuditDTO>> pagingQuery(@ApiIgnore
-                                                      @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+    public ResponseEntity<Page<AuditDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                      @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                       @RequestParam(name = "userId", required = false) Long userId,
                                                       @RequestParam(value = "dataType", required = false) String dataType,
                                                       @RequestParam(value = "businessType", required = false) String businessType) {
-        return new ResponseEntity<>(auditService.pagingQuery(userId, businessType, dataType, pageRequest), HttpStatus.OK);
+        return new ResponseEntity<>(auditService.pagingQuery(userId, businessType, dataType, page,size), HttpStatus.OK);
     }
 }

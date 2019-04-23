@@ -1,14 +1,11 @@
 package io.choerodon.iam.domain.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.LookupE;
-import io.choerodon.iam.domain.iam.entity.LookupValueE;
 import io.choerodon.iam.domain.repository.LookupRepository;
 import io.choerodon.iam.domain.repository.LookupValueRepository;
 import io.choerodon.iam.domain.service.ILookupService;
-import io.choerodon.iam.infra.dataobject.LookupDO;
-import io.choerodon.iam.infra.dataobject.LookupValueDO;
+import io.choerodon.iam.infra.dto.LookupDTO;
+import io.choerodon.iam.infra.dto.LookupValueDTO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +17,7 @@ import java.util.List;
  * @author superlee
  */
 @Service
-public class ILookupServiceImpl extends BaseServiceImpl<LookupDO> implements ILookupService {
+public class ILookupServiceImpl extends BaseServiceImpl<LookupDTO> implements ILookupService {
 
     private LookupRepository lookupRepository;
 
@@ -32,12 +29,12 @@ public class ILookupServiceImpl extends BaseServiceImpl<LookupDO> implements ILo
     }
 
     @Override
-    public LookupE create(LookupE lookupE) {
-        lookupE.setId(null);
-        lookupE.setObjectVersionNumber(null);
-        LookupE le = lookupRepository.insert(lookupE);
-        List<LookupValueE> lookupValueEList = lookupE.getLookupValues();
-        List<LookupValueE> returnList = new ArrayList<>();
+    public LookupDTO create(LookupDTO lookupDTO) {
+        lookupDTO.setId(null);
+        lookupDTO.setObjectVersionNumber(null);
+        LookupDTO le = lookupRepository.insert(lookupDTO);
+        List<LookupValueDTO> lookupValueEList = lookupDTO.getLookupValues();
+        List<LookupValueDTO> returnList = new ArrayList<>();
         if (lookupValueEList != null
                 && !lookupValueEList.isEmpty()) {
             lookupValueEList.forEach(lve -> {
@@ -53,33 +50,33 @@ public class ILookupServiceImpl extends BaseServiceImpl<LookupDO> implements ILo
 
     @Override
     public void delete(Long id) {
-        LookupE lookupE = new LookupE();
-        lookupE.setId(id);
-        lookupRepository.delete(lookupE);
-        List<LookupValueDO> lookupValueDOS = lookupValueRepository.selectByLookupId(id);
+        LookupDTO lookup = new LookupDTO();
+        lookup.setId(id);
+        lookupRepository.delete(lookup);
+        List<LookupValueDTO> lookupValues = lookupValueRepository.selectByLookupId(id);
         //删除lookupValue，但是多语言插件不支持批量删除，所以一个个删除
-        lookupValueDOS.forEach(lve ->
+        lookupValues.forEach(lve ->
                 lookupValueRepository.deleteById(lve.getId())
         );
     }
 
     @Override
     @Transactional
-    public LookupE update(LookupE lookupE) {
-        LookupE le = lookupRepository.update(lookupE, lookupE.getId());
-        List<LookupValueE> lookupValueEList = lookupE.getLookupValues();
-        List<LookupValueE> returnList = new ArrayList<>();
+    public LookupDTO update(LookupDTO lookup) {
+        LookupDTO le = lookupRepository.update(lookup, lookup.getId());
+        List<LookupValueDTO> lookupValueEList = lookup.getLookupValues();
+        List<LookupValueDTO> returnList = new ArrayList<>();
         if (lookupValueEList != null && !lookupValueEList.isEmpty()) {
-            List<LookupValueDO> lookupValueDOS = lookupValueRepository.selectByLookupId(le.getId());
+            List<LookupValueDTO> lookupValues = lookupValueRepository.selectByLookupId(le.getId());
             lookupValueEList.forEach(lve -> {
                 if (lve.getId() == null) {
                     throw new CommonException("error.lookupValue.id.null");
                 }
-                for (LookupValueDO lookupValueDO : lookupValueDOS) {
-                    if (lookupValueDO.getId().equals(lve.getId())) {
-                        lookupValueDO.setCode(lve.getCode());
-                        lookupValueDO.setDescription(lve.getDescription());
-                        returnList.add(lookupValueRepository.updateById(lookupValueDO, lve.getId()));
+                for (LookupValueDTO dto : lookupValues) {
+                    if (dto.getId().equals(lve.getId())) {
+                        dto.setCode(lve.getCode());
+                        dto.setDescription(lve.getDescription());
+                        returnList.add(lookupValueRepository.updateById(dto, lve.getId()));
                     }
                 }
             });
@@ -89,23 +86,23 @@ public class ILookupServiceImpl extends BaseServiceImpl<LookupDO> implements ILo
     }
 
     @Override
-    public LookupE queryByCode(LookupE lookupE) {
-        List<LookupE> lookupEList = lookupRepository.select(lookupE);
+    public LookupDTO queryByCode(LookupDTO lookup) {
+        List<LookupDTO> lookupEList = lookupRepository.select(lookup);
         if (lookupEList.size() != 1) {
             throw new CommonException("error.lookup.code.duplication");
         }
-        LookupE le = lookupEList.get(0);
-        le.setLookupValues(ConvertHelper.convertList(lookupValueRepository.selectByLookupId(le.getId()), LookupValueE.class));
+        LookupDTO le = lookupEList.get(0);
+        le.setLookupValues(lookupValueRepository.selectByLookupId(le.getId()));
         return le;
     }
 
     @Override
-    public LookupE queryById(LookupE lookupE) {
-        LookupE le = lookupRepository.selectById(lookupE.getId());
+    public LookupDTO queryById(LookupDTO lookup) {
+        LookupDTO le = lookupRepository.selectById(lookup.getId());
         if (le == null) {
-            throw new CommonException("error.lookup.not.exist", lookupE.getId());
+            throw new CommonException("error.lookup.not.exist", lookup.getId());
         }
-        le.setLookupValues(ConvertHelper.convertList(lookupValueRepository.selectByLookupId(le.getId()), LookupValueE.class));
+        le.setLookupValues(lookupValueRepository.selectByLookupId(le.getId()));
         return le;
     }
 

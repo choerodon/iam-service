@@ -4,8 +4,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.PermissionRepository;
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.mapper.PermissionMapper;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
@@ -102,7 +102,7 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDO roleDO) {
-        return permissionMapper.selectErrorLevelPermissionByRole(roleDO);
+    public List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDTO roleDTO) {
+        return permissionMapper.selectErrorLevelPermissionByRole(roleDTO);
     }
 }

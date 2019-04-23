@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import org.springframework.stereotype.Component;
 
@@ -19,20 +19,20 @@ public class UploadHistoryRepositoryImpl implements UploadHistoryRepository {
     }
 
     @Override
-    public UploadHistoryDO insertSelective(UploadHistoryDO uploadHistoryDO) {
-        if (uploadHistoryMapper.insertSelective(uploadHistoryDO) != 1) {
+    public UploadHistoryDTO insertSelective(UploadHistoryDTO uploadHistoryDTO) {
+        if (uploadHistoryMapper.insertSelective(uploadHistoryDTO) != 1) {
             throw new CommonException("error.uploadHistory.insert");
         }
-        return uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDO.getId());
+        return uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDTO.getId());
     }
 
     @Override
-    public UploadHistoryDO selectByPrimaryKey(Object primaryKey) {
+    public UploadHistoryDTO selectByPrimaryKey(Object primaryKey) {
         return uploadHistoryMapper.selectByPrimaryKey(primaryKey);
     }
 
     @Override
-    public UploadHistoryDO updateByPrimaryKeySelective(UploadHistoryDO history) {
+    public UploadHistoryDTO updateByPrimaryKeySelective(UploadHistoryDTO history) {
         if (history.getId() == null) {
             throw new CommonException("error.update.dataObject.id.null");
         }

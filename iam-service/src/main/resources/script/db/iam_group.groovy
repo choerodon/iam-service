@@ -35,4 +35,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_group.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-04-23-drop-group') {
+        dropTable(tableName:'IAM_GROUP')
+    }
 }

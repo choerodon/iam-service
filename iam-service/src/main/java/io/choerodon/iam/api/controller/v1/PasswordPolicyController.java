@@ -2,13 +2,13 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
 import io.choerodon.iam.api.validator.PasswordPolicyValidator;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 
