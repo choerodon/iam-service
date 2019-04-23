@@ -162,6 +162,43 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
             }
         }
     }
+    @Override
+    public String processPermission(String[] roles, String path, String method, String description, PermissionData permission, String serviceName, String resourceCode, Map<String, RoleDTO> initRoleMap){
+        String action = permission.getAction();
+        String code = serviceName + "." + resourceCode + "." + action;
+        PermissionDTO permissionDTO = permissionRepository.selectByCode(code);
+
+        PermissionDTO newPermission = new PermissionDTO();
+        newPermission.setCode(code);
+        newPermission.setPath(path);
+        newPermission.setMethod(method);
+        newPermission.setResourceLevel(permission.getPermissionLevel());
+        newPermission.setDescription(description);
+        newPermission.setAction(action);
+        newPermission.setController(resourceCode);
+        newPermission.setPublicAccess(permission.isPermissionPublic());
+        newPermission.setLoginAccess(permission.isPermissionLogin());
+        newPermission.setWithin(permission.isPermissionWithin());
+        newPermission.setServiceCode(serviceName);
+        if (permissionDTO == null) {
+            //插入操作
+            PermissionDTO returnPermission = permissionRepository.insertSelective(newPermission);
+            if (returnPermission != null) {
+                insertRolePermission(returnPermission, initRoleMap, roles);
+                logger.debug("###insert permission, {}", newPermission);
+            }
+        } else {
+            //更新操作
+            newPermission.setObjectVersionNumber(permissionDTO.getObjectVersionNumber());
+            newPermission.setId(permissionDTO.getId());
+            if (!permissionDTO.equals(newPermission)) {
+                permissionRepository.updateSelective(newPermission);
+            }
+            updateRolePermission(newPermission, initRoleMap, roles);
+            logger.debug("###update permission, {}", newPermission);
+        }
+        return code;
+    }
 
     private String processPermission(SwaggerExtraData extraData, String path, Map.Entry<String, JsonNode> methodNode,
                                      String serviceCode, String resourceCode, Map<String, RoleDTO> initRoleMap) {
@@ -322,7 +359,8 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         return null;
     }
 
-    private Map<String, RoleDTO> queryInitRoleByCode() {
+    @Override
+    public Map<String, RoleDTO> queryInitRoleByCode() {
         Map<String, RoleDTO> map = new HashMap<>(10);
         String[] codes = InitRoleCode.values();
         for (String code : codes) {
