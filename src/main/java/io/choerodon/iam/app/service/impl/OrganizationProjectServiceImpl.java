@@ -379,7 +379,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //组织下全部敏捷项目
             List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
             //去除已与该项目群建立关系的敏捷项目
-            Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
+            Set<Long> associatedProjectIds = projectRelationshipRepository.selectProjectsByParentId(projectId, false).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
             return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
         }
     }
