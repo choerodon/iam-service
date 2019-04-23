@@ -1,31 +1,41 @@
 package io.choerodon.iam.api.eventhandler;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.actuator.util.MicroServiceInitData;
 import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.iam.domain.service.ParsePermissionService;
 import io.choerodon.iam.infra.dataobject.RoleDO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class ActuatorSagaHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActuatorSagaHandler.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String ACTUATOR_REFRESH_SAGA_CODE = "mgmt-actuator-refresh";
     private static final String PERMISSION_REFRESH_TASK_SAGA_CODE = "iam-permission-task-refresh";
+    private static final String INIT_DATA_REFRESH_TASK_SAGA_CODE = "iam-init-data-task-refresh";
 
     @Autowired
     private ParsePermissionService parsePermissionService;
+    @Autowired
+    private DataSource dataSource;
 
-    @SagaTask(code = PERMISSION_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE,
-            seq = 1, description = "刷新权限表数据")
-    public void refreshPermission(String actuatorJson) throws IOException {
+    @SagaTask(code = PERMISSION_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 1, description = "刷新权限表数据")
+    public String refreshPermission(String actuatorJson) throws IOException {
         Map actuator = OBJECT_MAPPER.readValue(actuatorJson, Map.class);
         String service = (String) actuator.get("service");
         Map permissionNode = (Map) actuator.get("permission");
@@ -34,6 +44,20 @@ public class ActuatorSagaHandler {
         Map<String, RoleDO> initRoleMap = parsePermissionService.queryInitRoleByCode();
         for (Map.Entry<String, PermissionDescription> entry: descriptions.entrySet()){
             processDescription(service, entry.getKey(), entry.getValue(), initRoleMap);
+        }
+        return actuatorJson;
+    }
+
+    @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据")
+    public void refreshInitData(String actuatorJson) throws IOException, SQLException {
+        JsonNode root = OBJECT_MAPPER.readTree(actuatorJson);
+        JsonNode data = root.get("init-data");
+        if (data == null || data.size() == 0){
+            LOGGER.info("actuator init-data is empty skip iam-init-data-task-refresh.");
+            return;
+        }
+        try(Connection connection = dataSource.getConnection()) {
+            MicroServiceInitData.processInitData(data, connection);
         }
     }
 

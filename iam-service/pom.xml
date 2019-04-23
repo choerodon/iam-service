@@ -141,6 +141,24 @@
     </dependencies>
     <build>
         <finalName>app</finalName>
+        <plugins>
+            <plugin>
+                <groupId>io.choerodon</groupId>
+                <artifactId>choerodon-maven-plugin</artifactId>
+                <version>0.11.0.RELEASE</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>convert</goal>
+                            <goal>permission</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <serviceBuild>true</serviceBuild>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
