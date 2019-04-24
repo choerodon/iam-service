@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: registry.choerodon.com.cn/choerodon/iam-service
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 preJob:
   timeout: 300
