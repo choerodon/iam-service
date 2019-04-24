@@ -38,4 +38,20 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_language.groovy') {
         }
         addPrimaryKey(tableName: 'FD_LANGUAGE_TL', columnNames: 'id, lang', constraintName: 'PK_FD_LANGUAGE_TL')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-24-fd-language-tl-add-column') {
+        addColumn(tableName: 'FD_LANGUAGE_TL') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }

@@ -20,7 +20,7 @@ public class MenuPermissionDTO extends BaseDTO {
     @ApiModelProperty(value = "主键ID")
     private Long id;
     @ApiModelProperty(value = "菜单ID")
-    private Long menuId;
+    private String menuCode;
     @ApiModelProperty(value = "权限编码")
     private String permissionCode;
 
@@ -32,12 +32,12 @@ public class MenuPermissionDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getMenuId() {
-        return menuId;
+    public String getMenuCode() {
+        return menuCode;
     }
 
-    public void setMenuId(Long menuId) {
-        this.menuId = menuId;
+    public void setMenuCode(String menuCode) {
+        this.menuCode = menuCode;
     }
 
     public String getPermissionCode() {

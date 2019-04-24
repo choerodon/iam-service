@@ -54,7 +54,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private void preCreate(MenuDTO menuDTO) {
-        menuAssertHelper.codeExisted(menuDTO.getCode(), menuDTO.getResourceLevel(), menuDTO.getType());
+        menuAssertHelper.codeExisted(menuDTO.getCode());
         if (menuDTO.getSort() == null) {
             menuDTO.setSort(0);
         }
@@ -243,12 +243,6 @@ public class MenuServiceImpl implements MenuService {
         if (StringUtils.isEmpty(menu.getCode())) {
             throw new CommonException("error.menu.code.empty");
         }
-        if (StringUtils.isEmpty(menu.getResourceLevel())) {
-            throw new CommonException("error.menu.level.empty");
-        }
-        if (StringUtils.isEmpty(menu.getType())) {
-            throw new CommonException("error.menu.type.empty");
-        }
         checkCode(menu);
     }
 
@@ -257,8 +251,6 @@ public class MenuServiceImpl implements MenuService {
         boolean createCheck = menu.getId() == null;
         MenuDTO dto = new MenuDTO();
         dto.setCode(menu.getCode());
-        dto.setResourceLevel(menu.getResourceLevel());
-        dto.setType(menu.getType());
         if (createCheck) {
             if (!menuMapper.select(dto).isEmpty()) {
                 throw new CommonException("error.menu.code-level-type.exist");

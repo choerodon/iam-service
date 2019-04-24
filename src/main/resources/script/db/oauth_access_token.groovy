@@ -14,4 +14,20 @@ databaseChangeLog(logicalFilePath: 'oauth_access_token.groovy') {
             column(name: 'REFRESH_TOKEN', type: 'VARCHAR(128)', remarks: 'Refresh Token ID')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-04-24-oauth-access-token-add-column') {
+        addColumn(tableName: 'OAUTH_ACCESS_TOKEN') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }
