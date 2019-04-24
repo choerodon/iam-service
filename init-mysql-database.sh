@@ -12,5 +12,5 @@ java -Dspring.datasource.url="jdbc:mysql://localhost/iam_service?useUnicode=true
  -Dspring.datasource.username=root \
  -Dspring.datasource.password=root \
  -Ddata.drop=true -Ddata.init=true \
- -Ddata.dir=iam-service/src/main/resources \
+ -Ddata.dir=src/main/resources \
  -jar ${TOOL_JAR_PATH}
