@@ -41,5 +41,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_permission.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+        renameColumn(tableName:'IAM_MENU_PERMISSION',oldColumnName:'MENU_ID',newColumnName:'MENU_CODE',columnDataType:'VARCHAR(128)',remarks:'menu code')
     }
 }

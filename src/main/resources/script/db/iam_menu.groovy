@@ -74,9 +74,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
         renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "RESOURCE_LEVEL", oldColumnName: "FD_LEVEL", remarks: '菜单层级', tableName: 'IAM_MENU')
         dropColumn(tableName: 'IAM_MENU', ColumnName: 'ROUTE')
         addColumn(tableName: 'IAM_MENU') {
-            column(name: 'PAGE_PERMISSION_CODE', type: 'VARCHAR(128)', remarks: 'permission code作为外键', afterColumn:'ICON'){
-                constraints(nullable: false)
-            }
+            column(name: 'PAGE_PERMISSION_CODE', type: 'VARCHAR(128)', remarks: 'permission code作为外键', afterColumn:'ICON')
             column(name: 'SERVICE_CODE', type: 'VARCHAR(128)', remarks: '服务code', afterColumn:'PAGE_PERMISSION_CODE', defaultValue: 'iam-service'){
                 constraints(nullable: false)
             }
@@ -95,6 +93,24 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
             }
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        renameTable(oldTableName: 'iam_menu', newTableName: 'iam_menu_b')
+        renameTable(oldTableName: 'IAM_MENU', newTableName: 'IAM_MENU_B')
+    }
+
+    changeSet(author: 'superlee', id: '2019-04-24-menu-drop-old-index') {
+        preConditions(onFail:'MARK_RAN'){
+            indexExists(indexName:'code')
+        }
+        dropUniqueConstraint(tableName:'IAM_MENU_B',constraintName:'code')
+    }
+
+    changeSet(author: 'superlee', id: '2019-04-24-menu-drop-index') {
+        preConditions(onFail:'MARK_RAN'){
+            indexExists(indexName:'UK_IAM_MENU_U1')
+        }
+        dropUniqueConstraint(tableName:'iam_menu_b',constraintName:'UK_IAM_MENU_U1')
+    }
+
+    changeSet(author: 'superlee', id: '2019-04-24-menu-add-unique-constraint') {
+        addUniqueConstraint(tableName:'IAM_MENU_B', columnNames:'CODE', constraintName:'UK_IAM_MENU_U2')
     }
 }
