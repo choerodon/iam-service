@@ -90,4 +90,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
             column(name: 'PERMISSION_TYPE', type: 'VARCHAR(128)', remarks: '类型包括url/api/page等', afterColumn:'SERVICE_CODE',defaultValue: 'api')
         }
     }
+    changeSet(author: 'xausky', id: '2019-04-24-upgrade-nullable'){
+        dropNotNullConstraint(columnDataType: 'VARCHAR(64)', columnName: 'METHOD', tableName: 'IAM_PERMISSION')
+        dropNotNullConstraint(columnDataType: 'VARCHAR(64)', columnName: 'ACTION', tableName: 'IAM_PERMISSION')
+    }
 }
