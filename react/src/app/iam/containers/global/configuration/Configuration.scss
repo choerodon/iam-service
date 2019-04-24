@@ -1,0 +1,103 @@
+.c7n-configuration-table {
+  > .ant-spin-nested-loading {
+    height: 500px;
+  }
+}
+
+.codeMarker {
+  background: #fff677;
+  position: absolute;
+  z-index: 20;
+}
+
+.ace_meta {
+  color: #794938;
+}
+
+.ace-tm .ace_meta.ace_tag {
+  color: #794938;
+}
+.ace-tm .ace_storage, .ace-tm .ace_keyword {
+  color: #794938;
+}
+
+.ace-tm .ace_constant.ace_language {
+  color: #794938;
+}
+
+.ace_keyword {
+  color: #794938;
+}
+
+.ace_constant {
+  color: #811f24;
+}
+
+.createConfigContainer {
+  padding: 32px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.createConfigContent {
+  padding: 32px 36px 0;
+
+  p {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 20px;
+    text-align: justify;
+    max-width: 512px;
+    margin-bottom: 24px;
+  }
+
+  .serviceSection {
+    padding-top: 26px;
+
+    button {
+      margin-right: 12px;
+    }
+  }
+
+  .yamlInfoTitle {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .confirmContainer {
+    > div > div {
+      margin-bottom: 12px;
+      font-size: 13px;
+
+      > div:last-child {
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+    }
+
+    .finalyamTitle {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .CodeMirror-scroll {
+      max-height: calc(100vh - 590px);
+      min-height: 300px;
+    }
+  }
+  .CodeMirror {
+    height: auto;
+  }
+  .CodeMirror-scroll {
+    /* Set scrolling behaviour here */
+    overflow: auto;
+    // max-height: 800px;
+    max-height: calc(100vh - 515px);
+    min-height: 300px;
+  }
+}
+
+.step-disabled {
+  pointer-events: none;
+}

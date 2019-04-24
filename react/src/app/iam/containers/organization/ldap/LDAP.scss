@@ -1,0 +1,50 @@
+.ldapContainer {
+  .serverContainer {
+    margin-bottom: 16px;
+
+    span {
+      margin-left: 16px;
+      font-size: 18px;
+      vertical-align: middle;
+    }
+  }
+
+  .ldapForm {
+    .ant-form-item {
+      margin-left: 40px;
+    }
+
+    .divider {
+      width: 512px;
+      height: 1px;
+      margin: 42px 0 12px 40px;
+      background: rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .btnGroup {
+    margin: 12px 0 14px 40px;
+
+    > button:last-child {
+      margin-left: 12px;
+    }
+  }
+
+  .ldapRadioGroup > label:first-child {
+    margin-right: 52px;
+  }
+
+  .labelSuffix {
+    display: inline-block;
+    vertical-align: middle;
+
+    span {
+      vertical-align: middle;
+    }
+
+    i {
+      margin-left: 8px;
+      color: rgba(0, 0, 0, 0.26);
+    }
+  }
+}

@@ -1,0 +1,391 @@
+@log-bg-color: #101214;
+@screen-xs-min: 20px;
+@screen-sm-min: 20px;
+@grid-gutter-width: 20px;
+@screen-sm-max:90%;
+@color-pf-white:#f0f0f0;
+@screen-md-min:20px;
+@font-size-base:13px;
+
+@scrollbar-width: 15px;
+
+@log-scroll-offset-bottom: 10px;
+@log-scroll-offset-right: 25px;
+@log-scroll-offset-top: 10px;
+
+.unselectable() {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.empty-state-message {
+  margin: 40px auto 60px;
+  max-width: 600px;
+  padding: 0;
+  @media(min-width: @screen-xs-min) {
+    padding-left: (@grid-gutter-width / 2);
+    padding-right: (@grid-gutter-width / 2);
+  }
+  //h2, .h2 {
+  //  // Avoid clipped descenders with class truncate or overflow: hidden
+  //  line-height: 1.4;
+  //}
+  .log-btn {
+    margin: 10px 0 20px;
+  }
+  //.hero-icon {
+  //  // Hidden at height <600px.
+  //  display: none;
+  //  @media (min-height:600px) {
+  //    display: inline-block;
+  //    font-size: 90px;
+  //  }
+  //}
+  //@media (min-height:800px) {
+  //  margin-top: 130px;
+  //  .hero-icon {
+  //    font-size: 100px;
+  //  }
+  //  // reduce margin-top when alert is shown
+  //  //alerts+ & {
+  //  //  margin-top: 90px;
+  //  //}
+  //}
+  //@media (min-height:1024px) {
+  //  margin-top: 170px;
+  //  .hero-icon {
+  //    font-size: 120px;
+  //  }
+  //  //alerts+ & {
+  //  //  margin-top: 130px;
+  //  //}
+  //}
+}
+
+
+.chromeless {
+  background-color:  @log-bg-color;
+  color: #d1d1d1;
+  .log-loading-msg {
+    .empty-state-message();
+    //.h2();
+    //.text-center();
+  }
+}
+.log-title {
+  margin-top: 0;
+}
+.log-header {
+  margin-bottom: 3px;
+  .log-label {
+    margin-bottom: 0;
+  }
+  .log-dash {
+    //.text-muted();
+    margin: 0 0 0 4px;
+  }
+  .ui-select-container {
+    min-width: 150px;
+    max-width: 250px;
+    margin: 0 5px;
+  }
+  .container-details {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    > .log-label {
+      margin-right: 3px;
+    }
+    .container-state {
+      margin-right: 5px;
+    }
+  }
+  .log-actions {
+    .log-form {
+      display: inline-block;
+    }
+    .btn-link {
+      padding: 0;
+    }
+  }
+  .log-timestamps {
+    //.text-muted();
+    display: block;
+  }
+  @media (min-width: @screen-sm-min) {
+    .log-status {
+      display: inline;
+    }
+    .log-timestamps {
+      //.small();
+      display: inline-block;
+    }
+    .log-actions {
+      //.pull-right();
+      margin-left: 5px;
+    }
+  }
+}
+.log-viewer-select {
+  .log-header {
+    margin-bottom: 8px;
+  }
+  .log-actions {
+    margin-top: 5px;
+  }
+}
+.log-size-warning {
+  margin: 0;
+}
+@media (max-width: @screen-sm-max) {
+  .log-size-warning {
+    margin-top: 20px;
+  }
+}
+.log-view {
+  background-color: @log-bg-color;
+  // Make sure log-actions are not hidden behind log if they wrap.
+  clear: both;
+  //font-family: @font-family-monospace;
+  //.mar-bottom-xl();
+  padding: 0;
+  position: relative;
+  .chromeless & {
+    margin-bottom: 0;
+  }
+  pre, pre code {
+    background-color: transparent;
+    border: 0;
+    margin-bottom: 0;
+    overflow: visible;
+    padding: 0 10px;
+  }
+  .log-scroll {
+    background:lighten(@log-bg-color, 30%);
+    border: lighten(@log-bg-color, 30%);
+    //background-color:
+    border-radius: 1px;
+    box-shadow: 0 0 1px 1px rgba(0,0,0,.9);
+    color:@color-pf-white;
+    text-shadow: 1px 1px 0.5px #22629B;
+    display: inline-block;
+    //font-family: @font-family-base;
+    font-size: @font-size-base;
+    padding: 4px 6px 6px 6px ;
+    &:focus,
+    &:hover {
+      background-color: lighten(@log-bg-color, 50%);
+      color: @color-pf-white;
+      text-decoration: none;
+    }
+  }  .log-scroll-link {
+       background:lighten(@log-bg-color, 30%);
+       border: lighten(@log-bg-color, 30%);
+       //background-color:
+       border-radius: 1px;
+       box-shadow: 0 0 1px 1px rgba(0,0,0,.9);
+       color:@color-pf-white;
+       text-shadow: 1px 1px 0.5px #22629B;
+       display: inline-block;
+       //font-family: @font-family-base;
+       font-size: @font-size-base;
+       padding: 4px 6px 6px 6px ;
+       &:focus,
+       &:hover {
+         background-color: lighten(@log-bg-color, 50%);
+         color: @color-pf-white;
+         text-decoration: none;
+       }
+     }
+  .log-scroll-bottom {
+    bottom: @log-scroll-offset-bottom;
+    position: absolute;
+    right: @log-scroll-offset-right;
+  }
+  .log-scroll-bottom-bt {
+    bottom: @log-scroll-offset-bottom;
+    right: @log-scroll-offset-right;
+  }
+  .log-scroll-bottom {
+    bottom: @log-scroll-offset-bottom;
+    position: absolute;
+    right: @log-scroll-offset-right;
+  }
+  .log-scroll-top-absolute {
+    position: absolute;
+    right: @log-scroll-offset-right;
+    top: @log-scroll-offset-top;
+    border: 1px solid @log-bg-color;
+  }
+
+  .log-view-output {
+    font-size: 11px;
+    @media (min-width: @screen-sm-min) {
+      font-size: 12px;
+    }
+    padding: 40px 0;
+    @media only screen and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 0) {
+      // On an iPhone, add additional margin so that following logs is never obscured
+      // by the bottom buttons that are displayed and hidden.
+      padding-bottom: 70px;
+    }
+    .log-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+  }
+  &.log-fixed-height {
+    .ellipsis-loader {
+      bottom: 0;
+      //#gradient > .vertical(transparent, @log-bg-color, 0%, 15%);
+      height: 30px;
+      right: @scrollbar-width;
+      width: auto;
+      &.dots {
+        left: 50%;
+        top: 12px;
+      }
+    }
+    .log-end-msg {
+      margin: 20px 0 -35px 10px;
+      position: static;
+    }
+    .log-scroll-top.affix {
+      position: absolute;
+      right: @log-scroll-offset-right;
+      top: @log-scroll-offset-top;
+    }
+    .log-view-output {
+      overflow: auto;
+      // Firefox collapses the bottom padding, so use margin on the child
+      // table instead
+      padding-bottom: 0;
+      padding-top: 0;
+      .log-table {
+        // Firefox collapses the bottom padding on .log-view-output, so use
+        // margin on this child table instead
+        margin-bottom: 40px;
+        margin-top: 30px;
+      }
+    }
+  }
+}
+.log-pending-ellipsis {
+  display: inline-block;
+  padding-top: @grid-gutter-width / 2;
+  width: 100%;
+  .chromeless & {
+    padding-left: (@grid-gutter-width - 10px);
+  }
+}
+.log-end-msg {
+  //font-family: @font-family-base;
+  font-size: @font-size-base;
+  color: #72767b;
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+}
+.log-link-external {
+  text-align: right;
+  &.a {
+    margin-left: 20px;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  &.i {
+    //font-size: @font-size-xsmall;
+    margin-left: 5px;
+  }
+}
+.log-line {
+  color: #d1d1d1;
+  &:hover {
+    background-color: lighten(@log-bg-color, 8%);
+    color: #ededed;
+  }
+}
+.log-line-number:before {
+  content: attr(data-line-number);
+}
+.log-line-number {
+  .unselectable();
+  border-right: 1px lighten(@log-bg-color, 10%) solid;
+  padding-right: 10px;
+  padding-left: 15px;
+  font-weight: 700;
+  text-align: right;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 60px;
+  color: #72767b;
+}
+.log-line-text {
+  padding: 0 10px;
+  white-space: pre-wrap;
+  width: 100%;
+  font-family: sans-serif;
+  line-break: normal;
+  //.word-break();
+  // Invert colors on selection in Firefox. Change the background style for
+  // Firefox only since it's illegible with its defaults and our log colors.
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/::selection
+  &::-moz-selection {
+    color: @log-bg-color;
+    background: lighten(#d1d1d1, 8%);
+  }
+}
+.table-log-pods {
+  > tbody + tbody {
+    border-top-width: 0px;
+  }
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+}
+
+.log-fixed-height.empty-state-message {
+  margin-top: 0;
+}
+
+.ant-anchor-ink{
+  display: none;
+}
+.ant-anchor-link {
+  //background:lighten(@log-bg-color, 30%);
+  //color:@color-pf-white;
+  //border: 0px;
+  //display: inline-block;
+  //padding: 0px 0px 0px 0px ;
+  background:lighten(@log-bg-color, 30%);
+  border: lighten(@log-bg-color, 30%);
+  //background-color:
+  border-radius: 1px;
+  box-shadow: 0 0 1px 1px rgba(0,0,0,.9);
+  color:@color-pf-white;
+  text-shadow: 1px 1px 0.5px #22629B;
+  display: inline-block;
+  //font-family: @font-family-base;
+  font-size: @font-size-base;
+  padding: 4px 6px 6px 6px ;
+  &:focus,
+  &:hover {
+    background-color: lighten(@log-bg-color, 50%);
+    color: @color-pf-white;
+    text-decoration: none;
+  }
+}
+.ant-anchor-wrapper {
+  background-color:transparent;
+ }
+.ant-anchor-link-title {
+  color: @color-pf-white;
+  font-size: @font-size-base;
+  &:hover {
+    color: @color-pf-white;
+    text-decoration: none;
+  }
+}
+.ant-anchor-link-active > .ant-anchor-link-title {
+  color: @color-pf-white;
+}

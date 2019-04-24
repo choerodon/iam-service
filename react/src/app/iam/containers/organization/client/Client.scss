@@ -1,0 +1,51 @@
+$baseFontColor: rgba(0, 0, 0, 0.55);
+
+.table-pagination {
+  margin-top: 10px;
+  float: right;
+  display: block;
+}
+
+//.table-container {
+//  padding: 0 24px;
+//}
+
+.open-tab {
+  color: $baseFontColor;
+
+  &:hover {
+    color: #3f51b5;
+    text-decoration: underline;
+  }
+}
+
+.client-granttype-item {
+  display: inline-block;
+  background: rgba(0, 0, 0, .08);
+  border-radius: 10px;
+  margin-right: 8px;
+  padding: 0 12px;
+  height: 20px;
+  line-height: 20px;
+  font-size: 12px;
+}
+
+.submit-wrap {
+  button {
+    margin-right: 10px;
+  }
+}
+
+.client-detail {
+  line-height: 12px;
+}
+
+.detail-input,
+.detail-input .ant-select-selection {
+  border: 0 !important;
+  color: #000;
+}
+
+.choice-has-error {
+  background-color: #d50000 !important;
+}

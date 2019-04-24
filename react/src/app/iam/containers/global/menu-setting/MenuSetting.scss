@@ -1,0 +1,44 @@
+$drop-gradient: rgba(140, 158, 255, 0.16);
+
+.permission-list {
+  p {
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 10px;
+  }
+  div > span {
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 100px;
+    padding: 4px 12px;
+  }
+  div + div > span {
+    margin-top: 6px;
+  }
+}
+
+.c7n-iam-menusetting-name {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.drag-cell {
+  cursor: move;
+}
+
+.drop-row {
+  &-before {
+    box-shadow: 0 16px 20px $drop-gradient inset, 0 0 0 $drop-gradient inset;
+  }
+  &-in {
+    box-shadow: 0 12px 20px $drop-gradient inset, 0 -12px 20px $drop-gradient inset;
+  }
+  &-after {
+    box-shadow: 0 0 0 $drop-gradient inset, 0 -16px 20px $drop-gradient inset;
+  }
+}
+
+.menu-table {
+  .ant-table-row-spaced:after {
+    content: '';
+  }
+}

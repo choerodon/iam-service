@@ -1,0 +1,35 @@
+.c7n-iam-dashboard-guide {
+  ul {
+    padding: 0;
+    margin: -9px 0 0 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    font-size: 13px;
+    line-height: 20px;
+    padding: 9px 20px;
+
+    a {
+      vertical-align: middle;
+      margin-left: 33px;
+      color: inherit;
+
+      &:before {
+        position: absolute;
+        background-color: transparent;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        content: '';
+      }
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      border-radius: 2px;
+    }
+  }
+}

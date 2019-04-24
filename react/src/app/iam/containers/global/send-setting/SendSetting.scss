@@ -1,0 +1,11 @@
+.c7n-sendsetting-form {
+  .radioGroup {
+    > label:first-child {
+      margin-right: 60px;
+    }
+  }
+
+  .c7n-email-template-select .ant-select-selection-selected-value {
+    width: 100%;
+  }
+}
