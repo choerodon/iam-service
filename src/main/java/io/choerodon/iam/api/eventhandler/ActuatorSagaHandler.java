@@ -77,7 +77,7 @@ public class ActuatorSagaHandler {
         permissionData.setPermissionPublic(permissionEntity.isPermissionPublic());
         permissionData.setPermissionWithin(permissionEntity.isPermissionWithin());
         permissionData.setRoles(permissionEntity.getRoles());
-        parsePermissionService.processPermission(permissionEntity.getRoles(), action, description.getMethod().name(), null, permissionData, service, resource, initRoleMap);
+        parsePermissionService.processPermission(permissionEntity.getRoles(), description.getPath(), description.getMethod().name(), null, permissionData, service, resource, initRoleMap);
     }
 
     /**
