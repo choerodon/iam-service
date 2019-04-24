@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LookupMapper">
-    <resultMap id="lookupWithValues" type="io.choerodon.iam.infra.dto.LookupDTO">
+    <resultMap id="lookupWithValues" type="io.choerodon.iam.infra.dto.LookupDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
-        <collection property="lookupValues" ofType="io.choerodon.iam.infra.dto.LookupValueDTO">
+        <collection property="lookupValues" ofType="io.choerodon.iam.infra.dto.LookupValueDTO" autoMapping="true">
             <id column="value_id" property="id"></id>
             <result column="lookup_id" property="lookupId" jdbcType="DECIMAL"/>
             <result column="value_code" property="code" jdbcType="VARCHAR"/>

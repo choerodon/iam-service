@@ -3,12 +3,12 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ApplicationExplorationMapper">
 
-    <resultMap id="ApplicationExploration" type="io.choerodon.iam.infra.dto.ApplicationExplorationDTO">
+    <resultMap id="ApplicationExploration" type="io.choerodon.iam.infra.dto.ApplicationExplorationDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <resultMap id="Application" type="io.choerodon.iam.infra.dto.ApplicationDTO">
+    <resultMap id="Application" type="io.choerodon.iam.infra.dto.ApplicationDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
     </resultMap>

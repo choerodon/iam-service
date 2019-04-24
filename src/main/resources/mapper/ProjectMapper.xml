@@ -3,13 +3,13 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectMapper">
 
-    <resultMap id="projectDTO" type="io.choerodon.iam.infra.dto.ProjectDTO">
+    <resultMap id="projectDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <!--<result column="is_group" property="group" jdbcType="BOOLEAN"/>-->
     </resultMap>
 
-    <resultMap id="ProjectWithRoleDTO" type="io.choerodon.iam.infra.dto.ProjectDTO">
+    <resultMap id="ProjectWithRoleDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id property="id" column="id"></id>
         <result property="name" column="name"/>
         <result property="code" column="code"/>
@@ -17,7 +17,7 @@
         <result property="organizationName" column="organization_name" jdbcType="VARCHAR"/>
         <result property="enabled" column="is_enabled"/>
         <!--<result property="group" column="is_group"/>-->
-        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO">
+        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
             <id property="id" column="role_id"></id>
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>

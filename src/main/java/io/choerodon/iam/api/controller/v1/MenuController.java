@@ -44,10 +44,8 @@ public class MenuController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置界面根据层级查菜单")
     @GetMapping("/menu_config")
-    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code,
-                                              @RequestParam String level,
-                                              @RequestParam String type) {
-        return new ResponseEntity<>(menuService.menuConfig(code, level, type), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code) {
+        return new ResponseEntity<>(menuService.menuConfig(code), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)

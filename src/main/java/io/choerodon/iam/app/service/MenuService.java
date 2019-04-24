@@ -62,7 +62,7 @@ public interface MenuService {
      * @param code
      * @return
      */
-    MenuDTO menuConfig(String code, String level, String type);
+    MenuDTO menuConfig(String code);
 
     /**
      * 根据前端传入的树形菜单，更新后端的树形结构

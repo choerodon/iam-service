@@ -58,8 +58,8 @@ public class MenuServiceImpl implements MenuService {
         if (menuDTO.getSort() == null) {
             menuDTO.setSort(0);
         }
-        if (menuDTO.getParentId() == null) {
-            menuDTO.setParentId(0L);
+        if (menuDTO.getParentCode() == null) {
+            menuDTO.setParentCode("");
         }
         String level = menuDTO.getResourceLevel();
         if (!ResourceType.contains(level)) {
@@ -139,15 +139,14 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuDTO menuConfig(String code, String level, String type) {
+    public MenuDTO menuConfig(String code) {
         MenuDTO dto = new MenuDTO();
         dto.setCode(code);
-        dto.setResourceLevel(level);
-        dto.setType(type);
         MenuDTO menu = menuMapper.selectOne(dto);
         if (menu == null) {
             throw new CommonException("error.menu.top.not.existed");
         }
+        String level = menu.getResourceLevel();
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
         toTreeMenu(menu, menus);
         return menu;
@@ -174,7 +173,7 @@ public class MenuServiceImpl implements MenuService {
         } else {
             //do update
             dto.setSort(menu.getSort());
-            dto.setParentId(menu.getParentId());
+            dto.setParentCode(menu.getParentCode());
             menuMapper.updateByPrimaryKey(dto);
         }
         List<MenuDTO> subMenus = menu.getMenus();
@@ -190,7 +189,7 @@ public class MenuServiceImpl implements MenuService {
         if (StringUtils.isEmpty(menu.getName())) {
             throw new CommonException("error.menu.name.empty", code);
         }
-        if (menu.getParentId() == null) {
+        if (StringUtils.isEmpty(menu.getParentCode())) {
             throw new CommonException("error.menu.patentId.null", code);
         }
         if (StringUtils.isEmpty(menu.getPagePermissionCode())) {
@@ -216,10 +215,10 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private void toTreeMenu(MenuDTO parentMenu, Set<MenuDTO> menus) {
-        Long id = parentMenu.getId();
+        String code = parentMenu.getCode();
         List<MenuDTO> subMenus = new ArrayList<>();
         menus.forEach(menu -> {
-            if (menu.getParentId().equals(id)) {
+            if (code.equals(menu.getParentCode())) {
                 subMenus.add(menu);
                 if (MenuType.isMenu(menu.getType())) {
                     toTreeMenu(menu, menus);
@@ -227,13 +226,18 @@ public class MenuServiceImpl implements MenuService {
             }
         });
         //移除type=menu但是没有菜单项的菜单
-        subMenus.forEach(menu -> {
-            List<MenuDTO> menuList = menu.getMenus();
-            boolean removed = (menuList == null || menuList.isEmpty());
-            if (MenuType.isMenu(menu.getType()) && removed) {
-                subMenus.remove(menu);
-            }
-        });
+//        List<MenuDTO> subList = new ArrayList<>();
+//        subMenus.forEach(menu -> {
+//            if (MenuType.isMenuItem(menu.getType())) {
+//                subList.add(menu);
+//                return;
+//            }
+//            List<MenuDTO> menuList = menu.getMenus();
+//            boolean hasMenuItem = (menuList != null && !menuList.isEmpty());
+//            if (MenuType.isMenu(menu.getType()) && hasMenuItem) {
+//                subList.add(menu);
+//            }
+//        });
         subMenus.sort(Comparator.comparing(MenuDTO::getSort));
         parentMenu.setMenus(subMenus);
     }

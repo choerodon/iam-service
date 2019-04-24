@@ -16,6 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 修复数据业务代码
+ *
+ * @author superlee
+ * @since 2019-04-24
+ */
 @Component
 public class FixDataHelper {
 
@@ -36,7 +42,7 @@ public class FixDataHelper {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void fix(){
+    public void fix() {
         fixMenuPermissionData();
         fixMenuData();
     }
@@ -80,11 +86,23 @@ public class FixDataHelper {
             example.setResourceLevel(key);
             List<MenuDTO> menus = menuMapper.select(example);
             menus.forEach(m -> {
-                if (m.getParentId().equals(0L)) {
-                    m.setParentId(menuId);
+                if ("0".equals(m.getParentCode())) {
+                    m.setParentCode(String.valueOf(menuId));
                     menuMapper.updateByPrimaryKey(m);
                 }
             });
+        }
+        //convert parentId to parentCode
+        List<MenuDTO> menus = menuMapper.selectAll();
+        for (MenuDTO menu : menus) {
+            for (MenuDTO menuDTO : menus) {
+                String parentCode = menu.getParentCode();
+                Long id = menuDTO.getId();
+                if (String.valueOf(id).equals(parentCode)) {
+                    menu.setParentCode(menuDTO.getCode());
+                    menuMapper.updateByPrimaryKey(menu);
+                }
+            }
         }
     }
 
@@ -100,7 +118,7 @@ public class FixDataHelper {
     private void processMap(Map<String, Long> map, String key, String code) {
         MenuDTO example = new MenuDTO();
         example.setCode(code);
-        MenuDTO menu = menuMapper.selectByPrimaryKey(example);
+        MenuDTO menu = menuMapper.selectOne(example);
         if (menu == null) {
             throw new CommonException("can not find menu, code: " + code);
         }

@@ -31,8 +31,8 @@ public class MenuDTO extends BaseDTO {
     @NotEmpty(message = "error.menu.name.empty")
     private String name;
     private String pagePermissionCode;
-    @NotNull(message = "error.menu.parentId.null")
-    private Long parentId;
+    @NotEmpty(message = "error.menu.parentCode.null")
+    private String parentCode;
     @NotEmpty(message = "error.menu.resourceLevel.empty")
     private String resourceLevel;
     @NotEmpty(message = "error.menu.type.empty")
@@ -82,12 +82,12 @@ public class MenuDTO extends BaseDTO {
         this.pagePermissionCode = pagePermissionCode;
     }
 
-    public Long getParentId() {
-        return parentId;
+    public String getParentCode() {
+        return parentCode;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
+    public void setParentCode(String parentCode) {
+        this.parentCode = parentCode;
     }
 
     public String getResourceLevel() {
@@ -177,7 +177,7 @@ public class MenuDTO extends BaseDTO {
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 ", pagePermissionCode='" + pagePermissionCode + '\'' +
-                ", parentId=" + parentId +
+                ", parentCode=" + parentCode +
                 ", resourceLevel='" + resourceLevel + '\'' +
                 ", type='" + type + '\'' +
                 ", serviceCode='" + serviceCode + '\'' +
@@ -200,7 +200,7 @@ public class MenuDTO extends BaseDTO {
                 Objects.equals(code, dto.code) &&
                 Objects.equals(name, dto.name) &&
                 Objects.equals(pagePermissionCode, dto.pagePermissionCode) &&
-                Objects.equals(parentId, dto.parentId) &&
+                Objects.equals(parentCode, dto.parentCode) &&
                 Objects.equals(resourceLevel, dto.resourceLevel) &&
                 Objects.equals(type, dto.type) &&
                 Objects.equals(serviceCode, dto.serviceCode) &&
@@ -215,6 +215,6 @@ public class MenuDTO extends BaseDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, pagePermissionCode, parentId, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, permissions, menus);
+        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, permissions, menus);
     }
 }

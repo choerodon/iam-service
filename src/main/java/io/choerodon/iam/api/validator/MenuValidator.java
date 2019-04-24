@@ -46,17 +46,18 @@ public class MenuValidator {
 
     //有子节点的目录不能删除
     public void delete(Long menuId) {
-        MenuDTO menuDTO = new MenuDTO();
-        menuDTO.setParentId(menuId);
-        if (!menuMapper.select(menuDTO).isEmpty()) {
-            throw new CommonException("error.menu.have.children");
-        }
-        menuDTO = menuMapper.selectByPrimaryKey(menuId);
+        MenuDTO menuDTO = menuMapper.selectByPrimaryKey(menuId);
         if (menuDTO == null) {
             throw new CommonException("error.menu.not.exist");
         }
         if (menuDTO.getDefault()) {
             throw new CommonException("error.menu.default");
+        }
+
+        MenuDTO example = new MenuDTO();
+        example.setParentCode(menuDTO.getCode());
+        if (!menuMapper.select(menuDTO).isEmpty()) {
+            throw new CommonException("error.menu.have.children");
         }
     }
 }

@@ -2,20 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.MenuMapper">
 
-    <resultMap id="Menu" type="io.choerodon.iam.infra.dto.MenuDTO">
+    <resultMap id="Menu" type="io.choerodon.iam.infra.dto.MenuDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
-        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO">
+        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO" autoMapping="true">
             <id column="permission_id" property="id"></id>
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
 
     <select id="selectMenusAfterCheckPermission" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         select
           imb.id,
-          imb.code
+          imb.code,
           case
             when
             imt.name is null
@@ -23,7 +23,7 @@
           else imt.name
           end as name,
           imb.resource_level,
-          imb.parent_id,
+          imb.parent_code,
           imb.type,
           imb.sort,
           imb.is_default,
@@ -80,10 +80,10 @@
     </select>
 
     <select id="selectMenusWithPermission" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         select
         imb.id,
-        imb.code
+        imb.code,
         case
         when
         imt.name is null
@@ -91,7 +91,7 @@
         else imt.name
         end as name,
         imb.resource_level,
-        imb.parent_id,
+        imb.parent_code,
         imb.type,
         imb.sort,
         imb.is_default,
@@ -101,11 +101,11 @@
         ip.id permission_id,
         ip.code permission_code
         from iam_menu_b imb
-        left join iam_menu_permission imp
-        left join iam_permission ip
         left join iam_menu_tl imt
         on imb.id = imt.id
         and imt.lang = #{lang}
+        left join iam_menu_permission imp
+        left join iam_permission ip
         on imp.permission_code = ip.code
         on imb.code = imp.menu_code
         where imb.type != 'top'
@@ -113,10 +113,10 @@
     </select>
 
     <select id="queryProjectMenusWithCategoryByRootUser" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         select distinct
         imb.id,
-        imb.code
+        imb.code,
         case
         when
         imt.name is null
@@ -124,7 +124,7 @@
         else imt.name
         end as name,
         imb.resource_level,
-        imb.parent_id,
+        imb.parent_code,
         imb.type,
         imb.sort,
         imb.is_default,
