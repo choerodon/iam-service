@@ -5,6 +5,7 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapDTO
 import io.choerodon.iam.app.service.LdapService
+import io.choerodon.iam.app.task.LdapSyncUserQuartzTask
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask

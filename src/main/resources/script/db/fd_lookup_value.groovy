@@ -36,4 +36,20 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
         addUniqueConstraint(tableName: 'FD_LOOKUP_VALUE', columnNames: 'CODE,LOOKUP_ID', constraintName: 'UK_FD_LOOKUP_VALUE_U1')
         addPrimaryKey(tableName: 'FD_LOOKUP_VALUE_TL', columnNames: 'ID, LANG', constraintName: 'PK_FD_LOOKUP_VALUE_TL')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-24-fd-lookup-value-tl-add-column') {
+        addColumn(tableName: 'FD_LOOKUP_VALUE_TL') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }

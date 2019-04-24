@@ -20,11 +20,9 @@ public class MenuAssertHelper {
         this.menuMapper = menuMapper;
     }
 
-    public void codeExisted(String code,String level, String type) {
+    public void codeExisted(String code) {
         MenuDTO dto = new MenuDTO();
         dto.setCode(code);
-        dto.setResourceLevel(level);
-        dto.setType(type);
         if (!menuMapper.select(dto).isEmpty()) {
             throw new CommonException("error.menu.code.existed");
         }

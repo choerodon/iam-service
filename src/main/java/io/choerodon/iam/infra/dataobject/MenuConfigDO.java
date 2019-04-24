@@ -32,11 +32,11 @@
 //        this.id = id;
 //    }
 //
-//    public Long getMenuId() {
+//    public Long getMenuCode() {
 //        return menuId;
 //    }
 //
-//    public void setMenuId(Long menuId) {
+//    public void setMenuCode(Long menuId) {
 //        this.menuId = menuId;
 //    }
 //

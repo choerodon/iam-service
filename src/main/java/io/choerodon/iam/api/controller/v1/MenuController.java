@@ -83,7 +83,7 @@ public class MenuController {
 
 
     @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "菜单code和level和type组合是否重复")
+    @ApiOperation(value = "菜单code是否重复")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody MenuDTO menu) {
         menuService.check(menu);

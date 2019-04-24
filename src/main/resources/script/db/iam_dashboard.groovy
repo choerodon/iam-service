@@ -73,4 +73,20 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard.groovy') {
             column(name: 'POSITION', type: "VARCHAR(128)", remarks: '仪表盘默认高度，宽度')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-04-24-iam-dashboard-tl-add-column') {
+        addColumn(tableName: 'IAM_DASHBOARD_TL') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }
