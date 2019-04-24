@@ -5,6 +5,7 @@ import { Button, Form, Icon, IconSelect, Input, Modal, Table, Tabs, Tooltip } fr
 import { axios, Content, Header, Page, Permission, stores } from 'choerodon-boot-combine';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import _ from 'lodash';
+import { RESOURCES_LEVEL } from 'choerodon-boot-combine/lib/containers/common/constants';
 import { adjustSort, canDelete, defineLevel, deleteNode, findParent, hasDirChild, isChild, normalizeMenus } from './util';
 import './MenuSetting.scss';
 import '../../../common/ConfirmModal.scss';
@@ -40,7 +41,7 @@ function removeDragClass() {
 
 const { Sidebar } = Modal;
 const FormItem = Form.Item;
-const TabPane = Tabs.TabPane;
+const { TabPane } = Tabs;
 const inputWidth = 512;
 const formItemLayout = {
   labelCol: {
@@ -52,6 +53,15 @@ const formItemLayout = {
     sm: { span: 10 },
   },
 };
+
+function findFirstLevel() {
+  return ['site', 'organization', 'project', 'user']
+    .find(l => RESOURCES_LEVEL.indexOf(l) !== -1);
+}
+
+function hasLevel(level) {
+  return RESOURCES_LEVEL.indexOf(level) !== -1;
+}
 
 @Form.create({})
 @withRouter
@@ -66,7 +76,7 @@ export default class MenuSetting extends Component {
       submitting: false,
       menuGroup: {},
       prevMenuGroup: {},
-      type: 'site',
+      type: findFirstLevel(),
       selectType: 'create',
       sidebar: false,
       selectMenuDetail: {},
@@ -82,6 +92,7 @@ export default class MenuSetting extends Component {
     edited = null;
     saved = null;
   }
+
   componentWillUpdate(nextProps, nextState) {
     if (saved) {
       edited = false;
@@ -91,6 +102,7 @@ export default class MenuSetting extends Component {
       edited = false;
     }
   }
+
   // 初始化类型
   initMenu(type) {
     const { menuGroup, type: typeState, prevMenuGroup } = this.state;
@@ -141,12 +153,14 @@ export default class MenuSetting extends Component {
       });
     }
   };
+
   // 关闭sidebar
   closeSidebar = () => {
     this.setState({
       sidebar: false,
     });
   };
+
   // 创建目录，弹出sidebar
   addDir = () => {
     const { form: { resetFields } } = this.props;
@@ -160,6 +174,7 @@ export default class MenuSetting extends Component {
       this.addDirFocusInput.input.focus();
     }, 10);
   };
+
   // 查看细节，弹出sidebar,设置选中的菜单或目录
   detailMenu = (record) => {
     const { form: { resetFields } } = this.props;
@@ -170,6 +185,7 @@ export default class MenuSetting extends Component {
       selectMenuDetail: record,
     });
   };
+
   // 修改菜单,弹出sidebar,设置选中的菜单或目录
   changeMenu = (record) => {
     const { form: { resetFields } } = this.props;
@@ -183,6 +199,7 @@ export default class MenuSetting extends Component {
       this.changeMenuFocusInput.input.focus();
     }, 10);
   };
+
   checkCode = (rule, value, callback) => {
     const { intl } = this.props;
     const { type, tempDirs } = this.state;
@@ -204,6 +221,7 @@ export default class MenuSetting extends Component {
         });
     }
   };
+
   // 删除菜单
   deleteMenu = (record) => {
     const { intl } = this.props;
@@ -226,9 +244,9 @@ export default class MenuSetting extends Component {
       className: 'c7n-iam-confirm-modal',
       title: intl.formatMessage({ id: `${intlPrefix}.delete.owntitle` }),
       content: intl.formatMessage({
-        id: record.subMenus && record.subMenus.length ?
-          `${intlPrefix}.delete.owncontent.hassub` :
-          `${intlPrefix}.delete.owncontent`,
+        id: record.subMenus && record.subMenus.length
+          ? `${intlPrefix}.delete.owncontent.hassub`
+          : `${intlPrefix}.delete.owncontent`,
       }, {
         name: record.name,
       }),
@@ -237,6 +255,7 @@ export default class MenuSetting extends Component {
       },
     });
   };
+
   handleRefresh = () => {
     const { type, menuGroup } = this.state;
     this.setState({
@@ -338,7 +357,8 @@ export default class MenuSetting extends Component {
         >
           {formDom}
         </Content>
-      </div>);
+      </div>
+    );
   }
 
   // 查看详情
@@ -499,16 +519,16 @@ export default class MenuSetting extends Component {
   // 判断是否能拖放
   checkDroppable(record) {
     const { dragData } = this.state;
-    return dragData && dragData !== record &&
-      (this.checkDropIn(record) || this.checkDropBesides(record)) && !isChild(dragData, record);
+    return dragData && dragData !== record 
+      && (this.checkDropIn(record) || this.checkDropBesides(record)) && !isChild(dragData, record);
   }
 
   // 判断是否能拖入
   checkDropIn(record) {
     const { dragData } = this.state;
-    return dragData && record.type !== 'menu' && dragData.type !== 'root' && !hasDirChild(dragData) &&
-      /* eslint-disable-next-line */
-      record.__level__ < (dragData.type === 'dir' ? 1 : 2);
+    return dragData && record.type !== 'menu' && dragData.type !== 'root' && !hasDirChild(dragData) 
+      // eslint-disable-next-line no-underscore-dangle
+      && record.__level__ < (dragData.type === 'dir' ? 1 : 2);
   }
 
   // 判断是否能插在前后
@@ -778,49 +798,51 @@ export default class MenuSetting extends Component {
           );
         } else if (!dft) {
           const canDel = canDelete(record);
-          return (<span>
-            <Permission service={['iam-service.menu.update']} type={menuType}>
-              <Tooltip
-                title={<FormattedMessage id="modify" />}
-                placement="bottom"
-              >
-                <Button
-                  shape="circle"
-                  size="small"
-                  onClick={this.changeMenu.bind(this, record)}
-                  icon="mode_edit"
-                />
-              </Tooltip>
-            </Permission>
-            <Permission service={['iam-service.menu.delete']} type={menuType}>
-              {canDel ? (
+          return (
+            <span>
+              <Permission service={['iam-service.menu.update']} type={menuType}>
                 <Tooltip
-                  title={<FormattedMessage id="delete" />}
+                  title={<FormattedMessage id="modify" />}
                   placement="bottom"
                 >
                   <Button
-                    onClick={this.handleDelete.bind(this, record)}
                     shape="circle"
                     size="small"
-                    icon="delete_forever"
+                    onClick={this.changeMenu.bind(this, record)}
+                    icon="mode_edit"
                   />
                 </Tooltip>
-              ) : (
-                <Tooltip
-                  title={<FormattedMessage id={`${intlPrefix}.delete.disable.tooltip`} />}
-                  overlayStyle={{ width: '200px' }}
-                  placement="bottomRight"
-                >
-                  <Button
-                    disabled
-                    shape="circle"
-                    size="small"
-                    icon="delete_forever"
-                  />
-                </Tooltip>
-              )}
-            </Permission>
-          </span>);
+              </Permission>
+              <Permission service={['iam-service.menu.delete']} type={menuType}>
+                {canDel ? (
+                  <Tooltip
+                    title={<FormattedMessage id="delete" />}
+                    placement="bottom"
+                  >
+                    <Button
+                      onClick={this.handleDelete.bind(this, record)}
+                      shape="circle"
+                      size="small"
+                      icon="delete_forever"
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip
+                    title={<FormattedMessage id={`${intlPrefix}.delete.disable.tooltip`} />}
+                    overlayStyle={{ width: '200px' }}
+                    placement="bottomRight"
+                  >
+                    <Button
+                      disabled
+                      shape="circle"
+                      size="small"
+                      icon="delete_forever"
+                    />
+                  </Tooltip>
+                )}
+              </Permission>
+            </span>
+          );
         }
       },
     }];
@@ -860,10 +882,14 @@ export default class MenuSetting extends Component {
           values={{ name: AppState.getSiteInfo.systemName || 'Choerodon' }}
         >
           <Tabs defaultActiveKey="site" onChange={this.selectMenuType} activeKey={typeState}>
-            <TabPane tab={<FormattedMessage id={`${intlPrefix}.global`} />} key="site" />
+            {hasLevel('site') ? <TabPane tab={<FormattedMessage id={`${intlPrefix}.global`} />} key="site" /> : null}
+            {hasLevel('organization') ? <TabPane tab={<FormattedMessage id={`${intlPrefix}.org`} />} key="organization" /> : null}
+            {hasLevel('project') ? <TabPane tab={<FormattedMessage id={`${intlPrefix}.pro`} />} key="project" /> : null}
+            {hasLevel('user') ? <TabPane tab={<FormattedMessage id={`${intlPrefix}.personcenter`} />} key="user" /> : null}
+            {/* <TabPane tab={<FormattedMessage id={`${intlPrefix}.global`} />} key="site" />
             <TabPane tab={<FormattedMessage id={`${intlPrefix}.org`} />} key="organization" />
             <TabPane tab={<FormattedMessage id={`${intlPrefix}.pro`} />} key="project" />
-            <TabPane tab={<FormattedMessage id={`${intlPrefix}.personcenter`} />} key="user" />
+            <TabPane tab={<FormattedMessage id={`${intlPrefix}.personcenter`} />} key="user" /> */}
           </Tabs>
           <Table
             loading={loading}
@@ -895,13 +921,17 @@ export default class MenuSetting extends Component {
                 type="primary"
                 onClick={this.saveMenu}
                 loading={submitting}
-              ><FormattedMessage id="save" /></Button>
+              >
+                <FormattedMessage id="save" />
+              </Button>
               <Button
                 funcType="raised"
                 onClick={this.handleRefresh}
                 style={{ marginLeft: 16, color: '#3F51B5' }}
                 disabled={submitting}
-              ><FormattedMessage id="cancel" /></Button>
+              >
+                <FormattedMessage id="cancel" />
+              </Button>
             </div>
           </Permission>
         </Content>

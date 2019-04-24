@@ -113,4 +113,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
     changeSet(author: 'superlee', id: '2019-04-24-menu-add-unique-constraint') {
         addUniqueConstraint(tableName:'IAM_MENU_B', columnNames:'CODE', constraintName:'UK_IAM_MENU_U2')
     }
+
+    changeSet(author: 'xausky', id: '2019-04-24-menu-upgrade-parent-id') {
+        renameColumn(tableName:'IAM_MENU_B',oldColumnName:'PARENT_ID',newColumnName:'PARENT_CODE',columnDataType:'VARCHAR(128)',remarks:'parent menu code')
+        dropNotNullConstraint(columnDataType: 'VARCHAR(128)', columnName: 'PARENT_CODE', tableName: 'IAM_MENU_B')
+        dropNotNullConstraint(columnDataType: 'VARCHAR(128)', columnName: 'NAME', tableName: 'IAM_MENU_B')
+    }
 }
