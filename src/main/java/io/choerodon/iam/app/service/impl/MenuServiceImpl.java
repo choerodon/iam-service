@@ -94,14 +94,12 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuDTO> menus(String level, Long sourceId) {
-        if (!ResourceType.contains(level)) {
-            throw new CommonException("error.illegal.menu.level", level);
-        }
+    public MenuDTO menus(String code, Long sourceId) {
+        MenuDTO topMenu = getTopMenuByCode(code);
+        String level = topMenu.getResourceLevel();
         CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin();
-        List<MenuDTO> topMenus = getTopMenus(level);
         Set<MenuDTO> menus;
         if (isAdmin) {
             MenuDTO dto = new MenuDTO();
@@ -122,9 +120,8 @@ public class MenuServiceImpl implements MenuService {
             dto.setResourceLevel(level);
             menus.addAll(menuMapper.select(dto));
         }
-        topMenus.forEach(top -> toTreeMenu(top, menus));
-        topMenus.sort(Comparator.comparing(MenuDTO::getSort));
-        return topMenus;
+        toTreeMenu(topMenu, menus);
+        return topMenu;
     }
 
     private String getProjectCategory(String level, Long sourceId) {
@@ -140,15 +137,20 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public MenuDTO menuConfig(String code) {
+        MenuDTO menu = getTopMenuByCode(code);
+        String level = menu.getResourceLevel();
+        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
+        toTreeMenu(menu, menus);
+        return menu;
+    }
+
+    private MenuDTO getTopMenuByCode(String code) {
         MenuDTO dto = new MenuDTO();
         dto.setCode(code);
         MenuDTO menu = menuMapper.selectOne(dto);
         if (menu == null) {
             throw new CommonException("error.menu.top.not.existed");
         }
-        String level = menu.getResourceLevel();
-        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
-        toTreeMenu(menu, menus);
         return menu;
     }
 
@@ -176,7 +178,7 @@ public class MenuServiceImpl implements MenuService {
             dto.setParentCode(menu.getParentCode());
             menuMapper.updateByPrimaryKey(dto);
         }
-        List<MenuDTO> subMenus = menu.getMenus();
+        List<MenuDTO> subMenus = menu.getSubMenus();
         if (subMenus != null && !subMenus.isEmpty()) {
             subMenus.forEach(m -> saveOrUpdate(m, level));
         }
@@ -232,14 +234,14 @@ public class MenuServiceImpl implements MenuService {
 //                subList.add(menu);
 //                return;
 //            }
-//            List<MenuDTO> menuList = menu.getMenus();
+//            List<MenuDTO> menuList = menu.getSubMenus();
 //            boolean hasMenuItem = (menuList != null && !menuList.isEmpty());
 //            if (MenuType.isMenu(menu.getType()) && hasMenuItem) {
 //                subList.add(menu);
 //            }
 //        });
         subMenus.sort(Comparator.comparing(MenuDTO::getSort));
-        parentMenu.setMenus(subMenus);
+        parentMenu.setSubMenus(subMenus);
     }
 
     @Override

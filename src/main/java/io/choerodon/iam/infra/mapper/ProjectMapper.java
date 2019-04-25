@@ -17,10 +17,10 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
                                    @Param("param") String param);
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
-                                           @Param("projectDO") ProjectDTO projectDTO);
+                                           @Param("projectDTO") ProjectDTO projectDTO);
 
     List<ProjectDTO> selectProjectsByUserIdWithParam(@Param("userId") Long userId,
-                                         @Param("projectDO") ProjectDTO projectDTO,
+                                         @Param("projectDTO") ProjectDTO projectDTO,
                                          @Param("param") String param);
 
     List<ProjectDTO> selectProjectsWithRoles(

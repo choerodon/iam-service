@@ -50,11 +50,11 @@ public interface MenuService {
     /**
      * 查询当前登录用户可以查看的菜单
      *
-     * @param level
-     * @param sourceId
+     * @param code 顶级菜单的code
+     * @param sourceId site和user为0，project和organization是对应的id
      * @return
      */
-    List<MenuDTO> menus(String level, Long sourceId);
+    MenuDTO menus(String code, Long sourceId);
 
     /**
      * menuConfig界面根据层级查询树形菜单，菜单下包含权限信息

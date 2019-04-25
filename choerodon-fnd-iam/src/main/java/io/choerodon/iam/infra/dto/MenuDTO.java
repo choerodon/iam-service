@@ -147,11 +147,11 @@
 //        this.permissions = permissions;
 //    }
 //
-//    public List<MenuDTO> getMenus() {
+//    public List<MenuDTO> getSubMenus() {
 //        return menus;
 //    }
 //
-//    public void setMenus(List<MenuDTO> menus) {
+//    public void setSubMenus(List<MenuDTO> menus) {
 //        this.menus = menus;
 //    }
 //

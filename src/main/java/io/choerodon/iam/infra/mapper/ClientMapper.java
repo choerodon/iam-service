@@ -17,7 +17,7 @@ public interface ClientMapper extends Mapper<ClientDTO> {
     /**
      * 分页模糊查询客户端
      *
-     * @param clientDO 客户端对象
+     * @param clientDTO 客户端对象
      * @param param    客户端模糊查询参数
      * @return 客户端集合
      */

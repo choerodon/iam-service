@@ -126,7 +126,7 @@
 //            dto.setParentId(menu.getParentId());
 //            menuMapper.updateByPrimaryKey(dto);
 //        }
-//        List<MenuDTO> subMenus = menu.getMenus();
+//        List<MenuDTO> subMenus = menu.getSubMenus();
 //        if (subMenus != null && !subMenus.isEmpty()) {
 //            subMenus.forEach(m -> saveOrUpdate(m, level));
 //        }
@@ -177,7 +177,7 @@
 //            }
 //        });
 //        subMenus.sort(Comparator.comparing(MenuDTO::getSort));
-//        parentMenu.setMenus(subMenus);
+//        parentMenu.setSubMenus(subMenus);
 //    }
 //
 //    private void preCreate(MenuDTO menuDTO) {
