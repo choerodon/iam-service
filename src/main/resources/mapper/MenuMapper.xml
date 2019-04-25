@@ -20,7 +20,7 @@
             when
             imt.name is null
             then imb.name
-          else imt.name
+            else imt.name
           end as name,
           imb.resource_level,
           imb.parent_code,
@@ -34,8 +34,8 @@
         inner join iam_menu_permission imp
         on imb.code = imp.menu_code
         inner join (
-            select distinct t2.code from(
-            select * from iam_permission ip
+            select distinct t2.code from (
+            select ip.* from iam_permission ip
             inner join iam_role_permission irp
             on ip.id = irp.permission_id
             inner join (
@@ -55,10 +55,9 @@
             ) t1
             on t1.role_id = irp.role_id
             union
-            select * from iam_permission
-            where iam_permission.is_login_access = 1
-            or iam_permission.is_public_access = 1
-            --                 group by
+            select ip1.* from iam_permission ip1
+            where ip1.is_login_access = 1
+            or ip1.is_public_access = 1
             ) t2
         ) t3
         on imp.permission_code = t3.code
@@ -67,14 +66,14 @@
         and imt.lang = #{lang}
         where 1=1
         <if test="sourceType != null">
-            imb.resource_level = #{sourceType}
+            and imb.resource_level = #{sourceType}
         </if>
         <choose>
             <when test="category == 'PROGRAM'">
-                AND imb.category LIKE 'PROGRAM'
+                and imb.category like 'PROGRAM'
             </when>
             <otherwise>
-                AND ( imb.category NOT LIKE 'PROGRAM' OR imb.category IS NULL )
+                and ( imb.category not like 'PROGRAM' or imb.category is null )
             </otherwise>
         </choose>
     </select>
