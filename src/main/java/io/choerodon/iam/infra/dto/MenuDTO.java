@@ -6,7 +6,6 @@ import io.choerodon.mybatis.entity.BaseDTO;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
@@ -48,7 +47,7 @@ public class MenuDTO extends BaseDTO {
     @Transient
     private List<PermissionDTO> permissions;
     @Transient
-    private List<MenuDTO> menus;
+    private List<MenuDTO> subMenus;
 
     public Long getId() {
         return id;
@@ -154,12 +153,12 @@ public class MenuDTO extends BaseDTO {
         this.permissions = permissions;
     }
 
-    public List<MenuDTO> getMenus() {
-        return menus;
+    public List<MenuDTO> getSubMenus() {
+        return subMenus;
     }
 
-    public void setMenus(List<MenuDTO> menus) {
-        this.menus = menus;
+    public void setSubMenus(List<MenuDTO> subMenus) {
+        this.subMenus = subMenus;
     }
 
     public String getServiceCode() {
@@ -187,7 +186,7 @@ public class MenuDTO extends BaseDTO {
                 ", category='" + category + '\'' +
                 ", searchCondition='" + searchCondition + '\'' +
                 ", permissions=" + permissions +
-                ", menus=" + menus +
+                ", subMenus=" + subMenus +
                 '}';
     }
 
@@ -210,11 +209,11 @@ public class MenuDTO extends BaseDTO {
                 Objects.equals(category, dto.category) &&
                 Objects.equals(searchCondition, dto.searchCondition) &&
                 Objects.equals(permissions, dto.permissions) &&
-                Objects.equals(menus, dto.menus);
+                Objects.equals(subMenus, dto.subMenus);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, permissions, menus);
+        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, permissions, subMenus);
     }
 }

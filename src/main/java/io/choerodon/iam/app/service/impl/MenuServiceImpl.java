@@ -178,7 +178,7 @@ public class MenuServiceImpl implements MenuService {
             dto.setParentCode(menu.getParentCode());
             menuMapper.updateByPrimaryKey(dto);
         }
-        List<MenuDTO> subMenus = menu.getMenus();
+        List<MenuDTO> subMenus = menu.getSubMenus();
         if (subMenus != null && !subMenus.isEmpty()) {
             subMenus.forEach(m -> saveOrUpdate(m, level));
         }
@@ -234,14 +234,14 @@ public class MenuServiceImpl implements MenuService {
 //                subList.add(menu);
 //                return;
 //            }
-//            List<MenuDTO> menuList = menu.getMenus();
+//            List<MenuDTO> menuList = menu.getSubMenus();
 //            boolean hasMenuItem = (menuList != null && !menuList.isEmpty());
 //            if (MenuType.isMenu(menu.getType()) && hasMenuItem) {
 //                subList.add(menu);
 //            }
 //        });
         subMenus.sort(Comparator.comparing(MenuDTO::getSort));
-        parentMenu.setMenus(subMenus);
+        parentMenu.setSubMenus(subMenus);
     }
 
     @Override
