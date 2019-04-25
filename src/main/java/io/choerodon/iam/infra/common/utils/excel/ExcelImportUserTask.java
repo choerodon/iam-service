@@ -571,7 +571,7 @@ public class ExcelImportUserTask {
         /**
          * 同步完成后回调
          *
-         * @param uploadHistoryDO 历史纪录
+         * @param uploadHistoryDTO 历史纪录
          */
         void callback(UploadHistoryDTO uploadHistoryDTO);
     }

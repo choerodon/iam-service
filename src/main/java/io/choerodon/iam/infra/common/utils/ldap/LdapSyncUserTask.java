@@ -268,8 +268,8 @@ public class LdapSyncUserTask {
         });
     }
 
-    private AndFilter getAndFilterByObjectClass(LdapDTO ldapDO) {
-        String objectClass = ldapDO.getObjectClass();
+    private AndFilter getAndFilterByObjectClass(LdapDTO ldapDTO) {
+        String objectClass = ldapDTO.getObjectClass();
         String[] arr = objectClass.split(",");
         AndFilter andFilter = new AndFilter();
         for (String str : arr) {

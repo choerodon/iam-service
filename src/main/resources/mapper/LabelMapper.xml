@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LabelMapper">
 
-    <resultMap id="labelDO" type="io.choerodon.iam.infra.dto.LabelDTO" autoMapping="true">
+    <resultMap id="labelDTO" type="io.choerodon.iam.infra.dto.LabelDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="level" column="FD_LEVEL"/>
     </resultMap>
 
-    <select id="selectByRoleId" resultMap="labelDO">
+    <select id="selectByRoleId" resultMap="labelDTO">
         SELECT iam_label.*
         FROM iam_role_label
         LEFT JOIN iam_label
@@ -16,7 +16,7 @@
         WHERE iam_role_label.role_id = #{roleId}
     </select>
 
-    <select id="listByOption" resultMap="labelDO">
+    <select id="listByOption" resultMap="labelDTO">
         SELECT * FROM iam_label l
         WHERE 1=1
         <if test="label.type != null">
@@ -33,7 +33,7 @@
         </if>
     </select>
 
-    <select id="selectByUserId" resultMap="labelDO">
+    <select id="selectByUserId" resultMap="labelDTO">
         SELECT DISTINCT il.*
         FROM iam_user iu
         JOIN iam_member_role imr
