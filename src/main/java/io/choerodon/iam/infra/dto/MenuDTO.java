@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.dto;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.entity.BaseDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -44,6 +45,11 @@ public class MenuDTO extends BaseDTO {
     private String icon;
     private String category;
     private String searchCondition;
+    @Transient
+    private String route;
+
+    @Transient
+    private String pagePermissionType;
     @Transient
     private List<PermissionDTO> permissions;
     @Transient
@@ -167,6 +173,22 @@ public class MenuDTO extends BaseDTO {
 
     public void setServiceCode(String serviceCode) {
         this.serviceCode = serviceCode;
+    }
+
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
+    }
+
+    public String getPagePermissionType() {
+        return pagePermissionType;
+    }
+
+    public void setPagePermissionType(String pagePermissionType) {
+        this.pagePermissionType = pagePermissionType;
     }
 
     @Override
