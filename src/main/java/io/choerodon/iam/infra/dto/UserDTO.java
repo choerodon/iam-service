@@ -82,12 +82,14 @@ public class UserDTO extends BaseDTO {
     private Date lastPasswordUpdatedAt;
     private Date lastLoginAt;
 
+    @Transient
     @ApiModelProperty(value = "组织名称/非必填")
     private String organizationName;
 
     /**
      * 只用于返回该数据，不读入
      */
+    @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String organizationCode;
 
