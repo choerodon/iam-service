@@ -36,9 +36,9 @@ public class MenuController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("获取可以访问的菜单列表")
     @GetMapping
-    public ResponseEntity<List<MenuDTO>> menus(@RequestParam String level,
-                                               @RequestParam(name = "source_id") Long sourceId) {
-        return new ResponseEntity<>(menuService.menus(level, sourceId), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menus(@RequestParam String code,
+                                         @RequestParam(name = "source_id") Long sourceId) {
+        return new ResponseEntity<>(menuService.menus(code, sourceId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
