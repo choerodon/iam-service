@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.dto;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.entity.BaseDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -44,6 +45,11 @@ public class MenuDTO extends BaseDTO {
     private String icon;
     private String category;
     private String searchCondition;
+    @Transient
+    private String route;
+
+    @Transient
+    private String pagePermissionType;
     @Transient
     private List<PermissionDTO> permissions;
     @Transient
@@ -169,6 +175,22 @@ public class MenuDTO extends BaseDTO {
         this.serviceCode = serviceCode;
     }
 
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
+    }
+
+    public String getPagePermissionType() {
+        return pagePermissionType;
+    }
+
+    public void setPagePermissionType(String pagePermissionType) {
+        this.pagePermissionType = pagePermissionType;
+    }
+
     @Override
     public String toString() {
         return "MenuDTO{" +
@@ -176,7 +198,7 @@ public class MenuDTO extends BaseDTO {
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 ", pagePermissionCode='" + pagePermissionCode + '\'' +
-                ", parentCode=" + parentCode +
+                ", parentCode='" + parentCode + '\'' +
                 ", resourceLevel='" + resourceLevel + '\'' +
                 ", type='" + type + '\'' +
                 ", serviceCode='" + serviceCode + '\'' +
@@ -185,6 +207,8 @@ public class MenuDTO extends BaseDTO {
                 ", icon='" + icon + '\'' +
                 ", category='" + category + '\'' +
                 ", searchCondition='" + searchCondition + '\'' +
+                ", route='" + route + '\'' +
+                ", pagePermissionType='" + pagePermissionType + '\'' +
                 ", permissions=" + permissions +
                 ", subMenus=" + subMenus +
                 '}';
@@ -194,26 +218,28 @@ public class MenuDTO extends BaseDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MenuDTO dto = (MenuDTO) o;
-        return Objects.equals(id, dto.id) &&
-                Objects.equals(code, dto.code) &&
-                Objects.equals(name, dto.name) &&
-                Objects.equals(pagePermissionCode, dto.pagePermissionCode) &&
-                Objects.equals(parentCode, dto.parentCode) &&
-                Objects.equals(resourceLevel, dto.resourceLevel) &&
-                Objects.equals(type, dto.type) &&
-                Objects.equals(serviceCode, dto.serviceCode) &&
-                Objects.equals(sort, dto.sort) &&
-                Objects.equals(isDefault, dto.isDefault) &&
-                Objects.equals(icon, dto.icon) &&
-                Objects.equals(category, dto.category) &&
-                Objects.equals(searchCondition, dto.searchCondition) &&
-                Objects.equals(permissions, dto.permissions) &&
-                Objects.equals(subMenus, dto.subMenus);
+        MenuDTO menuDTO = (MenuDTO) o;
+        return Objects.equals(id, menuDTO.id) &&
+                Objects.equals(code, menuDTO.code) &&
+                Objects.equals(name, menuDTO.name) &&
+                Objects.equals(pagePermissionCode, menuDTO.pagePermissionCode) &&
+                Objects.equals(parentCode, menuDTO.parentCode) &&
+                Objects.equals(resourceLevel, menuDTO.resourceLevel) &&
+                Objects.equals(type, menuDTO.type) &&
+                Objects.equals(serviceCode, menuDTO.serviceCode) &&
+                Objects.equals(sort, menuDTO.sort) &&
+                Objects.equals(isDefault, menuDTO.isDefault) &&
+                Objects.equals(icon, menuDTO.icon) &&
+                Objects.equals(category, menuDTO.category) &&
+                Objects.equals(searchCondition, menuDTO.searchCondition) &&
+                Objects.equals(route, menuDTO.route) &&
+                Objects.equals(pagePermissionType, menuDTO.pagePermissionType) &&
+                Objects.equals(permissions, menuDTO.permissions) &&
+                Objects.equals(subMenus, menuDTO.subMenus);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, permissions, subMenus);
+        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, route, pagePermissionType, permissions, subMenus);
     }
 }

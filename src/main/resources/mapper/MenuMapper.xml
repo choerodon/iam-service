@@ -29,7 +29,9 @@
           imb.is_default,
           imb.icon,
           imb.category,
-          imb.page_permission_code
+          imb.page_permission_code,
+          ip2.path as route,
+          ip2.permission_type as page_permission_type
         from iam_menu_b imb
         inner join iam_menu_permission imp
         on imb.code = imp.menu_code
@@ -64,6 +66,8 @@
         left join iam_menu_tl imt
         on imb.id = imt.id
         and imt.lang = #{lang}
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
         where 1=1
         <if test="sourceType != null">
             and imb.resource_level = #{sourceType}
@@ -114,43 +118,40 @@
     <select id="queryProjectMenusWithCategoryByRootUser" resultMap="Menu">
         <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         select distinct
-        imb.id,
-        imb.code,
-        case
-        when
-        imt.name is null
-        then imb.name
-        else imt.name
-        end as name,
-        imb.resource_level,
-        imb.parent_code,
-        imb.type,
-        imb.sort,
-        imb.is_default,
-        imb.icon,
-        imb.category,
-        imb.page_permission_code
-        iam_menu_b imb
+            imb.id,
+            imb.code,
+            case
+                when
+                imt.name is null
+                then imb.name
+                else imt.name
+            end as name,
+            imb.resource_level,
+            imb.parent_code,
+            imb.type,
+            imb.sort,
+            imb.is_default,
+            imb.icon,
+            imb.category,
+            imb.page_permission_code,
+            ip.path as route,
+            ip.permission_type as page_permission_type
+        from iam_menu_b imb
         left join iam_menu_tl imt
         on imb.id = imt.id
         and lang = #{lang}
+        left join iam_permission ip
+        on imb.page_permission_code = ip.code
         where imb.resource_level = 'project'
-        and (
-          (
-            imb.type = 'menu_item'
-            <choose>
-                <when test="category != null and category == 'PROGRAM'">
-                    and im.CATEGORY LIKE 'PROGRAM'
-                </when>
-                <otherwise>
-                    and ( im.CATEGORY NOT LIKE 'PROGRAM' OR im.CATEGORY IS NULL )
-                </otherwise>
-            </choose>
-         )
-         or imb.type = 'top'
-         or imb.type = 'menu'
-        )
-        )
+        and imb.type != 'top'
+        <choose>
+            <when test="category != null and category == 'PROGRAM'">
+                and imb.CATEGORY LIKE 'PROGRAM'
+            </when>
+            <otherwise>
+                and ( imb.CATEGORY NOT LIKE 'PROGRAM' OR imb.CATEGORY IS NULL )
+            </otherwise>
+        </choose>
     </select>
 
 </mapper>
