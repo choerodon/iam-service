@@ -94,11 +94,6 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public Page<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param) {
         return PageHelper.startPage(page, size).doSelectPage(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
-//        Page<DashboardE> dashboardPage = PageHelper.doPageAndSort(
-//                pageRequest, () -> dashboardMapper.fulltextSearch(
-//                        modelMapper.map(dashboardDTO, DashboardE.class), param));
-//
-//        return ConvertPageHelper.convertPage(dashboardPage, DashboardDTO.class);
     }
 
     @Override

@@ -52,7 +52,7 @@
             AND r.code LIKE concat(concat('%',#{roleQuery.code}), '%')
         </if>
         <if test="roleQuery.level != null">
-            AND r.fd_level LIKE concat(concat('%',#{roleQuery.level}), '%')
+            AND r.resource_level LIKE concat(concat('%',#{roleQuery.level}), '%')
         </if>
         <if test="roleQuery.enabled != null">
             AND r.is_enabled = #{roleQuery.enabled}
@@ -173,7 +173,7 @@
         SELECT ir.*
         FROM iam_role ir
         WHERE 1=1
-        AND ir.FD_LEVEL = #{sourceType}
+        AND ir.resource_level = #{sourceType}
         <if test="roleName != null">
             AND ir.NAME LIKE CONCAT('%', CONCAT(#{roleName}, '%'))
         </if>

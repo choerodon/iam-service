@@ -62,7 +62,6 @@ public class DashboardController extends BaseController {
     /**
      * 分页模糊查询Dashboard
      *
-     * @param pageRequest 分页对象
      * @param name        Dashboard名称
      * @param params      模糊查询参数
      * @return 查询到的Dashboard分页对象
