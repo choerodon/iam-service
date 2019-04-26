@@ -1,13 +1,14 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-import java.util.Set;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.iam.api.dto.ProjectDTO;
 import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.infra.dataobject.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -58,15 +59,26 @@ public interface ProjectRepository {
 
     /**
      * 获取组织下不是项目群的项目
-     * @param orgId
-     * @return
+     *
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的项目列表
      */
-    List<ProjectDTO> selectProjsNotGroup(Long orgId);
+    List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId);
 
     /**
-     * 获取组织下不是项目群且无所属的项目
-     * @param orgId
-     * @return
+     * 获取组织下不是项目群的且无所属的项目
+     *
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的且无所属的项目列表
      */
-    List<ProjectDTO> selectProjsNotInAnyGroup(Long orgId);
+    List<ProjectDTO> selectProjsNotInAnyGroup(@Param("orgId") Long orgId);
+
+    /**
+     * 根据项目Id查询当前项目生效的普通项目群信息.
+     *
+     * @param orgId     组织Id
+     * @param projectId 项目Id
+     * @return 普通项目群信息
+     */
+    ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
 }

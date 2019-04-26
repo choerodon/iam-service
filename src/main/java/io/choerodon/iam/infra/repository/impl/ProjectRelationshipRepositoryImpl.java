@@ -1,15 +1,14 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
 import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
 import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author Eugen
@@ -23,8 +22,8 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
     }
 
     @Override
-    public List<ProjectRelationshipDTO> seleteProjectsByParentId(Long parentId) {
-        return projectRelationshipMapper.seleteProjectsByParentId(parentId);
+    public List<ProjectRelationshipDTO> selectProjectsByParentId(Long parentId, Boolean onlySelectEnable) {
+        return projectRelationshipMapper.selectProjectsByParentId(parentId, onlySelectEnable);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
 
     @Override
     public ProjectRelationshipDO update(ProjectRelationshipDO projectRelationshipDO) {
-        if (projectRelationshipMapper.updateByPrimaryKeySelective(projectRelationshipDO) != 1) {
+        if (projectRelationshipMapper.updateByPrimaryKey(projectRelationshipDO) != 1) {
             throw new CommonException("error.project.group.update");
         }
         return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDO.getId());

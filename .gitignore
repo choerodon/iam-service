@@ -36,3 +36,4 @@ src/main/resources/application-default.yml
 init-database.sh
 
 choerodon_temp/
+node_modules

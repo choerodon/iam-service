@@ -1,21 +1,22 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-
 import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
+
+import java.util.List;
 
 /**
  * @author Eugen
  */
 public interface ProjectRelationshipRepository {
     /**
-     * 查询一个项目群下的所有项目(groupid,id,code,name)
+     * 查询一个项目群下的子项目(默认查所有子项目，可传参只查启用的子项目).
      *
-     * @param parentId
-     * @return 项目list
+     * @param parentId     父级Id
+     * @param onlySelectEnable 是否只查启用项目
+     * @return 项目群下的子项目列表
      */
-    List<ProjectRelationshipDTO> seleteProjectsByParentId(Long parentId);
+    List<ProjectRelationshipDTO> selectProjectsByParentId(Long parentId, Boolean onlySelectEnable);
 
     /**
      * 项目群下添加项目
@@ -58,6 +59,7 @@ public interface ProjectRelationshipRepository {
 
     /**
      * select
+     *
      * @param projectRelationshipDO
      * @return
      */
