@@ -102,13 +102,11 @@ public class MenuServiceImpl implements MenuService {
         boolean isAdmin = userDetails.getAdmin();
         Set<MenuDTO> menus;
         if (isAdmin) {
-            MenuDTO dto = new MenuDTO();
             if (ResourceType.isProject(level)) {
                 menus = new LinkedHashSet<>(
                         menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
             } else {
-                dto.setResourceLevel(level);
-                menus = new LinkedHashSet<>(menuMapper.select(dto));
+                menus = menuMapper.selectByLevelWithPermissionType(level);
             }
         } else {
             String category = getProjectCategory(level, sourceId);
