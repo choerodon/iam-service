@@ -48,7 +48,7 @@ public class ActuatorSagaHandler {
         return actuatorJson;
     }
 
-    @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据")
+    @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据", maxRetryCount = 3)
     public void refreshInitData(String actuatorJson) throws IOException, SQLException {
         JsonNode root = OBJECT_MAPPER.readTree(actuatorJson);
         JsonNode data = root.get("init-data");
@@ -57,7 +57,9 @@ public class ActuatorSagaHandler {
             return;
         }
         try(Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
             MicroServiceInitData.processInitData(data, connection);
+            connection.commit();
         }
     }
 
