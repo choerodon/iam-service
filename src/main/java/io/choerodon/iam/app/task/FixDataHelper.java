@@ -131,7 +131,6 @@ public class FixDataHelper {
      */
     private void fixMenuPermissionData() {
         logger.info("start to fix data in iam_menu_permission");
-        menuPermissionMapper.deleteDirtyData();
         List<MenuPermissionDTO> menuPermissions = menuPermissionMapper.selectAll();
         menuPermissions.forEach(
                 mp -> {
@@ -140,16 +139,25 @@ public class FixDataHelper {
                     try {
                         menuId = Long.valueOf(menuCode);
                     } catch (Exception e) {
-                        logger.error("cast code to id error, menuCode: {}", menuCode);
                         return;
                     }
                     MenuDTO menu = menuMapper.selectByPrimaryKey(menuId);
                     if (menu == null) {
-                        logger.error("can not find menu where id = {}", menuId);
+                        logger.warn("can not find menu where id = {}, and delete the menu_permission, menu_code = {}, permission_code = {}",
+                                menuId, menuId, mp.getPermissionCode());
+                        menuPermissionMapper.deleteByPrimaryKey(mp);
                         return;
                     }
-                    mp.setMenuCode(menu.getCode());
-                    menuPermissionMapper.updateByPrimaryKey(mp);
+
+                    MenuPermissionDTO example = new MenuPermissionDTO();
+                    example.setMenuCode(menu.getCode());
+                    example.setPermissionCode(mp.getPermissionCode());
+                    if (menuPermissionMapper.selectOne(example) == null) {
+                        mp.setMenuCode(menu.getCode());
+                        menuPermissionMapper.updateByPrimaryKey(mp);
+                    } else {
+                        menuPermissionMapper.deleteByPrimaryKey(mp);
+                    }
                 }
         );
     }

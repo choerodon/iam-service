@@ -1,6 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -35,4 +36,11 @@ public interface MenuMapper extends Mapper<MenuDTO> {
      * @return
      */
     List<MenuDTO> selectMenusWithPermission(String level);
+
+    /**
+     * 根据层级查询该层级菜单，关联permission表查path作为route字段值
+     * @param level
+     * @return
+     */
+    Set<MenuDTO> selectByLevelWithPermissionType(String level);
 }
