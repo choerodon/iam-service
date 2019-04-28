@@ -3,7 +3,7 @@
   "routeName": "iam",
   "version": "1.0.1",
   "description": "",
-  "main": "./react/src/app/iam/containers/IAMIndex.js",
+  "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "dependencies": {
     "choerodon-boot-combine": "0.1.x",
     "choerodon-front-master": "0.1.x",
