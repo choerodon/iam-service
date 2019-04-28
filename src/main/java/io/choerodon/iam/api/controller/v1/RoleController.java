@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -19,7 +19,6 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 
 /**
@@ -45,11 +44,10 @@ public class RoleController extends BaseController {
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询角色")
-    @CustomPageRequest
     @PostMapping(value = "/search")
-    public ResponseEntity<Page<RoleDTO>> pagedSearch(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                     @RequestBody RoleQuery roleQuery) {
+    public ResponseEntity<PageInfo<RoleDTO>> pagedSearch(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                         @RequestBody RoleQuery roleQuery) {
         return new ResponseEntity<>(roleService.pagingSearch(page,size,roleQuery), HttpStatus.OK);
     }
 
@@ -147,7 +145,7 @@ public class RoleController extends BaseController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据角色id查看角色对应的权限")
     @GetMapping("/{id}/permissions")
-    public ResponseEntity<Page<PermissionDTO>> listPermissionById(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<PermissionDTO>> listPermissionById(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                   @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                   @PathVariable("id") Long id,
                                                                   @RequestParam(value = "params", required = false) String[] params) {

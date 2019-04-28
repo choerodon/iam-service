@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -16,7 +16,6 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.iam.api.validator.ClientValidator;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author wuguokai
@@ -126,20 +125,18 @@ public class ClientController extends BaseController {
      * 分页模糊查询客户端
      *
      * @param organizationId 组织id
-     * @param pageRequest    分页对象
      * @param name           客户端名称
      * @param params         模糊查询参数
      * @return 查询到的客户端分页对象
      */
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询客户端")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<ClientDTO>> list(@PathVariable("organization_id") Long organizationId,
-                                                @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                @RequestParam(required = false) String name,
-                                                @RequestParam(required = false) String[] params) {
+    public ResponseEntity<PageInfo<ClientDTO>> list(@PathVariable("organization_id") Long organizationId,
+                                                    @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                    @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                    @RequestParam(required = false) String name,
+                                                    @RequestParam(required = false) String[] params) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.Valid;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -22,7 +22,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author wuguokai
@@ -95,14 +94,13 @@ public class OrganizationController extends BaseController {
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询组织")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<OrganizationDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                             @RequestParam(required = false) String name,
-                                                             @RequestParam(required = false) String code,
-                                                             @RequestParam(required = false) Boolean enabled,
-                                                             @RequestParam(required = false) String[] params) {
+    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                 @RequestParam(required = false) String name,
+                                                                 @RequestParam(required = false) String code,
+                                                                 @RequestParam(required = false) Boolean enabled,
+                                                                 @RequestParam(required = false) String[] params) {
         OrganizationDTO organization = new OrganizationDTO();
         organization.setName(name);
         organization.setCode(code);
@@ -112,9 +110,8 @@ public class OrganizationController extends BaseController {
 
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
-    @CustomPageRequest
     @GetMapping(value = "/all")
-    public ResponseEntity<Page<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size) {
         return new ResponseEntity<>(organizationService.getAllOrgs(page,size), HttpStatus.OK);
     }
@@ -162,9 +159,8 @@ public class OrganizationController extends BaseController {
      */
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询组织下的用户")
-    @CustomPageRequest
     @GetMapping(value = "/{organization_id}/users")
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
+    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
                                                                         @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                         @RequestParam(required = false, name = "id") Long userId,

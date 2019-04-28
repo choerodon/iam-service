@@ -3,7 +3,7 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Map;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -41,24 +41,24 @@ public interface UserService {
 
     List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled);
 
-    Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page,int size,
+    PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page,int size,
                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page,int size,
+    PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page,int size,
                                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                      Long sourceId);
 
-    Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page,int size,
+    PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page,int size,
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page,int size,
-                                                      RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage);
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size,
+                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page,int size,
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page,int size,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                               Long roleId, Long sourceId, boolean doPage);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size,
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size,
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                          Long roleId, Long sourceId, boolean doPage);
 
@@ -66,7 +66,7 @@ public interface UserService {
 
     String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
-    Page<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
+    PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
 
     void addAdminUsers(long[] ids);
 
@@ -89,18 +89,18 @@ public interface UserService {
      */
     List<UserDTO> listUsersByEmails(String[] emails);
 
-    Page<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size,
+    PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size,
                                                                     Long id, String params);
 
-    Page<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size,
+    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size,
                                                     Long id, String params);
 
     UserDTO createUserAndAssignRoles(CreateUserWithRolesDTO userWithRoles);
 
-    Page<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
+    PageInfo<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
                                              int page, int size, String params);
 
-    Page<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
+    PageInfo<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
                                                        int page, int size, String params);
 
     Long[] listUserIds();
@@ -110,12 +110,12 @@ public interface UserService {
     OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId);
 
 
-    Page<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId);
+    PageInfo<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId);
 
-    Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
 
     Map<String, Object> queryAllAndNewUsers();
 
-    Page<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
+    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
 
 }

@@ -3,7 +3,7 @@ package io.choerodon.iam.domain.repository;
 import java.util.List;
 import java.util.Set;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
@@ -17,9 +17,9 @@ public interface ProjectRepository {
 
     List<ProjectDTO> query(ProjectDTO projectDTO);
 
-    Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
 
-    Page<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page,int size, String param);
+    PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page,int size, String param);
 
     ProjectDTO updateSelective(ProjectDTO projectDTO);
 
@@ -36,7 +36,7 @@ public interface ProjectRepository {
 
     List<ProjectDTO> selectByOrgId(Long organizationId);
 
-    Page<ProjectDTO> pagingQueryProjectAndRolesById(int page,int size, Long id, String params);
+    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page,int size, Long id, String params);
 
     List<Long> listUserIds(Long id);
 

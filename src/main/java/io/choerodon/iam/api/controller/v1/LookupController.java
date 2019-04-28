@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -8,7 +8,6 @@ import io.choerodon.core.base.BaseController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.LookupService;
 import io.choerodon.iam.infra.dto.LookupDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,18 +75,16 @@ public class LookupController extends BaseController {
     /**
      * 分页查询lookupType 数据
      *
-     * @param pageRequest 分页封装对象
      * @param lookupDTO   查询封装对象
      * @return 返回信息
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询快码")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<LookupDTO>> list(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                LookupDTO lookupDTO,
-                                                @RequestParam(required = false)String param) {
+    public ResponseEntity<PageInfo<LookupDTO>> list(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                    @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                    LookupDTO lookupDTO,
+                                                    @RequestParam(required = false)String param) {
         return new ResponseEntity<>(lookupService.pagingQuery(page,size, lookupDTO,param), HttpStatus.OK);
     }
 

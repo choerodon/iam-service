@@ -3,7 +3,7 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.iam.app.service.ProjectService;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author flyleft
@@ -65,14 +64,13 @@ public class ProjectController extends BaseController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页模糊查询项目下的用户")
-    @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
-    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long id,
-                                              @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                              @RequestParam(required = false, name = "id") Long userId,
-                                              @RequestParam(required = false) String email,
-                                              @RequestParam(required = false) String param) {
+    public ResponseEntity<PageInfo<UserDTO>> list(@PathVariable(name = "project_id") Long id,
+                                                  @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                  @RequestParam(required = false, name = "id") Long userId,
+                                                  @RequestParam(required = false) String email,
+                                                  @RequestParam(required = false) String param) {
         return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, page, size, param), HttpStatus.OK);
     }
 

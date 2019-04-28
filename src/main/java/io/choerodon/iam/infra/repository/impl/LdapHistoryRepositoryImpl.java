@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +55,7 @@ public class LdapHistoryRepositoryImpl implements LdapHistoryRepository {
     }
 
     @Override
-    public Page<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> ldapHistoryMapper.selectAllEnd(ldapId));
+    public PageInfo<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> ldapHistoryMapper.selectAllEnd(ldapId));
     }
 }

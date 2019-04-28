@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.repository.impl;
 import java.util.List;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import org.springframework.stereotype.Component;
@@ -99,32 +100,29 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
+    public PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
             int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
-        return pageQueryingClientsWithRoles(page,size, clientRoleSearchDTO, sourceId, param, ResourceLevel.ORGANIZATION.value());
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, sourceId, param, ResourceLevel.ORGANIZATION.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, String param) {
-        return pageQueryingClientsWithRoles(page,size, clientRoleSearchDTO, 0L, param, ResourceLevel.SITE.value());
+    public PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, String param) {
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, 0L, param, ResourceLevel.SITE.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
-        return pageQueryingClientsWithRoles(page,size, clientRoleSearchDTO, sourceId, param, ResourceLevel.PROJECT.value());
+    public PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, sourceId, param, ResourceLevel.PROJECT.value());
     }
 
-    private Page<ClientDTO> pageQueryingClientsWithRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
+    private PageInfo<ClientDTO> pageQueryingClientsWithRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
         //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
-//        int page = pageRequest.getPage();
-//        int size = pageRequest.getSize();
         int start = page * size;
-        Page<ClientDTO> result = new Page<>(page,size,true);
-//        PageInfo pageInfo = new PageInfo(page, size);
+        Page<ClientDTO> result = new Page<>(page, size);
         int count = memberRoleMapper.selectCountClients(sourceId, sourceType, clientRoleSearchDTO, param);
         result.setTotal(count);
-        result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, sourceType, clientRoleSearchDTO, param, start, size)) ;
+        result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, sourceType, clientRoleSearchDTO, param, start, size));
         //筛选非空角色以及角色内部按id排序
-        return result;
+        return result.toPageInfo();
     }
 }

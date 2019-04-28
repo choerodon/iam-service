@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.infra.dto.RoleDTO;
 
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public interface RoleRepository {
 
-    Page<RoleDTO> pagingQuery(int page, int size, RoleQuery roleQuery);
+    PageInfo<RoleDTO> pagingQuery(int page, int size, RoleQuery roleQuery);
 
     RoleDTO selectByCode(String code);
 

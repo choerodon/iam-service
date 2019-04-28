@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.DashboardPositionDTO;
 import io.choerodon.iam.api.service.DashboardService;
@@ -92,8 +93,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Page<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
+    public PageInfo<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
     }
 
     @Override

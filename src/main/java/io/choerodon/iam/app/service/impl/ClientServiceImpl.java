@@ -2,7 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import java.util.Random;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +105,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param) {
+    public PageInfo<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param) {
         isOrgExist(clientDTO.getOrganizationId());
         return clientRepository.pagingQuery(page,size,clientDTO,param);
     }
@@ -121,17 +121,17 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
+    public PageInfo<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
         return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, 0L, ResourceLevel.SITE.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
         return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
         return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value());
     }
 
@@ -171,7 +171,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Page<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params) {
+    public PageInfo<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params) {
         return clientRepository.pagingAllClientsByParams(page,size, params);
     }
 }

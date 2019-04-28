@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.infra.dto.*;
 import org.springframework.beans.BeanUtils;
@@ -183,7 +184,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     }
 
     @Override
-    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
+    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
         return projectRepository.pagingQuery(projectDTO, page, size, param);
     }
 

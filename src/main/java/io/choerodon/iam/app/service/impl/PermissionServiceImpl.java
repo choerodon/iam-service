@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.netflix.appinfo.InstanceInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -80,7 +81,7 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Page<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
+    public PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
         return permissionRepository.pagingQuery(page, size, permissionDTO, param);
     }
 
@@ -307,7 +308,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Page<PermissionDTO> listPermissionsByRoleId(int page, int size, Long id, String params) {
+    public PageInfo<PermissionDTO> listPermissionsByRoleId(int page, int size, Long id, String params) {
         return permissionRepository.pagingQueryByRoleId(page, size, id, params);
     }
 }

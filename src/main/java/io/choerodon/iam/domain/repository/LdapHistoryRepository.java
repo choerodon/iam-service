@@ -1,6 +1,6 @@
 package io.choerodon.iam.domain.repository;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 
 /**
@@ -13,5 +13,5 @@ public interface LdapHistoryRepository {
 
     LdapHistoryDTO updateByPrimaryKeySelective(LdapHistoryDTO ldapHistoryDTO);
 
-    Page<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId);
+    PageInfo<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId);
 }

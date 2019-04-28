@@ -1,6 +1,6 @@
 package io.choerodon.iam.domain.repository;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.infra.dto.ClientDTO;
@@ -19,15 +19,15 @@ public interface ClientRepository {
 
     ClientDTO update(Long clientId, ClientDTO clientDTO);
 
-    Page<ClientDTO> pagingQuery(int page,int size, ClientDTO clientDTO, String param);
+    PageInfo<ClientDTO> pagingQuery(int page, int size, ClientDTO clientDTO, String param);
 
     ClientDTO selectOne(ClientDTO clientDTO);
 
     Integer selectClientCountFromMemberRoleByOptions(Long roleId, Long sourceId, String sourceType, ClientRoleSearchDTO clientRoleSearchDTO, String param);
 
-    Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType);
+    PageInfo<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType);
 
-    Page<SimplifiedClientDTO> pagingAllClientsByParams(int page,int size, String params);
+    PageInfo<SimplifiedClientDTO> pagingAllClientsByParams(int page,int size, String params);
 
 
 }

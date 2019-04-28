@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.DashboardDTO;
 
 /**
@@ -12,7 +12,7 @@ public interface DashboardService {
 
     DashboardDTO query(Long dashboardId);
 
-    Page<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param);
+    PageInfo<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param);
 
     void reset(Long dashboardId);
 }

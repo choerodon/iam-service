@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -13,7 +13,6 @@ import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -95,12 +94,11 @@ public class OrganizationUserController extends BaseController {
      */
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页查询用户")
-    @CustomPageRequest
     @PostMapping(value = "/users/search")
-    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
-                                              @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                              @RequestBody UserSearchDTO user) {
+    public ResponseEntity<PageInfo<UserDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
+                                                  @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                  @RequestBody UserSearchDTO user) {
         user.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationUserService.pagingQuery(page,size, user), HttpStatus.OK);
     }

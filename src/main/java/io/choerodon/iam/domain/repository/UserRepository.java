@@ -3,7 +3,7 @@ package io.choerodon.iam.domain.repository;
 import java.util.List;
 import java.util.Set;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
 import io.choerodon.iam.api.dto.UserRoleDTO;
@@ -22,7 +22,7 @@ public interface UserRepository {
 
     UserDTO insertSelective(UserDTO userDTO);
 
-    Page<UserDTO> pagingQuery(int page, int size, UserSearchDTO userSearchDTO, String param);
+    PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO userSearchDTO, String param);
 
     UserDTO selectByPrimaryKey(Long id);
 
@@ -32,24 +32,24 @@ public interface UserRepository {
 
     void deleteById(Long id);
 
-    Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(
+    PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(
             int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(
+    PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(
             int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
-    Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(
+    PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(
             int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
 
     UserDTO updateUserInfo(UserDTO userDTO);
 
     UserDTO selectOne(UserDTO user);
 
-    Page<UserDTO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, int page, int size, String param);
 
-    Page<UserDTO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, int page, int size, String param);
 
-    Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
 
     Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId,
                                                    String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
@@ -61,7 +61,7 @@ public interface UserRepository {
 
     List<UserDTO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdAndLevel(int page, int size,
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(int page, int size,
                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage);
 
     List<UserDTO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
@@ -83,7 +83,7 @@ public interface UserRepository {
      */
     List<UserDTO> listUsersByEmails(String[] emails);
 
-    Page<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
+    PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
 
     List<UserDTO> insertList(List<UserDTO> insertUsers);
 
@@ -97,7 +97,7 @@ public interface UserRepository {
 
     Long[] listUserIds();
 
-    Page<SimplifiedUserDTO> pagingAllUsersByParams(int page, int size, String param, Long organizationId);
+    PageInfo<SimplifiedUserDTO> pagingAllUsersByParams(int page, int size, String param, Long organizationId);
 
     /**
      * 全平台用户数（包括停用）
@@ -116,7 +116,7 @@ public interface UserRepository {
     /**
      * 分页获取用户下所有角色列表
      */
-    Page<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
+    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
 
     List<UserDTO> select(UserDTO example);
 }

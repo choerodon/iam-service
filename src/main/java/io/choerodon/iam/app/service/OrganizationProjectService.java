@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
@@ -15,7 +16,7 @@ public interface OrganizationProjectService {
 
     List<ProjectDTO> queryAll(ProjectDTO projectDTO);
 
-    Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
 
     ProjectDTO update(Long organizationId, ProjectDTO projectDTO);
 

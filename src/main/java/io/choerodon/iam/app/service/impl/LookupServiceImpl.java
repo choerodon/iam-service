@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.LookupService;
 import io.choerodon.iam.domain.repository.LookupRepository;
@@ -40,14 +41,8 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
-    public Page<LookupDTO> pagingQuery(int page,int size, LookupDTO lookupDTO,String param) {
+    public PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param) {
         return lookupRepository.pagingQuery(page,size,lookupDTO,param);
-//        Page<LookupDO> lookupDOPage =
-//                lookupRepository.pagingQuery(
-//                        pageRequest, ConvertHelper.convert(
-//                                lookupDTO, LookupDO.class), lookupDTO.getParam());
-//        lookupDOPage.getContent().forEach(t -> t.setLookupValues(lookupValueRepository.selectByLookupId(t.getId())));
-//        return ConvertPageHelper.convertPage(lookupDOPage, LookupDTO.class);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -64,9 +59,6 @@ public class LookupServiceImpl implements LookupService {
     @Override
     public LookupDTO update(LookupDTO lookupDTO) {
         return service.update(lookupDTO);
-//        return ConvertHelper.convert(
-//                service.update(ConvertHelper.convert(
-//                        lookupDTO, LookupE.class)), LookupDTO.class);
     }
 
     @Override
@@ -74,9 +66,6 @@ public class LookupServiceImpl implements LookupService {
         LookupDTO lookupDTO = new LookupDTO();
         lookupDTO.setId(id);
         return service.queryById(lookupDTO);
-//        return ConvertHelper.convert(
-//                service.queryById(ConvertHelper.convert(
-//                        lookupDTO, LookupE.class)), LookupDTO.class);
     }
 
     @Override
@@ -84,14 +73,10 @@ public class LookupServiceImpl implements LookupService {
         LookupDTO lookupDTO = new LookupDTO();
         lookupDTO.setCode(code);
         return service.queryByCode(lookupDTO);
-//        return ConvertHelper.convert(
-//                service.queryByCode(ConvertHelper.convert(
-//                        lookupDTO, LookupE.class)), LookupDTO.class);
     }
 
     @Override
     public LookupDTO listByCodeWithLookupValues(String code) {
         return lookupRepository.listByCodeWithLookupValues(code);
-//        return ConvertHelper.convert(lookupRepository.listByCodeWithLookupValues(code), LookupDTO.class);
     }
 }

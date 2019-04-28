@@ -9,6 +9,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationPayload;
@@ -161,7 +162,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
+    public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
         return organizationRepository.pagingQuery(organizationDTO, page, size, param);
 
 //        Page<OrganizationDO> organizationDOPage =
@@ -231,7 +232,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, int page, int size, String param) {
+    public PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, int page, int size, String param) {
         return userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param);
 //        return PageHelper.startPage(page, size).doSelectPage(() -> userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param));
 
@@ -270,7 +271,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<OrganizationSimplifyDTO> getAllOrgs(int page, int size) {
+    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(int page, int size) {
         return organizationRepository.selectAllOrgIdAndName(page, size);
     }
 }

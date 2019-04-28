@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.repository.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.LanguageRepository;
 import io.choerodon.iam.infra.dto.LanguageDTO;
@@ -24,8 +25,8 @@ public class LanguageRepositoryImpl implements LanguageRepository {
     }
 
     @Override
-    public Page<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
-        return PageHelper.startPage(page,size).doSelectPage(()->mapper.fulltextSearch(languageDTO, param));
+    public PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(languageDTO, param));
     }
 
     @Override

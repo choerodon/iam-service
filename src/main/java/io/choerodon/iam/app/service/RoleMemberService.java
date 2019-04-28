@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.infra.dto.ClientDTO;
@@ -24,12 +24,12 @@ public interface RoleMemberService {
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(
             Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);
 
-    Page<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
 
-    Page<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO);
+    PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO);
 
-    Page<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(
             Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);

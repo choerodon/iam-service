@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.infra.dto.LdapDTO;
@@ -54,11 +54,10 @@ public interface LdapService {
 
     /**
      * 根据ldapId分页查询ldap history
-     * @param pageRequest
      * @param ldapId
      * @return
      */
-    Page<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId);
+    PageInfo<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId);
 
-    Page<LdapErrorUserDTO> pagingQueryErrorUsers(int page,int size, Long id, LdapErrorUserDTO ldapErrorUserDTO);
+    PageInfo<LdapErrorUserDTO> pagingQueryErrorUsers(int page,int size, Long id, LdapErrorUserDTO ldapErrorUserDTO);
 }

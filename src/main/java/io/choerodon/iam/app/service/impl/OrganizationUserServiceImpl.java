@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
@@ -203,7 +204,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQuery(int page, int size, UserSearchDTO user) {
+    public PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user) {
         return userRepository.pagingQuery(page, size, user, ParamUtils.arrToStr(user.getParam()));
     }
 

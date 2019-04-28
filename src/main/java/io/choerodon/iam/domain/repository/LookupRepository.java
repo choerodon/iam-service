@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.repository;
 
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LookupDTO;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface LookupRepository {
 
     LookupDTO insert(LookupDTO lookupDTO);
 
-    Page<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param);
+    PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param);
 
     void delete(LookupDTO lookupDTO);
 

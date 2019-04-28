@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.iam.infra.dto.RoleDTO;
 
@@ -26,7 +27,7 @@ public interface PermissionRepository {
 
     void deleteById(Long id);
 
-    Page<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param);
+    PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param);
 
     List<PermissionDTO> selectByRoleId(Long roleId);
 
@@ -35,7 +36,7 @@ public interface PermissionRepository {
 
     List<PermissionDTO> query(String level, String serviceName, String code);
 
-    Page<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params);
+    PageInfo<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params);
 
     List<PermissionDTO> selectErrorLevelPermissionByRole(RoleDTO roleDTO);
 }

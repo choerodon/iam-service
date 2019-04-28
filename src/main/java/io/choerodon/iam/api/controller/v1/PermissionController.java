@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -38,10 +38,10 @@ public class PermissionController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级查询权限列表")
     @GetMapping
-    public ResponseEntity<Page<PermissionDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                           @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                           @RequestParam("level") String level,
-                                                           @RequestParam(required = false) String param) {
+    public ResponseEntity<PageInfo<PermissionDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                               @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                               @RequestParam("level") String level,
+                                                               @RequestParam(required = false) String param) {
         PermissionDTO dto = new PermissionDTO();
         dto.setResourceLevel(level);
         return new ResponseEntity<>(permissionService.pagingQuery(page, size, dto, param), HttpStatus.OK);

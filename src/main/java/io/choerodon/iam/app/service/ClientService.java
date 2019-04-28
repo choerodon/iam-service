@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.infra.dto.ClientDTO;
@@ -21,15 +21,15 @@ public interface ClientService {
 
     ClientDTO queryByName(Long orgId, String clientName);
 
-    Page<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param);
+    PageInfo<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param);
 
     void check(ClientDTO client);
 
-    Page<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId);
+    PageInfo<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId);
 
-    Page<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
 
-    Page<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId);
 
-    Page<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params);
+    PageInfo<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params);
 }

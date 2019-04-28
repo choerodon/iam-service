@@ -1,6 +1,6 @@
 package io.choerodon.iam.domain.repository;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
@@ -27,12 +27,12 @@ public interface MemberRoleRepository {
 
     List<Long> selectDeleteList(final List<Long> deleteList, final long memberId, final String memberType, final long sourceId, final String sourceType);
 
-    Page<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
+    PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
             int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
 
-    Page<ClientDTO> pagingQueryClientsWithSiteLevelRoles(
+    PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(
             int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, String param);
 
-    Page<ClientDTO> pagingQueryClientsWithProjectLevelRoles(
+    PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(
             int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
 }

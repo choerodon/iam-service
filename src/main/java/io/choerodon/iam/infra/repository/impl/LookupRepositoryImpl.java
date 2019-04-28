@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.LookupRepository;
 import io.choerodon.iam.infra.dto.LookupDTO;
@@ -24,7 +24,6 @@ public class LookupRepositoryImpl implements LookupRepository {
 
     @Override
     public LookupDTO insert(LookupDTO lookupDTO) {
-//        LookupDO lookupDO = ConvertHelper.convert(lookupDTO, LookupDO.class);
         if (mapper.insertSelective(lookupDTO) != 1) {
             throw new CommonException("error.repo.lookup.insert");
         }
@@ -33,14 +32,12 @@ public class LookupRepositoryImpl implements LookupRepository {
     }
 
     @Override
-    public Page<LookupDTO> pagingQuery(int page,int size, LookupDTO lookupDTO, String param) {
-        return PageHelper.startPage(page,size).doSelectPage(()->mapper.fulltextSearch(lookupDTO, param));
-//        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(lookupDO, param));
+    public PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(lookupDTO, param));
     }
 
     @Override
     public void delete(LookupDTO lookupDTO) {
-//        LookupDO lookupDO = ConvertHelper.convert(lookupE, LookupDO.class);
         if (mapper.delete(lookupDTO) != 1) {
             throw new CommonException("error.repo.lookup.delete");
         }
@@ -48,7 +45,6 @@ public class LookupRepositoryImpl implements LookupRepository {
 
     @Override
     public LookupDTO update(LookupDTO lookupDTO, Long id) {
-//        LookupDO lookupDO = ConvertHelper.convert(lookupDTO, LookupDO.class);
         if (mapper.selectByPrimaryKey(id) == null) {
             throw new CommonException("error.repo.lookup.notExist");
         }

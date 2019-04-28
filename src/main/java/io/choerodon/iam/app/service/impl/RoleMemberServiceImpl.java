@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.excel.ExcelReadConfig;
 import io.choerodon.core.excel.ExcelReadHelper;
 import io.choerodon.core.exception.CommonException;
@@ -153,24 +153,21 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         return memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(page, size, clientRoleSearchDTO, sourceId, param);
-//        return convert(page);
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         return memberRoleRepository.pagingQueryClientsWithSiteLevelRoles(page, size, clientRoleSearchDTO, param);
-//        return convert(page);
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         return memberRoleRepository.pagingQueryClientsWithProjectLevelRoles(page, size, clientRoleSearchDTO, sourceId, param);
-//        return convert(page);
     }
 
 

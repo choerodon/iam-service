@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -31,7 +31,6 @@ import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.annotation.NamingRuleTrans;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author superlee
@@ -146,9 +145,8 @@ public class UserController extends BaseController {
 
     @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "分页查询当前登录用户所有项目列表")
-    @CustomPageRequest
     @GetMapping(value = "/self/projects/paging_query")
-    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                     @NamingRuleTrans ProjectDTO projectDTO,
                                                                     @RequestParam(required = false) String[] params) {
@@ -157,9 +155,8 @@ public class UserController extends BaseController {
 
     @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "分页查询当前登录用户所有组织列表")
-    @CustomPageRequest
     @GetMapping(value = "/self/organizations/paging_query")
-    public ResponseEntity<Page<OrganizationDTO>> pagingQueryOrganizationsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                               @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                               @RequestParam(required = false) String name,
                                                                               @RequestParam(required = false) String code,
@@ -224,14 +221,12 @@ public class UserController extends BaseController {
     /**
      * 分页查询所有的admin用户
      *
-     * @param pageRequest 分页信息
      * @return 分页的admin用户
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询管理员用户列表")
-    @CustomPageRequest
     @GetMapping("/admin")
-    public ResponseEntity<Page<UserDTO>> pagingQueryAdminUsers(
+    public ResponseEntity<PageInfo<UserDTO>> pagingQueryAdminUsers(
             @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
             @RequestParam(required = false, name = "loginName") String loginName,
@@ -252,7 +247,7 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "批量给用户添加管理员身份")
     @PostMapping("/admin")
-    public ResponseEntity<Page<UserDTO>> addDefaultUsers(@ModelAttribute("id") long[] ids) {
+    public ResponseEntity addDefaultUsers(@ModelAttribute("id") long[] ids) {
         userService.addAdminUsers(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -260,7 +255,7 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "清除用户的管理员身份")
     @DeleteMapping("/admin/{id}")
-    public ResponseEntity<Page<UserDTO>> deleteDefaultUser(@PathVariable long id) {
+    public ResponseEntity deleteDefaultUser(@PathVariable long id) {
         userService.deleteAdminUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -280,10 +275,9 @@ public class UserController extends BaseController {
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
-    @CustomPageRequest
     @ApiOperation("根据id分页获取组织列表和角色")
     @GetMapping("/{id}/organization_roles")
-    public ResponseEntity<Page<OrganizationDTO>> pagingQueryOrganizationAndRolesById(
+    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationAndRolesById(
             @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
             @PathVariable(value = "id") Long id,
@@ -292,10 +286,9 @@ public class UserController extends BaseController {
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
-    @CustomPageRequest
     @ApiOperation("根据id分页获取项目列表和角色")
     @GetMapping("/{id}/project_roles")
-    public ResponseEntity<Page<ProjectDTO>> pagingQueryProjectAndRolesById(
+    public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectAndRolesById(
             @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
             @PathVariable("id") Long id,
@@ -347,10 +340,9 @@ public class UserController extends BaseController {
 
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
-    @CustomPageRequest
     @ApiOperation("根据id分页获取用户所有角色列表")
     @GetMapping("/{id}/roles")
-    public ResponseEntity<Page<UserRoleDTO>> pagingQueryRole(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<UserRoleDTO>> pagingQueryRole(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                              @PathVariable("id") Long id,
                                                              @RequestParam(required = false) String params) {

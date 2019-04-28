@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
@@ -183,41 +184,41 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+    public PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return
                 userRepository.pagingQueryUsersWithSiteLevelRoles(
-                        page,size, roleAssignmentSearchDTO);
+                        page, size, roleAssignmentSearchDTO);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
+    public PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
         return
                 userRepository.pagingQueryUsersWithOrganizationLevelRoles(
-                        page,size, roleAssignmentSearchDTO, sourceId);
+                        page, size, roleAssignmentSearchDTO, sourceId);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage) {
         return
                 userRepository.pagingQueryUsersWithProjectLevelRoles(
-                        page,size, roleAssignmentSearchDTO, sourceId, doPage);
+                        page, size, roleAssignmentSearchDTO, sourceId, doPage);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage) {
         return userRepository.pagingQueryUsersByRoleIdAndLevel(
                 page, size, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value(), doPage);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
         return
                 userRepository.pagingQueryUsersByRoleIdAndLevel(
                         page, size, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value(), doPage);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
         return
                 userRepository.pagingQueryUsersByRoleIdAndLevel(
                         page, size, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value(), doPage);
@@ -458,7 +459,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params) {
+    public PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params) {
         return userRepository.pagingQueryAdminUsers(page, size, userDTO, params);
 //        return ConvertPageHelper.convertPage(userRepository
 //                .pagingQueryAdminUsers(pageRequest, userDO, params), UserDTO.class);
@@ -513,12 +514,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size, Long id, String params) {
+    public PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size, Long id, String params) {
         return organizationRepository.pagingQueryOrganizationAndRoleById(page, size, id, params);
     }
 
     @Override
-    public Page<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
+    public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
         return projectRepository.pagingQueryProjectAndRolesById(page, size, id, params);
     }
 
@@ -545,15 +546,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
-                                                    int page, int size, String params) {
+    public PageInfo<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
+                                                        int page, int size, String params) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         return projectRepository.pagingQueryByUserId(customUserDetails.getUserId(), projectDTO, page, size, params);
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
-                                                              int page, int size, String params) {
+    public PageInfo<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
+                                                                  int page, int size, String params) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         return organizationRepository.pagingQueryByUserId(customUserDetails.getUserId(), organizationDTO, page, size, params);
     }
@@ -693,21 +694,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId) {
+    public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId) {
         if (StringUtils.isEmpty(param)) {
             Page<SimplifiedUserDTO> result = new Page<>(0, 20);
             result.setTotal(0);
-            return result;
-//            return new Page<>(new ArrayList<>(), new PageInfo(0, 20), 0);
+            return result.toPageInfo();
         }
         return userRepository.pagingAllUsersByParams(page, size, param, organizationId);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param) {
+    public PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param) {
         return userRepository.pagingQueryUsersOnSiteLevel(userId, email, page, size, param);
-//        return ConvertPageHelper.convertPage(
-//                userRepository.pagingQueryUsersOnSiteLevel(userId, email, pageRequest, param), UserDTO.class);
     }
 
     @Override
@@ -719,7 +717,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId) {
+    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId) {
         Long id = DetailsHelper.getUserDetails().getUserId();
         if (id == null || !id.equals(userId)) {
             throw new CommonException("error.permission.id.notMatch");
