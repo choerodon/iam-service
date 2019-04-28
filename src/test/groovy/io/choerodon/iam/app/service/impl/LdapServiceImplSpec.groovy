@@ -7,8 +7,8 @@ import io.choerodon.iam.domain.repository.LdapRepository
 import io.choerodon.iam.domain.repository.OrganizationRepository
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
-import io.choerodon.iam.infra.dataobject.LdapDO
-import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.dto.LdapDTO
+import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -42,7 +42,7 @@ class LdapServiceImplSpec extends Specification {
         given: "构造请求参数"
         Long organizationId = 1L
         Long id = 1L
-        LdapDO ldapDO = new LdapDO()
+        LdapDTO ldapDO = new LdapDTO()
         ldapDO.setServerAddress("ldap://ac.hand-china.com")
         ldapDO.setPort("389")
         ldapDO.setUseSSL(false)
@@ -58,7 +58,7 @@ class LdapServiceImplSpec extends Specification {
         ldapService.syncLdapUser(organizationId, id)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(organizationId) >> { new OrganizationDO() }
+        1 * organizationRepository.selectByPrimaryKey(organizationId) >> { new OrganizationDTO() }
         1 * ldapRepository.queryById(_) >> { ldapDO }
         1 * ldapSyncUserTask.syncLDAPUser(_, _, _, _)
 

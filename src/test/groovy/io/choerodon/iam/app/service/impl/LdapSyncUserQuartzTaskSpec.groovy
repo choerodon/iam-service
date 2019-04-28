@@ -1,15 +1,11 @@
 package io.choerodon.iam.app.service.impl
 
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.LdapDTO
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.task.LdapSyncUserQuartzTask
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
-import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

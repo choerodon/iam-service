@@ -1,7 +1,6 @@
 package io.choerodon.iam.infra.annotation
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ProjectDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.MethodParameter

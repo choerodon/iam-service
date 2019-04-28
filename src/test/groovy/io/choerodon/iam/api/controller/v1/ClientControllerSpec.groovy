@@ -5,8 +5,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ClientCreateDTO
-import io.choerodon.iam.api.dto.ClientDTO
-import io.choerodon.iam.infra.dataobject.ClientDO
+import io.choerodon.iam.infra.dto.ClientDTO
 import io.choerodon.iam.infra.mapper.ClientMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -34,7 +33,7 @@ class ClientControllerSpec extends Specification {
     private ClientMapper clientMapper
 
     @Shared
-    private List<ClientDO> clientDOList = new ArrayList<>();
+    private List<ClientDTO> clientDOList = new ArrayList<>();
     @Shared
     def notExistOrganizationId = 300
     @Shared
@@ -52,7 +51,7 @@ class ClientControllerSpec extends Specification {
         if (!isInit) {
             given: "初始化数据，切记client数据库有两条localhost和client数据，勿重合"
             for (int i = 0; i < 5; i++) {
-                ClientDO clientDO = new ClientDO()
+                ClientDTO clientDO = new ClientDTO()
                 clientDO.setName("choerodon" + i)
                 clientDO.setOrganizationId(1)
                 clientDO.setAuthorizedGrantTypes("password,implicit,client_credentials,authorization_code,refresh_token")
@@ -60,7 +59,7 @@ class ClientControllerSpec extends Specification {
                 clientDOList.add(clientDO)
             }
             for (int i = 0; i < 5; i++) {
-                ClientDO clientDO = new ClientDO()
+                ClientDTO clientDO = new ClientDTO()
                 clientDO.setName("client" + i)
                 clientDO.setOrganizationId(2)
                 clientDO.setAuthorizedGrantTypes("password,implicit,client_credentials,authorization_code,refresh_token")
@@ -92,7 +91,7 @@ class ClientControllerSpec extends Specification {
         if (!isClear) {
             when: '批量删除dashboard'
             def count = 0;
-            for (ClientDO clientDO : clientDOList) {
+            for (ClientDTO clientDO : clientDOList) {
                 count = count + clientMapper.deleteByPrimaryKey(clientDO)
             }
 
@@ -106,7 +105,7 @@ class ClientControllerSpec extends Specification {
         def paramMap = new HashMap<String, Object>()
         def tempOrganizationId = 1
         paramMap.put("organization_id", tempOrganizationId)
-        def clientDTO = new ClientDO()
+        def clientDTO = new ClientDTO()
         clientDTO.setName("insertclient")
         clientDTO.setOrganizationId(tempOrganizationId)
         clientDTO.setAuthorizedGrantTypes("password,implicit,client_credentials,authorization_code,refresh_token")
@@ -345,7 +344,7 @@ class ClientControllerSpec extends Specification {
 
     def "Check"() {
         given: "构造参数"
-        def clientDO = new ClientDO()
+        def clientDO = new ClientDTO()
         clientDO.setOrganizationId(1)
 
         when: "调用Check方法[异常-client_name为空]"

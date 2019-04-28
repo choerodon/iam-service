@@ -4,12 +4,10 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.PermissionDTO
-import io.choerodon.iam.api.dto.RoleDTO
 import io.choerodon.iam.api.dto.RoleSearchDTO
-import io.choerodon.iam.infra.dataobject.PermissionDO
-import io.choerodon.iam.infra.dataobject.RoleDO
-import io.choerodon.iam.infra.dataobject.RolePermissionDO
+import io.choerodon.iam.infra.dto.PermissionDTO
+import io.choerodon.iam.infra.dto.RoleDTO
+import io.choerodon.iam.infra.dto.RolePermissionDTO
 import io.choerodon.iam.infra.mapper.PermissionMapper
 import io.choerodon.iam.infra.mapper.RoleMapper
 import io.choerodon.iam.infra.mapper.RolePermissionMapper
@@ -48,28 +46,28 @@ class RoleControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def permissionDOList = new ArrayList<PermissionDO>()
+    def permissionDOList = new ArrayList<PermissionDTO>()
     @Shared
-    def rolePermissionDOList = new ArrayList<RolePermissionDO>()
+    def rolePermissionDOList = new ArrayList<RolePermissionDTO>()
     @Shared
-    def roleDO = new RoleDO()
+    def roleDO = new RoleDTO()
 
     def setup() {
         if (needInit) {
             given: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                PermissionDO permissionDO = new PermissionDO()
+                PermissionDTO permissionDO = new PermissionDTO()
                 permissionDO.setCode("iam-service.permission.get" + i)
                 permissionDO.setPath("/v1/permission/" + i)
                 permissionDO.setMethod("get")
-                permissionDO.setLevel("site")
+                permissionDO.setResourceLevel("site")
                 permissionDO.setDescription("Description" + i)
                 permissionDO.setAction("get")
-                permissionDO.setResource("service" + i)
+                permissionDO.setController("service" + i)
                 permissionDO.setLoginAccess(false)
                 permissionDO.setPublicAccess(false)
-                permissionDO.setServiceName("iam-service")
+                permissionDO.setServiceCode("iam-service")
                 permissionDOList.add(permissionDO)
             }
             roleDO.setCode("role/site/default/permissioner")
@@ -81,7 +79,7 @@ class RoleControllerSpec extends Specification {
             roleDO.setPermissions(permissionDOList)
             count += roleMapper.insert(roleDO)
             for (int i = 0; i < 3; i++) {
-                RolePermissionDO rolePermissionDO = new RolePermissionDO()
+                RolePermissionDTO rolePermissionDO = new RolePermissionDTO()
                 rolePermissionDO.setPermissionId(permissionDOList.get(i).getId())
                 rolePermissionDO.setRoleId(roleDO.getId())
                 rolePermissionDOList.add(rolePermissionDO)
@@ -100,10 +98,10 @@ class RoleControllerSpec extends Specification {
             needClean = false
 
             when: "删除记录"
-            for (PermissionDO permissionDO : permissionDOList) {
+            for (PermissionDTO permissionDO : permissionDOList) {
                 count += permissionMapper.deleteByPrimaryKey(permissionDO)
             }
-            for (RolePermissionDO rolePermissionDO : rolePermissionDOList) {
+            for (RolePermissionDTO rolePermissionDO : rolePermissionDOList) {
                 count += rolePermissionMapper.deleteByPrimaryKey(rolePermissionDO)
             }
             count += roleMapper.deleteByPrimaryKey(roleDO)

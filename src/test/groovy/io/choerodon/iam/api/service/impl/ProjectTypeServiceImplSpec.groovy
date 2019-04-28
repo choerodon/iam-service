@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.service.impl
 
-
-import io.choerodon.iam.infra.dataobject.ProjectTypeDO
+import io.choerodon.iam.api.dto.ProjectTypeDTO
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper
 import spock.lang.Specification
 
@@ -9,7 +8,8 @@ class ProjectTypeServiceImplSpec extends Specification {
 
     def "test list"() {
         given:
-        def project = new ProjectTypeDO('code')
+        def project = new ProjectTypeDTO()
+        project.setCode("code")
         project.setName("name")
         project.setDescription("desc")
         def projectTypeMapper = Mock(ProjectTypeMapper) {

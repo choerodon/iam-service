@@ -4,9 +4,9 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.CheckPermissionDTO
-import io.choerodon.iam.infra.dataobject.PermissionDO
-import io.choerodon.iam.infra.dataobject.RoleDO
-import io.choerodon.iam.infra.dataobject.RolePermissionDO
+import io.choerodon.iam.infra.dto.PermissionDTO
+import io.choerodon.iam.infra.dto.RoleDTO
+import io.choerodon.iam.infra.dto.RolePermissionDTO
 import io.choerodon.iam.infra.mapper.PermissionMapper
 import io.choerodon.iam.infra.mapper.RoleMapper
 import io.choerodon.iam.infra.mapper.RolePermissionMapper
@@ -43,52 +43,52 @@ class PermissionControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def permissionDOList = new ArrayList<PermissionDO>()
+    def permissions = new ArrayList<PermissionDTO>()
     @Shared
-    def rolePermissionDOList = new ArrayList<RolePermissionDO>()
+    def rolePermissions = new ArrayList<RolePermissionDTO>()
     @Shared
-    def roleDO = new RoleDO()
+    def role = new RoleDTO()
 
     def setup() {
         if (needInit) {
             given: "清除parsePermissionService数据"
             //异步数据，无法用@Transactional，要么Mock，要么删除
-            List<PermissionDO> list = permissionMapper.selectAll()
-            for (PermissionDO permissionDO1 : list) {
-                permissionMapper.deleteByPrimaryKey(permissionDO1)
+            List<PermissionDTO> list = permissionMapper.selectAll()
+            for (PermissionDTO permission : list) {
+                permissionMapper.deleteByPrimaryKey(permission)
             }
 
             and: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                PermissionDO permissionDO = new PermissionDO()
-                permissionDO.setCode("iam-service.permission.get" + i)
-                permissionDO.setPath("/v1/permission/" + i)
-                permissionDO.setMethod("get")
-                permissionDO.setLevel("site")
-                permissionDO.setDescription("Description" + i)
-                permissionDO.setAction("get")
-                permissionDO.setResource("service" + i)
-                permissionDO.setLoginAccess(false)
-                permissionDO.setPublicAccess(false)
-                permissionDO.setServiceName("iam-service")
-                permissionDOList.add(permissionDO)
+                PermissionDTO permission = new PermissionDTO()
+                permission.setCode("iam-service.permission.get" + i)
+                permission.setPath("/v1/permission/" + i)
+                permission.setMethod("get")
+                permission.setLevel("site")
+                permission.setDescription("Description" + i)
+                permission.setAction("get")
+                permission.setResource("service" + i)
+                permission.setLoginAccess(false)
+                permission.setPublicAccess(false)
+                permission.setServiceName("iam-service")
+                permissions.add(permission)
             }
-            roleDO.setCode("role/site/default/permissioner")
-            roleDO.setName("权限管理员")
-            roleDO.setLevel("site")
+            role.setCode("role/site/default/permissioner")
+            role.setName("权限管理员")
+            role.setLevel("site")
 
             when: "插入记录"
-            int count = permissionMapper.insertList(permissionDOList)
-            roleDO.setPermissions(permissionDOList)
-            count += roleMapper.insert(roleDO)
+            int count = permissionMapper.insertList(permissions)
+            role.setPermissions(permissions)
+            count += roleMapper.insert(role)
             for (int i = 0; i < 3; i++) {
-                RolePermissionDO rolePermissionDO = new RolePermissionDO()
-                rolePermissionDO.setPermissionId(permissionDOList.get(i).getId())
-                rolePermissionDO.setRoleId(roleDO.getId())
-                rolePermissionDOList.add(rolePermissionDO)
+                RolePermissionDTO rolePermission = new RolePermissionDTO()
+                rolePermission.setPermissionId(permissions.get(i).getId())
+                rolePermission.setRoleId(role.getId())
+                rolePermissions.add(rolePermission)
             }
-            count += rolePermissionMapper.insertList(rolePermissionDOList)
+            count += rolePermissionMapper.insertList(rolePermissions)
 
             then: "校验结果"
             count == 7
@@ -102,13 +102,13 @@ class PermissionControllerSpec extends Specification {
             needClean = false
 
             when: "删除记录"
-            for (PermissionDO permissionDO : permissionDOList) {
-                count += permissionMapper.deleteByPrimaryKey(permissionDO)
+            for (PermissionDTO permission : permissions) {
+                count += permissionMapper.deleteByPrimaryKey(permission)
             }
-            for (RolePermissionDO rolePermissionDO : rolePermissionDOList) {
-                count += rolePermissionMapper.deleteByPrimaryKey(rolePermissionDO)
+            for (RolePermissionDTO rolePermission : rolePermissions) {
+                count += rolePermissionMapper.deleteByPrimaryKey(rolePermission)
             }
-            count += roleMapper.deleteByPrimaryKey(roleDO)
+            count += roleMapper.deleteByPrimaryKey(role)
 
             then: "校验结果"
             count == 7
@@ -153,7 +153,7 @@ class PermissionControllerSpec extends Specification {
     def "QueryByRoleIds"() {
         given: "构造请求参数"
         List<Long> roleIds = new ArrayList<>()
-        roleIds.add(roleDO.getId())
+        roleIds.add(role.getId())
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH, roleIds, Set)
@@ -180,7 +180,7 @@ class PermissionControllerSpec extends Specification {
     def "DeleteByCode"() {
         given: "构造请求参数"
         def httpEntity = new HttpEntity<Object>()
-        def code = permissionDOList.get(0).getCode()
+        def code = permissions.get(0).getCode()
 
         when: "调用方法"
         def entity = restTemplate.exchange(BASE_PATH + "?code={code}", HttpMethod.DELETE, httpEntity, ExceptionResponse, code)

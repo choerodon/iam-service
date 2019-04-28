@@ -1,9 +1,9 @@
 package io.choerodon.iam.app.service.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.PasswordPolicyDTO
 import io.choerodon.iam.app.service.PasswordPolicyService
-import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.dto.OrganizationDTO
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,7 +31,7 @@ class PasswordPolicyServiceImplSpec extends Specification {
     @Transactional
     def "Create"() {
         given: "构造请求参数"
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setName("password_policy")
         organizationDO.setCode("password_policy")
         organizationMapper.insert(organizationDO)

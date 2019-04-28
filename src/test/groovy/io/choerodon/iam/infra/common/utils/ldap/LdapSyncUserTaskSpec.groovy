@@ -4,23 +4,11 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.OrganizationUserService
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.repository.UserRepository
-import io.choerodon.iam.infra.dataobject.LdapDO
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.ldap.core.ContextSource
-import org.springframework.ldap.core.LdapTemplate
-import org.springframework.ldap.core.support.SingleContextSource
 import spock.lang.Specification
-
-import javax.naming.NamingEnumeration
-import javax.naming.directory.Attribute
-import javax.naming.directory.Attributes
-import javax.naming.directory.DirContext
-import javax.naming.directory.SearchResult
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 

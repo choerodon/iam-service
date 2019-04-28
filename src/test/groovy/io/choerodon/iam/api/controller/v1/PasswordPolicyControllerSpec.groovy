@@ -4,9 +4,8 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.PasswordPolicyDTO
 import io.choerodon.iam.api.validator.PasswordPolicyValidator
-import io.choerodon.iam.infra.dataobject.PasswordPolicyDO
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -109,8 +108,8 @@ class PasswordPolicyControllerSpec extends Specification {
         given: "构造请求参数"
         Long orgId = 1L
         PasswordPolicyDTO passwordPolicyDTO = new PasswordPolicyDTO()
-        List<PasswordPolicyDO> policyDOList = new ArrayList<>()
-        policyDOList << new PasswordPolicyDO()
+        List<PasswordPolicyDTO> policyDOList = new ArrayList<>()
+        policyDOList << new PasswordPolicyDTO()
         PasswordPolicyMapper passwordPolicyMapper = Mock(PasswordPolicyMapper)
         PasswordPolicyValidator passwordPolicyValidator =
                 new PasswordPolicyValidator()
@@ -132,7 +131,7 @@ class PasswordPolicyControllerSpec extends Specification {
         then: "校验结果"
         exception = thrown(CommonException)
         exception.message.equals("error.passwordPolicy.code.exist")
-        passwordPolicyMapper.select(_) >>> [new ArrayList<PasswordPolicyDO>(), policyDOList]
+        passwordPolicyMapper.select(_) >>> [new ArrayList<PasswordPolicyDTO>(), policyDOList]
     }
 }
 

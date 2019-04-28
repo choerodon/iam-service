@@ -3,7 +3,7 @@ package io.choerodon.iam.infra.repository.impl
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO
+import io.choerodon.iam.infra.dto.LdapHistoryDTO
 import io.choerodon.iam.infra.mapper.LdapHistoryMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -26,10 +26,10 @@ class LdapHistoryRepositoryImplSpec extends Specification {
 
     def "InsertSelective"() {
         given: "构造请求参数"
-        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
+        LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
 
         when: "调用方法[异常]"
-        ldapHistoryRepository.insertSelective(ldapHistoryDO)
+        ldapHistoryRepository.insertSelective(ldapHistory)
 
         then: "校验结果"
         def exception = thrown(CommonException)
@@ -37,7 +37,7 @@ class LdapHistoryRepositoryImplSpec extends Specification {
         1 * ldapHistoryMapper.insertSelective(_) >> 0
 
         when: "调用方法"
-        ldapHistoryRepository.insertSelective(ldapHistoryDO)
+        ldapHistoryRepository.insertSelective(ldapHistory)
 
         then: "校验结果"
         1 * ldapHistoryMapper.insertSelective(_) >> 1
@@ -46,10 +46,10 @@ class LdapHistoryRepositoryImplSpec extends Specification {
 
     def "UpdateByPrimaryKeySelective"() {
         given: "构造请求参数"
-        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
+        LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
 
         when: "调用方法[异常]"
-        ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO)
+        ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistory)
 
         then: "校验结果"
         def exception = thrown(CommonException)
@@ -57,7 +57,7 @@ class LdapHistoryRepositoryImplSpec extends Specification {
         1 * ldapHistoryMapper.updateByPrimaryKeySelective(_) >> 0
 
         when: "调用方法"
-        ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDO)
+        ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistory)
 
         then: "校验结果"
         1 * ldapHistoryMapper.updateByPrimaryKeySelective(_) >> 1

@@ -2,13 +2,13 @@ package io.choerodon.iam.api.eventhandler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.OrganizationDTO
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.app.service.PasswordPolicyService
 import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.service.IUserService
+import io.choerodon.iam.infra.dto.OrganizationDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification

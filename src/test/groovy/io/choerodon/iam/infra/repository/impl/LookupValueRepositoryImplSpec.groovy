@@ -2,9 +2,8 @@ package io.choerodon.iam.infra.repository.impl
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.domain.iam.entity.LookupValueE
 import io.choerodon.iam.domain.repository.LookupValueRepository
-import io.choerodon.iam.infra.dataobject.LookupValueDO
+import io.choerodon.iam.infra.dto.LookupValueDTO
 import io.choerodon.iam.infra.mapper.LookupValueMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -27,10 +26,10 @@ class LookupValueRepositoryImplSpec extends Specification {
 
     def "Insert"() {
         given: "构造请求参数"
-        LookupValueE lookupValueE = new LookupValueE()
+        LookupValueDTO lookupValue = new LookupValueDTO()
 
         when: "调用方法[异常]"
-        lookupValueRepository.insert(lookupValueE)
+        lookupValueRepository.insert(lookupValue)
 
         then: "校验结果"
         def exception = thrown(CommonException)
@@ -38,11 +37,11 @@ class LookupValueRepositoryImplSpec extends Specification {
         1 * mapper.insertSelective(_) >> 0
 
         when: "调用方法"
-        lookupValueRepository.insert(lookupValueE)
+        lookupValueRepository.insert(lookupValue)
 
         then: "校验结果"
         1 * mapper.insertSelective(_) >> 1
-        1 * mapper.selectByPrimaryKey(_) >> { new LookupValueDO() }
+        1 * mapper.selectByPrimaryKey(_) >> { new LookupValueDTO() }
     }
 
     def "DeleteById"() {
@@ -57,11 +56,11 @@ class LookupValueRepositoryImplSpec extends Specification {
 
     def "UpdateById"() {
         given: "构造请求参数"
-        LookupValueDO lookupValueDO = new LookupValueDO()
+        LookupValueDTO lookupValue = new LookupValueDTO()
         def id = 1L
 
         when: "调用方法[异常]"
-        lookupValueRepository.updateById(lookupValueDO, id)
+        lookupValueRepository.updateById(lookupValue, id)
 
         then: "校验结果"
         def exception = thrown(CommonException)
@@ -69,16 +68,16 @@ class LookupValueRepositoryImplSpec extends Specification {
         1 * mapper.selectByPrimaryKey(_)
 
         when: "调用方法"
-        lookupValueRepository.updateById(lookupValueDO, id)
+        lookupValueRepository.updateById(lookupValue, id)
 
         then: "校验结果"
-        1 * mapper.updateByPrimaryKeySelective(lookupValueDO)
-        2 * mapper.selectByPrimaryKey(_) >> { new LookupValueDO() }
+        1 * mapper.updateByPrimaryKeySelective(lookupValue)
+        2 * mapper.selectByPrimaryKey(_) >> { new LookupValueDTO() }
     }
 
     def "Delete"() {
         when: "调用方法"
-        lookupValueRepository.delete(new LookupValueDO())
+        lookupValueRepository.delete(new LookupValueDTO())
 
         then: "校验结果"
         1 * mapper.delete(_)

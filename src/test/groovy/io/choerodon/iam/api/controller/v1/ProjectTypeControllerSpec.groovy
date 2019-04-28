@@ -2,11 +2,9 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ProjectTypeDTO
 import io.choerodon.iam.api.service.ProjectTypeService
-import io.choerodon.iam.infra.dataobject.ProjectTypeDO
+import io.choerodon.iam.infra.dto.ProjectTypeDTO
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -50,10 +48,10 @@ class ProjectTypeControllerSpec extends Specification {
     def "pagingQuery"() {
         given:
         ProjectTypeController controller = new ProjectTypeController(service)
-        PageRequest pageRequest = new PageRequest(0, 10)
+//        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(pageRequest, null, null, null)
+        def result = controller.pagingQuery(1,10, null, null, null)
 
         then:
         result.statusCode.is2xxSuccessful()
@@ -81,11 +79,11 @@ class ProjectTypeControllerSpec extends Specification {
     def "update"() {
         given:
         ProjectTypeController controller = new ProjectTypeController(service)
-        ProjectTypeDO example = new ProjectTypeDO()
+        ProjectTypeDTO example = new ProjectTypeDTO()
         example.setCode("type/others")
-        ProjectTypeDO projectTypeDO = projectTypeMapper.selectOne(example)
+        ProjectTypeDTO projectType = projectTypeMapper.selectOne(example)
         ModelMapper modelMapper = new ModelMapper()
-        ProjectTypeDTO dto = modelMapper.map(projectTypeDO, ProjectTypeDTO.class)
+        ProjectTypeDTO dto = modelMapper.map(projectType, ProjectTypeDTO.class)
         dto.setDescription("desc")
 
         when:

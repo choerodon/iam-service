@@ -2,8 +2,8 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.UserDashboardDTO
-import io.choerodon.iam.domain.iam.entity.DashboardE
+import io.choerodon.iam.infra.dto.DashboardDTO
+import io.choerodon.iam.infra.dto.UserDashboardDTO
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import io.choerodon.iam.infra.mapper.UserDashboardMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,14 +35,14 @@ class UserDashboardControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Shared
-    List<DashboardE> dashboardList = new ArrayList<>()
+    List<DashboardDTO> dashboardList = new ArrayList<>()
 
     void setup() {
         if (!sharedSetupDone) {
             given: '初始化dashboard'
 
             for (int i = 0; i < 3; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setId(1000 + i);
                 dashboard.setCode("site-test-" + i);
                 dashboard.setDescription("site-test-desc-" + i);
@@ -55,7 +55,7 @@ class UserDashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 4; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setCode("project-test-" + i);
                 dashboard.setDescription("project-test-desc-" + i);
                 dashboard.setName("project-test-name-" + i)
@@ -67,7 +67,7 @@ class UserDashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 5; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setCode("org-test-" + i);
                 dashboard.setDescription("org-test-desc-" + i);
                 dashboard.setName("org-test-name-" + i)
@@ -81,7 +81,7 @@ class UserDashboardControllerSpec extends Specification {
 
             when: '批量插入dashboard'
             def count = 0;
-            for (DashboardE dashboard : dashboardList) {
+            for (DashboardDTO dashboard : dashboardList) {
                 count = count + dashboardMapper.insert(dashboard)
             }
             sharedSetupDone = true
@@ -96,7 +96,7 @@ class UserDashboardControllerSpec extends Specification {
         if (!sharedCleanupDone) {
             when: '批量删除dashboard'
             def count = 0;
-            for (DashboardE dashboard : dashboardList) {
+            for (DashboardDTO dashboard : dashboardList) {
                 count = count + dashboardMapper.deleteByPrimaryKey(dashboard)
             }
 

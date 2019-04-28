@@ -1,12 +1,11 @@
 package io.choerodon.iam.api.service.impl
 
-import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.dto.UserDashboardDTO
 import io.choerodon.iam.api.service.UserDashboardService
 import io.choerodon.iam.api.validator.MemberRoleValidator
-import io.choerodon.iam.domain.iam.entity.DashboardE
 import io.choerodon.iam.infra.common.utils.SpockUtils
+import io.choerodon.iam.infra.dto.DashboardDTO
+import io.choerodon.iam.infra.dto.UserDashboardDTO
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import io.choerodon.iam.infra.mapper.DashboardRoleMapper
 import io.choerodon.iam.infra.mapper.UserDashboardMapper
@@ -23,7 +22,7 @@ import spock.lang.Specification
  * */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper, ConvertHelper])
+@PrepareForTest([DetailsHelper])
 class UserDashboardServiceImplSpec extends Specification {
     private UserDashboardMapper userDashboardMapper = Mock(UserDashboardMapper)
     private DashboardMapper dashboardMapper = Mock(DashboardMapper)
@@ -47,9 +46,9 @@ class UserDashboardServiceImplSpec extends Specification {
         String level = "site"
         Long sourceId = 1L
         List<UserDashboardDTO> userDashboardList = new ArrayList<>()
-        List<DashboardE> dashboardEList = new ArrayList<DashboardE>()
+        List<DashboardDTO> dashboardEList = new ArrayList<>()
         for (int i = 0; i < 3; i++) {
-            DashboardE dashboardE = new DashboardE()
+            DashboardDTO dashboardE = new DashboardDTO()
             dashboardE.setId(i)
             dashboardE.setCode("dashboard")
             dashboardE.setName("dashboard")

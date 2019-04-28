@@ -4,8 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.LookupDTO
-import io.choerodon.iam.infra.dataobject.LookupDO
+import io.choerodon.iam.infra.dto.LookupDTO
 import io.choerodon.iam.infra.mapper.LookupMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,16 +36,16 @@ class LookupControllerSpec extends Specification {
     @Shared
     def needClear = false
     @Shared
-    def lookupDOList = new ArrayList<LookupDO>()
+    def lookupDOList = new ArrayList<LookupDTO>()
 
     def setup() {
         if (!isInit) {
             given: "构造参数"
             for (int i = 0; i < 3; i++) {
-                def lookupDO = new LookupDO()
-                lookupDO.setCode("hand" + i)
-                lookupDO.setDescription("hand-china" + i)
-                lookupDOList.add(lookupDO)
+                def lookup = new LookupDTO()
+                lookup.setCode("hand" + i)
+                lookup.setDescription("hand-china" + i)
+                lookupDOList.add(lookup)
             }
 
             when: "插入数据"
@@ -63,8 +62,8 @@ class LookupControllerSpec extends Specification {
             when: "调用方法"
             needClear = false
             def count = 0
-            for (LookupDO lookupDO : lookupDOList) {
-                count += lookupMapper.deleteByPrimaryKey(lookupDO)
+            for (LookupDTO lookup : lookupDOList) {
+                count += lookupMapper.deleteByPrimaryKey(lookup)
             }
 
             then: "校验结果"

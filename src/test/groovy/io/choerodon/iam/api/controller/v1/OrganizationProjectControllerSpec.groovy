@@ -4,8 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ProjectDTO
-import io.choerodon.iam.infra.dataobject.ProjectDO
+import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +35,7 @@ class OrganizationProjectControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def projectDOList = new ArrayList<ProjectDO>()
+    def projectDOList = new ArrayList<ProjectDTO>()
     def organizationId = 1L
 
     def setup() {
@@ -44,7 +43,7 @@ class OrganizationProjectControllerSpec extends Specification {
             given: "构造请求参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                ProjectDO projectDO = new ProjectDO()
+                ProjectDTO projectDO = new ProjectDTO()
                 projectDO.setCode("hand" + i)
                 projectDO.setName("汉得" + i)
                 projectDO.setOrganizationId(1L)
@@ -66,7 +65,7 @@ class OrganizationProjectControllerSpec extends Specification {
             def count = 0
 
             given: "插入数据"
-            for (ProjectDO projectDO : projectDOList) {
+            for (ProjectDTO projectDO : projectDOList) {
                 count += projectMapper.deleteByPrimaryKey(projectDO)
             }
 

@@ -4,9 +4,8 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.UploadHistoryDTO
-import io.choerodon.iam.api.dto.test.UserDTO
 import io.choerodon.iam.api.dto.UserSearchDTO
-import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.mapper.UserMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,14 +42,14 @@ class OrganizationUserControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def userDOList = new ArrayList<UserDO>()
+    def userDOList = new ArrayList<UserDTO>()
 
     def setup() {
         if (needInit) {
             given: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                def userDO = new UserDO()
+                def userDO = new UserDTO()
                 userDO.setLoginName("dengyouquan" + i)
                 userDO.setRealName("邓有全" + i)
                 userDO.setEmail("youquan.deng" + i + "@hand-china.com")
@@ -79,7 +78,7 @@ class OrganizationUserControllerSpec extends Specification {
             def count = 0
 
             when: "删除数据"
-            for (UserDO userDO : userDOList) {
+            for (UserDTO userDO : userDOList) {
                 count += userMapper.deleteByPrimaryKey(userDO)
             }
 
@@ -349,7 +348,7 @@ class OrganizationUserControllerSpec extends Specification {
         entity.getBody().getCode() == "error.user.not.exist"
 
         and: "插入用户模拟LDAP用户"
-        def userDO = new UserDO()
+        def userDO = new UserDTO()
         userDO.setLoginName("zmf2")
         userDO.setRealName("zhengmofang2")
         userDO.setEmail("zmfblu2@aliyun.com")
@@ -367,7 +366,7 @@ class OrganizationUserControllerSpec extends Specification {
         entity.getBody().getCode() == "error.ldap.user.can.not.update.password"
 
         and: "插入用于重置的用户"
-        def user2 = new UserDO()
+        def user2 = new UserDTO()
         user2.setLoginName("zmf3")
         user2.setRealName("zhengmofang3")
         user2.setEmail("zmfblu3@aliyun.com")

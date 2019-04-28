@@ -1,12 +1,10 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.OrganizationDTO
 import io.choerodon.iam.app.service.OrganizationService
-import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,13 +36,13 @@ class OrganizationControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def organizationDOList = new ArrayList<OrganizationDO>()
+    def organizationDOList = new ArrayList<OrganizationDTO>()
 
     def setup() {
         if (needInit) {
             given: "构造参数"
             for (int i = 0; i < 3; i++) {
-                def organizationDO = new OrganizationDO()
+                def organizationDO = new OrganizationDTO()
                 organizationDO.setCode("hand" + i)
                 organizationDO.setName("汉得" + i)
                 organizationDOList.add(organizationDO)
@@ -65,7 +63,7 @@ class OrganizationControllerSpec extends Specification {
             when: "调用方法"
             needClean = false
             def count = 0
-            for (OrganizationDO organizationDO : organizationDOList) {
+            for (OrganizationDTO organizationDO : organizationDOList) {
                 count += organizationMapper.deleteByPrimaryKey(organizationDO)
             }
 
@@ -76,7 +74,7 @@ class OrganizationControllerSpec extends Specification {
 
     def "Update"() {
         given: "构造请求参数"
-        def updateDto = ConvertHelper.convert(organizationDOList.get(0), OrganizationDTO)
+        def updateDto = organizationDOList.get(0)
         updateDto.setCode("update-hand")
         updateDto.setName("汉得更新")
         updateDto.setObjectVersionNumber(1)

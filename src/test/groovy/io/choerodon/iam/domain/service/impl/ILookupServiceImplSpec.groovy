@@ -66,51 +66,51 @@ class ILookupServiceImplSpec extends Specification {
 
     def "Update"() {
         given: "构造请求参数"
-        LookupE lookupE = new LookupE()
-        List<LookupValueE> lookupValueEList = new ArrayList<>()
+        LookupDTO lookup = new LookupDTO()
+        List<LookupValueDTO> lookups = new ArrayList<>()
         for (int i = 0; i < count; i++) {
-            LookupValueE lookupValueE = new LookupValueE()
-            lookupValueE.setId(i)
-            lookupValueE.setCode("code" + i)
-            lookupValueEList.add(lookupValueE)
+            LookupValueDTO lookupValue = new LookupValueDTO()
+            lookupValue.setId(i)
+            lookupValue.setCode("code" + i)
+            lookups.add(lookupValue)
         }
-        List<LookupValueDO> lookupValueDOList = new ArrayList<>()
+        List<LookupValueDTO> lookupValueList = new ArrayList<>()
         for (int i = 0; i < count; i++) {
-            LookupValueDO lookupValueDO = new LookupValueDO()
-            lookupValueDO.setId(i)
-            lookupValueDO.setCode("code" + i)
-            lookupValueDOList.add(lookupValueDO)
+            LookupValueDTO lookupValue = new LookupValueDTO()
+            lookupValue.setId(i)
+            lookupValue.setCode("code" + i)
+            lookupValueList.add(lookupValue)
         }
-        lookupE.setLookupValues(lookupValueEList)
+        lookup.setLookupValues(lookups)
 
         when: "调用方法"
-        iLookupService.update(lookupE)
+        iLookupService.update(lookup)
 
         then: "校验结果"
-        1 * lookupRepository.update(_, _) >> { lookupE }
-        1 * lookupValueRepository.selectByLookupId(_) >> { lookupValueDOList }
-        count * lookupValueRepository.updateById(_, _) >> { new LookupValueE() }
+        1 * lookupRepository.update(_, _) >> { lookup }
+        1 * lookupValueRepository.selectByLookupId(_) >> { lookupValueList }
+        count * lookupValueRepository.updateById(_, _) >> { new LookupValueDTO() }
     }
 
     def "QueryByCode"() {
         given: "构造请求参数"
-        LookupE lookupE = new LookupE()
-        lookupE.setCode("code")
-        List<LookupValueE> lookupValueEList = new ArrayList<>()
+        LookupDTO lookup = new LookupDTO()
+        lookup.setCode("code")
+        List<LookupValueDTO> lookupValues = new ArrayList<>()
         for (int i = 0; i < count; i++) {
-            LookupValueE lookupValueE = new LookupValueE()
-            lookupValueE.setCode("code" + i)
-            lookupValueEList.add(lookupValueE)
+            LookupValueDTO lookupValue = new LookupValueDTO()
+            lookupValue.setCode("code" + i)
+            lookupValues.add(lookupValue)
         }
-        lookupE.setLookupValues(lookupValueEList)
-        List<LookupE> lookupEs = new ArrayList<>()
-        lookupEs.add(lookupE)
+        lookup.setLookupValues(lookupValues)
+        List<LookupDTO> lookups = new ArrayList<>()
+        lookups.add(lookup)
 
         when: "调用方法"
-        iLookupService.queryByCode(lookupE)
+        iLookupService.queryByCode(lookup)
 
         then: "校验结果"
-        1 * lookupRepository.select(_) >> { lookupEs }
-        1 * lookupValueRepository.selectByLookupId(_) >> { new ArrayList<LookupValueDO>() }
+        1 * lookupRepository.select(_) >> { lookups }
+        1 * lookupValueRepository.selectByLookupId(_) >> { new ArrayList<LookupValueDTO>() }
     }
 }

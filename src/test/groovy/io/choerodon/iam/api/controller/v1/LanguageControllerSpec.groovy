@@ -3,7 +3,7 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.LanguageDTO
+import io.choerodon.iam.infra.dto.LanguageDTO
 import io.choerodon.iam.infra.mapper.LanguageMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,10 +38,9 @@ class LanguageControllerSpec extends Specification {
         paramsMap.put("id", languageDO.getId())
 
         when: "调用方法[异常-版本号为空]"
-        def languageDTO1 = new LanguageDTO()
-        BeanUtils.copyProperties(languageDO, languageDTO1)
-        languageDTO1.setObjectVersionNumber(null)
-        httpEntity = new HttpEntity<LanguageDTO>(languageDTO1)
+        def language = new LanguageDTO()
+        BeanUtils.copyProperties(languageDO, language)
+        httpEntity = new HttpEntity<LanguageDTO>(language)
         def entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.PUT, httpEntity, ExceptionResponse, paramsMap)
 
         then: "校验结果"

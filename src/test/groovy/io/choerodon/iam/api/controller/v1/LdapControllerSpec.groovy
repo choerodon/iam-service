@@ -4,21 +4,18 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapAccountDTO
 import io.choerodon.iam.api.dto.LdapConnectionDTO
-import io.choerodon.iam.api.dto.LdapDTO
-import io.choerodon.iam.api.dto.LdapHistoryDTO
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.impl.LdapServiceImpl
 import io.choerodon.iam.domain.repository.LdapHistoryRepository
 import io.choerodon.iam.domain.service.ILdapService
-import io.choerodon.iam.infra.dataobject.LdapDO
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO
-import io.choerodon.iam.infra.dataobject.OrganizationDO
+import io.choerodon.iam.infra.dto.LdapDTO
+import io.choerodon.iam.infra.dto.LdapErrorUserDTO
+import io.choerodon.iam.infra.dto.LdapHistoryDTO
+import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.enums.LdapErrorUserCause
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
 import io.choerodon.iam.infra.mapper.LdapMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -34,8 +31,7 @@ import spock.lang.Stepwise
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Stepwise
@@ -64,9 +60,9 @@ class LdapControllerSpec extends Specification {
     @Shared
     def organizationId = 1L
     @Shared
-    OrganizationDO organizationDO
+    OrganizationDTO organization
     @Shared
-    def organizationDO1
+    def organizationDTO
 
     def setup() {
         ldapDTO.setOrganizationId(organizationId)
@@ -84,27 +80,27 @@ class LdapControllerSpec extends Specification {
         ldapDTO.setUuidField("uid")
         if (!isInit) {
             given: "构造参数"
-            organizationDO = new OrganizationDO()
-            organizationDO.setName("汉得")
-            organizationDO.setCode("hand")
-            organizationDO.setEnabled(true)
-            organizationDO1 = new OrganizationDO()
-            organizationDO.setName("猪齿鱼")
-            organizationDO.setCode("choerodon")
-            organizationDO.setEnabled(true)
+            organization = new OrganizationDTO()
+            organization.setName("汉得")
+            organization.setCode("hand")
+            organization.setEnabled(true)
+            organizationDTO = new OrganizationDTO()
+            organization.setName("猪齿鱼")
+            organization.setCode("choerodon")
+            organization.setEnabled(true)
 
             isInit = true
 
-            LdapDO ldapDO = new LdapDO()
-            ldapDO.setName("choerodon")
-            ldapDO.setOrganizationId(2L)
-            ldapDO.setServerAddress("ldap://ac.hand-china.com")
-            ldapDO.setObjectClass("person")
+            LdapDTO ldap = new LdapDTO()
+            ldap.setName("choerodon")
+            ldap.setOrganizationId(2L)
+            ldap.setServerAddress("ldap://ac.hand-china.com")
+            ldap.setObjectClass("person")
 
             when: "调用方法"
-            int count = organizationMapper.insert(organizationDO)
-            count += organizationMapper.insert(organizationDO1)
-            count += ldapMapper.insert(ldapDO)
+            int count = organizationMapper.insert(organization)
+            count += organizationMapper.insert(organizationDTO)
+            count += ldapMapper.insert(ldap)
 
             then: "检验插入是否成功"
             count == 3
@@ -113,8 +109,8 @@ class LdapControllerSpec extends Specification {
 
     def cleanup() {
         if (needClean) {
-            organizationMapper.deleteByPrimaryKey(organizationDO)
-            organizationMapper.deleteByPrimaryKey(organizationDO1)
+            organizationMapper.deleteByPrimaryKey(organization)
+            organizationMapper.deleteByPrimaryKey(organizationDTO)
         }
     }
 
@@ -313,12 +309,12 @@ class LdapControllerSpec extends Specification {
         entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
-        OrganizationDO organizationDO2 = new OrganizationDO()
-        organizationDO2.setCode("tets-org123sd1")
-        organizationDO2.setName("name")
-        organizationDO2.setEnabled(true)
-        organizationMapper.insertSelective(organizationDO2)
-        paramsMap.put("organization_id", organizationDO2.getId())
+        OrganizationDTO organizationDTO = new OrganizationDTO()
+        organizationDTO.setCode("tets-org123sd1")
+        organizationDTO.setName("name")
+        organizationDTO.setEnabled(true)
+        organizationMapper.insertSelective(organizationDTO)
+        paramsMap.put("organization_id", organizationDTO.getId())
         paramsMap.put("id", 1)
         entity = restTemplate.postForEntity(BASE_PATH + "/{id}/test_connect", ldapAccountDTO, ExceptionResponse, paramsMap)
 
@@ -376,10 +372,10 @@ class LdapControllerSpec extends Specification {
 
     def "stop"() {
         given: "新建一个ldapHistory"
-        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
-        ldapHistoryDO.setLdapId(1L)
-        ldapHistoryDO.setSyncBeginTime(new Date(System.currentTimeMillis()))
-        LdapHistoryDO returnValue = ldapHistoryRepository.insertSelective(ldapHistoryDO)
+        LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
+        ldapHistory.setLdapId(1L)
+        ldapHistory.setSyncBeginTime(new Date(System.currentTimeMillis()))
+        LdapHistoryDTO returnValue = ldapHistoryRepository.insertSelective(ldapHistory)
         long id = returnValue.getId()
 
         when: "调用controller"
@@ -395,13 +391,13 @@ class LdapControllerSpec extends Specification {
         given:
         LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, ldapHistoryRepository, null)
         LdapController ldapController = new LdapController(ldapService)
-        PageRequest pageRequest = new PageRequest(0, 10)
-        LdapHistoryDO ldapHistoryDO = new LdapHistoryDO()
-        ldapHistoryDO.setLdapId(1L)
-        ldapHistoryRepository.insertSelective(ldapHistoryDO)
+//        PageRequest pageRequest = new PageRequest(0, 10)
+        LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
+        ldapHistory.setLdapId(1L)
+        ldapHistoryRepository.insertSelective(ldapHistory)
 
         when:
-        def entity = ldapController.pagingQueryHistories(pageRequest, 1L, 1L)
+        def entity = ldapController.pagingQueryHistories(0, 10, 1L, 1L)
 
         then:
         entity.statusCode.is2xxSuccessful()
@@ -413,16 +409,16 @@ class LdapControllerSpec extends Specification {
         given:
         LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, null, ldapErrorUserMapper)
         LdapController ldapController = new LdapController(ldapService)
-        PageRequest pageRequest = new PageRequest(0, 10)
+//        PageRequest pageRequest = new PageRequest(0, 10)
 
-        LdapErrorUserDO ldapErrorUserDO = new LdapErrorUserDO()
-        ldapErrorUserDO.setLdapHistoryId(1L)
-        ldapErrorUserDO.setUuid("uuid")
-        ldapErrorUserDO.setCause(LdapErrorUserCause.EMAIL_ALREADY_EXISTED.value())
-        ldapErrorUserMapper.insertSelective(ldapErrorUserDO)
+        LdapErrorUserDTO ldapErrorUser = new LdapErrorUserDTO()
+        ldapErrorUser.setLdapHistoryId(1L)
+        ldapErrorUser.setUuid("uuid")
+        ldapErrorUser.setCause(LdapErrorUserCause.EMAIL_ALREADY_EXISTED.value())
+        ldapErrorUserMapper.insertSelective(ldapErrorUser)
 
         when:
-        def entity = ldapController.pagingQueryErrorUsers(pageRequest, 1L, null)
+        def entity = ldapController.pagingQueryErrorUsers(0, 10, 1L, null)
 
         then:
         entity.statusCode.is2xxSuccessful()
