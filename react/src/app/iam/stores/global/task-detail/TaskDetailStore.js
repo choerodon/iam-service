@@ -84,7 +84,7 @@ class TaskDetailStore {
     { columnKey = 'id', order = 'descend' },
     params, type, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       status,
       name,
@@ -108,7 +108,7 @@ class TaskDetailStore {
     { columnKey = 'id', order = 'descend' },
     params, taskId, type, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       status,
       serviceInstanceId,
@@ -135,7 +135,7 @@ class TaskDetailStore {
     };
     const queryObj = {
       size: pageSize,
-      page: current - 1,
+      page: current,
     };
     if (columnKey) {
       const sorter = [];

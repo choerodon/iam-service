@@ -73,18 +73,18 @@ class SaasTokenStore {
     if (state.code === '') {
       axios.get(`uaa/v1/tokens/querySelf?page=${page}&size=${size}&param=${state.input}`).then((data) => {
         if (data) {
-          this.setSaasTokenData(data.content);
+          this.setSaasTokenData(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
           this.changeLoading(false);
         }
       });
     } else {
       axios.get(`uaa/v1/tokens/querySelf?page=${page}&size=${size}&${state.code}=${state.input}`).then((data) => {
         if (data) {
-          this.setSaasTokenData(data.content);
+          this.setSaasTokenData(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
           this.changeLoading(false);
         }
       });
@@ -93,12 +93,12 @@ class SaasTokenStore {
 
   querySaasToken = (state) => {
     if (state.code === '') {
-      axios.get(`/uaa/v1/tokens/querySelf?param=${state.input}&page=0&size=10`).then((data) => {
-        this.setSaasTokenData(data.content);
+      axios.get(`/uaa/v1/tokens/querySelf?param=${state.input}&pag1=0&size=10`).then((data) => {
+        this.setSaasTokenData(data.list);
       });
     } else {
-      axios.get(`uaa/v1/tokens/querySelf?${state.code}=${state.input}&page=0&size=10`).then((data) => {
-        this.setSaasTokenData(data.content);
+      axios.get(`uaa/v1/tokens/querySelf?${state.code}=${state.input}&page=1&size=10`).then((data) => {
+        this.setSaasTokenData(data.list);
       });
     }
   }
@@ -116,18 +116,18 @@ class SaasTokenStore {
     axios.get(`/uaa/v1/tokens/querySelf?${page}&size=${size}${url}`)
       .then((data) => {
         if (data) {
-          this.setSaasTokenData(data.content);
+          this.setSaasTokenData(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
           this.changeLoading(false);
         }
       });
   }
 
   loadAllSaasToken() {
-    axios.get('uaa/v1/tokens/querySelf?page=0&size=999').then((data) => {
+    axios.get('uaa/v1/tokens/querySelf?page=1&size=999').then((data) => {
       if (data) {
-        this.setAllData(data.content);
+        this.setAllData(data.list);
       }
     });
   }

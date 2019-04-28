@@ -102,12 +102,12 @@ export default class Instance extends Component {
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
-        InstanceStore.setInstanceData(data.content.slice());
+        InstanceStore.setInstanceData((data.list || []).slice());
         InstanceStore.setLoading(false);
       })
       .catch((error) => {
@@ -117,7 +117,7 @@ export default class Instance extends Component {
 
   fetch(serviceName, { current, pageSize }, { columnKey = 'service', order = 'asc' }, { instanceId, version }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       instanceId,
       version,

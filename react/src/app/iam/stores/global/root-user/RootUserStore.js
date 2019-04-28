@@ -43,7 +43,7 @@ class RootUserStore {
     { columnKey = 'id', order = 'descend' },
     params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       loginName,
       realName,

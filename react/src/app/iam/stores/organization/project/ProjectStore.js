@@ -147,7 +147,7 @@ class ProjectStore {
     { name, code, typeName, enabled, params }) => {
     this.changeLoading(true);
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       name,
       code,

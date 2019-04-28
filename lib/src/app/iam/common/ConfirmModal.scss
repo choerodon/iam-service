@@ -1,0 +1,23 @@
+.c7n-iam-confirm-modal {
+  .ant-modal-body {
+    .ant-confirm-body-wrapper {
+      .ant-confirm-title {
+        font-size: 18px;
+        display: block;
+        overflow: auto;
+      }
+
+      .ant-confirm-content {
+        font-size: 13px;
+        color: #000;
+        margin-top: 16px;
+      }
+    }
+  }
+
+  .ant-confirm-btns {
+    text-align: right;
+    margin-bottom: -24px;
+    padding: 32px 0 17px;
+  }
+}

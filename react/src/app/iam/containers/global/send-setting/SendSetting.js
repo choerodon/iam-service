@@ -108,9 +108,9 @@ export default class SendSetting extends Component {
       SendSettingStore.setData(data.content);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

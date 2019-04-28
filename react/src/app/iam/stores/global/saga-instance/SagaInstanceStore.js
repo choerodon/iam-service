@@ -127,7 +127,7 @@ class SagaInstanceStore {
     type) {
     this.sagaInstanceType = sagaInstanceType;
     const queryObj = type !== 'task' ? {
-      page: current - 1,
+      page: current,
       size: pageSize,
       id,
       status,
@@ -136,7 +136,7 @@ class SagaInstanceStore {
       refId,
       params,
     } : {
-      page: current - 1,
+      page: current,
       size: pageSize,
       id,
       status,

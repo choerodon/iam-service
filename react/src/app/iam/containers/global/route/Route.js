@@ -148,9 +148,9 @@ export default class Route extends Component {
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
           content: data.content,
           loading: false,
@@ -163,7 +163,7 @@ export default class Route extends Component {
 
   fetch({ current, pageSize }, { columnKey = 'id', order = 'descend' }, { name, path, serviceId, builtIn }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       name,
       path,

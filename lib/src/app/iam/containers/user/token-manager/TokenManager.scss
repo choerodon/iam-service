@@ -1,0 +1,12 @@
+.c7n-iam-token-manager {
+  &-token {
+    > div {
+      display: inline-block;
+      vertical-align: bottom;
+      margin-right: 10px;
+    }
+  }
+  &-url {
+    color: #000;
+  }
+}

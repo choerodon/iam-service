@@ -1,0 +1,43 @@
+.c7n-iam-dashboard-addedusers {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+
+  .ant-spin-spinning {
+    height: calc(100% - 130px);
+    opacity: 1;
+    position: static;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+    &-main {
+      height: calc(80% - 67px);
+      align-items: center;
+      display: flex;
+      align-self: center;
+
+      span:first-child {
+        font-size: 62px;
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      span:last-child {
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.65);
+        margin-left: 6px;
+      }
+    }
+
+    &-bottom {
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.65);
+      text-align: left;
+      height: 20%;
+      display: flex;
+      align-items: center;
+    }
+  }

@@ -1,0 +1,27 @@
+.c7n-iam-rootuser-user-option {
+  display: inline-flex;
+  vertical-align: middle;
+
+  &-avatar {
+    width: 18px;
+    height: 18px;
+    background: rgb(197, 203, 232);
+    color: rgb(100, 115, 195);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+    text-align: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &-noavatar {
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      color: rgb(100, 115, 195);
+    }
+  }
+}

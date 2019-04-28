@@ -40,13 +40,13 @@ class ProjectInfoStore {
     this.loading = true;
     return axios.get(`/iam/v1/users/self/projects/paging_query?${queryString.stringify({
       organization_id: orgId,
-      page: 0,
+      page: 1,
       size: 20,
       enabled: true,
     })}`).then(action((result) => {
-      const { failed, content } = result;
+      const { failed, list } = result;
       if (!failed) {
-        this.myProjectData = content || result;
+        this.myProjectData = list || result;
       }
       this.loading = false;
     }))
@@ -61,16 +61,16 @@ class ProjectInfoStore {
     this.loading = true;
     this.params = params;
     return axios.get(`/iam/v1/users/${id}/project_roles?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.projectRolesData = content;
+          this.projectRolesData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

@@ -257,7 +257,7 @@ class UserMsgStore {
     return axios.get(`/notify/v1/notices/sitemsgs?${queryString.stringify({
       user_id: this.userInfo.id,
       read: showAll ? null : false,
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       sort: sorter.join(','),
       type,
@@ -266,7 +266,7 @@ class UserMsgStore {
 
   @action loadAnnouncement(pagination = this.pagination, filters, sort, params = this.params) {
     return axios.get(`/notify/v1/system_notice/completed?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
     })}`);
   }
@@ -288,11 +288,11 @@ class UserMsgStore {
     if (isWebSocket) this.setLoadingMore(true); else this.setLoading(true);
     if (type !== 'announcement') {
       this.load(pagination, filters, { columnKey, order }, params, showAll, type).then(action((data) => {
-        this.setUserMsg(data.content ? data.content : data);
+        this.setUserMsg(data.list ? data.list : data);
         // 当显示的是未读消息的时候，加载完成后自动展开全部消息
         this.showAll = showAll;
         if (!showAll) this.expandAllMsg();
-        this.pagination.totalPages = data.content ? data.totalPages : data.length / PAGELOADSIZE + 1;
+        this.pagination.totalPages = data.list ? data.totalPages : data.length / PAGELOADSIZE + 1;
         if (isWebSocket) this.setLoadingMore(false); else this.setLoading(false);
         if (msgId) {
           this.setExpandCardId(msgId);
@@ -300,7 +300,7 @@ class UserMsgStore {
         }
         this.pagination = {
           ...pagination,
-          total: data.totalElements,
+          total: data.total,
           pageSize: this.pagination.pageSize,
           onChange: this.pagination.onChange,
           onShowSizeChange: this.pagination.onShowSizeChange,
@@ -313,13 +313,13 @@ class UserMsgStore {
         }));
     } else {
       this.loadAnnouncement(pagination = this.pagination, filters, { columnKey, order }, params).then(action((data) => {
-        this.setAnnounceMsg(data.content);
+        this.setAnnounceMsg(data.list);
         this.showAll = true;
         this.expandAllMsg();
-        this.pagination.totalPages = data.content ? data.totalPages : data.length / PAGELOADSIZE + 1;
+        this.pagination.totalPages = data.list ? data.totalPages : data.length / PAGELOADSIZE + 1;
         this.pagination = {
           ...pagination,
-          total: data.totalElements,
+          total: data.total,
           pageSize: this.pagination.pageSize,
           onChange: this.pagination.onChange,
           onShowSizeChange: this.pagination.onShowSizeChange,

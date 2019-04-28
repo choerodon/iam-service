@@ -1,0 +1,35 @@
+.c7n-route-table {
+  > .ant-spin-nested-loading {
+    height: 500px;
+  }
+}
+.route-form-container {
+  .radioGroup {
+    > label:first-child {
+      margin-right: 60px;
+    }
+  }
+
+  .ant-input-disabled .ant-input-suffix {
+    color: rgba(0, 0, 0, 0.26);
+  }
+
+  .ant-popover-content {
+    .ant-popover-inner-content {
+      max-width: 180px;
+    }
+  }
+
+  .labelSuffix {
+    vertical-align: middle;
+
+    span {
+      vertical-align: middle;
+    }
+
+    i {
+      margin-left: 8px;
+      color: rgba(0, 0, 0, 0.26);
+    }
+  }
+}

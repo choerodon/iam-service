@@ -169,7 +169,7 @@ class SiteStatisticsStore {
     });
   };
 
-  getMenuData = level => axios.get(`/iam/v1/menus/tree?level=${level}`).then((data) => {
+  getMenuData = level => axios.get(`/iam/v1/menus/menu_config?level=${level}`).then((data) => {
     this.dfsAddAllMenu(data, level);
   });
 

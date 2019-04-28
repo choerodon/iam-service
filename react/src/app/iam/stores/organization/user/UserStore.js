@@ -204,7 +204,7 @@ class UserStore {
   }, param) => {
     this.setIsLoading(true);
     return axios.post(
-      `/iam/v1/organizations/${organizationId}/users/search?page=${page.current - 1}&size=${page.pageSize}&sort=${sortParam}`,
+      `/iam/v1/organizations/${organizationId}/users/search?page=${page.current}&size=${page.pageSize}&sort=${sortParam}`,
       JSON.stringify({
         loginName: loginName && loginName[0],
         realName: realName && realName[0],

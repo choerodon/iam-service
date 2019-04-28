@@ -1183,9 +1183,9 @@ export default class TaskCreate extends Component {
       TaskDetailStore.setUserData(data.content.slice());
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         userParams,

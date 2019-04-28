@@ -52,7 +52,7 @@ export default class Client extends Component {
   getInitState() {
     return {
       submitting: false,
-      page: 0,
+      page: 1,
       open: false,
       id: null,
       params: [],
@@ -139,12 +139,12 @@ export default class Client extends Component {
 
     ClientStore.loadClients(organizationId, pagination, sort, filters, params)
       .then((data) => {
-        ClientStore.setClients(data.content);
+        ClientStore.setClients(data.list || []);
         this.setState({
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
           sort,
           params,

@@ -82,9 +82,9 @@ class MailTemplateStore {
       queryObj.sort = sorter.join(',');
     }
     if (appType === 'site') {
-      return axios.get(`/notify/v1/notices/emails/templates?page=${current - 1}&size=${pageSize}&${querystring.stringify(queryObj)}`);
+      return axios.get(`/notify/v1/notices/emails/templates?page=${current}&size=${pageSize}&${querystring.stringify(queryObj)}`);
     } else {
-      return axios.get(`/notify/v1/notices/emails/templates/organizations/${orgId}?page=${current - 1}&size=${pageSize}&${querystring.stringify(queryObj)}`);
+      return axios.get(`/notify/v1/notices/emails/templates/organizations/${orgId}?page=${current}&size=${pageSize}&${querystring.stringify(queryObj)}`);
     }
   };
 

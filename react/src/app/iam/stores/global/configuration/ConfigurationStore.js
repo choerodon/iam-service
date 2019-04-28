@@ -97,10 +97,10 @@ class ConfigurationStore {
   loadCurrentServiceConfig(serviceId) {
     const queryObj = {
       serviceId,
-      page: 0,
+      page: 1,
       size: 200,
     };
-    axios.get(`/manager/v1/configs?${querystring.stringify(queryObj)}`).then(data => this.setCurrentServiceConfig(data.content.slice()));
+    axios.get(`/manager/v1/configs?${querystring.stringify(queryObj)}`).then(data => this.setCurrentServiceConfig((data.list || []).slice()));
   }
 
   modifyConfig(configId, type, data) {

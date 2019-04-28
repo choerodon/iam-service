@@ -20,7 +20,7 @@ class MsgRecordStore {
     { columnKey = 'id', order = 'descend' },
     params, appType, orgId) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       status,
       receiveEmail: email,

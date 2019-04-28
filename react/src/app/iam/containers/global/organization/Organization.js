@@ -199,7 +199,7 @@ export default class Organization extends Component {
   loadUsers = (queryObj) => {
     const { OrganizationStore } = this.props;
     OrganizationStore.loadUsers(queryObj).then((data) => {
-      OrganizationStore.setUsersData(data.content.slice());
+      OrganizationStore.setUsersData((data.list || []).slice());
       this.setState({
         selectLoading: false,
       });

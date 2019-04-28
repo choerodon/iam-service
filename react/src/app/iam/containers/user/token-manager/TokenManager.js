@@ -11,7 +11,7 @@ import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 
 const intlPrefix = 'user.token-manager';
-timeago.register('zh_CN', require('./locale/zh_CN'));
+// timeago.register('zh_CN', require('./locale/zh_CN'));
 
 @withRouter
 @inject('AppState')

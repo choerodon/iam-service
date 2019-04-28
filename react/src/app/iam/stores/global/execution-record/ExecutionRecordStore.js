@@ -20,7 +20,7 @@ class ExecutionRecordStore {
     { columnKey = 'id', order = 'descend' },
     params, type, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       status,
       taskName,

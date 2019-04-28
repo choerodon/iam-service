@@ -72,11 +72,11 @@ export default class MicroService extends Component {
     this.fetch(pagination, sort, filters, params).then((data) => {
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
-        content: data.content,
+        content: data.list || [],
         loading: false,
         sort,
         params,
@@ -86,7 +86,7 @@ export default class MicroService extends Component {
 
   fetch({ current, pageSize }, { columnKey, order }, { serviceName }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       service_name: serviceName,
       params,

@@ -71,7 +71,7 @@ class EditConfig extends Component {
    */
   loadCurrentServiceConfig(serviceName) {
     const queryObj = {
-      page: 0,
+      page: 1,
       size: 20,
     };
     axios.get(`/manager/v1/services/${serviceName}/configs?${querystring.stringify(queryObj)}`).then((data) => {
@@ -80,7 +80,7 @@ class EditConfig extends Component {
       } else {
         this.setState({
           yamlData: null,
-          currentServiceConfig: data.content,
+          currentServiceConfig: data.list,
         });
       }
     });

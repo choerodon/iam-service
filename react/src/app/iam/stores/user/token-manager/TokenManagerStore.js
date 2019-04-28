@@ -43,16 +43,16 @@ class TokenManagerStore {
     this.params = params;
     return axios.get(`/iam/v1/token?${queryString.stringify({
       currentToken,
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.tokenData = content;
+          this.tokenData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

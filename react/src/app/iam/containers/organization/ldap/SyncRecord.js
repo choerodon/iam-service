@@ -72,12 +72,12 @@ export default class SyncRecord extends Component {
     // 防止标签闪烁
     this.setState({ loading: true });
     LDAPStore.loadSyncRecord(pagination, sort, organizationId, this.ldapId).then((data) => {
-      LDAPStore.setSyncRecord(data.content);
+      LDAPStore.setSyncRecord(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,
@@ -125,12 +125,12 @@ export default class SyncRecord extends Component {
     }
 
     LDAPStore.loadDetail(detailPagination, filters, detailSort, params, recordId).then((data) => {
-      LDAPStore.setDetailRecord(data.content);
+      LDAPStore.setDetailRecord(data.list || []);
       this.setState({
         detailPagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         detailLoading: false,
         detailSort,

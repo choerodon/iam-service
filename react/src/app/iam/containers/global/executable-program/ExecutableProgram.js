@@ -111,12 +111,12 @@ export default class ExecutableProgram extends Component {
     }
 
     ExecutableProgramStore.loadData(pagination, filters, sort, params, type, id).then((data) => {
-      ExecutableProgramStore.setData(data.content);
+      ExecutableProgramStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

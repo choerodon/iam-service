@@ -90,7 +90,7 @@ class RoleStore {
 
   @action
   setRoles(data) {
-    this.roles = data;
+    this.roles = data || [];
   }
 
   @computed
@@ -144,11 +144,11 @@ class RoleStore {
 
   @action
   handleCanChosePermission(level, data) {
-    this.setCanChosePermission(level, data.content);
+    this.setCanChosePermission(level, data.list);
     this.setPermissionPage(level, {
-      current: data.number + 1,
-      total: data.totalElements,
-      size: data.size,
+      current: data.pageNum,
+      total: data.total,
+      size: data.pageSize,
     });
   }
 
@@ -277,7 +277,7 @@ class RoleStore {
     code: '',
     params: '',
   }) {
-    return Observable.fromPromise(axios.get(`iam/v1/permissions?level=${level}&page=${page.current - 1}&size=${page.pageSize}&code=${filters.code}&params=${filters.params}`));
+    return Observable.fromPromise(axios.get(`iam/v1/permissions?level=${level}&page=${page.current}&size=${page.pageSize}&code=${filters.code}&params=${filters.params}`));
   }
 
   loadRoleLabel = (level) => {
@@ -308,19 +308,19 @@ class RoleStore {
     }
     this.setIsLoading(true);
     return axios.post(
-      `/iam/v1/roles/search?page=${current - 1}&size=${pageSize}&sort=${sorter.join(',')}`,
+      `/iam/v1/roles/search?page=${current}&size=${pageSize}&sort=${sorter.join(',')}`,
       JSON.stringify(body),
     );
   }
 
   queryRole = (state) => {
     if (state.code === '') {
-      axios.get(`iam/v1/roles?param=${state.input}&page=0&size=10`).then((data) => {
-        this.setRoles(data.content);
+      axios.get(`iam/v1/roles?param=${state.input}&page=1&size=10`).then((data) => {
+        this.setRoles(data.list);
       });
     } else {
-      axios.get(`iam/v1/roles?${state.code}=${state.input}&page=0&size=10`).then((data) => {
-        this.setRoles(data.content);
+      axios.get(`iam/v1/roles?${state.code}=${state.input}&page=1&size=10`).then((data) => {
+        this.setRoles(data.list);
       });
     }
   };
@@ -350,9 +350,9 @@ class RoleStore {
     this.setIsLoading(true);
     return axios.get(`/iam/v1/roles?page=${page}&size=${size}${url}`).then((data) => {
       if (data) {
-        this.setRoles(data.content);
+        this.setRoles(data.list);
         this.setTotalPage(data.totalPages);
-        this.setTotalSize(data.totalElements);
+        this.setTotalSize(data.total);
       }
       this.setIsLoading(false);
     });

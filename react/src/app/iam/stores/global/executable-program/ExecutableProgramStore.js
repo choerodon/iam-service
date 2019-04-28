@@ -29,7 +29,7 @@ class ExecutableProgramStore {
     { columnKey = 'id', order = 'descend' },
     params, type, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       code,
       service,

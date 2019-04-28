@@ -74,12 +74,12 @@ export default class Saga extends Component {
       return;
     }
     SagaStore.loadData(pagination, filters, sort, params).then((data) => {
-      SagaStore.setData(data.content);
+      SagaStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

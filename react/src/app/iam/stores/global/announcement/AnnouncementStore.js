@@ -104,7 +104,7 @@ class AnnouncementStore {
       return;
     }
     return axios.get(`${this.announcementType.apiPrefix}/all?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       content: filters.content && filters.content[0],
       status: filters.status && filters.status[0],
@@ -112,7 +112,7 @@ class AnnouncementStore {
       params: params.join(','),
       sort: sorter.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, content, total }) => {
         if (!failed) {
           this.announcementData = content;
           this.announcementData.forEach((data) => {
@@ -121,7 +121,7 @@ class AnnouncementStore {
           // this.announcementData.content = content.content.replace(imgPartten, '[图片]').replace(htmlTagParttrn, '');
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

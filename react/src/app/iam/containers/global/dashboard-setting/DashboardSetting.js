@@ -98,7 +98,7 @@ class DashboardSetting extends Component {
     const { DashboardSettingStore, form } = this.props;
     DashboardSettingStore.setNeedRoles(record.needRoles);
     RoleStore.loadRole({ pageSize: 999 }, {}, { level: record.level }).then((data) => {
-      RoleStore.setRoles(data.content);
+      RoleStore.setRoles(data.list || []);
     });
     DashboardSettingStore.setEditData(record);
     DashboardSettingStore.showSideBar();
@@ -331,7 +331,7 @@ class DashboardSetting extends Component {
               })(
                 <IconSelect
                   label={<FormattedMessage id={`${intlPrefix}.icon`} />}
-                  getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
+                  // getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
                   style={{ width: inputWidth }}
                   showArrow
                 />,
@@ -355,7 +355,7 @@ class DashboardSetting extends Component {
                 mode="multiple"
                 label={<FormattedMessage id={`${intlPrefix}.role`} />}
                 size="default"
-                getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
+                // getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
                 style={{
                   width: '512px',
                   display: needRoles ? 'inline-block' : 'none',

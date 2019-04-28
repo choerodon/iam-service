@@ -91,12 +91,12 @@ export default class APITest extends Component {
     }
 
     MsgRecordStore.loadData(pagination, filters, sort, params, this.msgrecord.type, this.msgrecord.orgId).then((data) => {
-      MsgRecordStore.setData(data.content);
+      MsgRecordStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

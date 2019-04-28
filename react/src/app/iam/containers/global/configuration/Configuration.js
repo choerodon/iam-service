@@ -108,9 +108,9 @@ export default class Configuration extends Component {
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
         ConfigurationStore.setConfigData(data.content.slice());
@@ -123,7 +123,7 @@ export default class Configuration extends Component {
 
   fetch(serviceName, { current, pageSize }, { columnKey = 'id', order = 'descend' }, { name, configVersion, isDefault }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       name,
       configVersion,

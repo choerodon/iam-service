@@ -26,7 +26,7 @@ export default class User extends Component {
       open: false,
       status: 'create', // 'create' 'edit' 'upload'
       id: '',
-      page: 0,
+      page: 1,
       isLoading: true,
       params: [],
       filters: {},
@@ -100,12 +100,12 @@ export default class User extends Component {
       filters,
       params,
     ).then((data) => {
-      UserStore.setUsers(data.content);
+      UserStore.setUsers(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         params,
         sort,

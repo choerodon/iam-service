@@ -42,7 +42,7 @@ export default class Project extends Component {
     super(props);
     this.state = {
       sidebar: false,
-      page: 0,
+      page: 1,
       id: '',
       open: false,
       projectDatas: {
@@ -140,13 +140,13 @@ export default class Project extends Component {
     ProjectStore.loadProject(organizationId, pagination, sort, filters)
       .then((data) => {
         ProjectStore.changeLoading(false);
-        ProjectStore.setProjectData(data.content);
+        ProjectStore.setProjectData(data.list || []);
         this.setState({
           sort,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
       })

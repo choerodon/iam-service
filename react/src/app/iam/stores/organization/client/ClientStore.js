@@ -68,7 +68,7 @@ class ClientStore {
 
   loadClients(organizationId, { current, pageSize }, { columnKey = 'id', order = 'descend' }, { name }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       name,
       params,

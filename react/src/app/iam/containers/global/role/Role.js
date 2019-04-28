@@ -71,15 +71,15 @@ export default class Role extends Component {
     RoleStore.loadRole(pagination, sort, filters, params)
       .then((data) => {
         RoleStore.setIsLoading(false);
-        RoleStore.setRoles(data.content);
+        RoleStore.setRoles(data.list || []);
         this.setState({
           sort,
           filters,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
       })

@@ -109,7 +109,7 @@ class LDAPStore {
     { columnKey = 'id', order = 'descend' },
     organizationId, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
     };
 
@@ -131,7 +131,7 @@ class LDAPStore {
     { columnKey = 'id', order = 'descend' },
     params, id) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       uuid,
       loginName,

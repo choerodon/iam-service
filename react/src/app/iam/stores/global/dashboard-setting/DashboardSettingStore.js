@@ -104,7 +104,7 @@ class DashboardSettingStore {
     }
 
     return axios.get(`/iam/v1/dashboards?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       name: filters.name,
       code: filters.code,
@@ -115,12 +115,12 @@ class DashboardSettingStore {
       params: params.join(','),
       sort: sorter.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.dashboardData = content;
+          this.dashboardData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

@@ -121,14 +121,14 @@ export default class MailTemplate extends Component {
     MailTemplateStore.loadMailTemplate(pagination, filters, sort, params,
       this.mail.type, this.mail.orgId)
       .then((data) => {
-        MailTemplateStore.setMailTemplate(data.content);
+        MailTemplateStore.setMailTemplate(data.list || []);
         this.setState({
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
         MailTemplateStore.setLoading(false);

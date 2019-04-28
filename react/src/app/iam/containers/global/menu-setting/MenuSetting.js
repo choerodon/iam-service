@@ -109,8 +109,9 @@ export default class MenuSetting extends Component {
     type = type || typeState;
     const newPrevMenuGroup = prevMenuGroup;
     this.setState({ loading: true });
-    axios.get(`/iam/v1/menus/tree?level=${type}`)
-      .then((value) => {
+    axios.get(`/iam/v1/menus/menu_config?code=choerodon.code.top.${type}`)
+      .then((res) => {
+        const value = res.subMenus;
         menuGroup[type] = normalizeMenus(value);
         newPrevMenuGroup[type] = JSON.parse(JSON.stringify(menuGroup))[type];
         // 深拷贝
@@ -662,7 +663,7 @@ export default class MenuSetting extends Component {
     const newPrevMenuGroup = prevMenuGroup;
     if (JSON.stringify(prevMenuGroup) !== JSON.stringify(menuGroup)) {
       this.setState({ submitting: true });
-      axios.post(`/iam/v1/menus/tree?level=${type}`, JSON.stringify(adjustSort(menuGroup[type])))
+      axios.post(`/iam/v1/menus/menu_config?code=choerodon.code.top.${type}`, JSON.stringify(adjustSort(menuGroup[type])))
         .then((menus) => {
           this.setState({ submitting: false });
           if (menus.failed) {
