@@ -4,7 +4,7 @@ import './index.scss';
 import { Button, Icon, Timeline } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { StepFooter, StepBar, GuideMask, AutoGuide } from 'choerodon-boot-combine';
+import { StepFooter, StepBar, GuideMask, AutoGuide } from '@choerodon/boot';
 import EasyImg from '../../components/easyImg';
 import picSiteRole from './image/site-role.png';
 import picRootRole from './image/root-role.png';

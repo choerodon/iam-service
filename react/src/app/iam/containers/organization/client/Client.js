@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Form, Input, Modal, Select, Table, Tooltip, InputNumber, Icon, Popover } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';

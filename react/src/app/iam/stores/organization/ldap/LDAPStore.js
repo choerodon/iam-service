@@ -3,7 +3,7 @@
  */
 
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('LDAPStore')

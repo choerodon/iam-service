@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { inject } from 'mobx-react';
 import { Button, Icon, Modal, Upload } from 'choerodon-ui';
-import { axios } from 'choerodon-boot-combine';
+import { axios } from '@choerodon/boot';
 import querystring from 'query-string';
 import UserInfoStore from '../../../stores/user/user-info/UserInfoStore';
 import SystemSettingStore from '../../../stores/global/system-setting/SystemSettingStore';

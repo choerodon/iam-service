@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { inject } from 'mobx-react';
-import { asyncLocaleProvider, asyncRouter, nomatch } from 'choerodon-boot-combine';
+import { asyncLocaleProvider, asyncRouter, nomatch } from '@choerodon/boot';
 
 // global 对应目录
 const announcement = asyncRouter(() => import('./global/announcement'));

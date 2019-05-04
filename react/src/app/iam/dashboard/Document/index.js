@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DashBoardNavBar } from 'choerodon-boot-combine';
+import { DashBoardNavBar } from '@choerodon/boot';
 import './index.scss';
 
 export default class Document extends Component {

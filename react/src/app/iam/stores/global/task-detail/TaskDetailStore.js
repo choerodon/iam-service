@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('TaskDetailStore')

@@ -2,7 +2,7 @@
  * Created by jinqin.ma on 2017/6/27.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import queryString from 'query-string';
 import { handleFiltersParams } from '../../../common/util';
 

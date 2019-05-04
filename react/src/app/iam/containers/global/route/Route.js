@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Col, Form, Icon, Input, Modal, Popover, Radio, Row, Select, Spin, Table, Tooltip } from 'choerodon-ui';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import querystring from 'query-string';

@@ -4,7 +4,7 @@ import { findDOMNode } from 'react-dom';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Modal, Progress, Select, Table, Tooltip, Upload, Spin, Radio } from 'choerodon-ui';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import classnames from 'classnames';
 import MemberRoleType, { pageSize } from './MemberRoleType';

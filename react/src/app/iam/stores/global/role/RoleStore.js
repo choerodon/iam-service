@@ -1,6 +1,6 @@
 import { action, computed, observable, toJS } from 'mobx';
 import { Observable } from 'rxjs';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
 
 @store('RoleStore')

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import classnames from 'classnames';
-import { Content, Header, Page } from 'choerodon-boot-combine';
+import { Content, Header, Page } from '@choerodon/boot';
 import { Table, Button, Tooltip } from 'choerodon-ui';
 import './PermissionInfo.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

@@ -3,7 +3,7 @@
  */
 
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 
 @store('SaasTokenStore')
 class SaasTokenStore {

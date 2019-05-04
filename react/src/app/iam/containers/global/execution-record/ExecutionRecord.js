@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Input, Popover, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios, Content, Header, Page, Permission, Action } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission, Action } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import ExecutionRecordStore from '../../../stores/global/execution-record';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

@@ -2,7 +2,7 @@
  * Created by hulingfangzi on 2018/6/12.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import querystring from 'query-string';
 
 const { AppState } = stores;

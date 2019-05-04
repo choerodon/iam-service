@@ -7,7 +7,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Icon, Modal, Table, Tooltip } from 'choerodon-ui';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Link, withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import PermissionInfo from '../permission-info';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import './ProjectInfo.scss';

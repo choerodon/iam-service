@@ -6,7 +6,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Form, Modal, Select, Table } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Action, axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Action, axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import querystring from 'query-string';
 import ConfigurationStore from '../../../stores/global/configuration';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';

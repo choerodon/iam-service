@@ -6,7 +6,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Input, Button, Select, Table, Tooltip, Form, Spin, Radio } from 'choerodon-ui';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
 import './MailSetting.scss';

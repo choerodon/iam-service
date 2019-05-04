@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import { Button, Table, Select, Spin } from 'choerodon-ui';
 import moment from 'moment';
 import ReactEcharts from 'echarts-for-react';

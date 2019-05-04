@@ -7,7 +7,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Tooltip, Tree, Input, Icon, Form, Row, Col, Select, Table, Spin, Modal } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios as defaultAxios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios as defaultAxios, Content, Header, Page, Permission } from '@choerodon/boot';
 import querystring from 'query-string';
 import _ from 'lodash';
 import classnames from 'classnames';

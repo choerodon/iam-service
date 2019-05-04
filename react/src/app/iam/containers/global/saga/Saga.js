@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Modal, Tabs } from 'choerodon-ui';
-import { Content, Header, Page } from 'choerodon-boot-combine';
+import { Content, Header, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import SagaImg from './SagaImg';
 import jsonFormat from '../../../common/json-format';

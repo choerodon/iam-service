@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import queryString from 'query-string';
 import { handleFiltersParams } from '../../../common/util';
 

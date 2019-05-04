@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Table } from 'choerodon-ui';
-import { Content, Header, Page } from 'choerodon-boot-combine';
+import { Content, Header, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import RoleLabelStore from '../../../stores/global/role-label/RoleLabelStore';
 import { handleFiltersParams } from '../../../common/util';

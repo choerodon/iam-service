@@ -1,7 +1,7 @@
 
 import React, { Component } from 'react';
 import { Form, Select } from 'choerodon-ui';
-import { axios } from 'choerodon-boot-combine';
+import { axios } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
 import classnames from 'classnames';
 import './MemberLabel.scss';

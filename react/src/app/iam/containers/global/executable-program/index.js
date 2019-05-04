@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { asyncRouter, nomatch } from 'choerodon-boot-combine';
+import { asyncRouter, nomatch } from '@choerodon/boot';
 
 const index = asyncRouter(() => (import('./ExecutableProgram')));
 

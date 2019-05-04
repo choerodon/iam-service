@@ -11,7 +11,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import {
   axios, Content, Header, Page, Permission, Action,
-} from 'choerodon-boot-combine';
+} from '@choerodon/boot';
 import { handleFiltersParams } from '../../../common/util';
 import InMailTemplateStore from '../../../stores/global/inmail-template';
 import './InMailTemplate.scss';

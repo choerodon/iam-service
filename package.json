@@ -1,12 +1,15 @@
 {
-  "name": "choerodon-iam",
+  "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "1.0.1",
+  "version": "0.1.0",
   "description": "",
   "main": "./lib/src/app/iam/containers/IAMIndex.js",
+  "files": [
+    "lib"
+  ],
   "dependencies": {
-    "choerodon-boot-combine": "0.1.x",
-    "choerodon-front-master": "0.1.x",
+    "@choerodon/boot": "0.1.x",
+    "@choerodon/master": "0.1.x",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
     "hjson": "^3.1.1",
@@ -21,8 +24,8 @@
     "through2": "^2.0.3"
   },
   "scripts": {
-    "start": "choerodon-hap-front-boot start --config ./react/config.js",
-    "dist": "choerodon-hap-front-boot dist --config ./react/config.js",
+    "start": "choerodon-front-boot start --config ./react/config.js",
+    "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
     "compile": "gulp compile"

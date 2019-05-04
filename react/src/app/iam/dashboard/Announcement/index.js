@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Modal, Timeline, Button } from 'choerodon-ui';
 import { withRouter, Link } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { DashBoardNavBar } from 'choerodon-boot-combine';
+import { DashBoardNavBar } from '@choerodon/boot';
 import AnnouncementInfoStore from '../../stores/user/announcement-info';
 import './index.scss';
 
