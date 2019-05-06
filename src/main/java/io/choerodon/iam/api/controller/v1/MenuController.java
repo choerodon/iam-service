@@ -51,8 +51,8 @@ public class MenuController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置保存")
     @PostMapping("/menu_config")
-    public ResponseEntity saveMenuConfig(@RequestParam String level, @RequestBody List<MenuDTO> menus) {
-        menuService.saveMenuConfig(level, menus);
+    public ResponseEntity saveMenuConfig(@RequestParam String code, @RequestBody List<MenuDTO> menus) {
+        menuService.saveMenuConfig(code, menus);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
