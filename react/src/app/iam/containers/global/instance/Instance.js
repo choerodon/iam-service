@@ -6,7 +6,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Form, Select, Table, Tooltip } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import querystring from 'query-string';
 import InstanceStore from '../../../stores/global/instance';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -102,12 +102,12 @@ export default class Instance extends Component {
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
-        InstanceStore.setInstanceData(data.content.slice());
+        InstanceStore.setInstanceData((data.list || []).slice());
         InstanceStore.setLoading(false);
       })
       .catch((error) => {
@@ -117,7 +117,7 @@ export default class Instance extends Component {
 
   fetch(serviceName, { current, pageSize }, { columnKey = 'service', order = 'asc' }, { instanceId, version }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       instanceId,
       version,

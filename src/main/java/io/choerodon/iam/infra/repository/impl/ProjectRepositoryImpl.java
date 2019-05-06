@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import org.springframework.stereotype.Repository;
@@ -78,13 +79,13 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> projectMapper.fulltextSearch(projectDTO, param));
+    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> projectMapper.fulltextSearch(projectDTO, param));
     }
 
     @Override
-    public Page<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDTO, param));
+    public PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDTO, param));
     }
 
     @Override
@@ -153,14 +154,14 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
 
     @Override
-    public Page<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
+    public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
         int start = page * size;
         int count = memberRoleMapper.selectCountBySourceId(id, "project");
         Page<ProjectDTO> result = new Page<>(page, size, true);
         result.setTotal(count);
         List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
         result.addAll(projectList);
-        return result;
+        return result.toPageInfo();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -15,7 +15,7 @@ public interface OrganizationUserService {
 
     UserDTO create(UserDTO userDTO, boolean checkPassword);
 
-    Page<UserDTO> pagingQuery(int page, int size, UserSearchDTO user);
+    PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user);
 
     UserDTO update(UserDTO userDTO);
 

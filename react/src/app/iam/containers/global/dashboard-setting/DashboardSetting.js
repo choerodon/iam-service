@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Icon, IconSelect, Input, Modal, Select, Table, Tooltip, Radio } from 'choerodon-ui';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import './DashboardSetting.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -98,7 +98,7 @@ class DashboardSetting extends Component {
     const { DashboardSettingStore, form } = this.props;
     DashboardSettingStore.setNeedRoles(record.needRoles);
     RoleStore.loadRole({ pageSize: 999 }, {}, { level: record.level }).then((data) => {
-      RoleStore.setRoles(data.content);
+      RoleStore.setRoles(data.list || []);
     });
     DashboardSettingStore.setEditData(record);
     DashboardSettingStore.showSideBar();
@@ -331,7 +331,7 @@ class DashboardSetting extends Component {
               })(
                 <IconSelect
                   label={<FormattedMessage id={`${intlPrefix}.icon`} />}
-                  getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
+                  // getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
                   style={{ width: inputWidth }}
                   showArrow
                 />,
@@ -355,7 +355,7 @@ class DashboardSetting extends Component {
                 mode="multiple"
                 label={<FormattedMessage id={`${intlPrefix}.role`} />}
                 size="default"
-                getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
+                // getPopupContainer={() => document.getElementsByClassName('ant-modal-body')[document.getElementsByClassName('ant-modal-body').length - 1]}
                 style={{
                   width: '512px',
                   display: needRoles ? 'inline-block' : 'none',

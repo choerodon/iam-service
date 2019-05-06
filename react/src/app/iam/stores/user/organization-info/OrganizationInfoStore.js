@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import queryString from 'query-string';
 
 @store('OrganizationInfoStore')
@@ -39,13 +39,13 @@ class OrganizationInfoStore {
   loadMyOrganizations() {
     this.loading = true;
     return axios.get(`/iam/v1/users/self/organizations/paging_query?${queryString.stringify({
-      page: 0,
+      page: 1,
       size: 20,
       enabled: true,
     })}`).then(action((result) => {
-      const { failed, content } = result;
+      const { failed, list } = result;
       if (!failed) {
-        this.myOrganizationData = content || result;
+        this.myOrganizationData = list || result;
       }
       this.loading = false;
     }))
@@ -60,16 +60,16 @@ class OrganizationInfoStore {
     this.loading = true;
     this.params = params;
     return axios.get(`/iam/v1/users/${id}/organization_roles?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.organizationRolesData = content;
+          this.organizationRolesData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

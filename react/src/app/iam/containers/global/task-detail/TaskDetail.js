@@ -3,7 +3,7 @@ import { observable, action, configure } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Modal, Tabs, Col, Row } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import classnames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import TaskDetailStore from '../../../stores/global/task-detail';
@@ -133,12 +133,12 @@ export default class TaskDetail extends Component {
     }
 
     TaskDetailStore.loadData(pagination, filters, sort, params, type, id).then((data) => {
-      TaskDetailStore.setData(data.content);
+      TaskDetailStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,
@@ -206,12 +206,12 @@ export default class TaskDetail extends Component {
     }
 
     TaskDetailStore.loadLogData(logPagination, logFilters, logSort, logParams, TaskDetailStore.currentTask.id, type, id).then((data) => {
-      TaskDetailStore.setLog(data.content);
+      TaskDetailStore.setLog(data.list || []);
       this.setState({
         logPagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         logLoading: false,
         logSort,

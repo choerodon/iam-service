@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { Table, Button, Tooltip, Modal } from 'choerodon-ui';
 import './TokenManager.scss';
 import TimeAgo from 'timeago-react';
@@ -11,7 +11,7 @@ import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 
 const intlPrefix = 'user.token-manager';
-timeago.register('zh_CN', require('./locale/zh_CN'));
+// timeago.register('zh_CN', require('./locale/zh_CN'));
 
 @withRouter
 @inject('AppState')

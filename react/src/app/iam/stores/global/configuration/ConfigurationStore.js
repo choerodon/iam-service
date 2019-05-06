@@ -2,7 +2,7 @@
  * Created by hulingfangzi on 2018/6/12.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import querystring from 'query-string';
 
 const { AppState } = stores;
@@ -97,10 +97,10 @@ class ConfigurationStore {
   loadCurrentServiceConfig(serviceId) {
     const queryObj = {
       serviceId,
-      page: 0,
+      page: 1,
       size: 200,
     };
-    axios.get(`/manager/v1/configs?${querystring.stringify(queryObj)}`).then(data => this.setCurrentServiceConfig(data.content.slice()));
+    axios.get(`/manager/v1/configs?${querystring.stringify(queryObj)}`).then(data => this.setCurrentServiceConfig((data.list || []).slice()));
   }
 
   modifyConfig(configId, type, data) {

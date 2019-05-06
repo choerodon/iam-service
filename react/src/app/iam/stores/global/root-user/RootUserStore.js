@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('RootUserStore')
@@ -43,7 +43,7 @@ class RootUserStore {
     { columnKey = 'id', order = 'descend' },
     params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       loginName,
       realName,

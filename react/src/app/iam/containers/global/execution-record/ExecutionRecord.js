@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Input, Popover, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios, Content, Header, Page, Permission, Action } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission, Action } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import ExecutionRecordStore from '../../../stores/global/execution-record';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -102,12 +102,12 @@ export default class ExecutionRecord extends Component {
       return;
     }
     ExecutionRecordStore.loadData(pagination, filters, sort, params, type, id).then((data) => {
-      ExecutionRecordStore.setData(data.content);
+      ExecutionRecordStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

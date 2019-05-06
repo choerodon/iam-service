@@ -1,6 +1,6 @@
 package io.choerodon.iam.domain.repository;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 
@@ -20,7 +20,7 @@ public interface OrganizationRepository {
 
     Boolean deleteByKey(Long organizationId);
 
-    Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param);
+    PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param);
 
     List<OrganizationDTO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled);
 
@@ -34,9 +34,9 @@ public interface OrganizationRepository {
 
     OrganizationDTO selectOne(OrganizationDTO organizationDTO);
 
-    Page<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params);
+    PageInfo<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params);
 
-    Page<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param);
+    PageInfo<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param);
 
     List<Long> listMemberIds(Long organizationId);
 
@@ -47,5 +47,5 @@ public interface OrganizationRepository {
      *
      * @return list
      */
-    Page<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size);
+    PageInfo<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size);
 }

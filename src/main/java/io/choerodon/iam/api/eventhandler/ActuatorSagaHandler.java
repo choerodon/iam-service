@@ -39,6 +39,7 @@ public class ActuatorSagaHandler {
         Map actuator = OBJECT_MAPPER.readValue(actuatorJson, Map.class);
         String service = (String) actuator.get("service");
         Map permissionNode = (Map) actuator.get("permission");
+        LOGGER.info("start to refresh permission, service: {}", service);
         String permissionJson = OBJECT_MAPPER.writeValueAsString(permissionNode);
         Map <String, PermissionDescription> descriptions = OBJECT_MAPPER.readValue(permissionJson, OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, PermissionDescription.class));
         Map<String, RoleDTO> initRoleMap = parsePermissionService.queryInitRoleByCode();
@@ -51,6 +52,8 @@ public class ActuatorSagaHandler {
     @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据", maxRetryCount = 3)
     public String refreshInitData(String actuatorJson) throws IOException, SQLException {
         JsonNode root = OBJECT_MAPPER.readTree(actuatorJson);
+        String service = root.get("service").asText();
+        LOGGER.info("start to refresh init data, service: {}", service);
         JsonNode data = root.get("init-data");
         if (data == null || data.size() == 0){
             LOGGER.info("actuator init-data is empty skip iam-init-data-task-refresh.");

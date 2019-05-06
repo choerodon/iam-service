@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -10,7 +10,6 @@ import io.choerodon.iam.app.service.LdapService;
 import io.choerodon.iam.infra.dto.LdapDTO;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.LdapHistoryDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -140,20 +139,18 @@ public class LdapController {
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据ldap id查询历史记录")
-    @CustomPageRequest
     @GetMapping("/organizations/{organization_id}/ldaps/{id}/history")
-    public ResponseEntity<Page<LdapHistoryDTO>> pagingQueryHistories(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                     @PathVariable("organization_id") Long organizationId,
-                                                                     @PathVariable Long id) {
+    public ResponseEntity<PageInfo<LdapHistoryDTO>> pagingQueryHistories(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                         @PathVariable("organization_id") Long organizationId,
+                                                                         @PathVariable Long id) {
         return new ResponseEntity<>(ldapService.pagingQueryHistories(page,size, id), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据ldap history id查询同步用户错误详情")
-    @CustomPageRequest
     @GetMapping("/ldap_histories/{id}/error_users")
-    public ResponseEntity<Page<LdapErrorUserDTO>> pagingQueryErrorUsers(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<LdapErrorUserDTO>> pagingQueryErrorUsers(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                         @PathVariable Long id,
                                                                         LdapErrorUserDTO ldapErrorUserDTO) {

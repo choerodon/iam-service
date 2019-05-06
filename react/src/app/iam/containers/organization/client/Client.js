@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Form, Input, Modal, Select, Table, Tooltip, InputNumber, Icon, Popover } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
@@ -52,7 +52,7 @@ export default class Client extends Component {
   getInitState() {
     return {
       submitting: false,
-      page: 0,
+      page: 1,
       open: false,
       id: null,
       params: [],
@@ -139,12 +139,12 @@ export default class Client extends Component {
 
     ClientStore.loadClients(organizationId, pagination, sort, filters, params)
       .then((data) => {
-        ClientStore.setClients(data.content);
+        ClientStore.setClients(data.list || []);
         this.setState({
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
           sort,
           params,

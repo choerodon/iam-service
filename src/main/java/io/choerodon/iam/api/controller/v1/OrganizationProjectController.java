@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -19,7 +19,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author flyleft
@@ -54,22 +53,20 @@ public class OrganizationProjectController extends BaseController {
     /**
      * 分页查询项目
      *
-     * @param pageRequest 分页请求参数封装对象
      * @return 查询结果
      */
     @Permission(type = ResourceType.ORGANIZATION)
     @GetMapping
-    @CustomPageRequest
     @ApiOperation(value = "分页查询项目")
-    public ResponseEntity<Page<ProjectDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
-                                                 @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                 @RequestParam(required = false) String name,
-                                                 @RequestParam(required = false) String code,
-                                                 @RequestParam(required = false) String typeName,
-                                                 @RequestParam(required = false) Boolean enabled,
-                                                 @RequestParam(required = false) String category,
-                                                 @RequestParam(required = false) String[] params) {
+    public ResponseEntity<PageInfo<ProjectDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
+                                                     @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                     @RequestParam(required = false) String name,
+                                                     @RequestParam(required = false) String code,
+                                                     @RequestParam(required = false) String typeName,
+                                                     @RequestParam(required = false) Boolean enabled,
+                                                     @RequestParam(required = false) String category,
+                                                     @RequestParam(required = false) String[] params) {
         ProjectDTO project = new ProjectDTO();
         project.setOrganizationId(organizationId);
         project.setName(name);
@@ -87,11 +84,8 @@ public class OrganizationProjectController extends BaseController {
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "organization_id") Long organizationId,
                                              @PathVariable(name = "project_id") Long projectId,
                                              @RequestBody @Valid ProjectDTO projectDTO) {
-//        projectDTO.updateCheck();
         projectDTO.setOrganizationId(organizationId);
         projectDTO.setId(projectId);
-        //项目code不可编辑
-//        projectDTO.setCode(null);
         return new ResponseEntity<>(organizationProjectService.update(organizationId, projectDTO), HttpStatus.OK);
 
     }

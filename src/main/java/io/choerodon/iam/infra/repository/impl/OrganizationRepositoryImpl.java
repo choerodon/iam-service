@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import org.springframework.stereotype.Component;
 
@@ -62,8 +63,8 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> organizationMapper.fulltextSearch(organizationDTO, param));
+    public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> organizationMapper.fulltextSearch(organizationDTO, param));
     }
 
     @Override
@@ -97,18 +98,18 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params) {
-        Page<OrganizationDTO> result = new Page<>(page, size, true);
+    public PageInfo<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params) {
+        Page<OrganizationDTO> result = new Page<>(page, size);
         int start = page * size;
         int count = memberRoleMapper.selectCountBySourceId(id, "organization");
         result.setTotal(count);
         result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
-        return result;
+        return result.toPageInfo();
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param) {
-        return PageHelper.startPage(page,size).doSelectPage(()->organizationMapper.selectOrganizationsByUserId(userId, organizationDTO, param));
+    public PageInfo<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param) {
+        return PageHelper.startPage(page,size).doSelectPageInfo(()->organizationMapper.selectOrganizationsByUserId(userId, organizationDTO, param));
     }
 
     @Override
@@ -122,7 +123,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public Page<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size) {
-        return PageHelper.startPage(page,size).doSelectPage(() ->organizationMapper.selectAllOrgIdAndName());
+    public PageInfo<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size) {
+        return PageHelper.startPage(page,size).doSelectPageInfo(() ->organizationMapper.selectAllOrgIdAndName());
     }
 }

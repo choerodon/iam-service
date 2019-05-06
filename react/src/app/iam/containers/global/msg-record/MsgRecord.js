@@ -7,7 +7,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import MsgRecordStore from '../../../stores/global/msg-record';
 import './MsgRecord.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -91,12 +91,12 @@ export default class APITest extends Component {
     }
 
     MsgRecordStore.loadData(pagination, filters, sort, params, this.msgrecord.type, this.msgrecord.orgId).then((data) => {
-      MsgRecordStore.setData(data.content);
+      MsgRecordStore.setData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

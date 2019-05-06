@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('MsgRecordStore')
@@ -20,7 +20,7 @@ class MsgRecordStore {
     { columnKey = 'id', order = 'descend' },
     params, appType, orgId) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       status,
       receiveEmail: email,

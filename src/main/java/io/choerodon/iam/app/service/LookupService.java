@@ -1,7 +1,7 @@
 package io.choerodon.iam.app.service;
 
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LookupDTO;
 
 /**
@@ -11,7 +11,7 @@ public interface LookupService {
 
     LookupDTO create(LookupDTO lookupDTO);
 
-    Page<LookupDTO> pagingQuery(int page,int size, LookupDTO lookupDTO, String param);
+    PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param);
 
     void delete(Long id);
 

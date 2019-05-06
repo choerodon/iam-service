@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.LanguageService;
 import io.choerodon.iam.domain.repository.LanguageRepository;
@@ -24,7 +25,7 @@ public class LanguageServiceImpl implements LanguageService {
     }
 
     @Override
-    public Page<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
+    public PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
         return repository.pagingQuery(page,size,languageDTO,param);
 //        Page<LanguageDO> languageDOPage =
 //                repository.pagingQuery(pageRequest,

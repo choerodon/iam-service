@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { axios } from 'choerodon-boot-combine';
+import { axios } from '@choerodon/boot';
 import { Link, withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { inject, observer } from 'mobx-react';

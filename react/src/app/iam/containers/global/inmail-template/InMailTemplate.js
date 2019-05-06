@@ -11,7 +11,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import {
   axios, Content, Header, Page, Permission, Action,
-} from 'choerodon-boot-combine';
+} from '@choerodon/boot';
 import { handleFiltersParams } from '../../../common/util';
 import InMailTemplateStore from '../../../stores/global/inmail-template';
 import './InMailTemplate.scss';
@@ -121,14 +121,14 @@ export default class InMailTemplate extends Component {
       this.mail.type, this.mail.orgId)
       .then((data) => {
         InMailTemplateStore.setLoading(false);
-        InMailTemplateStore.setMailTemplate(data.content);
+        InMailTemplateStore.setMailTemplate(data.list || []);
         this.setState({
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
         InMailTemplateStore.setLoading(false);

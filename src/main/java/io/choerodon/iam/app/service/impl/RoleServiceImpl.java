@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service.impl;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -52,13 +52,13 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery) {
+    public PageInfo<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery) {
         boolean isWithUser = (roleQuery.getWithUser() != null && roleQuery.getWithUser() == true);
         final String level = roleQuery.getLevel();
         final Long sourceId = roleQuery.getSourceId();
-        Page<RoleDTO> roles = roleRepository.pagingQuery(page, size, roleQuery);
+        PageInfo<RoleDTO> roles = roleRepository.pagingQuery(page, size, roleQuery);
         if (isWithUser) {
-            roles.getResult().forEach(role -> {
+            roles.getList().forEach(role -> {
                 Long roleId = role.getId();
                 if (level == null || ResourceType.isSite(level)) {
                     role.setUsers(userRepository.listUsersByRoleIdOnSiteLevel(roleId));

@@ -6,7 +6,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Form, Modal, Select, Table } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Action, axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Action, axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import querystring from 'query-string';
 import ConfigurationStore from '../../../stores/global/configuration';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -108,9 +108,9 @@ export default class Configuration extends Component {
           sort,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
         ConfigurationStore.setConfigData(data.content.slice());
@@ -123,7 +123,7 @@ export default class Configuration extends Component {
 
   fetch(serviceName, { current, pageSize }, { columnKey = 'id', order = 'descend' }, { name, configVersion, isDefault }, params) {
     const queryObj = {
-      page: current - 1,
+      page: current,
       size: pageSize,
       name,
       configVersion,

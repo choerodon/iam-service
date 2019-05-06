@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.infra.dto.PermissionDTO;
@@ -43,8 +43,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Page<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> permissionMapper.fuzzyQuery(permissionDTO, param));
+    public PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> permissionMapper.fuzzyQuery(permissionDTO, param));
     }
 
     @Override
@@ -97,8 +97,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Page<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> permissionMapper.selectByRoleId(id, params));
+    public PageInfo<PermissionDTO> pagingQueryByRoleId(int page, int size, Long id, String params) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> permissionMapper.selectByRoleId(id, params));
     }
 
     @Override

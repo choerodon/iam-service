@@ -4,7 +4,7 @@ import { findDOMNode } from 'react-dom';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Modal, Progress, Select, Table, Tooltip, Upload, Spin, Radio } from 'choerodon-ui';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import classnames from 'classnames';
 import MemberRoleType, { pageSize } from './MemberRoleType';
@@ -1007,14 +1007,14 @@ export default class MemberRole extends Component {
       params,
       loading: true,
     });
-    this.roles.loadMemberDatas(memberRolePageInfo, memberRoleFilters, params).then(({ content, totalElements, number, size }) => {
+    this.roles.loadMemberDatas(memberRolePageInfo, memberRoleFilters, params).then(({ list, total, pageNum, pageSize }) => {
       this.setState({
         loading: false,
-        memberDatas: content,
+        memberDatas: list,
         memberRolePageInfo: {
-          current: number + 1,
-          total: totalElements,
-          pageSize: size,
+          current: pageNum,
+          total,
+          pageSize,
         },
         params,
         memberRoleFilters,
@@ -1029,14 +1029,14 @@ export default class MemberRole extends Component {
       clientParams,
       loading: true,
     });
-    this.roles.loadClientMemberDatas(clientMemberRolePageInfo, clientMemberRoleFilters, clientParams).then(({ content, totalElements, number, size }) => {
+    this.roles.loadClientMemberDatas(clientMemberRolePageInfo, clientMemberRoleFilters, clientParams).then(({ list, total, pageNum, pageSize }) => {
       this.setState({
         loading: false,
-        clientMemberDatas: content,
+        clientMemberDatas: list,
         clientMemberRolePageInfo: {
-          current: number + 1,
-          total: totalElements,
-          pageSize: size,
+          current: pageNum,
+          total,
+          pageSize,
         },
         clientParams,
         clientMemberRoleFilters,
@@ -1144,7 +1144,7 @@ export default class MemberRole extends Component {
       const more = isLoading ? (<Progress type="loading" width={12} />) : (length > 0 && userCount > length && (
         <a onClick={() => {
           this.roles.loadRoleMemberData(data, {
-            current: (length / pageSize) + 1,
+            current: (length / pageSize),
             pageSize,
           }, roleMemberFilters);
           this.forceUpdate();
@@ -1166,7 +1166,7 @@ export default class MemberRole extends Component {
       const more = isLoading ? (<Progress type="loading" width={12} />) : (length > 0 && userCount > length && (
         <a onClick={() => {
           this.roles.loadClientRoleMemberData(data, {
-            current: (length / pageSize) + 1,
+            current: (length / pageSize),
             pageSize,
           }, clientRoleMemberFilters);
           this.forceUpdate();

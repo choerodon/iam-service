@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.repository;
 
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LanguageDTO;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public interface LanguageRepository {
 
-    Page<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param);
+    PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param);
 
     LanguageDTO update(LanguageDTO languageDTO);
 

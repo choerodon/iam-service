@@ -2,6 +2,7 @@ package io.choerodon.iam.api.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
@@ -18,8 +19,6 @@ import java.util.List;
 @Service
 public class ProjectTypeServiceImpl implements ProjectTypeService {
 
-//    private final ModelMapper modelMapper = new ModelMapper();
-
     private ProjectTypeMapper projectTypeMapper;
 
     public ProjectTypeServiceImpl(ProjectTypeMapper projectTypeMapper) {
@@ -32,8 +31,8 @@ public class ProjectTypeServiceImpl implements ProjectTypeService {
     }
 
     @Override
-    public Page<ProjectTypeDTO> pagingQuery(int page, int size, String name, String code, String param) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> projectTypeMapper.fuzzyQuery(name, code, param));
+    public PageInfo<ProjectTypeDTO> pagingQuery(int page, int size, String name, String code, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> projectTypeMapper.fuzzyQuery(name, code, param));
     }
 
     @Override

@@ -7,7 +7,7 @@ import { inject, observer } from 'mobx-react';
 import { Button, Select, Table, Tooltip, Form, Modal, Radio, InputNumber } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import SendSettingStore from '../../../stores/global/send-setting';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import './SendSetting.scss';
@@ -108,9 +108,9 @@ export default class SendSetting extends Component {
       SendSettingStore.setData(data.content);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

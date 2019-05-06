@@ -3,7 +3,7 @@ import { Button, Form, Input, Modal, Table, Tooltip, Select, Icon, Radio, Checkb
 import moment from 'moment';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission, stores } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
 import './Project.scss';
@@ -42,7 +42,7 @@ export default class Project extends Component {
     super(props);
     this.state = {
       sidebar: false,
-      page: 0,
+      page: 1,
       id: '',
       open: false,
       projectDatas: {
@@ -140,13 +140,13 @@ export default class Project extends Component {
     ProjectStore.loadProject(organizationId, pagination, sort, filters)
       .then((data) => {
         ProjectStore.changeLoading(false);
-        ProjectStore.setProjectData(data.content);
+        ProjectStore.setProjectData(data.list || []);
         this.setState({
           sort,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
       })

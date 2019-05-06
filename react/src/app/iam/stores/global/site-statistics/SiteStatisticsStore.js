@@ -1,5 +1,5 @@
 import { action, computed, observable, toJS } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import moment from 'moment';
 import querystring from 'query-string';
 
@@ -169,7 +169,7 @@ class SiteStatisticsStore {
     });
   };
 
-  getMenuData = level => axios.get(`/iam/v1/menus/tree?level=${level}`).then((data) => {
+  getMenuData = level => axios.get(`/iam/v1/menus/menu_config?level=${level}`).then((data) => {
     this.dfsAddAllMenu(data, level);
   });
 

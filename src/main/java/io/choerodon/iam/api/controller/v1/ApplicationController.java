@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -8,7 +8,6 @@ import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,12 +54,11 @@ public class ApplicationController {
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页查询应用")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
-                                                            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                            ApplicationSearchDTO applicationSearchDTO) {
+    public ResponseEntity<PageInfo<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
+                                                                @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                ApplicationSearchDTO applicationSearchDTO) {
         applicationSearchDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(applicationService.pagingQuery(page,size,applicationSearchDTO), HttpStatus.OK);
     }
@@ -126,9 +124,8 @@ public class ApplicationController {
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组合应用下普通应用清单")
-    @CustomPageRequest
     @GetMapping("/{id}/app_list")
-    public ResponseEntity<Page<ApplicationDTO>> queryApplicationList(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+    public ResponseEntity<PageInfo<ApplicationDTO>> queryApplicationList(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                      @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                      @PathVariable("organization_id") Long organizationId,
                                                                      @PathVariable("id") Long id,

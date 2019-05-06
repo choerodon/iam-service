@@ -2,8 +2,8 @@ package io.choerodon.iam.infra.repository.impl;
 
 import java.util.Optional;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import org.springframework.stereotype.Component;
 
@@ -33,19 +33,16 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public ClientDTO create(ClientDTO clientDTO) {
-//        ClientDO clientDO = ConvertHelper.convert(clientE, ClientDO.class);
         int isInsert = clientMapper.insertSelective(clientDTO);
         if (isInsert != 1) {
             throw new CommonException("error.client.create");
         }
         return clientMapper.selectByPrimaryKey(clientDTO);
-//        return ConvertHelper.convert(clientDO, ClientE.class);
     }
 
     @Override
     public ClientDTO query(Long clientId) {
-        return  clientMapper.selectByPrimaryKey(clientId);
-//        return ConvertHelper.convert(clientDO, ClientE.class);
+        return clientMapper.selectByPrimaryKey(clientId);
     }
 
     @Override
@@ -65,31 +62,21 @@ public class ClientRepositoryImpl implements ClientRepository {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setName(clientName);
         return clientMapper.selectOne(clientDTO);
-//        if (clients.isEmpty()) {
-//            throw new CommonException("error.client.not.exist");
-//        }
-//        return ConvertHelper.convert(clients.get(0), ClientE.class);
     }
 
     @Override
     public ClientDTO update(Long clientId, ClientDTO clientDTO) {
-//        ClientDO clientDO = ConvertHelper.convert(clientE, ClientDO.class);
         clientDTO.setId(clientId);
         int isUpdate = clientMapper.updateByPrimaryKey(clientDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.client.update");
         }
         return clientMapper.selectByPrimaryKey(clientDTO);
-//        return ConvertHelper.convert(clientDO, ClientE.class);
     }
 
     @Override
-    public Page<ClientDTO> pagingQuery(int page, int size, ClientDTO clientDTO, String param) {
-//        clientDO.setOrganizationId(clientDO.getOrganizationId());
-        return PageHelper.startPage(page,size).doSelectPage( () -> clientMapper.fulltextSearch(clientDTO, param));
-//        Page<ClientDO> clientDOPage
-//                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, param));
-//        return ConvertPageHelper.convertPage(clientDOPage, ClientE.class);
+    public PageInfo<ClientDTO> pagingQuery(int page, int size, ClientDTO clientDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.fulltextSearch(clientDTO, param));
     }
 
     @Override
@@ -103,16 +90,13 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public Page<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType) {
+    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType) {
         String param = Optional.ofNullable(clientRoleSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
-        return PageHelper.startPage(page,size).doSelectPage(()->clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
-//        return PageHelper.doPageAndSort(pageRequest,
-//                () -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
     }
 
     @Override
-    public Page<SimplifiedClientDTO> pagingAllClientsByParams(int page,int size, String params) {
-        return PageHelper.startPage(page, size).doSelectPage(()->clientMapper.selectAllClientSimplifiedInfo(params));
-//        return PageHelper.doPageAndSort(pageRequest, () -> clientMapper.selectAllClientSimplifiedInfo(params));
+    public PageInfo<SimplifiedClientDTO> pagingAllClientsByParams(int page, int size, String params) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.selectAllClientSimplifiedInfo(params));
     }
 }

@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -9,7 +9,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.iam.app.service.LanguageService;
 import io.choerodon.iam.infra.dto.LanguageDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,18 +53,16 @@ public class LanguageController extends BaseController {
     /**
      * 分页查询 Language
      *
-     * @param pageRequest 分页封装对象
      * @param languageDTO 请求参数封装对象
      * @return 返回信息
      */
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "分页查询Language")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<LanguageDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                         LanguageDTO languageDTO,
-                                                         @RequestParam(required = false)String param) {
+    public ResponseEntity<PageInfo<LanguageDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                             LanguageDTO languageDTO,
+                                                             @RequestParam(required = false)String param) {
         return new ResponseEntity<>(languageService.pagingQuery(page,size, languageDTO,param), HttpStatus.OK);
     }
 

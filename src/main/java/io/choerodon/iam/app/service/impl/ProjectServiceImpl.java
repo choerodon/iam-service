@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -70,7 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, int page, int size, String param) {
+    public PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, int page, int size, String param) {
         return userRepository.pagingQueryUsersByProjectId(id, userId, email, page, size, param);
     }
 

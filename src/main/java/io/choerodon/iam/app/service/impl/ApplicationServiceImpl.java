@@ -2,8 +2,8 @@ package io.choerodon.iam.app.service.impl;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.*;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -48,8 +48,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
-
-//    private final ModelMapper modelMapper = new ModelMapper();
 
     public ApplicationServiceImpl(ApplicationMapper applicationMapper,
                                   AssertHelper assertHelper,
@@ -192,13 +190,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO) {
-        return PageHelper.startPage(page, size).doSelectPage(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
-//        Page<ApplicationDO> pages = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.fuzzyQuery(applicationSearchDTO));
-//        List<ApplicationDTO> dtoList =
-//                modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
-//                }.getType());
-//        return new Page<>(dtoList, new PageInfo(pages.getNumber(), pages.getSize()), pages.getTotalElements());
+    public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
     }
 
     @Override
@@ -368,22 +361,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         return applicationExplorationMapper.selectDescendants(generatePath(id));
-//        return
-//                modelMapper.map(result, new TypeToken<List<ApplicationExplorationWithAppDTO>>() {
-//                }.getType());
     }
 
     @Override
-    public Page<ApplicationDTO> queryApplicationList(int page, int size, Long id, String name, String code) {
-        return PageHelper.startPage(page, size).doSelectPage(() ->
+    public PageInfo<ApplicationDTO> queryApplicationList(int page, int size, Long id, String name, String code) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() ->
                 applicationExplorationMapper.selectDescendantApplications(generatePath(id), ApplicationCategory.APPLICATION.code(), name, code));
-//        Page<ApplicationDO> pages =
-//                PageHelper.doPageAndSort(pageRequest, () ->
-//                        applicationExplorationMapper.selectDescendantApplications(generatePath(id), ApplicationCategory.APPLICATION.code(), name, code));
-//        List<ApplicationDTO> dtoList =
-//                modelMapper.map(pages.getContent(), new TypeToken<List<ApplicationDTO>>() {
-//                }.getType());
-//        return new Page<>(dtoList, new PageInfo(pages.getNumber(), pages.getSize()), pages.getTotalElements());
     }
 
     @Override

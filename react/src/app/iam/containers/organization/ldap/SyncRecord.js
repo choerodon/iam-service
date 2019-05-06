@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Select, Table, Tooltip, Modal, Form, Input, Popover, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios, Content, Header, Page, Permission, Action } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission, Action } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import { handleFiltersParams } from '../../../common/util';
 import TaskDetailStore from '../../../stores/global/task-detail';
@@ -72,12 +72,12 @@ export default class SyncRecord extends Component {
     // 防止标签闪烁
     this.setState({ loading: true });
     LDAPStore.loadSyncRecord(pagination, sort, organizationId, this.ldapId).then((data) => {
-      LDAPStore.setSyncRecord(data.content);
+      LDAPStore.setSyncRecord(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,
@@ -125,12 +125,12 @@ export default class SyncRecord extends Component {
     }
 
     LDAPStore.loadDetail(detailPagination, filters, detailSort, params, recordId).then((data) => {
-      LDAPStore.setDetailRecord(data.content);
+      LDAPStore.setDetailRecord(data.list || []);
       this.setState({
         detailPagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         detailLoading: false,
         detailSort,

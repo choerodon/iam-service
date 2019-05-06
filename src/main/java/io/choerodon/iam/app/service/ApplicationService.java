@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
@@ -36,7 +37,7 @@ public interface ApplicationService {
      * @param applicationSearchDTO
      * @return
      */
-    Page<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO);
+    PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO);
 
     /**
      * 启用
@@ -91,7 +92,7 @@ public interface ApplicationService {
      * @param id
      * @return
      */
-    Page<ApplicationDTO> queryApplicationList(int page, int size, Long id, String name, String code);
+    PageInfo<ApplicationDTO> queryApplicationList(int page, int size, Long id, String name, String code);
 
     /**
      * 查询可以向指定组合应用添加的后代，判别标准是不构成环

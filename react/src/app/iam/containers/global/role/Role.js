@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Icon, Table } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Action, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Action, Content, Header, Page, Permission } from '@choerodon/boot';
 import RoleStore from '../../../stores/global/role/RoleStore';
 import './Role.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -71,15 +71,15 @@ export default class Role extends Component {
     RoleStore.loadRole(pagination, sort, filters, params)
       .then((data) => {
         RoleStore.setIsLoading(false);
-        RoleStore.setRoles(data.content);
+        RoleStore.setRoles(data.list || []);
         this.setState({
           sort,
           filters,
           params,
           pagination: {
-            current: data.number + 1,
-            pageSize: data.size,
-            total: data.totalElements,
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
           },
         });
       })

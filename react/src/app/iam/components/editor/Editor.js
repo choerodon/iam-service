@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactQuill, { Quill } from 'react-quill';
-import { axios, Content } from 'choerodon-boot-combine';
+import { axios, Content } from '@choerodon/boot';
 import 'react-quill/dist/quill.snow.css';
 import './Editor.scss';
 import { Modal, Input, Button, Form, Tabs, Upload, Icon } from 'choerodon-ui';

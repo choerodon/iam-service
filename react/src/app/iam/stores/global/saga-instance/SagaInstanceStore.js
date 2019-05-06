@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('SagaInstanceStore')
@@ -127,7 +127,7 @@ class SagaInstanceStore {
     type) {
     this.sagaInstanceType = sagaInstanceType;
     const queryObj = type !== 'task' ? {
-      page: current - 1,
+      page: current,
       size: pageSize,
       id,
       status,
@@ -136,7 +136,7 @@ class SagaInstanceStore {
       refId,
       params,
     } : {
-      page: current - 1,
+      page: current,
       size: pageSize,
       id,
       status,

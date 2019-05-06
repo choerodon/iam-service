@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.iam.api.service.DashboardService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author dongfan117@gmail.com
@@ -62,16 +61,14 @@ public class DashboardController extends BaseController {
     /**
      * 分页模糊查询Dashboard
      *
-     * @param pageRequest 分页对象
      * @param name        Dashboard名称
      * @param params      模糊查询参数
      * @return 查询到的Dashboard分页对象
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询Dashboard")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<DashboardDTO>> list(
+    public ResponseEntity<PageInfo<DashboardDTO>> list(
             @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
             @RequestParam(required = false) String name,

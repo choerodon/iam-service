@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import { Button, Col, Form, Input, Modal, Row, Select, Steps } from 'choerodon-ui';
 import querystring from 'query-string';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -133,7 +133,7 @@ class CreateConfig extends Component {
    */
   loadCurrentServiceConfig(serviceName) {
     const queryObj = {
-      page: 0,
+      page: 1,
       size: 20,
     };
     axios.get(`/manager/v1/services/${serviceName}/configs?${querystring.stringify(queryObj)}`).then((data) => {
@@ -143,7 +143,7 @@ class CreateConfig extends Component {
         this.setState({
           yamlData: null,
           templateDisable: ConfigurationStore.getStatus === 'baseon',
-          currentServiceConfig: data.content,
+          currentServiceConfig: data.list,
         });
       }
     });

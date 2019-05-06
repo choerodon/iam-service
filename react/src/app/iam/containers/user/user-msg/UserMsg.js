@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, List, Tabs, Collapse, Modal, Icon, Checkbox, Avatar, Tooltip } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { axios, Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 import './UserMsg.scss';

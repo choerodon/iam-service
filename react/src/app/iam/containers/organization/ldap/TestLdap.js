@@ -4,7 +4,7 @@ import { Form, Input, Icon, Spin, Button, Modal } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { axios, Content } from 'choerodon-boot-combine';
+import { axios, Content } from '@choerodon/boot';
 import './TestLdap.scss';
 import LDAPStore from '../../../stores/organization/ldap/LDAPStore';
 

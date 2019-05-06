@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Modal, Table, Tooltip, Select } from 'choerodon-ui';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { handleFiltersParams } from '../../../common/util';
@@ -100,15 +100,15 @@ export default class RootUser extends Component {
     RootUserStore.loadRootUserData(pagination, filters, sort, params).then((data) => {
       if (this.isEmptyFilters(filters) && !params.length) {
         this.setState({
-          onlyRootUser: data.totalElements <= 1,
+          onlyRootUser: data.total <= 1,
         });
       }
-      RootUserStore.setRootUserData(data.content);
+      RootUserStore.setRootUserData(data.list || []);
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,
@@ -219,7 +219,7 @@ export default class RootUser extends Component {
   // 加载全平台用户信息
   loadUsers = (queryObj) => {
     RootUserStore.loadUsers(queryObj).then((data) => {
-      RootUserStore.setUsersData(data.content.slice());
+      RootUserStore.setUsersData(data.list.slice());
       this.setState({
         selectLoading: false,
       });

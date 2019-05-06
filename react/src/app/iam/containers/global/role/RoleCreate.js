@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import _ from 'lodash';
 import { Button, Col, Form, Input, Modal, Row, Select, Table, Tooltip } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, axios } from 'choerodon-boot-combine';
+import { Content, Header, Page, axios } from '@choerodon/boot';
 import RoleStore from '../../../stores/global/role/RoleStore';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import { handleFiltersParams } from '../../../common/util';

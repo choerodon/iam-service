@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.infra.dto.AccessTokenDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
@@ -46,7 +47,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public Page<AccessTokenDTO> pagingTokensByUserIdAndClient(int page, int size, String clientName, String currentToken) {
+    public PageInfo<AccessTokenDTO> pagingTokensByUserIdAndClient(int page, int size, String clientName, String currentToken) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
         if (userDTO == null) {
@@ -55,17 +56,14 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         return pageConvert(page, size, userDTO.getLoginName(), clientName, currentToken);
     }
 
-    public Page<AccessTokenDTO> pageConvert(int page, int size, String loginName, String clientName, String currentToken) {
+    public PageInfo<AccessTokenDTO> pageConvert(int page, int size, String loginName, String clientName, String currentToken) {
         //原分页信息
-        Page<AccessTokenDTO> pageOri = PageHelper.startPage(page, size).doSelectPage(() -> accessTokenMapper.selectTokens(loginName, clientName));
-//                PageHelper.doPageAndSort(pageRequest, () -> accessTokenMapper.selectTokens(loginName, clientName));
+        PageInfo<AccessTokenDTO> pageInfo = PageHelper.startPage(page, size).doSelectPageInfo(() -> accessTokenMapper.selectTokens(loginName, clientName));
         //所有token信息
         List<AccessTokenDTO> userAccessTokens = accessTokenMapper.selectTokens(loginName, clientName);
-
-        Page<AccessTokenDTO> result = new Page<>(page,size,true);
-        BeanUtils.copyProperties(pageOri,result);
-        if (pageOri.getResult().isEmpty()) {
-            return result;
+        List<AccessTokenDTO> list = pageInfo.getList();
+        if (list.isEmpty()) {
+            return pageInfo;
         } else {
             //todo 此处还需优化修改
             //1.提取tokenDTO
@@ -91,9 +89,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             resultDTO.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
             resultDTO.addAll(oldTokens);
 
-            result.getResult().clear();
-            result.getResult().addAll(getFromIndexAndtoIndex(size, page, result));
-            return result;
+            list.clear();
+            list.addAll(getFromIndexAndtoIndex(size, page, resultDTO));
+            return pageInfo;
         }
     }
 

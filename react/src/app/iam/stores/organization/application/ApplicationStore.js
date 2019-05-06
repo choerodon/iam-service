@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store, stores } from 'choerodon-boot-combine';
+import { axios, store, stores } from '@choerodon/boot';
 import queryString from 'query-string';
 import { handleFiltersParams } from '../../../common/util';
 
@@ -165,7 +165,7 @@ class ApplicationStore {
   loadProject() {
     axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/projects?page=-1`).then(action((data) => {
       if (!data.failed) {
-        this.projectData = data.content;
+        this.projectData = data.list;
       }
     }));
   }
@@ -187,16 +187,16 @@ class ApplicationStore {
     this.listParams = params;
 
     return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${this.editData.id}/app_list?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.applicationListData = content;
+          this.applicationListData = list;
           this.listPagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.listLoading = false;
@@ -246,7 +246,7 @@ class ApplicationStore {
     }
 
     const queryObj = {
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
       sort: sorter.join(','),
@@ -256,12 +256,12 @@ class ApplicationStore {
     }));
 
     return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?${queryString.stringify(queryObj)}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.applicationData = content;
+          this.applicationData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

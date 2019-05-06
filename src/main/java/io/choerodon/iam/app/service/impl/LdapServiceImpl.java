@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.infra.dto.LdapDTO;
@@ -210,16 +210,16 @@ public class LdapServiceImpl implements LdapService {
     }
 
     @Override
-    public Page<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId) {
-        return ldapHistoryRepository.pagingQuery(page,size, ldapId);
+    public PageInfo<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId) {
+        return ldapHistoryRepository.pagingQuery(page, size, ldapId);
     }
 
     @Override
-    public Page<LdapErrorUserDTO> pagingQueryErrorUsers(int page,int size, Long ldapHistoryId, LdapErrorUserDTO ldapErrorUserDTO) {
-        Page<LdapErrorUserDTO> result =
-                PageHelper.startPage(page,size).doSelectPage(()->ldapErrorUserMapper.fuzzyQuery(ldapHistoryId, ldapErrorUserDTO));
+    public PageInfo<LdapErrorUserDTO> pagingQueryErrorUsers(int page, int size, Long ldapHistoryId, LdapErrorUserDTO ldapErrorUserDTO) {
+        PageInfo<LdapErrorUserDTO> result =
+                PageHelper.startPage(page, size).doSelectPageInfo(() -> ldapErrorUserMapper.fuzzyQuery(ldapHistoryId, ldapErrorUserDTO));
         //cause国际化处理
-        List<LdapErrorUserDTO> errorUsers = result.getResult();
+        List<LdapErrorUserDTO> errorUsers = result.getList();
         MessageSource messageSource = MessageSourceFactory.create(LDAP_ERROR_USER_MESSAGE_DIR);
         Locale locale = LocaleUtils.locale();
         errorUsers.forEach(errorUser -> {

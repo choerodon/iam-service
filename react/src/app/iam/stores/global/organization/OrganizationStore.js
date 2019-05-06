@@ -2,7 +2,7 @@
  * Created by jinqin.ma on 2017/6/27.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import queryString from 'query-string';
 import { handleFiltersParams } from '../../../common/util';
 
@@ -98,7 +98,7 @@ class OrganizationStore {
     }
 
     return axios.get(`/iam/v1/organizations?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       name: filters.name,
       code: filters.code,
@@ -106,12 +106,12 @@ class OrganizationStore {
       params: params.join(','),
       sort: sorter.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.orgData = content;
+          this.orgData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

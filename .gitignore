@@ -38,6 +38,7 @@ init-database.sh
 choerodon_temp/
 
 # frontend
+lib
 node_modules
 package-lock.json
 **/lib/dist/

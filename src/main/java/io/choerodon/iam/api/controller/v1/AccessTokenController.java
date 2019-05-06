@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.iam.app.service.AccessTokenService;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author Eugen
@@ -30,12 +29,11 @@ public class AccessTokenController {
 
     @Permission(permissionLogin = true, type = ResourceType.SITE)
     @ApiOperation(value = "分页查询当前用户token")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<AccessTokenDTO>> list(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                     @RequestParam(value = "clientName", required = false) String clientName,
-                                                     @RequestParam(value = "currentToken") String currentToken) {
+    public ResponseEntity<PageInfo<AccessTokenDTO>> list(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                         @RequestParam(value = "clientName", required = false) String clientName,
+                                                         @RequestParam(value = "currentToken") String currentToken) {
         return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(page, size, clientName, currentToken), HttpStatus.OK);
     }
 

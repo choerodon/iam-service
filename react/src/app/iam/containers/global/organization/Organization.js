@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Form, Input, Modal, Table, Tooltip, Row, Col, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission } from 'choerodon-boot-combine';
+import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import classnames from 'classnames';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -199,7 +199,7 @@ export default class Organization extends Component {
   loadUsers = (queryObj) => {
     const { OrganizationStore } = this.props;
     OrganizationStore.loadUsers(queryObj).then((data) => {
-      OrganizationStore.setUsersData(data.content.slice());
+      OrganizationStore.setUsersData((data.list || []).slice());
       this.setState({
         selectLoading: false,
       });

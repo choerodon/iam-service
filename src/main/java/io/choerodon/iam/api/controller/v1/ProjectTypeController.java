@@ -1,12 +1,11 @@
 package io.choerodon.iam.api.controller.v1;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,13 +37,12 @@ public class ProjectTypeController {
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询项目类型")
-    @CustomPageRequest
     @GetMapping(value = "/paging_query")
-    public ResponseEntity<Page<ProjectTypeDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                            @RequestParam(required = false) String name,
-                                                            @RequestParam(required = false) String code,
-                                                            @RequestParam(required = false) String param) {
+    public ResponseEntity<PageInfo<ProjectTypeDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                @RequestParam(required = false) String name,
+                                                                @RequestParam(required = false) String code,
+                                                                @RequestParam(required = false) String param) {
         return new ResponseEntity<>(projectTypeService.pagingQuery(page,size, name, code, param), HttpStatus.OK);
     }
 

@@ -2,7 +2,7 @@
  * Created by chenbinjie on 2018/8/6.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import querystring from 'query-string';
 
 @store('InMailTemplateStore')
@@ -82,9 +82,9 @@ class InMailTemplateStore {
       queryObj.sort = sorter.join(',');
     }
     if (appType === 'site') {
-      return axios.get(`/notify/v1/notices/letters/templates?page=${current - 1}&size=${pageSize}&${querystring.stringify(queryObj)}`);
+      return axios.get(`/notify/v1/notices/letters/templates?page=${current}&size=${pageSize}&${querystring.stringify(queryObj)}`);
     } else {
-      return axios.get(`/notify/v1/notices/letters/templates/organizations/${orgId}?page=${current - 1}&size=${pageSize}&${querystring.stringify(queryObj)}`);
+      return axios.get(`/notify/v1/notices/letters/templates/organizations/${orgId}?page=${current}&size=${pageSize}&${querystring.stringify(queryObj)}`);
     }
   };
 

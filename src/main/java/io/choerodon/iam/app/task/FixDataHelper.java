@@ -52,9 +52,7 @@ public class FixDataHelper {
         Map<String, Long> topMenuMap = getTopMenu();
 
         updateParentId(topMenuMap);
-
-        updateType("menu", MenuType.MENU_ITEM.value());
-        updateType("root", MenuType.MENU.value());
+        
         updateType("dir", MenuType.MENU.value());
 
         updateResourceLevel();
@@ -72,6 +70,7 @@ public class FixDataHelper {
     private void updateType(String oldType, String newType) {
         MenuDTO example = new MenuDTO();
         example.setType(oldType);
+        example.setDefault(false);
         menuMapper.select(example).forEach(m -> {
             m.setType(newType);
             menuMapper.updateByPrimaryKey(m);
@@ -145,7 +144,7 @@ public class FixDataHelper {
                     if (menu == null) {
                         logger.warn("can not find menu where id = {}, and delete the menu_permission, menu_code = {}, permission_code = {}",
                                 menuId, menuId, mp.getPermissionCode());
-                        menuPermissionMapper.deleteByPrimaryKey(mp);
+                        menuPermissionMapper.deleteByPrimaryKey(mp.getId());
                         return;
                     }
 
@@ -156,7 +155,7 @@ public class FixDataHelper {
                         mp.setMenuCode(menu.getCode());
                         menuPermissionMapper.updateByPrimaryKey(mp);
                     } else {
-                        menuPermissionMapper.deleteByPrimaryKey(mp);
+                        menuPermissionMapper.deleteByPrimaryKey(mp.getId());
                     }
                 }
         );

@@ -2,7 +2,7 @@
  * Created by jaywoods on 2017/6/25.
  */
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 
 @store('ServiceStore')
 class ServiceStore {
@@ -53,27 +53,27 @@ class ServiceStore {
     if (!state) {
       return axios.get(`/uaa/v1/services?page=${page}&size=${size}`).then((data) => {
         if (data) {
-          this.setService(data.content);
+          this.setService(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
         }
         this.changeLoading(false);
       });
     } else if (state.code === '') {
       return axios.get(`/uaa/v1/services?param=${state.input}&page=${page}&size=${size}`).then((data) => {
         if (data) {
-          this.setService(data.content);
+          this.setService(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
         }
         this.changeLoading(false);
       });
     } else {
       return axios.get(`/uaa/v1/services?${state.code}=${state.input}&page=${page}&size=${size}`).then((data) => {
         if (data) {
-          this.setService(data.content);
+          this.setService(data.list);
           this.setTotalPage(data.totalPages);
-          this.setTotalSize(data.totalElements);
+          this.setTotalSize(data.total);
         }
         this.changeLoading(false);
       });
@@ -82,12 +82,12 @@ class ServiceStore {
   
   queryServices = (state) => {
     if (state.code === '') {
-      axios.get(`/uaa/v1/services?param=${state.input}&page=0&size=10`).then((data) => {
-        this.setService(data.content);
+      axios.get(`/uaa/v1/services?param=${state.input}&page=1&size=10`).then((data) => {
+        this.setService(data.list);
       });
     } else {
-      axios.get(`/uaa/v1/services?${state.code}=${state.input}&page=0&size=10`).then((data) => {
-        this.setService(data.content);
+      axios.get(`/uaa/v1/services?${state.code}=${state.input}&page=1&size=10`).then((data) => {
+        this.setService(data.list);
       });
     }
   }
@@ -103,9 +103,9 @@ class ServiceStore {
     this.changeLoading(true);
     return axios.get(`/uaa/v1/services?page=${page}&size=${size}${url}`).then((data) => {
       if (data) {
-        this.setService(data.content);
+        this.setService(data.list);
         this.setTotalPage(data.totalPages);
-        this.setTotalSize(data.totalElements);
+        this.setTotalSize(data.total);
         this.changeLoading(false);
       }
     });

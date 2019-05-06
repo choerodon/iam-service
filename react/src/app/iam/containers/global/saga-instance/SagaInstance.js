@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Table, Tooltip, Modal, Icon } from 'choerodon-ui';
-import { Content, Header, Page } from 'choerodon-boot-combine';
+import { Content, Header, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import SagaImg from '../saga/SagaImg';
 import SagaInstanceStore from '../../../stores/global/saga-instance/SagaInstanceStore';
@@ -111,16 +111,16 @@ export default class SagaInstance extends Component {
     }
     SagaInstanceStore.loadData(pagination, filters, sort, params, this.sagaInstanceType, type).then((data) => {
       if (type === 'task') {
-        SagaInstanceStore.setTaskData(data.content);
+        SagaInstanceStore.setTaskData(data.list || []);
       } else {
-        SagaInstanceStore.setData(data.content);
+        SagaInstanceStore.setData(data.list || []);
       }
       SagaInstanceStore.loadStatistics();
       this.setState({
         pagination: {
-          current: data.number + 1,
-          pageSize: data.size,
-          total: data.totalElements,
+          current: data.pageNum,
+          pageSize: data.pageSize,
+          total: data.total,
         },
         loading: false,
         sort,

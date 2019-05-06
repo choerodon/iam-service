@@ -1,5 +1,5 @@
 import { action, computed, observable } from 'mobx';
-import { axios, store } from 'choerodon-boot-combine';
+import { axios, store } from '@choerodon/boot';
 import queryString from 'query-string';
 
 @store('PermissionInfoStore')
@@ -36,16 +36,16 @@ class PermissionInfoStore {
     this.loading = true;
     this.params = params;
     return axios.get(`/iam/v1/users/${id}/roles?${queryString.stringify({
-      page: pagination.current - 1,
+      page: pagination.current,
       size: pagination.pageSize,
       params: params.join(','),
     })}`)
-      .then(action(({ failed, content, totalElements }) => {
+      .then(action(({ failed, list, total }) => {
         if (!failed) {
-          this.permissionData = content;
+          this.permissionData = list;
           this.pagination = {
             ...pagination,
-            total: totalElements,
+            total,
           };
         }
         this.loading = false;

@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import javax.validation.Valid;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.iam.infra.dto.AuditDTO;
@@ -39,11 +39,11 @@ public class AuditController {
     @ApiOperation(value = "分页查询审计记录")
     @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<AuditDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                      @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                      @RequestParam(name = "userId", required = false) Long userId,
-                                                      @RequestParam(value = "dataType", required = false) String dataType,
-                                                      @RequestParam(value = "businessType", required = false) String businessType) {
+    public ResponseEntity<PageInfo<AuditDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                          @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                          @RequestParam(name = "userId", required = false) Long userId,
+                                                          @RequestParam(value = "dataType", required = false) String dataType,
+                                                          @RequestParam(value = "businessType", required = false) String businessType) {
         return new ResponseEntity<>(auditService.pagingQuery(userId, businessType, dataType, page,size), HttpStatus.OK);
     }
 }

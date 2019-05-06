@@ -1,4 +1,4 @@
-import { axios } from 'choerodon-boot-combine';
+import { axios } from '@choerodon/boot';
 import querystring from 'query-string';
 
 export const pageSize = 10;
@@ -88,12 +88,12 @@ export default class MemberRoleType {
       loginName: loginName && loginName[0],
       realName: realName && realName[0],
     };
-    const queryObj = { role_id: roleId, size: pageSize, page: current - 1 };
+    const queryObj = { role_id: roleId, size: pageSize, page: current };
     roleData.loading = true;
     return axios.post(`${this.urlUsers}?${querystring.stringify(queryObj)}`,
       JSON.stringify(body))
-      .then(({ content }) => {
-        roleData.users = users.concat(content.map((member) => {
+      .then(({ list }) => {
+        roleData.users = users.concat((list || []).map((member) => {
           member.roleId = roleId;
           member.roleName = name;
           return member;
@@ -117,12 +117,12 @@ export default class MemberRoleType {
     const body = {
       clientName: clientName && clientName[0],
     };
-    const queryObj = { role_id: roleId, size: pageSize, page: current - 1 };
+    const queryObj = { role_id: roleId, size: pageSize, page: current };
     roleData.loading = true;
     return axios.post(`${this.urlClients}?${querystring.stringify(queryObj)}`,
       JSON.stringify(body))
-      .then(({ content }) => {
-        roleData.users = users.concat(content.map((member) => {
+      .then(({ list }) => {
+        roleData.users = users.concat((list || []).map((member) => {
           member.roleId = roleId;
           member.roleName = name;
           member.clientName = member.name;
@@ -142,7 +142,7 @@ export default class MemberRoleType {
       realName: realName && realName[0],
       param: params,
     };
-    const queryObj = { size, page: current - 1, sort: 'id' };
+    const queryObj = { size, page: current, sort: 'id' };
     return axios.post(`${this.urlRoles}?${querystring.stringify(queryObj)}`, JSON.stringify(body));
   }
 
@@ -163,7 +163,7 @@ export default class MemberRoleType {
       roleName: roles && roles[0],
       param: params,
     };
-    const queryObj = { size, page: current - 1, sort: 'id' };
+    const queryObj = { size, page: current, sort: 'id' };
     return axios.post(`${this.urlClientRoles}?${querystring.stringify(queryObj)}`, JSON.stringify(body));
   }
 
@@ -185,9 +185,9 @@ export default class MemberRoleType {
     return axios.all([
       this.loadMemberDatas(memberRolePageInfo, memberRoleFilters, params),
       this.loadRoleMemberDatas({ name: roleMemberParams, ...roleMemberFilters }),
-    ]).then(([{ content, totalElements, number }, roleData]) => {
+    ]).then(([{ list, total, pageNum }, roleData]) => {
       this.context.setState({
-        memberDatas: content, // 用户-成员列表数据源
+        memberDatas: list, // 用户-成员列表数据源
         expandedKeys,
         // 用户-角色表数据源
         roleMemberDatas: roleData.filter((role) => {
@@ -206,8 +206,8 @@ export default class MemberRoleType {
         roleData,
         loading: false,
         memberRolePageInfo: {
-          total: totalElements,
-          current: number + 1,
+          total,
+          current: pageNum,
           pageSize,
         },
       });
@@ -223,9 +223,9 @@ export default class MemberRoleType {
     return axios.all([
       this.loadClientMemberDatas(clientMemberRolePageInfo, clientMemberRoleFilters, clientParams),
       this.loadClientRoleMemberDatas({ name: clientRoleMemberParams, ...clientRoleMemberFilters }),
-    ]).then(([{ content, totalElements, number }, roleData]) => {
+    ]).then(([{ list, total, pageNum }, roleData]) => {
       this.context.setState({
-        clientMemberDatas: content,
+        clientMemberDatas: list,
         expandedKeys,
         cilentRoleMemberDatas: roleData.filter((role) => {
           role.users = role.users || [];
@@ -243,8 +243,8 @@ export default class MemberRoleType {
         roleData,
         loading: false,
         clientMemberRolePageInfo: {
-          total: totalElements,
-          current: number + 1,
+          total,
+          current: pageNum,
           pageSize,
         },
       });
