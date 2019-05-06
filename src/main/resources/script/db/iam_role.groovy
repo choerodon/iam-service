@@ -71,4 +71,20 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
         dropColumn(tableName: 'IAM_ROLE', ColumnName: 'IS_ASSIGNABLE')
     }
 
+    changeSet(author: 'superlee', id: '2019-05-06-role-tl-add-column') {
+        addColumn(tableName: 'IAM_ROLE_TL') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
+
 }
