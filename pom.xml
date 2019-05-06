@@ -75,12 +75,6 @@
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-oauth-core</artifactId>
             <version>${choerodon.starters.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.choerodon</groupId>
-                    <artifactId>choerodon-starter-mybatis-mapper</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
