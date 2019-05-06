@@ -49,18 +49,19 @@ public class ActuatorSagaHandler {
     }
 
     @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据", maxRetryCount = 3)
-    public void refreshInitData(String actuatorJson) throws IOException, SQLException {
+    public String refreshInitData(String actuatorJson) throws IOException, SQLException {
         JsonNode root = OBJECT_MAPPER.readTree(actuatorJson);
         JsonNode data = root.get("init-data");
         if (data == null || data.size() == 0){
             LOGGER.info("actuator init-data is empty skip iam-init-data-task-refresh.");
-            return;
+            return actuatorJson;
         }
         try(Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             MicroServiceInitData.processInitData(data, connection);
             connection.commit();
         }
+        return actuatorJson;
     }
 
     private void processDescription(String service, String key, PermissionDescription description, Map<String, RoleDTO> initRoleMap){

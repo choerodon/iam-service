@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.10.0.RELEASE</version>
+        <version>0.11.0.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -247,60 +247,6 @@
     </dependencies>
     <build>
         <finalName>app</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>addTestSources</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                    <argLine>@{argLine}</argLine>
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/*Spec.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>io.choerodon</groupId>
-                <artifactId>choerodon-maven-plugin</artifactId>
-                <version>${choerodon.starters.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>copy</goal>
-                            <goal>extract</goal>
-                            <goal>convert</goal>
-                            <goal>permission</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <serviceBuild>true</serviceBuild>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
 </project>
