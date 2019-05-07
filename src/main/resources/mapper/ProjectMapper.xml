@@ -325,4 +325,27 @@
                 fd_project_relationship
         )
     </select>
+
+
+    <select id="selectGroupInfoByEnableProject" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT
+        FP.ID,
+        FP.NAME,
+        FP.ORGANIZATION_ID,
+        FP.CODE,
+        FP.IS_ENABLED,
+        FP.OBJECT_VERSION_NUMBER,
+        FP.IMAGE_URL,
+        FP.CATEGORY,
+        FP.TYPE,
+        FPT.NAME AS TYPE_NAME
+        FROM FD_PROJECT_RELATIONSHIP FPR
+        INNER JOIN FD_PROJECT FP ON FPR.PROGRAM_ID = FP.ID
+        LEFT JOIN FD_PROJECT_TYPE FPT ON FP.TYPE = FPT.CODE
+        WHERE FP.ORGANIZATION_ID = #{orgId} AND FPR.PROJECT_ID = #{projectId}
+        AND FPR.IS_ENABLED = 1
+        AND  <![CDATA[ CURRENT_DATE >= FPR.START_DATE ]]>
+        AND (1 = (CASE WHEN FPR.END_DATE IS NULL THEN 1 ELSE  (<![CDATA[  SELECT CURRENT_DATE < FPR.END_DATE ]]>) END))
+    </select>
+
 </mapper>

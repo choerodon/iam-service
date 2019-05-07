@@ -108,5 +108,7 @@ public final class SagaTopic {
 
         // iam新增项目关系
         public static final String PROJECT_RELATIONSHIP_ADD = "iam-add-project-relationships";
+        // iam删除项目关系
+        public static final String PROJECT_RELATIONSHIP_DELETE = "iam-delete-project-relationships";
     }
 }

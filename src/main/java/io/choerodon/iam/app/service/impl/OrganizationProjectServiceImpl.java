@@ -1,14 +1,9 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.infra.dto.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,11 +23,23 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_ENABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -368,8 +375,22 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //组织下全部敏捷项目
             List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
             //去除已与该项目群建立关系的敏捷项目
-            Set<Long> associatedProjectIds = projectRelationshipRepository.seleteProjectsByParentId(projectId).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
+            Set<Long> associatedProjectIds = projectRelationshipRepository.selectProjectsByParentId(projectId, false).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
             return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId) {
+        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organization == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        ProjectDTO project = projectRepository.selectByPrimaryKey(projectId);
+        if (project == null) {
+            throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
+        } else {
+            return projectRepository.selectGroupInfoByEnableProject(organizationId, projectId);
         }
     }
 }

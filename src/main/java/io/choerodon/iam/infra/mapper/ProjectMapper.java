@@ -7,7 +7,6 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-
 /**
  * @author wuguokai
  */
@@ -67,16 +66,25 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
     /**
      * 获取组织下不是项目群的项目
      *
-     * @param orgId
-     * @return list
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的项目列表
      */
     List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId);
 
     /**
      * 获取组织下不是项目群的且无所属的项目
      *
-     * @param orgId
-     * @return
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的且无所属的项目列表
      */
     List<ProjectDTO> selectProjsNotInAnyGroup(@Param("orgId") Long orgId);
+
+    /**
+     * 根据组织Id和项目Id查询当前项目生效的普通项目群信息.
+     *
+     * @param orgId     组织Id
+     * @param projectId 项目Id
+     * @return 普通项目群信息
+     */
+    ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
 }
