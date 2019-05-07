@@ -5,7 +5,7 @@
     <resultMap id="Menu" type="io.choerodon.iam.infra.dto.MenuDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_default" property="isDefault" jdbcType="BOOLEAN"/>
-        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO" autoMapping="true">
+        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO">
             <id column="permission_id" property="id"></id>
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
         </collection>
