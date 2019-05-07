@@ -8,6 +8,7 @@
         <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO">
             <id column="permission_id" property="id"></id>
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
+            <result column="permission_description" property="description" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
 
@@ -101,8 +102,10 @@
         imb.icon,
         imb.category,
         imb.page_permission_code,
+        ip2.path as route,
         ip.id permission_id,
-        ip.code permission_code
+        ip.code permission_code,
+        ip.description as permission_description
         from iam_menu_b imb
         left join iam_menu_tl imt
         on imb.id = imt.id
@@ -111,6 +114,8 @@
         left join iam_permission ip
         on imp.permission_code = ip.code
         on imb.code = imp.menu_code
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
         where imb.type != 'top'
         and imb.resource_level = #{level}
     </select>
