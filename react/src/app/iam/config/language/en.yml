@@ -1,0 +1,99 @@
+"iam": "platform settings"
+# site
+"iam.organization": "Organization"
+"iam.menu-management": "Menu Setting"
+"iam.system-setting": "System Config"
+"iam.role-label": "Role Label"
+"iam.role": "Role"
+"iam.member-role-global": "Role Assignment"
+"iam.root-user": "Root User Setting"
+"iam.dashboard-management": "Dashboard Setting"
+"iam.site-statistics": "Site Statistics"
+"iam.project-type": "Project Type"
+
+"microservice": "Site Service"
+"microservice.micro": "Microservice Management"
+"microservice.route-management": "Route Management"
+"microservice.config-management": "Config Management"
+"microservice.instance-management": "Instance Management"
+"microservice.api-management": "Api Management"
+
+"api": "API Manage"
+"api.api-test": "API Test"
+"api.api-overview": "API Overview"
+
+"statistics": "Site Statistics"
+"statistics.saga": "Saga"
+"statistics.saga-instance": "Saga Instance"
+"statistics.menu-report": "Menu Report"
+"statistics.api-report": "Api Overview"
+
+"global-transaction": "Global Transaction"
+"global-transaction.saga": "Saga"
+"global-transaction.saga-instance": "Saga Instance"
+
+"msg-center": "Message Center"
+"msg-center.send-setting": "Send Setting"
+"msg-center.mail-template": "Mail Template"
+"msg-center.inmail-template": "Website Mail Template"
+"msg-center.mail-setting": "Mail Config"
+"msg-center.msg-record": "Message Record"
+"msg-center.announcement": "Announcement"
+
+"task-dispatch": "Task Dispatch"
+"task-dispatch.task-detail": "Task Detail"
+"task-dispatch.execution-record": "Execution Record"
+"task-dispatch.task-classname": "Executable Program"
+
+"rentsetting": "Organization settings"
+# organization
+"rentsetting.project": "Project"
+"rentsetting.user": "User"
+"rentsetting.member-role-organization": "Role Assignment"
+"rentsetting.client": "Client"
+"rentsetting.ldap": "LDAP"
+"rentsetting.password-policy": "Password Policy"
+"rentsetting.mail-template-organization": "Mail Template"
+"rentsetting.announcement-organization": "Announcement"
+"rentsetting.saga-instance-organization": "Saga Instance"
+"rentsetting.organization-setting": "Organization Info"
+
+"msg-center-organization": "Message Center"
+"msg-center-organization.send-setting-organization": "Send Setting"
+"msg-center-organization.mail-template-organization": "Mail Template"
+"msg-center-organization.msg-record-organization": "Message Record"
+
+"task-dispatch-organization": "Task Dispatch"
+"task-dispatch-organization.task-detail-organization": "Task Detail"
+"task-dispatch-organization.execution-record-organization": "Execution Record"
+"task-dispatch-organization.task-classname-organization": "Executable Program"
+
+"app-manager-organization": "Application Manager"
+"app-manager-organization.app": "Application"
+
+"prosetting": "Project Manage"
+# project
+"prosetting.proManage": "Project Manage"
+"prosetting.member-role-project": "Role Assignment"
+"prosetting.saga-instance-project": "Saga Instance"
+
+"task-dispatch-project": "Task Dispatch"
+"task-dispatch-project.task-detail-project": "Task Detail"
+"task-dispatch-project.execution-record-project": "Execution Record"
+"task-dispatch-project.task-classname-project": "Executable Program"
+
+"usercenter": "Profile"
+# user
+"usercenter.user-info": "User Information Maintenance"
+"usercenter.password": "Password Modification"
+"usercenter.organization-info": "Organization Information"
+"usercenter.project-info": "Project Information"
+"usercenter.user-msg": "Message Notification"
+"usercenter.receive-setting": "Receive Setting"
+"usercenter.token-manager": "Token Manager"
+"usercenter.permission-info": "Permission Info"
+
+"program-setting": "Project Manage"
+# program
+"program-setting.member-role-program": "Role Assignment"
+"program-setting.program-manage": "Project Manage"

@@ -31,9 +31,18 @@ rebel.xml
 rebel-remote.xml
 
 /temp
-src/main/resources/application-default.yml
+application-default.yml
 
 init-database.sh
 
 choerodon_temp/
+
+# frontend
+lib
 node_modules
+package-lock.json
+**/lib/dist/
+**/lib/assets/
+**/lib/fonts/
+
+/liquibase

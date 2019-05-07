@@ -3,25 +3,20 @@ package io.choerodon.iam.infra.repository.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.api.dto.RoleNameAndEnabledDTO;
-import io.choerodon.iam.api.dto.SimplifiedUserDTO;
-import io.choerodon.iam.api.dto.UserRoleDTO;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.mapper.UserMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author superlee
@@ -34,20 +29,20 @@ public class UserRepositoryImpl implements UserRepository {
     private UserMapper mapper;
     private ProjectMapper projectMapper;
 
-    public UserRepositoryImpl(UserMapper mapper,ProjectMapper projectMapper) {
+    public UserRepositoryImpl(UserMapper mapper, ProjectMapper projectMapper) {
         this.mapper = mapper;
         this.projectMapper = projectMapper;
     }
 
     @Override
-    public UserE selectByLoginName(String loginName) {
-        UserDO userDO = new UserDO();
-        userDO.setLoginName(loginName);
-        return ConvertHelper.convert(mapper.selectOne(userDO), UserE.class);
+    public UserDTO selectByLoginName(String loginName) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setLoginName(loginName);
+        return mapper.selectOne(userDTO);
     }
 
     @Override
-    public UserDO insertSelective(UserDO user) {
+    public UserDTO insertSelective(UserDTO user) {
         if (mapper.insertSelective(user) != 1) {
             throw new CommonException("error.user.create");
         }
@@ -55,140 +50,137 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param) {
-        return PageHelper.doPageAndSort(pageRequest, () -> mapper.fulltextSearch(userDO, param));
+    public PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO userSearchDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(userSearchDTO, param));
     }
 
     @Override
-    public UserE selectByPrimaryKey(Long id) {
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(id), UserE.class);
+    public UserDTO selectByPrimaryKey(Long id) {
+        return mapper.selectByPrimaryKey(id);
     }
 
     @Override
     public void updatePhoto(Long userId, String photoUrl) {
-        UserDO userDO = mapper.selectByPrimaryKey(userId);
-        userDO.setImageUrl(photoUrl);
-        if (mapper.updateByPrimaryKeySelective(userDO) != 1) {
+        UserDTO userDTO = mapper.selectByPrimaryKey(userId);
+        userDTO.setImageUrl(photoUrl);
+        if (mapper.updateByPrimaryKeySelective(userDTO) != 1) {
             throw new CommonException(ERROR_USER_UPDATE);
         }
     }
 
     @Override
-    public UserE updateSelective(UserE userE) {
-        UserDO userDO = ConvertHelper.convert(userE, UserDO.class);
-        if (userDO.getObjectVersionNumber() == null) {
+    public UserDTO updateSelective(UserDTO userDTO) {
+        if (userDTO.getObjectVersionNumber() == null) {
             throw new CommonException("error.user.objectVersionNumber.empty");
         }
-        if (mapper.updateByPrimaryKeySelective(userDO) != 1) {
+        if (mapper.updateByPrimaryKeySelective(userDTO) != 1) {
             throw new CommonException(ERROR_USER_UPDATE);
         }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(userDO.getId()), UserE.class);
+        return mapper.selectByPrimaryKey(userDTO.getId());
     }
 
     @Override
     public void deleteById(Long id) {
-        UserDO userDO = new UserDO();
-        userDO.setId(id);
-        if (mapper.deleteByPrimaryKey(userDO) != 1) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(id);
+        if (mapper.deleteByPrimaryKey(userDTO) != 1) {
             throw new CommonException(ERROR_USER_UPDATE);
         }
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersWithSiteLevelRoles(PageRequest pageRequest,
-                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
-        int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
+    public PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page, int size,
+                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
 
+
+        int start = page * size;
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-        List<UserDO> userDOList =
+        List<UserDTO> userDOList =
                 mapper.selectUserWithRolesByOption(
-                        roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(), start, size,
+                        roleAssignmentSearchDTO, 0L, ResourceType.SITE.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+        Page<UserDTO> result = new Page<>(page, size);
+        result.addAll(userDOList);
+        result.setTotal(count);
         //没有order by
         //筛选非空角色以及角色内部按id排序
-        return new Page<>(userDOList, pageInfo, count);
+        return result.toPageInfo();
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersWithOrganizationLevelRoles(PageRequest pageRequest,
-                                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                   Long sourceId) {
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
+    public PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page, int size,
+                                                                        RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                        Long sourceId) {
         int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
+        Page<UserDTO> result = new Page<>(page, size);
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-        List<UserDO> userDOList =
+        result.setTotal(count);
+        List<UserDTO> userDOList =
                 mapper.selectUserWithRolesByOption(
                         roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(), start, size,
                         ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+        result.addAll(userDOList);
         //没有order by
         //筛选非空角色以及角色内部按id排序
-        return new Page<>(userDOList, pageInfo, count);
+        return result.toPageInfo();
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersWithProjectLevelRoles(PageRequest pageRequest,
-                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long sourceId, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page, int size,
+                                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                   Long sourceId, boolean doPage) {
         if (doPage) {
-            int page = pageRequest.getPage();
-            int size = pageRequest.getSize();
             int start = page * size;
+            Page<UserDTO> result = new Page<>(page, size);
             int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
                     ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            List<UserDO> userDOList =
+            result.setTotal(count);
+            List<UserDTO> userDOList =
                     mapper.selectUserWithRolesByOption(
                             roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), start, size,
                             ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            PageInfo pageInfo = new PageInfo(page, size);
+            result.addAll(userDOList);
+            return result.toPageInfo();
             //没有order by
             //筛选非空角色以及角色内部按id排序
-            return new Page<>(userDOList, pageInfo, count);
         } else {
-            List<UserDO> users =
+            List<UserDTO> users =
                     mapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(), null, null,
                             ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
-            PageInfo pageInfo = new PageInfo(0, users.isEmpty() ? 1 : users.size());
-            return new Page<>(users, pageInfo, users.size());
+            Page<UserDTO> result = new Page<>();
+            result.addAll(users);
+            return result.toPageInfo();
         }
     }
 
     @Override
-    public UserE updateUserInfo(UserE userE) {
-        UserDO user = ConvertHelper.convert(userE, UserDO.class);
-        if (mapper.updateByPrimaryKeySelective(user) != 1) {
+    public UserDTO updateUserInfo(UserDTO userDTO) {
+        if (mapper.updateByPrimaryKeySelective(userDTO) != 1) {
             throw new CommonException(ERROR_USER_UPDATE);
         }
-        return ConvertHelper.convert(mapper.selectByPrimaryKey(user.getId()), UserE.class);
+        return mapper.selectByPrimaryKey(userDTO.getId());
     }
 
     @Override
-    public UserDO selectOne(UserDO user) {
+    public UserDTO selectOne(UserDTO user) {
         return mapper.selectOne(user);
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), projectId, userId, email, param));
+    public PageInfo<UserDTO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), projectId, userId, email, param));
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param));
+    public PageInfo<UserDTO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param));
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param) {
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersByLevelAndOptions(ResourceLevel.SITE.value(), 0L, userId, email, param));
+    public PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectUsersByLevelAndOptions(ResourceLevel.SITE.value(), 0L, userId, email, param));
     }
 
     @Override
@@ -199,56 +191,51 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<UserDO> listUsersByRoleIdOnSiteLevel(Long roleId) {
+    public List<UserDTO> listUsersByRoleIdOnSiteLevel(Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user", 0L,
                 ResourceLevel.SITE.value(), null, null);
     }
 
     @Override
-    public List<UserDO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId) {
+    public List<UserDTO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
                 orgId, ResourceLevel.ORGANIZATION.value(), null, null);
     }
 
     @Override
-    public List<UserDO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId) {
+    public List<UserDTO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, "user",
                 proId, ResourceLevel.PROJECT.value(), null, null);
     }
 
     @Override
-    public Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
         String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
         if (!doPage) {
-            List<UserDO> users =
+            List<UserDTO> users =
                     mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
                             level, roleAssignmentSearchDTO, param);
-            PageInfo pageInfo = new PageInfo(0, users.isEmpty() ? 1 : users.size());
-            return new Page<>(users, pageInfo, users.size());
+            Page<UserDTO> result = new Page<>();
+            result.addAll(users);
+            return result.toPageInfo();
         }
-        Map<String, String> map = new HashMap<>();
-        map.put("source_id", "imr.source_id");
-        pageRequest.resetOrder("iu", map);
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
-                        level, roleAssignmentSearchDTO, param));
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
+                level, roleAssignmentSearchDTO, param));
     }
 
     @Override
-    public List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType) {
+    public List<UserDTO> listUsersByRoleId(Long roleId, String memberType, String sourceType) {
         return mapper.selectUsersFromMemberRoleByOptions(roleId, memberType, null, sourceType, null, null);
     }
 
     @Override
-    public Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> {
-            userDO.setAdmin(true);
-            return mapper.selectAdminUserPage(userDO, params);
-        });
+    public PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params) {
+        userDTO.setAdmin(true);
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectAdminUserPage(userDTO, params));
     }
 
     @Override
-    public List<UserDO> insertList(List<UserDO> insertUsers) {
+    public List<UserDTO> insertList(List<UserDTO> insertUsers) {
         insertUsers.forEach(u -> {
             if (mapper.insertSelective(u) != 1) {
                 throw new CommonException("error.batch.insert.user");
@@ -284,27 +271,27 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<UserDO> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
+    public List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         return mapper.listUsersByIds(ids, onlyEnabled);
     }
 
     @Override
-    public List<UserDO> listUsersByEmails(String[] emails) {
+    public List<UserDTO> listUsersByEmails(String[] emails) {
         return mapper.listUsersByEmails(emails);
     }
 
     @Override
-    public int selectCount(UserDO user) {
+    public int selectCount(UserDTO user) {
         return mapper.selectCount(user);
     }
 
 
     @Override
-    public Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param, Long organizationId) {
+    public PageInfo<SimplifiedUserDTO> pagingAllUsersByParams(int page, int size, String param, Long organizationId) {
         if (organizationId.equals(0L)) {
-            return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectAllUsersSimplifiedInfo(param));
+            return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectAllUsersSimplifiedInfo(param));
         } else {
-            return PageHelper.doPageAndSort(pageRequest, () -> mapper.selectUsersOptional(param, organizationId));
+            return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectUsersOptional(param, organizationId));
         }
     }
 
@@ -325,9 +312,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId) {
-        Page<UserRoleDTO> page = PageHelper.doPageAndSort(pageRequest, () -> mapper.selectRoles(userId, param));
-        page.getContent().forEach(i -> {
+    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId) {
+        PageInfo<UserRoleDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectRoles(userId, param));
+        result.getList().forEach(i -> {
             String[] roles = i.getRoleNames().split("\n");
             List<RoleNameAndEnabledDTO> list = new ArrayList<>(roles.length);
             for (int j = 0; j < roles.length; j++) {
@@ -339,15 +326,15 @@ public class UserRepositoryImpl implements UserRepository {
                 list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], roleEnabled));
             }
             i.setRoles(list);
-            if(ResourceLevel.PROJECT.value().equals(i.getLevel())) {
+            if (ResourceLevel.PROJECT.value().equals(i.getLevel())) {
                 i.setOrganizationId(projectMapper.selectByPrimaryKey(i.getId()).getOrganizationId());
             }
         });
-        return page;
+        return result;
     }
 
     @Override
-    public List<UserDO> select(UserDO example) {
+    public List<UserDTO> select(UserDTO example) {
         return mapper.select(example);
     }
 }

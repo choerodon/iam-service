@@ -3,17 +3,17 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ProjectRelationshipMapper">
 
-    <select id="selectProjectsByParentId" resultType="io.choerodon.iam.api.dto.ProjectRelationshipDTO">
+    <select id="selectProjectsByParentId" resultType="io.choerodon.iam.infra.dto.ProjectRelationshipDTO">
         SELECT
-        fpr.*,
-        fpr.is_enabled as enabled,
-        fp.code as projcode,
-        fp.name as projname
+            fpr.*,
+            fpr.IS_ENABLED AS enabled,
+            fp. CODE AS projCode,
+            fp. NAME AS projName
         FROM
-        fd_project_relationship fpr
-        left join fd_project fp on fpr.project_id = fp.id
+            fd_project_relationship fpr
+        LEFT JOIN fd_project fp ON fpr.PROJECT_ID = fp.ID
         WHERE
-        fpr.parent_id = #{parentId}
+            fpr.PARENT_ID = #{parentId};
         <if test="onlySelectEnable">
             and fpr.is_enabled = 1
         </if>

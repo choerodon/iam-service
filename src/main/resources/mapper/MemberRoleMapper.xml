@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.MemberRoleMapper">
-    <resultMap id="clientWithRoles" type="io.choerodon.iam.infra.dataobject.ClientDO">
+    <resultMap id="clientWithRoles" type="io.choerodon.iam.infra.dto.ClientDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO" columnPrefix="role_">
+        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO" columnPrefix="role_" autoMapping="true">
             <id property="id" column="id"/>
             <result property="name" column="name"/>
             <result property="code" column="code"/>
@@ -14,7 +14,7 @@
     </resultMap>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="mysql">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         SELECT
         ic.NAME as name,
         ic.ID as id,
@@ -64,16 +64,16 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
-        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+--         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
-        AND irt.lang = #{lang}
+--         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         SELECT
         ic.NAME as name,
         ic.ID as id,
@@ -123,16 +123,16 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
-        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+--         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
-        AND irt.lang = #{lang}
+--         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
     </select>
 
     <select id="selectClientsWithRoles" resultMap="clientWithRoles" databaseId="oracle">
-        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         SELECT
         ic.NAME as name,
         ic.ID as id,
@@ -199,9 +199,9 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
-        LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
+--         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
-        AND irt.lang = #{lang}
+--         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC

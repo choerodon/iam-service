@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LanguageMapper">
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.LanguageDO">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dto.LanguageDTO">
         SELECT *
         FROM fd_language
         WHERE 1=1
-        <if test="languageDO != null">
-            <if test="languageDO.code != null">
-                AND code LIKE concat(concat('%',#{languageDO.code}),'%')
+        <if test="languageDTO != null">
+            <if test="languageDTO.code != null">
+                AND code LIKE concat(concat('%',#{languageDTO.code}),'%')
             </if>
-            <if test="languageDO.name != null">
-                AND name LIKE concat(concat('%',#{languageDO.name}),'%')
+            <if test="languageDTO.name != null">
+                AND name LIKE concat(concat('%',#{languageDTO.name}),'%')
             </if>
-            <if test="languageDO.description != null">
-                AND description LIKE concat(concat('%',#{languageDO.description}),'%')
+            <if test="languageDTO.description != null">
+                AND description LIKE concat(concat('%',#{languageDTO.description}),'%')
             </if>
         </if>
         <if test="param != null">

@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.iam.api.dto.BookMarkDTO;
+
+import io.choerodon.iam.infra.dto.BookMarkDTO;
 
 import java.util.List;
 

@@ -3,9 +3,9 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.UserAccessTokenDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.AccessTokenDTO;
 
 /**
  * @author Eugen
@@ -16,7 +16,7 @@ public interface AccessTokenService {
      *
      * @return Token列表
      */
-    Page<UserAccessTokenDTO> pagingTokensByUserIdAndClient(PageRequest pageRequest, String clientName, String currentToken);
+    PageInfo<AccessTokenDTO> pagingTokensByUserIdAndClient(int page, int size, String clientName, String currentToken);
 
     /**
      * 手动失效用户已存在的token

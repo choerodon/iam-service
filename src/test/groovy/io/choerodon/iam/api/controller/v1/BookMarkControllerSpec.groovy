@@ -2,8 +2,7 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.BookMarkDTO
-import io.choerodon.iam.infra.dataobject.BookMarkDO
+import io.choerodon.iam.infra.dto.BookMarkDTO
 import io.choerodon.iam.infra.mapper.BookMarkMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -11,7 +10,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
-import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -32,7 +30,7 @@ class BookMarkControllerSpec extends Specification {
     @Autowired
     private BookMarkMapper bookMarkMapper
     @Shared
-    def bookMarkList = new ArrayList<BookMarkDO>()
+    def bookMarkList = new ArrayList<BookMarkDTO>()
     @Shared
     def needInit = true
     @Shared
@@ -44,7 +42,7 @@ class BookMarkControllerSpec extends Specification {
             given: "构造参数"
             needInit = false
             for (int i = 0; i < count; i++) {
-                BookMarkDO bookMarkDO = new BookMarkDO()
+                BookMarkDTO bookMarkDO = new BookMarkDTO()
                 bookMarkDO.setUserId(i)
                 bookMarkDO.setName("name")
                 bookMarkDO.setUrl("url")
@@ -69,7 +67,7 @@ class BookMarkControllerSpec extends Specification {
 
             when: "删除数据"
             int result = 0
-            for (BookMarkDO bookMarkDO : bookMarkList) {
+            for (BookMarkDTO bookMarkDO : bookMarkList) {
                 result += bookMarkMapper.deleteByPrimaryKey(bookMarkDO)
             }
 

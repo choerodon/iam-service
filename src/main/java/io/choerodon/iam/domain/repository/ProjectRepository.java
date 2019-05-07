@@ -1,46 +1,42 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Set;
+
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
  * @author flyleft
  */
 public interface ProjectRepository {
 
-    ProjectE create(ProjectE projectE);
+    ProjectDTO create(ProjectDTO projectDTO);
 
-    ProjectDO selectByPrimaryKey(Long projectId);
+    ProjectDTO selectByPrimaryKey(Long projectId);
 
-    List<ProjectDO> query(ProjectDO projectDO);
+    List<ProjectDTO> query(ProjectDTO projectDTO);
 
-    Page<ProjectDO> pagingQuery(ProjectDO projectDO, PageRequest pageRequest, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
 
-    Page<ProjectDO> pagingQueryByUserId(Long userId, ProjectDO projectDO, PageRequest pageRequest, String param);
+    PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param);
 
-    ProjectE updateSelective(ProjectDO projectDO);
+    ProjectDTO updateSelective(ProjectDTO projectDTO);
 
-    List<ProjectDO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDO projectDO);
+    List<ProjectDTO> selectProjectsFromMemberRoleByOptions(Long userId, ProjectDTO projectDTO);
 
-    List<ProjectDO> selectAll();
+    List<ProjectDTO> selectAll();
 
-    ProjectDO selectOne(ProjectDO projectDO);
+    ProjectDTO selectOne(ProjectDTO projectDTO);
 
     /**
      * 查找用户在某个组织下所有的项目
      */
-    List<ProjectDO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled);
+    List<ProjectDTO> selectUserProjectsUnderOrg(Long userId, Long orgId, Boolean isEnabled);
 
-    List<ProjectDO> selectByOrgId(Long organizationId);
+    List<ProjectDTO> selectByOrgId(Long organizationId);
 
-    Page<ProjectDO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params);
+    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params);
 
     List<Long> listUserIds(Long id);
 
@@ -63,7 +59,7 @@ public interface ProjectRepository {
      * @param orgId 组织Id
      * @return 组织下不是项目群的项目列表
      */
-    List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId);
+    List<ProjectDTO> selectProjsNotGroup(Long orgId);
 
     /**
      * 获取组织下不是项目群的且无所属的项目
@@ -71,7 +67,7 @@ public interface ProjectRepository {
      * @param orgId 组织Id
      * @return 组织下不是项目群的且无所属的项目列表
      */
-    List<ProjectDTO> selectProjsNotInAnyGroup(@Param("orgId") Long orgId);
+    List<ProjectDTO> selectProjsNotInAnyGroup(Long orgId);
 
     /**
      * 根据项目Id查询当前项目生效的普通项目群信息.
@@ -80,5 +76,5 @@ public interface ProjectRepository {
      * @param projectId 项目Id
      * @return 普通项目群信息
      */
-    ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
+    ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId);
 }

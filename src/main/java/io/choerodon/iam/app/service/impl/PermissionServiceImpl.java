@@ -2,10 +2,9 @@ package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.netflix.appinfo.InstanceInfo;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -13,21 +12,19 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
-import io.choerodon.iam.api.dto.PermissionDTO;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.PermissionService;
-import io.choerodon.iam.domain.iam.entity.PermissionE;
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.MenuPermissionRepository;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
-import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
-import io.choerodon.iam.infra.dataobject.PermissionDO;
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RolePermissionDTO;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
@@ -52,6 +49,9 @@ public class PermissionServiceImpl implements PermissionService {
     private static final Logger logger = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private PermissionMapper permissionMapper;
 
     private RolePermissionRepository rolePermissionRepository;
 
@@ -81,12 +81,8 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param) {
-        ResourceLevelValidator.validate(permissionDTO.getLevel());
-        Page<PermissionDO> permissionDOPage =
-                permissionRepository.pagingQuery(
-                        pageRequest, ConvertHelper.convert(permissionDTO, PermissionDO.class), param);
-        return ConvertPageHelper.convertPage(permissionDOPage, PermissionDTO.class);
+    public PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
+        return permissionRepository.pagingQuery(page, size, permissionDTO, param);
     }
 
 
@@ -142,7 +138,9 @@ public class PermissionServiceImpl implements PermissionService {
             Long orgId = entry.getKey();
             if (orgId != null) {
                 Boolean orgEnabled = organizationMapper.organizationEnabled(orgId);
-                if (orgEnabled != null && !orgEnabled) continue;
+                if (orgEnabled != null && !orgEnabled) {
+                    continue;
+                }
             }
             Set<String> searchOrganizationCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchOrganizationCodes = permissionRepository.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes);
@@ -169,7 +167,9 @@ public class PermissionServiceImpl implements PermissionService {
             Long projectId = entry.getKey();
             if (projectId != null) {
                 Boolean projectEnabled = projectMapper.projectEnabled(projectId);
-                if (projectEnabled != null && !projectEnabled) continue;
+                if (projectEnabled != null && !projectEnabled) {
+                    continue;
+                }
             }
             Set<String> searchProjectCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
             searchProjectCodes = permissionRepository.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes);
@@ -183,8 +183,7 @@ public class PermissionServiceImpl implements PermissionService {
     public Set<PermissionDTO> queryByRoleIds(List<Long> roleIds) {
         Set<PermissionDTO> permissions = new HashSet<>();
         roleIds.forEach(roleId -> {
-            List<PermissionDTO> permissionList =
-                    ConvertHelper.convertList(permissionRepository.selectByRoleId(roleId), PermissionDTO.class);
+            List<PermissionDTO> permissionList = permissionRepository.selectByRoleId(roleId);
             permissions.addAll(permissionList);
         });
         return permissions;
@@ -192,28 +191,29 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionDTO> query(String level, String serviceName, String code) {
-        return ConvertHelper.convertList(permissionRepository.query(level, serviceName, code), PermissionDTO.class);
+        return permissionRepository.query(level, serviceName, code);
     }
 
     @Override
     @Transactional(rollbackFor = CommonException.class)
     public void deleteByCode(String code) {
-        PermissionE permissionE = permissionRepository.selectByCode(code);
+        PermissionDTO permissionDTO = permissionRepository.selectByCode(code);
         boolean deleted =
                 Optional
-                        .ofNullable(permissionE)
+                        .ofNullable(permissionDTO)
                         .map(p -> {
-                            String serviceName = p.getServiceName();
-                            String json = fetchLatestSwaggerJson(serviceName);
-                            Set<String> permissionCodes = parseCodeFromJson(json, serviceName);
+                            String serviceCode = p.getServiceCode();
+                            String json = fetchLatestSwaggerJson(serviceCode);
+                            Set<String> permissionCodes = parseCodeFromJson(json, serviceCode);
                             return !permissionCodes.contains(code);
                         })
                         .orElseThrow(() -> new CommonException("error.permission.does.not.exist"));
         if (deleted) {
-            permissionRepository.deleteById(permissionE.getId());
-            RolePermissionE rolePermission = new RolePermissionE(null, null, permissionE.getId());
+            permissionRepository.deleteById(permissionDTO.getId());
+            RolePermissionDTO rolePermission = new RolePermissionDTO();
+            rolePermission.setPermissionId(permissionDTO.getId());
             rolePermissionRepository.delete(rolePermission);
-            MenuPermissionDO menuPermission = new MenuPermissionDO();
+            MenuPermissionDTO menuPermission = new MenuPermissionDTO();
             menuPermission.setPermissionCode(code);
             menuPermissionRepository.delete(menuPermission);
         } else {
@@ -221,16 +221,16 @@ public class PermissionServiceImpl implements PermissionService {
         }
     }
 
-    private Set<String> parseCodeFromJson(String json, String serviceName) {
+    private Set<String> parseCodeFromJson(String json, String serviceCode) {
         Set<String> codes = new HashSet<>();
         try {
-            if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
+            if (!StringUtils.isEmpty(serviceCode) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
                 while (pathIterator.hasNext()) {
                     Map.Entry<String, JsonNode> pathNode = pathIterator.next();
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
-                    parserMethod(methodIterator, serviceName, codes);
+                    parserMethod(methodIterator, serviceCode, codes);
                 }
             }
         } catch (IOException e) {
@@ -241,7 +241,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
-                              String serviceName,
+                              String serviceCode,
                               Set<String> codes) {
         while (methodIterator.hasNext()) {
             Map.Entry<String, JsonNode> methodNode = methodIterator.next();
@@ -268,13 +268,13 @@ public class PermissionServiceImpl implements PermissionService {
             }
             PermissionData permission = extraData.getPermission();
             String action = permission.getAction();
-            String code = serviceName + "." + resourceCode + "." + action;
+            String code = serviceCode + "." + resourceCode + "." + action;
             codes.add(code);
         }
     }
 
-    private String fetchLatestSwaggerJson(String serviceName) {
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceName);
+    private String fetchLatestSwaggerJson(String serviceCode) {
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceCode);
         List<InstanceInfo> instanceInfos = new ArrayList<>();
         serviceInstances.forEach(serviceInstance -> {
             EurekaDiscoveryClient.EurekaServiceInstance eurekaServiceInstance =
@@ -308,7 +308,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id, String params) {
-        return ConvertPageHelper.convertPage(permissionRepository.pagingQuery(pageRequest, id, params), PermissionDTO.class);
+    public PageInfo<PermissionDTO> listPermissionsByRoleId(int page, int size, Long id, String params) {
+        return permissionRepository.pagingQueryByRoleId(page, size, id, params);
     }
 }

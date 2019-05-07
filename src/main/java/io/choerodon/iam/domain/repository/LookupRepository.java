@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.domain.iam.entity.LookupE;
-import io.choerodon.iam.infra.dataobject.LookupDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.LookupDTO;
 
 import java.util.List;
 
@@ -12,19 +12,19 @@ import java.util.List;
  */
 public interface LookupRepository {
 
-    LookupE insert(LookupE lookupE);
+    LookupDTO insert(LookupDTO lookupDTO);
 
-    Page<LookupDO> pagingQuery(PageRequest pageRequest, LookupDO lookupDO, String param);
+    PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param);
 
-    void delete(LookupE lookupE);
+    void delete(LookupDTO lookupDTO);
 
-    LookupE update(LookupE lookupE, Long id);
+    LookupDTO update(LookupDTO lookupDTO, Long id);
 
-    LookupE selectById(Long id);
+    LookupDTO selectById(Long id);
 
-    List<LookupE> select(LookupE lookupE);
+    List<LookupDTO> select(LookupDTO lookupDTO);
 
     void deleteById(Long id);
 
-    LookupDO listByCodeWithLookupValues(String code);
+    LookupDTO listByCodeWithLookupValues(String code);
 }

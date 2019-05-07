@@ -1,7 +1,8 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.ApplicationExplorationDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.ApplicationDTO;
+import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import java.util.Set;
  * @author superlee
  * @since 0.15.0
  */
-public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExplorationDO> {
+public interface ApplicationExplorationMapper extends Mapper<ApplicationExplorationDTO> {
 
 
     /**
@@ -21,7 +22,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param idSet
      * @return
      */
-    List selectDescendantByApplicationIds(@Param("idSet") Set<Long> idSet);
+    List<ApplicationExplorationDTO> selectDescendantByApplicationIds(@Param("idSet") Set<Long> idSet);
 
     /**
      * 根据应用id集合删除该节点所有的，包含自己
@@ -36,7 +37,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param path
      * @return
      */
-    List selectDescendantByPath(@Param("path") String path);
+    List<ApplicationExplorationDTO> selectDescendantByPath(@Param("path") String path);
 
     /**
      * 根据应用id查询该节点所有祖先，包含自己
@@ -44,7 +45,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param id
      * @return
      */
-    List selectAncestorByApplicationId(@Param("id") Long id);
+    List<ApplicationExplorationDTO> selectAncestorByApplicationId(@Param("id") Long id);
 
     /**
      * 根据应用id删除该节点所有的，包含自己
@@ -68,7 +69,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param id
      * @return
      */
-    List selectDirectDescendantByApplicationId(@Param("id") Long id);
+    List<ApplicationExplorationDTO> selectDirectDescendantByApplicationId(@Param("id") Long id);
 
     /**
      * 根据应用节点id集合和该节点的父id查询该节点下的所有节点，包含自己
@@ -76,7 +77,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param idSet
      * @param parentId
      */
-    List selectDescendantByApplicationIdsAndParentId(@Param("idSet") HashSet<Long> idSet, @Param("parentId") Long parentId);
+    List<ApplicationExplorationDTO> selectDescendantByApplicationIdsAndParentId(@Param("idSet") HashSet<Long> idSet, @Param("parentId") Long parentId);
 
     /**
      * 根据应用节点id和该节点的父id查询该节点下的所有节点，包含自己
@@ -85,7 +86,7 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param parentId
      * @return
      */
-    List selectDescendantByApplicationIdAndParentId(@Param("id") Long id, @Param("parentId") Long parentId);
+    List<ApplicationExplorationDTO> selectDescendantByApplicationIdAndParentId(@Param("id") Long id, @Param("parentId") Long parentId);
 
     /**
      * 查询组合应用下指定类型的应用{@link io.choerodon.iam.infra.enums.ApplicationCategory}
@@ -96,8 +97,8 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param name
      * @return
      */
-    List selectDescendantApplications(@Param("path") String path, @Param("category") String category,
-                                      @Param("name") String name, @Param("code") String code);
+    List<ApplicationDTO> selectDescendantApplications(@Param("path") String path, @Param("category") String category,
+                                                      @Param("name") String name, @Param("code") String code);
 
     /**
      * 根据应用id查询子代，包含自己，带上应用和项目信息
@@ -105,5 +106,5 @@ public interface ApplicationExplorationMapper extends BaseMapper<ApplicationExpl
      * @param path "/"+id+"/"
      * @return
      */
-    List<ApplicationExplorationDO> selectDescendants(@Param("path") String path);
+    List<ApplicationExplorationDTO> selectDescendants(@Param("path") String path);
 }

@@ -3,17 +3,15 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ApplicationDTO
 import io.choerodon.iam.api.dto.ApplicationSearchDTO
 import io.choerodon.iam.app.service.ApplicationService
 import io.choerodon.iam.app.service.impl.ApplicationServiceImpl
 import io.choerodon.iam.infra.common.utils.AssertHelper
-import io.choerodon.iam.infra.dataobject.ApplicationDO
+import io.choerodon.iam.infra.dto.ApplicationDTO
 import io.choerodon.iam.infra.enums.ApplicationCategory
 import io.choerodon.iam.infra.enums.ApplicationType
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper
 import io.choerodon.iam.infra.mapper.ApplicationMapper
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -67,7 +65,7 @@ class ApplicationControllerSpec extends Specification {
 
     def "Update"() {
         given:
-        ApplicationDO app = assertHelper.applicationNotExisted(1)
+        ApplicationDTO app = assertHelper.applicationNotExisted(1)
 
         when:
         def result = controller.update(1, 1, modelMapper.map(app, ApplicationDTO.class))
@@ -78,10 +76,10 @@ class ApplicationControllerSpec extends Specification {
 
     def "PagingQuery"() {
         given:
-        PageRequest pageRequest = new PageRequest(0, 10)
+//        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(1L, pageRequest, new ApplicationSearchDTO())
+        def result = controller.pagingQuery(1L, 0,10, new ApplicationSearchDTO())
         then:
         result.statusCode.is2xxSuccessful()
         result.body.size() > 0
@@ -199,10 +197,10 @@ class ApplicationControllerSpec extends Specification {
 
     def "queryApplicationList"() {
         given:
-        PageRequest pageRequest = new PageRequest(0, 10)
+//        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.queryApplicationList(pageRequest, 1L, 100L, null, null)
+        def result = controller.queryApplicationList(0,10, 1L, 100L, null, null)
 
         then:
         result.statusCode.is2xxSuccessful()

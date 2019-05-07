@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -17,25 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.app.service.ProjectService;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author flyleft
@@ -72,69 +67,68 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDTO queryProjectById(Long projectId) {
-        return ConvertHelper.convert(projectRepository.selectByPrimaryKey(projectId), ProjectDTO.class);
+        return projectRepository.selectByPrimaryKey(projectId);
     }
 
     @Override
-    public Page<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
-        return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersByProjectId(id, userId, email, pageRequest, param), UserDTO.class);
+    public PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, int page, int size, String param) {
+        return userRepository.pagingQueryUsersByProjectId(id, userId, email, page, size, param);
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
-        ProjectDO project = ConvertHelper.convert(projectDTO, ProjectDO.class);
+//        ProjectDO project = ConvertHelper.convert(projectDTO, ProjectDO.class);
         if (devopsMessage) {
             ProjectDTO dto = new ProjectDTO();
             CustomUserDetails details = DetailsHelper.getUserDetails();
-            UserE user = userRepository.selectByLoginName(details.getUsername());
-            ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectDTO.getId());
-            OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(projectDO.getOrganizationId());
+            UserDTO user = userRepository.selectByLoginName(details.getUsername());
+            ProjectDTO newProject = projectRepository.selectByPrimaryKey(projectDTO.getId());
+            OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(newProject.getOrganizationId());
             ProjectEventPayload projectEventMsg = new ProjectEventPayload();
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(user.getId());
-            if (organizationDO != null) {
-                projectEventMsg.setOrganizationCode(organizationDO.getCode());
-                projectEventMsg.setOrganizationName(organizationDO.getName());
+            if (organizationDTO != null) {
+                projectEventMsg.setOrganizationCode(organizationDTO.getCode());
+                projectEventMsg.setOrganizationName(organizationDTO.getName());
             }
-            projectEventMsg.setProjectId(projectDO.getId());
-            projectEventMsg.setProjectCode(projectDO.getCode());
-            ProjectE projectE = projectRepository.updateSelective(project);
-            projectEventMsg.setProjectName(project.getName());
-            projectEventMsg.setImageUrl(projectE.getImageUrl());
-            BeanUtils.copyProperties(projectE, dto);
+            projectEventMsg.setProjectId(newProject.getId());
+            projectEventMsg.setProjectCode(newProject.getCode());
+            ProjectDTO newDTO = projectRepository.updateSelective(projectDTO);
+            projectEventMsg.setProjectName(projectDTO.getName());
+            projectEventMsg.setImageUrl(newDTO.getImageUrl());
+            BeanUtils.copyProperties(newDTO, dto);
             try {
                 String input = mapper.writeValueAsString(projectEventMsg);
-                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + projectDO.getId(), ResourceLevel.PROJECT.value(), projectDTO.getId()));
+                sagaClient.startSaga(PROJECT_UPDATE, new StartInstanceDTO(input, "project", "" + newProject.getId(), ResourceLevel.PROJECT.value(), projectDTO.getId()));
             } catch (Exception e) {
                 throw new CommonException("error.projectService.update.event", e);
             }
             return dto;
         } else {
-            return ConvertHelper.convert(
-                    projectRepository.updateSelective(project), ProjectDTO.class);
+            return projectRepository.updateSelective(projectDTO);
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO disableProject(Long id) {
-        ProjectDO project = projectRepository.selectByPrimaryKey(id);
+        ProjectDTO project = projectRepository.selectByPrimaryKey(id);
         project.setEnabled(false);
-        ProjectE projectE = disableAndSendEvent(project);
-        return ConvertHelper.convert(projectE, ProjectDTO.class);
+        ProjectDTO projectDTO = disableAndSendEvent(project);
+        return projectDTO;
     }
 
-    private ProjectE disableAndSendEvent(ProjectDO project) {
-        ProjectE projectE;
+    private ProjectDTO disableAndSendEvent(ProjectDTO project) {
+//        ProjectDTO dto;
         if (devopsMessage) {
-            projectE = new ProjectE();
+//            projectE = new ProjectE();
             ProjectEventPayload payload = new ProjectEventPayload();
             payload.setProjectId(project.getId());
-            BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE);
+            project = projectRepository.updateSelective(project);
+//            BeanUtils.copyProperties(projectRepository.updateSelective(project), projectE);
             try {
                 String input = mapper.writeValueAsString(payload);
                 sagaClient.startSaga(PROJECT_DISABLE, new StartInstanceDTO(input, "project", "" + payload.getProjectId(), ResourceLevel.PROJECT.value(), project.getId()));
@@ -142,9 +136,9 @@ public class ProjectServiceImpl implements ProjectService {
                 throw new CommonException("error.projectService.disableProject.event", e);
             }
         } else {
-            projectE = projectRepository.updateSelective(project);
+            project = projectRepository.updateSelective(project);
         }
-        return projectE;
+        return project;
     }
 
     @Override
@@ -163,9 +157,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Boolean checkProjCode(String code) {
-        ProjectDO projectDO = new ProjectDO();
-        projectDO.setCode(code);
-        ProjectDO checkDO = projectRepository.selectOne(projectDO);
-        return checkDO == null;
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setCode(code);
+        return projectRepository.selectOne(projectDTO) == null;
     }
 }

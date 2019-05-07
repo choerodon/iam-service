@@ -1,12 +1,12 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.LanguageRepository;
-import io.choerodon.iam.infra.dataobject.LanguageDO;
+import io.choerodon.iam.infra.dto.LanguageDTO;
 import io.choerodon.iam.infra.mapper.LanguageMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,31 +25,30 @@ public class LanguageRepositoryImpl implements LanguageRepository {
     }
 
     @Override
-    public Page<LanguageDO> pagingQuery(PageRequest pageRequest, LanguageDO languageDO, String param) {
-        return PageHelper.doPageAndSort(
-                pageRequest, () -> mapper.fulltextSearch(languageDO, param));
+    public PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(languageDTO, param));
     }
 
     @Override
-    public LanguageDO update(LanguageDO languageDO) {
-        if (mapper.updateByPrimaryKeySelective(languageDO) != 1) {
+    public LanguageDTO update(LanguageDTO languageDTO) {
+        if (mapper.updateByPrimaryKeySelective(languageDTO) != 1) {
             throw new CommonException("error.language.update");
         }
-        return mapper.selectByPrimaryKey(languageDO.getId());
+        return mapper.selectByPrimaryKey(languageDTO.getId());
     }
 
     @Override
-    public LanguageDO queryById(Long id) {
+    public LanguageDTO queryById(Long id) {
         return mapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public LanguageDO queryByCode(LanguageDO languageDO) {
-        return mapper.selectOne(languageDO);
+    public LanguageDTO queryByCode(LanguageDTO languageDTO) {
+        return mapper.selectOne(languageDTO);
     }
 
     @Override
-    public List<LanguageDO> listAll() {
+    public List<LanguageDTO> listAll() {
         return mapper.selectAll();
     }
 }

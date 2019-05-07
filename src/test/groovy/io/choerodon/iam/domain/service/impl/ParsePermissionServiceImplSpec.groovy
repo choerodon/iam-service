@@ -1,13 +1,11 @@
 package io.choerodon.iam.domain.service.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.eureka.event.EurekaEventPayload
-import io.choerodon.iam.domain.iam.entity.PermissionE
 import io.choerodon.iam.domain.repository.PermissionRepository
 import io.choerodon.iam.domain.repository.RolePermissionRepository
 import io.choerodon.iam.domain.repository.RoleRepository
-import io.choerodon.iam.domain.service.ParsePermissionService
-import io.choerodon.iam.infra.dataobject.RoleDO
+import io.choerodon.iam.infra.dto.PermissionDTO
+import io.choerodon.iam.infra.dto.RoleDTO
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
@@ -17,7 +15,6 @@ import spock.lang.Specification
  * @author dengyouquan
  * */
 class ParsePermissionServiceImplSpec extends Specification {
-    private final ObjectMapper mapper = new ObjectMapper()
     private PermissionRepository permissionRepository = Mock(PermissionRepository)
     private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
     private RoleRepository roleRepository = Mock(RoleRepository)
@@ -26,7 +23,20 @@ class ParsePermissionServiceImplSpec extends Specification {
 
     def "Parser"() {
         given: "构造请求参数"
-        PermissionE permissionE = new PermissionE("code", "path", "method", "site", "description", "action", "resource", true, true, true, "serviceName", 1L)
+        PermissionDTO permissionE = new PermissionDTO()
+        permissionE.setCode("code")
+        permissionE.setPath("path")
+        permissionE.setMethod("method")
+        permissionE.setResourceLevel("site")
+        permissionE.setDescription("description")
+        permissionE.setAction("action")
+        permissionE.setController("resource")
+        permissionE.setPublicAccess(true)
+        permissionE.setLoginAccess(true)
+        permissionE.setWithin(true)
+        permissionE.setServiceCode("serviceName")
+        
+        
         def file = new File(this.class.getResource('/templates/swagger.json').toURI())
         String swaggerJson = file.getText("UTF-8")
         EurekaEventPayload instanceE = new EurekaEventPayload()
@@ -35,9 +45,9 @@ class ParsePermissionServiceImplSpec extends Specification {
         instanceE.setStatus("UP")
         instanceE.setVersion("1.0")
         instanceE.setApiData(swaggerJson)
-        List<RoleDO> roleList = new ArrayList<>()
-        RoleDO roleDO = new RoleDO()
-        roleDO.setLevel("project")
+        List<RoleDTO> roleList = new ArrayList<>()
+        RoleDTO roleDO = new RoleDTO()
+        roleDO.setResourceLevel("project")
         roleDO.setCode("role/project/default/administrator")
         roleList.add(roleDO)
 

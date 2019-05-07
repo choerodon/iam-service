@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.UserDashboardMapper">
 
-    <resultMap id="UserDashboardDTO" type="io.choerodon.iam.api.dto.UserDashboardDTO">
+    <resultMap id="UserDashboardDTO" type="io.choerodon.iam.infra.dto.UserDashboardDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="fd_level" property="level" jdbcType="VARCHAR"/>
     </resultMap>

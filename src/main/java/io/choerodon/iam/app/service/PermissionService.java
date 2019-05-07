@@ -1,9 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
-import io.choerodon.iam.api.dto.PermissionDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public interface PermissionService {
 
-    Page<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param);
+    PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param);
 
     List<CheckPermissionDTO> checkPermission(List<CheckPermissionDTO> checkPermissionDTOList);
 
@@ -23,5 +23,5 @@ public interface PermissionService {
 
     void deleteByCode(String code);
 
-    Page<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id, String params);
+    PageInfo<PermissionDTO> listPermissionsByRoleId(int page,int size, Long id, String params);
 }

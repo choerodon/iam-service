@@ -2,28 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.PermissionMapper">
 
-    <resultMap id="PermissionDO" type="io.choerodon.iam.infra.dataobject.PermissionDO">
+    <resultMap id="PermissionDTO" type="io.choerodon.iam.infra.dto.PermissionDTO" autoMapping="true">
         <id column="id" property="id"></id>
-        <result column="fd_level" property="level" jdbcType="VARCHAR"/>
-        <result column="fd_resource" property="resource" jdbcType="VARCHAR"/>
         <result property="within" column="is_within" jdbcType="BOOLEAN"/>
+        <result property="publicAccess" column="is_public_access" jdbcType="BOOLEAN"/>
+        <result property="loginAccess" column="is_login_access" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="PermissionDO">
+    <select id="fuzzyQuery" resultMap="PermissionDTO">
         SELECT * FROM iam_permission ip
-        WHERE ip.public_access = 0
-        AND ip.login_access = 0
-        <if test="permissionDO.code != null">
-            AND ip.code LIKE concat(concat('%',#{permissionDO.code}), '%')
+        WHERE ip.is_public_access = 0
+        AND ip.is_login_access = 0
+        <if test="permissionDTO.code != null">
+            AND ip.code LIKE concat(concat('%',#{permissionDTO.code}), '%')
         </if>
-        <if test="permissionDO.level != null">
-            AND ip.fd_level = #{permissionDO.level}
+        <if test="permissionDTO.resourceLevel != null">
+            AND ip.resource_level = #{permissionDTO.resourceLevel}
         </if>
-        <if test="permissionDO.resource != null">
-            AND ip.fd_resource LIKE concat(concat('%',#{permissionDO.resource}), '%')
+        <if test="permissionDTO.controller != null">
+            AND ip.controller LIKE concat(concat('%',#{permissionDTO.controller}), '%')
         </if>
-        <if test="permissionDO.serviceName != null">
-            AND ip.service_name LIKE concat(concat('%',#{permissionDO.serviceName}), '%')
+        <if test="permissionDTO.serviceCode != null">
+            AND ip.service_code LIKE concat(concat('%',#{permissionDTO.serviceCode}), '%')
         </if>
         <if test="param != null">
             AND(
@@ -33,14 +33,14 @@
         </if>
     </select>
 
-    <select id="selectByRoleId" resultMap="PermissionDO">
+    <select id="selectByRoleId" resultMap="PermissionDTO">
         SELECT iam_permission.*
         FROM iam_role_permission
         INNER JOIN iam_permission
         ON iam_role_permission.permission_id = iam_permission.id
         WHERE iam_role_permission.role_id = #{roleId}
         <if test="params != null">
-          AND (
+            AND (
             iam_permission.code LIKE concat(concat('%', #{params), '%') OR
             iam_permission.description LIKE concat(concat('%', #{params), '%')
             )
@@ -56,8 +56,8 @@
         left JOIN iam_role r ON r.id = rp.role_id
         left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
-        (p.login_access=1 OR p.public_access=1 OR (
-        p.fd_level = #{source_type}
+        (p.is_login_access=1 OR p.is_public_access=1 OR (
+        p.resource_level = #{source_type}
         AND member_type = 'user'
         AND member_id = #{member_id}
         AND source_type = #{source_type}
@@ -73,12 +73,12 @@
     </select>
 
 
-    <select id="selectErrorLevelPermissionByRole" resultMap="PermissionDO">
+    <select id="selectErrorLevelPermissionByRole" resultMap="PermissionDTO">
         SELECT ip.* FROM iam_role ir
         INNER JOIN iam_role_permission irp ON ir.id = irp.role_id
         INNER JOIN iam_permission ip ON irp.permission_id = ip.id
         WHERE ir.id = #{role.id}
-        AND ir.fd_level != ip.fd_level
+        AND ir.resource_level != ip.resource_level
     </select>
 
 </mapper>

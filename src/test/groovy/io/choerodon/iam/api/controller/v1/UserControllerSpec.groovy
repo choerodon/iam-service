@@ -4,9 +4,8 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
-import io.choerodon.iam.api.dto.UserDTO
 import io.choerodon.iam.api.dto.UserPasswordDTO
-import io.choerodon.iam.infra.dataobject.UserDO
+import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.mapper.UserMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -309,7 +308,7 @@ class UserControllerSpec extends Specification {
 
     def "CreateUserAndAssignRoles"() {
         given: "构造请求参数"
-        def userDO = new UserDO()
+        def userDO = new UserDTO()
         userDO.setLoginName("dengyouquan")
         userDO.setRealName("dengyouquan")
         userDO.setEmail("dengyouquan@qq.com")

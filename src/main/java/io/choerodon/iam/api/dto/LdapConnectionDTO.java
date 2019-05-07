@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.dto;
 
 
+import io.choerodon.iam.infra.dto.LdapDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**

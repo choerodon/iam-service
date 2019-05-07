@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.common.utils.AssertHelper;
-import io.choerodon.iam.infra.dataobject.ApplicationDO;
-import io.choerodon.iam.infra.dataobject.ApplicationExplorationDO;
+import io.choerodon.iam.infra.dto.ApplicationDTO;
+import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 import io.choerodon.iam.infra.enums.ApplicationCategory;
 import io.choerodon.iam.infra.enums.ApplicationType;
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper;
@@ -60,7 +60,7 @@ public class ApplicationListener {
      */
     @SagaTask(code = IAM_SYNC_APP, sagaCode = APP_SYNC, seq = 1, description = "devops发送application集合进行同步")
     public void syncApplications(String message) throws IOException {
-        List<ApplicationDO> applications = objectMapper.readValue(message, new TypeReference<List<ApplicationDO>>() {
+        List<ApplicationDTO> applications = objectMapper.readValue(message, new TypeReference<List<ApplicationDTO>>() {
         });
         logger.info("begin to sync applications, total: {}", applications.size());
         if (applications.isEmpty()) {
@@ -80,7 +80,7 @@ public class ApplicationListener {
             try {
                 applicationMapper.insertSelective(app);
                 long appId = app.getId();
-                ApplicationExplorationDO example = new ApplicationExplorationDO();
+                ApplicationExplorationDTO example = new ApplicationExplorationDTO();
                 example.setApplicationId(appId);
                 String path = SEPARATOR + appId + SEPARATOR;
                 example.setPath(path);
@@ -97,7 +97,7 @@ public class ApplicationListener {
         logger.info("syncing applications has done, successful: {}, failed: {}", statisticsMap.get(SUCCESSFUL), statisticsMap.get(FAILED));
     }
 
-    private boolean isIllegal(ApplicationDO app) {
+    private boolean isIllegal(ApplicationDTO app) {
         Long organizationId = app.getOrganizationId();
         if (ObjectUtils.isEmpty(organizationId)) {
             logger.error("illegal application because of organization id is empty, application: {}", app);
@@ -138,7 +138,7 @@ public class ApplicationListener {
             logger.error("illegal application because of type is illegal, application: {}", app);
             return true;
         }
-        ApplicationDO example = new ApplicationDO();
+        ApplicationDTO example = new ApplicationDTO();
         example.setName(name);
         example.setOrganizationId(organizationId);
         example.setProjectId(projectId);

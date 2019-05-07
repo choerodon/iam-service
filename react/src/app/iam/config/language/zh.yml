@@ -1,0 +1,99 @@
+"iam": "平台设置"
+# site
+"iam.organization": "组织管理"
+"iam.menu-management": "菜单配置"
+"iam.system-setting": "系统配置"
+"iam.role-label": "角色标签"
+"iam.role": "角色管理"
+"iam.member-role-global": "平台角色分配"
+"iam.root-user": "Root用户设置"
+"iam.dashboard-management": "仪表盘配置"
+"iam.site-statistics": "平台统计"
+"iam.project-type": "项目类型"
+
+"microservice": "平台服务"
+"microservice.micro": "微服务管理"
+"microservice.route-management": "路由管理"
+"microservice.config-management": "配置管理"
+"microservice.instance-management": "实例管理"
+"microservice.api-management": "平台接口"
+
+"api": "API管理"
+"api.api-test": "API测试"
+"api.api-overview": "API概览"
+
+"statistics": "平台统计"
+"statistics.saga": "事务定义"
+"statistics.saga-instance": "事务实例"
+"statistics.menu-report": "菜单分析"
+"statistics.api-report": "API统计"
+
+"global-transaction": "全局事务"
+"global-transaction.saga": "事务定义"
+"global-transaction.saga-instance": "事务实例"
+
+"msg-center": "消息中心"
+"msg-center.send-setting": "发送设置"
+"msg-center.mail-template": "邮件模板"
+"msg-center.inmail-template": "站内信模板"
+"msg-center.mail-setting": "邮箱配置"
+"msg-center.msg-record": "发送记录"
+"msg-center.announcement": "系统公告"
+
+"task-dispatch": "任务调度"
+"task-dispatch.task-detail": "任务明细"
+"task-dispatch.execution-record": "执行记录"
+"task-dispatch.task-classname": "可执行程序"
+
+"rentsetting": 组织设置
+# organization
+"rentsetting.project": "项目管理"
+"rentsetting.user": "用户管理"
+"rentsetting.member-role-organization": "组织角色分配"
+"rentsetting.client": "客户端"
+"rentsetting.ldap": "LDAP"
+"rentsetting.password-policy": "密码策略"
+"rentsetting.mail-template-organization": "邮件模板"
+"rentsetting.announcement-organization": "系统公告"
+"rentsetting.saga-instance-organization": "组织事务实例"
+"rentsetting.organization-setting": "组织信息"
+
+"msg-center-organization": "消息中心"
+"msg-center-organization.send-setting-organization": "发送设置"
+"msg-center-organization.mail-template-organization": "邮件模板"
+"msg-center-organization.msg-record-organization": "消息记录"
+
+"task-dispatch-organization": "任务调度"
+"task-dispatch-organization.task-detail-organization": "任务明细"
+"task-dispatch-organization.execution-record-organization": "执行记录"
+"task-dispatch-organization.task-classname-organization": "可执行程序"
+
+"app-manager-organization": "应用管理"
+"app-manager-organization.app": "应用"
+
+"prosetting": 项目设置
+# project
+"prosetting.proManage": "项目信息"
+"prosetting.member-role-project": "项目角色分配"
+"prosetting.saga-instance-project": "项目事务实例"
+
+"task-dispatch-project": "任务调度"
+"task-dispatch-project.task-detail-project": "任务明细"
+"task-dispatch-project.execution-record-project": "执行记录"
+"task-dispatch-project.task-classname-project": "可执行程序"
+
+"usercenter": 个人中心
+# user
+"usercenter.user-info": "个人信息"
+"usercenter.password": "修改密码"
+"usercenter.organization-info": "组织信息"
+"usercenter.project-info": "项目信息"
+"usercenter.user-msg": "消息通知"
+"usercenter.receive-setting": "接收设置"
+"usercenter.token-manager": "授权管理"
+"usercenter.permission-info": "权限信息"
+
+"program-setting": "项目设置"
+# program
+"program-setting.member-role-program": "项目角色分配"
+"program-setting.program-manage": "项目信息"

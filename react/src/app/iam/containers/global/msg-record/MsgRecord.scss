@@ -1,0 +1,15 @@
+.c7n-msgrecord {
+  &-status {
+    color: white;
+    padding: 2px 5px;
+    border-radius: 2px;
+
+    &.failed {
+      background: #f44336;
+    }
+
+    &.completed {
+      background: #00bfa5;
+    }
+  }
+}

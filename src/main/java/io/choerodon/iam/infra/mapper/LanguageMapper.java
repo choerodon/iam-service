@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.LanguageDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.LanguageDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.List;
 /**
  * @author superlee
  */
-public interface LanguageMapper extends BaseMapper<LanguageDO> {
+public interface LanguageMapper extends Mapper<LanguageDTO> {
 
-    List<LanguageDO> fulltextSearch(@Param("languageDO") LanguageDO languageDO,
+    List<LanguageDTO> fulltextSearch(@Param("languageDTO") LanguageDTO languageDTO,
                                     @Param("param") String param);
 }

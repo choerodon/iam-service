@@ -1,30 +1,31 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.excel.ExcelReadConfig;
 import io.choerodon.core.excel.ExcelReadHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.*;
+
+
+import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
+import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
 import io.choerodon.iam.app.service.RoleMemberService;
-import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
 import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.domain.service.IRoleMemberService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO;
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
 import io.choerodon.iam.infra.enums.MemberType;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +41,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author superlee
@@ -89,10 +89,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
                 );
-                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                memberRoleDTOS.addAll(
                         iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, 0L, memberId,
-                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
-                                ResourceLevel.SITE.value()), MemberRoleDTO.class));
+                                memberRoleDTOList,
+                                ResourceLevel.SITE.value()));
             }
             return memberRoleDTOS;
         }
@@ -102,9 +102,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
             );
-            memberRoleDTOS.addAll(ConvertHelper.convertList(
-                    iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, 0L, memberId, ConvertHelper.convertList(
-                            memberRoleDTOList, MemberRoleE.class), ResourceLevel.SITE.value()), MemberRoleDTO.class));
+            memberRoleDTOS.addAll(
+                    iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, 0L, memberId, memberRoleDTOList, ResourceLevel.SITE.value()));
         }
         return memberRoleDTOS;
     }
@@ -122,10 +121,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
                 );
-                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                memberRoleDTOS.addAll(
                         iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, organizationId, memberId,
-                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
-                                ResourceLevel.ORGANIZATION.value()), MemberRoleDTO.class));
+                                memberRoleDTOList,
+                                ResourceLevel.ORGANIZATION.value()));
             }
             return memberRoleDTOS;
         }
@@ -135,10 +134,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
             );
-            memberRoleDTOS.addAll(ConvertHelper.convertList(
+            memberRoleDTOS.addAll(
                     iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, organizationId, memberId,
-                            ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
-                            ResourceLevel.ORGANIZATION.value()), MemberRoleDTO.class));
+                            memberRoleDTOList,
+                            ResourceLevel.ORGANIZATION.value()));
         }
         return memberRoleDTOS;
     }
@@ -154,43 +153,24 @@ public class RoleMemberServiceImpl implements RoleMemberService {
     }
 
     @Override
-    public Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
-        return convert(page);
+        return memberRoleRepository.pagingQueryClientsWithOrganizationLevelRoles(page, size, clientRoleSearchDTO, sourceId, param);
     }
 
     @Override
-    public Page<ClientWithRoleDTO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithSiteLevelRoles(pageRequest, clientRoleSearchDTO, param);
-        return convert(page);
+        return memberRoleRepository.pagingQueryClientsWithSiteLevelRoles(page, size, clientRoleSearchDTO, param);
     }
 
     @Override
-    public Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
+    public PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
-        Page<ClientDO> page = memberRoleRepository.pagingQueryClientsWithProjectLevelRoles(pageRequest, clientRoleSearchDTO, sourceId, param);
-        return convert(page);
+        return memberRoleRepository.pagingQueryClientsWithProjectLevelRoles(page, size, clientRoleSearchDTO, sourceId, param);
     }
 
-    /**
-     * 转化 do 和 dto
-     *
-     * @param origin 被转化
-     * @return 转化后
-     */
-    private Page<ClientWithRoleDTO> convert(Page<ClientDO> origin) {
-        Page<ClientWithRoleDTO> newPage = new Page<>();
-        BeanUtils.copyProperties(origin, newPage, "content");
-        newPage.setContent(origin.getContent().stream().map(clientDO -> {
-            ClientWithRoleDTO dto = new ClientWithRoleDTO();
-            BeanUtils.copyProperties(clientDO, dto, "roles");
-            dto.setRoles(clientDO.getRoles());
-            return dto;
-        }).collect(Collectors.toList()));
-        return newPage;
-    }
+
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
@@ -205,10 +185,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
                 memberRoleDTOList.forEach(m ->
                         m.setMemberId(memberId)
                 );
-                memberRoleDTOS.addAll(ConvertHelper.convertList(
+                memberRoleDTOS.addAll(
                         iRoleMemberService.insertOrUpdateRolesOfClientByMemberId(isEdit, projectId, memberId,
-                                ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
-                                ResourceLevel.PROJECT.value()), MemberRoleDTO.class));
+                                memberRoleDTOList,
+                                ResourceLevel.PROJECT.value()));
             }
             return memberRoleDTOS;
         }
@@ -218,10 +198,10 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             memberRoleDTOList.forEach(m ->
                     m.setMemberId(memberId)
             );
-            memberRoleDTOS.addAll(ConvertHelper.convertList(
+            memberRoleDTOS.addAll(
                     iRoleMemberService.insertOrUpdateRolesOfUserByMemberId(isEdit, projectId, memberId,
-                            ConvertHelper.convertList(memberRoleDTOList, MemberRoleE.class),
-                            ResourceLevel.PROJECT.value()), MemberRoleDTO.class));
+                            memberRoleDTOList,
+                            ResourceLevel.PROJECT.value()));
         }
         return memberRoleDTOS;
     }
@@ -304,7 +284,7 @@ public class RoleMemberServiceImpl implements RoleMemberService {
             if (memberRoles.isEmpty()) {
                 throw new CommonException("error.excel.memberRole.empty");
             }
-            UploadHistoryDO uploadHistory = initUploadHistory(sourceId, sourceType);
+            UploadHistoryDTO uploadHistory = initUploadHistory(sourceId, sourceType);
             long end = System.currentTimeMillis();
             logger.info("read excel for {} millisecond", (end - begin));
             excelImportUserTask.importMemberRole(memberRoles, uploadHistory, finishFallback);
@@ -315,8 +295,8 @@ public class RoleMemberServiceImpl implements RoleMemberService {
         }
     }
 
-    private UploadHistoryDO initUploadHistory(Long sourceId, String sourceType) {
-        UploadHistoryDO uploadHistory = new UploadHistoryDO();
+    private UploadHistoryDTO initUploadHistory(Long sourceId, String sourceType) {
+        UploadHistoryDTO uploadHistory = new UploadHistoryDTO();
         uploadHistory.setBeginTime(new Date(System.currentTimeMillis()));
         uploadHistory.setType("member-role");
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());

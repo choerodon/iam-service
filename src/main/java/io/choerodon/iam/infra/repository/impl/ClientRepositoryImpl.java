@@ -1,24 +1,19 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.ClientDTO;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
-import io.choerodon.iam.domain.oauth.entity.ClientE;
 import io.choerodon.iam.domain.repository.ClientRepository;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.mapper.ClientMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -37,20 +32,17 @@ public class ClientRepositoryImpl implements ClientRepository {
 
 
     @Override
-    public ClientE create(ClientE clientE) {
-        ClientDO clientDO = ConvertHelper.convert(clientE, ClientDO.class);
-        int isInsert = clientMapper.insertSelective(clientDO);
+    public ClientDTO create(ClientDTO clientDTO) {
+        int isInsert = clientMapper.insertSelective(clientDTO);
         if (isInsert != 1) {
             throw new CommonException("error.client.create");
         }
-        clientDO = clientMapper.selectByPrimaryKey(clientDO.getId());
-        return ConvertHelper.convert(clientDO, ClientE.class);
+        return clientMapper.selectByPrimaryKey(clientDTO);
     }
 
     @Override
-    public ClientE query(Long clientId) {
-        ClientDO clientDO = clientMapper.selectByPrimaryKey(clientId);
-        return ConvertHelper.convert(clientDO, ClientE.class);
+    public ClientDTO query(Long clientId) {
+        return clientMapper.selectByPrimaryKey(clientId);
     }
 
     @Override
@@ -66,39 +58,30 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public ClientE queryByClientName(String clientName) {
-        ClientDO clientDO = new ClientDO();
-        clientDO.setName(clientName);
-        List<ClientDO> clientDOS = clientMapper.select(clientDO);
-        if (clientDOS.isEmpty()) {
-            throw new CommonException("error.client.not.exist");
-        }
-        return ConvertHelper.convert(clientDOS.get(0), ClientE.class);
+    public ClientDTO queryByClientName(String clientName) {
+        ClientDTO clientDTO = new ClientDTO();
+        clientDTO.setName(clientName);
+        return clientMapper.selectOne(clientDTO);
     }
 
     @Override
-    public ClientE update(Long clientId, ClientE clientE) {
-        ClientDO clientDO = ConvertHelper.convert(clientE, ClientDO.class);
-        clientDO.setId(clientId);
-        int isUpdate = clientMapper.updateByPrimaryKey(clientDO);
+    public ClientDTO update(Long clientId, ClientDTO clientDTO) {
+        clientDTO.setId(clientId);
+        int isUpdate = clientMapper.updateByPrimaryKey(clientDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.client.update");
         }
-        clientDO = clientMapper.selectByPrimaryKey(clientDO.getId());
-        return ConvertHelper.convert(clientDO, ClientE.class);
+        return clientMapper.selectByPrimaryKey(clientDTO);
     }
 
     @Override
-    public Page<ClientE> pagingQuery(PageRequest pageRequest, ClientDO clientDO, String param) {
-        clientDO.setOrganizationId(clientDO.getOrganizationId());
-        Page<ClientDO> clientDOPage
-                = PageHelper.doPageAndSort(pageRequest, () -> clientMapper.fulltextSearch(clientDO, param));
-        return ConvertPageHelper.convertPage(clientDOPage, ClientE.class);
+    public PageInfo<ClientDTO> pagingQuery(int page, int size, ClientDTO clientDTO, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.fulltextSearch(clientDTO, param));
     }
 
     @Override
-    public ClientDO selectOne(ClientDO clientDO) {
-        return clientMapper.selectOne(clientDO);
+    public ClientDTO selectOne(ClientDTO clientDTO) {
+        return clientMapper.selectOne(clientDTO);
     }
 
     @Override
@@ -107,14 +90,13 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public Page<ClientDO> pagingQueryClientsByRoleIdAndOptions(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType) {
+    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdAndOptions(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId, String sourceType) {
         String param = Optional.ofNullable(clientRoleSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
-        return PageHelper.doPageAndSort(pageRequest,
-                () -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, sourceType, clientRoleSearchDTO, param));
     }
 
     @Override
-    public Page<SimplifiedClientDTO> pagingAllClientsByParams(PageRequest pageRequest, String params) {
-        return PageHelper.doPageAndSort(pageRequest, () -> clientMapper.selectAllClientSimplifiedInfo(params));
+    public PageInfo<SimplifiedClientDTO> pagingAllClientsByParams(int page, int size, String params) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> clientMapper.selectAllClientSimplifiedInfo(params));
     }
 }

@@ -1,19 +1,19 @@
 package io.choerodon.iam.domain.service;
 
-import io.choerodon.iam.domain.iam.entity.RoleE;
+import io.choerodon.iam.infra.dto.RoleDTO;
 
 /**
  * @author superlee
  */
 public interface IRoleService {
 
-    RoleE create(RoleE roleE);
+    RoleDTO create(RoleDTO roleDTO);
 
-    RoleE update(RoleE roleE);
+    RoleDTO update(RoleDTO roleDTO);
 
     void deleteByPrimaryKey(Long id);
 
-    RoleE updateRoleEnabled(Long id);
+    RoleDTO updateRoleEnabled(Long id);
 
-    RoleE updateRoleDisabled(Long id);
+    RoleDTO updateRoleDisabled(Long id);
 }

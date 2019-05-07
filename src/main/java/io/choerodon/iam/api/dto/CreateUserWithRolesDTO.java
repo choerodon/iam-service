@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.dto;
 
-import io.choerodon.iam.infra.dataobject.UserDO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 import java.util.Set;
 
@@ -9,7 +9,7 @@ import java.util.Set;
  */
 public class CreateUserWithRolesDTO {
 
-    private UserDO user;
+    private UserDTO user;
 
     private Long sourceId;
 
@@ -19,11 +19,11 @@ public class CreateUserWithRolesDTO {
 
     private Set<String> roleCode;
 
-    public UserDO getUser() {
+    public UserDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDO user) {
+    public void setUser(UserDTO user) {
         this.user = user;
     }
 

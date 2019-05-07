@@ -3,7 +3,7 @@ package io.choerodon.iam.domain.service.impl
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.domain.service.ILdapService
-import io.choerodon.iam.infra.dataobject.LdapDO
+import io.choerodon.iam.infra.dto.LdapDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -20,7 +20,7 @@ class ILdapServiceImplSpec extends Specification {
 
     def "TestConnect"() {
         given: "构造请求参数"
-        LdapDO ldapDO = new LdapDO()
+        LdapDTO ldapDO = new LdapDTO()
         ldapDO.setServerAddress("ldap://ac.hand-china.com")
         ldapDO.setPort("389")
         ldapDO.setUseSSL(false)

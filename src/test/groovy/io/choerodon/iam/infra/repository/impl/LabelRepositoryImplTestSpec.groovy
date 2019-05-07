@@ -2,7 +2,7 @@ package io.choerodon.iam.infra.repository.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.repository.LabelRepository
-import io.choerodon.iam.infra.dataobject.LabelDO
+import io.choerodon.iam.infra.dto.LabelDTO
 import io.choerodon.iam.infra.mapper.LabelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,14 +26,14 @@ class LabelRepositoryImplTestSpec extends Specification {
     @Transactional
     def "SelectByPrimaryKey"() {
         given: "构造参数"
-        LabelDO labelDO = new LabelDO()
+        LabelDTO labelDO = new LabelDTO()
         labelDO.setLevel("site")
         labelDO.setType("site")
         labelDO.setName("label")
         labelMapper.insert(labelDO)
 
         when: "调用方法"
-        LabelDO result = labelRepository.selectByPrimaryKey(labelDO.getId())
+        LabelDTO result = labelRepository.selectByPrimaryKey(labelDO.getId())
 
         then: "校验结果"
         result.getName().equals(labelDO.getName())

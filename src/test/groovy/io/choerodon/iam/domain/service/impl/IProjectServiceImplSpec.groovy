@@ -3,7 +3,7 @@ package io.choerodon.iam.domain.service.impl
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.service.IProjectService
-import io.choerodon.iam.infra.dataobject.ProjectDO
+import io.choerodon.iam.infra.dto.ProjectDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -31,7 +31,7 @@ class IProjectServiceImplSpec extends Specification {
         iProjectService.updateProjectEnabled(id)
 
         then: "校验结果"
-        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
+        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
         1 * projectRepository.updateSelective(_)
         0 * _
     }
@@ -44,7 +44,7 @@ class IProjectServiceImplSpec extends Specification {
         iProjectService.updateProjectDisabled(id)
 
         then: "校验结果"
-        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDO() }
+        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
         1 * projectRepository.updateSelective(_)
         0 * _
     }

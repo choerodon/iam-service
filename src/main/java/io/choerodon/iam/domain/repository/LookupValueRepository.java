@@ -1,7 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.domain.iam.entity.LookupValueE;
-import io.choerodon.iam.infra.dataobject.LookupValueDO;
+
+import io.choerodon.iam.infra.dto.LookupValueDTO;
 
 import java.util.List;
 
@@ -10,13 +10,13 @@ import java.util.List;
  */
 public interface LookupValueRepository {
 
-    LookupValueE insert(LookupValueE lookupValueE);
+    LookupValueDTO insert(LookupValueDTO lookupValueDTO);
 
-    List<LookupValueDO> selectByLookupId(Long id);
+    List<LookupValueDTO> selectByLookupId(Long id);
 
     void deleteById(Long id);
 
-    LookupValueE updateById(LookupValueDO lookupValueDO, Long id);
+    LookupValueDTO updateById(LookupValueDTO lookupValueDTO, Long id);
 
-    void delete(LookupValueDO lookupValue);
+    void delete(LookupValueDTO lookupValue);
 }

@@ -1,0 +1,21 @@
+.c7n-iam-table-title-tip {
+  display: flex;
+  align-items: center;
+
+  i {
+    color: rgba(0, 0, 0, 0.36);
+    margin-left: 2px;
+    font-size: 14px;
+  }
+}
+
+.c7n-iam-tips-popover {
+  max-width: 350px;
+}
+
+.c7n-iam-select-tip {
+  position: absolute !important;
+  right: 1px;
+  top: 19px;
+  color: rgba(0, 0, 0, .65);
+}

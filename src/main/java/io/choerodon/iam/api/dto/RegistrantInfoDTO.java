@@ -1,8 +1,7 @@
 package io.choerodon.iam.api.dto;
 
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.iam.domain.iam.entity.UserE;
 
 public class RegistrantInfoDTO {
     @ApiModelProperty(value = "注册人Id")
@@ -82,11 +81,11 @@ public class RegistrantInfoDTO {
         this.adminId = adminId;
     }
 
-    public void setUser(UserE userE) {
-        this.id = userE.getId();
-        this.email = userE.getEmail();
-        this.loginName = userE.getLoginName();
-        this.realName = userE.getRealName();
-        this.organizationId = userE.getOrganizationId();
+    public void setUser(UserDTO userDTO) {
+        this.id = userDTO.getId();
+        this.email = userDTO.getEmail();
+        this.loginName = userDTO.getLoginName();
+        this.realName = userDTO.getRealName();
+        this.organizationId = userDTO.getOrganizationId();
     }
 }

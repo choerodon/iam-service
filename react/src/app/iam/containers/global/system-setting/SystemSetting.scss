@@ -1,0 +1,436 @@
+.c7n-iam-system-setting {
+  &-edit {
+    position: relative;
+    user-select: none;
+    img {
+      position: absolute;
+    }
+    &-wraper {
+      display: flex;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      padding: 0 100px;
+    }
+    &-text {
+      font-size: 20px;
+      line-height: 28px;
+      margin-top: 24px;
+      > span {
+        vertical-align: middle;
+      }
+      .icon {
+        font-size: 24px;
+        margin-left: 8px;
+      }
+    }
+    &-hint {
+      font-size: 13px;
+      line-height: 20px;
+      margin-top: 10px;
+    }
+    &-mask {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border: 0 solid rgba(0, 0, 0, 0.36);
+      div {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        border: 1px dotted rgba(0, 0, 0, 0.12);
+        cursor: move;
+      }
+      i {
+        position: absolute;
+        display: block;
+        width: 25px;
+        height: 23px;
+        border: 0 solid #000;
+        &.lt {
+          top: -2px;
+          left: -2px;
+          border-top-width: 3px;
+          border-left-width: 3px;
+          cursor: nw-resize;
+        }
+        &.rt {
+          top: -2px;
+          right: -2px;
+          border-top-width: 3px;
+          border-right-width: 3px;
+          cursor: ne-resize;
+        }
+        &.lb {
+          bottom: -2px;
+          left: -2px;
+          border-bottom-width: 3px;
+          border-left-width: 3px;
+          cursor: sw-resize;
+        }
+        &.rb {
+          right: -2px;
+          bottom: -2px;
+          border-right-width: 3px;
+          border-bottom-width: 3px;
+          cursor: se-resize;
+        }
+      }
+    }
+    &-toolbar {
+      width: 62px;
+      padding: 0 16px;
+      text-align: center;
+      .ant-btn {
+        width: 30px;
+        height: 30px;
+        margin-bottom: 20px;
+      }
+      .icon {
+        font-size: 30px;
+        display: block;
+        line-height: 1;
+      }
+    }
+    &-preview {
+      margin-left: 16px;
+      border-left: 1px solid #979797;
+      padding-left: 32px;
+      text-align: center;
+      &-title {
+        font-size: 18px;
+        margin-bottom: 24px;
+      }
+      &-item {
+        margin-bottom: 26.5px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      i {
+        display: inline-block;
+        background-repeat: no-repeat;
+        border-radius: 50%;
+      }
+      p {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.65);
+      }
+    }
+    &-button {
+      width: 640px;
+      text-align: right;
+    }
+  }
+
+  width: 512px;
+  .initLogo {
+    height: 102px;
+    width: 102px;
+    background: no-repeat center/80% url("./image/choerodon_logo_picture.svg");
+  }
+  .ant-upload.ant-upload-select-picture-card {
+    background-color: #2f3ba0;
+  }
+  &-tips {
+    font-size: 12px;
+    line-height: 24px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    display: inline-block;
+    span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    &-logo,&-title,&-favicon,&-name {
+      width: 100px;
+      height: 72px;
+      margin: 0 auto;
+      display: block;
+    }
+    &-logo {
+      background: url("./image/logo_tips.png") no-repeat;
+      width: 360px;
+    }
+    &-title {
+      width: 250px;
+      background: url("./image/title_tips.png") no-repeat;
+    }
+    &-favicon {
+      width: 371px;
+      background: url("./image/favicon_tips.png") no-repeat;
+    }
+    &-name {
+      width: 272px;
+      background: url("./image/name_tips.png") no-repeat;
+    }
+    .icon-help {
+      line-height: 24px;
+      margin-left: 7px;
+    }
+  }
+  &-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+    line-height: 80px;
+    font-weight: 700;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('./image/favicon.png');
+    color: #3f51b5;
+    text-transform: uppercase;
+
+    &-wrap {
+      margin-top: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    &-button {
+      opacity: 0;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      transition: opacity 0.3s;
+
+      .ant-upload {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      &-icon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        width: 80px;
+        height: 80px;
+        border-radius: inherit;
+        background-color: rgba(0, 0, 0, 0.26);
+        color: #fff;
+
+        .icon {
+          font-size: 24px;
+          line-height: 80px;
+        }
+      }
+    }
+
+    &:hover &-button {
+      opacity: 1;
+    }
+    &-preview {
+      margin-left: 16px;
+      border-left: 1px solid #979797;
+      padding-left: 32px;
+      text-align: center;
+      &-title {
+        font-size: 18px;
+        margin-bottom: 24px;
+      }
+      &-item {
+        margin-bottom: 26.5px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      i {
+        display: inline-block;
+        background-repeat: no-repeat;
+        border-radius: 50%;
+      }
+      p {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.65);
+      }
+    }
+    &-dragger {
+      display: block;
+      width: 600px;
+      height: 300px;
+      margin: 92px auto;
+      text-align: center;
+      .ant-upload-drag {
+        padding: 60px 0;
+      }
+      .icon {
+        width: 80px;
+        height: 80px;
+        font-size: 80px;
+        color: #3f51b5;
+      }
+      &-text {
+        font-size: 18px;
+        line-height: 25px;
+        margin-top: 40px;
+      }
+      &-hint {
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.65);
+        line-height: 20px;
+        margin-top: 16px;
+      }
+    }
+    &-edit {
+      position: relative;
+      user-select: none;
+      img {
+        position: absolute;
+      }
+      &-wraper {
+        display: flex;
+        margin-top: 32px;
+        margin-bottom: 16px;
+        padding: 0 100px;
+      }
+      &-text {
+        font-size: 20px;
+        line-height: 28px;
+        margin-top: 24px;
+        > span {
+          vertical-align: middle;
+        }
+        .icon {
+          font-size: 24px;
+          margin-left: 8px;
+        }
+      }
+      &-hint {
+        font-size: 13px;
+        line-height: 20px;
+        margin-top: 10px;
+      }
+      &-mask {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        border: 0 solid rgba(0, 0, 0, 0.36);
+        div {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          border: 1px dotted rgba(0, 0, 0, 0.12);
+          cursor: move;
+        }
+        i {
+          position: absolute;
+          display: block;
+          width: 25px;
+          height: 23px;
+          border: 0 solid #000;
+          &.lt {
+            top: -2px;
+            left: -2px;
+            border-top-width: 3px;
+            border-left-width: 3px;
+            cursor: nw-resize;
+          }
+          &.rt {
+            top: -2px;
+            right: -2px;
+            border-top-width: 3px;
+            border-right-width: 3px;
+            cursor: ne-resize;
+          }
+          &.lb {
+            bottom: -2px;
+            left: -2px;
+            border-bottom-width: 3px;
+            border-left-width: 3px;
+            cursor: sw-resize;
+          }
+          &.rb {
+            right: -2px;
+            bottom: -2px;
+            border-right-width: 3px;
+            border-bottom-width: 3px;
+            cursor: se-resize;
+          }
+        }
+      }
+      &-toolbar {
+        width: 62px;
+        padding: 0 16px;
+        text-align: center;
+        .ant-btn {
+          width: 30px;
+          height: 30px;
+          margin-bottom: 20px;
+        }
+        .icon {
+          font-size: 30px;
+          display: block;
+          line-height: 1;
+        }
+      }
+      &-preview {
+        margin-left: 16px;
+        border-left: 1px solid #979797;
+        padding-left: 32px;
+        text-align: center;
+        &-title {
+          font-size: 18px;
+          margin-bottom: 24px;
+        }
+        &-item {
+          margin-bottom: 26.5px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+        i {
+          display: inline-block;
+          background-repeat: no-repeat;
+          border-radius: 50%;
+        }
+        p {
+          margin: 0;
+          color: rgba(0, 0, 0, 0.65);
+        }
+      }
+      &-button {
+        width: 640px;
+        text-align: right;
+      }
+    }
+  }
+
+  &-divider {
+    width: 512px;
+    height: 1px;
+    margin: 42px 0 12px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .ant-form-item {
+    margin-bottom: 20px;
+  }
+  //&-footer {
+  //  margin-top: 12px;
+  //  margin-bottom: 12px;
+  //  border: 1px solid rgba(0, 0, 0, 0.12);
+  //
+  //  width: 512px;
+  //  height: 1px;
+  //  margin: 42px 0 12px 40px;
+  //  background: rgba(0, 0, 0, 0.12);
+  //}
+  .radioGroup > label:first-child {
+    margin-right: 60px;
+  }
+}
+

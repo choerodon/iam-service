@@ -1,0 +1,166 @@
+/* stylelint-disable no-descending-specificity */
+
+.c7n-scrum h1,
+.c7n-scrum h2,
+.c7n-scrum h3,
+.c7n-scrum h4,
+.c7n-scrum h5,
+.c7n-scrum h6 {
+  bottom: auto;
+  position: static;
+}
+
+.c7n-scrum *,
+.c7n-scrum *::before,
+.c7n-scrum *::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.c7n-scrum article,
+aside,
+blockquote,
+body,
+button,
+code,
+dd,
+details,
+div,
+dl,
+dt,
+fieldset,
+figcaption,
+figure,
+footer,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+header,
+hgroup,
+hr,
+input,
+legend,
+li,
+menu,
+nav,
+ol,
+p,
+pre,
+section,
+td,
+textarea,
+th,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+.c7n-scrum ul {
+  list-style: none;
+}
+
+.c7n-scrum b,
+.c7n-scrum strong {
+  font-weight: 500;
+}
+
+.c7n-scrum em {
+  font-style: italic;
+}
+
+.c7n-scrum abbr {
+  text-transform: none !important;
+}
+
+.c7n-scrum p,
+.c7n-scrum h1,
+.c7n-scrum h2,
+.c7n-scrum h3,
+.c7n-scrum h4,
+.c7n-scrum h5,
+.c7n-scrum h6 {
+  margin: 0;
+  max-width: 512px;
+  text-rendering: auto;
+  word-wrap: break-word;
+}
+
+.c7n-scrum table {
+  border: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+//.c7n-scrum a,
+.c7n-scrum a .c7n-external-link-content {
+  border-bottom: 1px solid #3367d6;
+  color: #3367d6;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.c7n-scrum a.c7n-color-primary,
+.c7n-scrum a.c7n-color-primary .c7n-external-link-content {
+  border-color: rgba(0, 0, 0, 0.54);
+  color: #000;
+}
+
+.c7n-scrum a.c7n-color-secondary,
+.c7n-scrum a.c7n-color-secondary .c7n-external-link-content {
+  border-color: rgba(0, 0, 0, 0.54);
+  color: rgba(0, 0, 0, 0.66);
+}
+
+.c7n-scrum a:hover,
+.c7n-scrum a:hover .c7n-external-link-content {
+  border-color: #3367d6;
+  color: #3367d6;
+  text-decoration: none;
+}
+
+.c7n-scrum a:focus,
+.c7n-scrum a:focus .c7n-external-link-content {
+  border-color: #3367d6;
+  color: #3367d6;
+  outline: 1px solid #3367d6;
+  outline-offset: 2px;
+  text-decoration: none;
+}
+
+.c7n-scrum a:visited,
+.c7n-scrum a:visited .c7n-external-link-content,
+.c7n-scrum a:visited .c7n-icon svg {
+  border-color: #7b1fa2;
+  color: #7b1fa2;
+}
+
+.c7n-scrum a:visited:focus,
+.c7n-scrum a:visited:focus .c7n-external-link-content {
+  outline: 1px solid #7b1fa2;
+  outline-offset: 2px;
+  text-decoration: none;
+}
+
+.c7n-scrum a:active,
+.c7n-scrum a:active .c7n-external-link-content,
+.c7n-scrum a:visited:active,
+.c7n-scrum a:visited:active .c7n-external-link-content,
+.c7n-scrum a.mat-tab-link {
+  outline: 0;
+}
+
+.c7n-scrum a.c7n-external-link {
+  border: 0;
+}
+
+.c7n-scrum a:focus.c7n-external-link {
+  outline: 0;
+}
+
+.table {
+  font-size: 13px;
+}

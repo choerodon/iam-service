@@ -3,7 +3,7 @@ package io.choerodon.iam.infra.repository.impl
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.repository.UploadHistoryRepository
-import io.choerodon.iam.infra.dataobject.UploadHistoryDO
+import io.choerodon.iam.infra.dto.UploadHistoryDTO
 import io.choerodon.iam.infra.mapper.UploadHistoryMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -26,7 +26,7 @@ class UploadHistoryRepositoryImplSpec extends Specification {
 
     def "InsertSelective"() {
         given: "构造请求参数"
-        UploadHistoryDO uploadHistoryDO = new UploadHistoryDO()
+        UploadHistoryDTO uploadHistoryDO = new UploadHistoryDTO()
 
         when: "调用方法[异常]"
         uploadHistoryRepository.insertSelective(uploadHistoryDO)
@@ -56,8 +56,8 @@ class UploadHistoryRepositoryImplSpec extends Specification {
 
     def "UpdateByPrimaryKeySelective"() {
         given: "构造请求参数"
-        UploadHistoryDO uploadHistoryDO = new UploadHistoryDO()
-        UploadHistoryDO uploadHistoryDO1 = new UploadHistoryDO()
+        UploadHistoryDTO uploadHistoryDO = new UploadHistoryDTO()
+        UploadHistoryDTO uploadHistoryDO1 = new UploadHistoryDTO()
 
         when: "调用方法[异常]"
         uploadHistoryRepository.updateByPrimaryKeySelective(uploadHistoryDO)

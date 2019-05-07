@@ -1,11 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.api.dto.ClientWithRoleDTO;
-import io.choerodon.iam.api.dto.MemberRoleDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,12 +24,12 @@ public interface RoleMemberService {
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnOrganizationLevel(
             Boolean isEdit, Long organizationId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);
 
-    Page<ClientWithRoleDTO> pagingQueryClientsWithOrganizationLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
 
-    Page<ClientWithRoleDTO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO);
+    PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO);
 
-    Page<ClientWithRoleDTO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
+    PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId);
 
     List<MemberRoleDTO> createOrUpdateRolesByMemberIdOnProjectLevel(
             Boolean isEdit, Long projectId, List<Long> memberIds, List<MemberRoleDTO> memberRoleDTOList, String memberType);

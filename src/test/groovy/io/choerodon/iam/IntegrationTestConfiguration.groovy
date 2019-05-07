@@ -6,7 +6,6 @@ import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.domain.service.impl.ILdapServiceImpl
-import io.choerodon.iam.infra.dataobject.LdapDO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import org.mockito.Mockito

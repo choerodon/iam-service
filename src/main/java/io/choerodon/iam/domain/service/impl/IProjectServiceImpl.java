@@ -1,10 +1,9 @@
 package io.choerodon.iam.domain.service.impl;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.ProjectE;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.service.IProjectService;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
  * @data 2018/4/11
  */
 @Service
-public class IProjectServiceImpl extends BaseServiceImpl<ProjectDO> implements IProjectService {
+public class IProjectServiceImpl extends BaseServiceImpl<ProjectDTO> implements IProjectService {
 
     private ProjectRepository projectRepository;
 
@@ -22,22 +21,22 @@ public class IProjectServiceImpl extends BaseServiceImpl<ProjectDO> implements I
     }
 
     @Override
-    public ProjectE updateProjectEnabled(Long id) {
-        ProjectDO projectDO = projectRepository.selectByPrimaryKey(id);
-        if (projectDO == null) {
+    public ProjectDTO updateProjectEnabled(Long id) {
+        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(id);
+        if (projectDTO == null) {
             throw new CommonException("error.project.not.exist");
         }
-        projectDO.setEnabled(true);
-        return projectRepository.updateSelective(projectDO);
+        projectDTO.setEnabled(true);
+        return projectRepository.updateSelective(projectDTO);
     }
 
     @Override
-    public ProjectE updateProjectDisabled(Long id) {
-        ProjectDO projectDO = projectRepository.selectByPrimaryKey(id);
-        if (projectDO == null) {
+    public ProjectDTO updateProjectDisabled(Long id) {
+        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(id);
+        if (projectDTO == null) {
             throw new CommonException("error.project.not.exist");
         }
-        projectDO.setEnabled(false);
-        return projectRepository.updateSelective(projectDO);
+        projectDTO.setEnabled(false);
+        return projectRepository.updateSelective(projectDTO);
     }
 }

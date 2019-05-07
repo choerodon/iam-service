@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.infra.dataobject.RoleLabelDO;
+
+import io.choerodon.iam.infra.dto.RoleLabelDTO;
 
 import java.util.List;
 
@@ -8,11 +9,11 @@ import java.util.List;
  * @author superlee
  */
 public interface RoleLabelRepository {
-    void insert(RoleLabelDO roleLabelDO);
+    void insert(RoleLabelDTO roleLabelDTO);
 
-    void insertList(List<RoleLabelDO> roleLabelDOList);
+    void insertList(List<RoleLabelDTO> roleLabelDOList);
 
-    List<RoleLabelDO> select(RoleLabelDO roleLabelDO);
+    List<RoleLabelDTO> select(RoleLabelDTO roleLabelDTO);
 
-    void delete(RoleLabelDO rl);
+    void delete(RoleLabelDTO rl);
 }

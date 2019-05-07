@@ -1,0 +1,53 @@
+.c7n-iam-status-tag {
+  color: #fff;
+  display: inline-block;
+  font-size: 13px;
+  border-radius: 2px;
+  text-align: center;
+  padding: 0 2px;
+  > span {
+    vertical-align: middle;
+  }
+  div {
+    transform: scale(0.8);
+  }
+  &-with-icon {
+    color: #000;
+    > span {
+      vertical-align: middle;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: calc(100% - 24px);
+      display: inline-block;
+      overflow: hidden;
+    }
+    i {
+      padding-right: 6px;
+      vertical-align: middle;
+    }
+
+    .icon-check_circle {
+      color: #00bfa5;
+    }
+
+    .icon-remove_circle {
+      color: #d3d3d3;
+    }
+
+    .icon-state_over, .icon-watch_later {
+      color: #ffb100;
+    }
+
+    .icon-cancel {
+      color: #f44336;
+    }
+
+    .icon-timelapse {
+      color: #4f90fe;
+    }
+
+    .icon-timer {
+      color: #ffb100;
+    }
+  }
+}

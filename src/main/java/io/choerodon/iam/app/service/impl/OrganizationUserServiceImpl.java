@@ -6,9 +6,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -17,32 +26,21 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.SystemSettingDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.SystemSettingService;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
 import io.choerodon.iam.infra.enums.LdapErrorUserCause;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO;
-import io.choerodon.oauth.core.password.domain.BaseUserDO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
 
@@ -70,6 +68,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Value("${choerodon.site.default.password:abcd1234}")
     private String siteDefaultPassword;
     private SystemSettingService systemSettingService;
+
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
                                        UserRepository userRepository,
@@ -100,16 +100,16 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         String password =
                 Optional.ofNullable(userDTO.getPassword())
                         .orElseThrow(() -> new CommonException("error.user.password.empty"));
-        OrganizationDO organizationDO =
+        OrganizationDTO organizationDTO =
                 Optional.ofNullable(organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId()))
                         .orElseThrow(() -> new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION));
-        Long organizationId = organizationDO.getId();
+        Long organizationId = organizationDTO.getId();
         if (checkPassword) {
             validatePasswordPolicy(userDTO, password, organizationId);
             // 校验用户密码
             userPasswordValidator.validate(password, organizationId, true);
         }
-        UserE user = createUser(userDTO);
+        UserDTO user = createUser(userDTO);
         if (devopsMessage) {
             try {
                 UserEventPayload userEventPayload = new UserEventPayload();
@@ -131,47 +131,45 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return ConvertHelper.convert(user, UserDTO.class);
     }
 
-    private UserE createUser(UserDTO userDTO) {
-        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
-        if (userRepository.selectByLoginName(userE.getLoginName()) != null) {
+    private UserDTO createUser(UserDTO userDTO) {
+        if (userRepository.selectByLoginName(userDTO.getLoginName()) != null) {
             throw new CommonException("error.user.loginName.exist");
         }
-        userE.unlocked();
-        userE.enable();
-        userE.encodePassword();
-        userE = ConvertHelper.convert(userRepository.insertSelective(ConvertHelper.convert(userE, UserDO.class)), UserE.class);
-        passwordRecord.updatePassword(userE.getId(), userE.getPassword());
-        return userE.hiddenPassword();
+        userDTO.setLocked(false);
+        userDTO.setEnabled(true);
+        userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
+        userRepository.insertSelective(userDTO);
+        passwordRecord.updatePassword(userDTO.getId(), userDTO.getPassword());
+        return userRepository.selectByPrimaryKey(userDTO.getId());
     }
 
     @Override
     @Transactional(rollbackFor = CommonException.class)
     @Saga(code = USER_CREATE_BATCH, description = "iam批量创建用户", inputSchemaClass = List.class)
-    public List<LdapErrorUserDO> batchCreateUsers(List<UserDO> insertUsers) {
-        List<LdapErrorUserDO> errorUsers = new ArrayList<>();
+    public List<LdapErrorUserDTO> batchCreateUsers(List<UserDTO> insertUsers) {
+        List<LdapErrorUserDTO> errorUsers = new ArrayList<>();
         List<UserEventPayload> payloads = new ArrayList<>();
         insertUsers.forEach(user -> {
-            UserDO userDO = null;
+            UserDTO userDTO = null;
             try {
-                userDO = userRepository.insertSelective(user);
+                userDTO = userRepository.insertSelective(user);
             } catch (Exception e) {
-                LdapErrorUserDO errorUser =
-                        new LdapErrorUserDO()
-                                .setUuid(user.getUuid())
-                                .setLoginName(user.getLoginName())
-                                .setEmail(user.getEmail())
-                                .setRealName(user.getRealName())
-                                .setPhone(user.getPhone())
-                                .setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
+                LdapErrorUserDTO errorUser = new LdapErrorUserDTO();
+                errorUser.setUuid(user.getUuid());
+                errorUser.setLoginName(user.getLoginName());
+                errorUser.setEmail(user.getEmail());
+                errorUser.setRealName(user.getRealName());
+                errorUser.setPhone(user.getPhone());
+                errorUser.setCause(LdapErrorUserCause.USER_INSERT_ERROR.value());
                 errorUsers.add(errorUser);
             }
-            if (devopsMessage && userDO != null && userDO.getEnabled()) {
+            if (devopsMessage && userDTO != null && userDTO.getEnabled()) {
                 UserEventPayload payload = new UserEventPayload();
-                payload.setEmail(userDO.getEmail());
-                payload.setId(userDO.getId().toString());
-                payload.setName(userDO.getRealName());
-                payload.setUsername(userDO.getLoginName());
-                payload.setOrganizationId(userDO.getOrganizationId());
+                payload.setEmail(userDTO.getEmail());
+                payload.setId(userDTO.getId().toString());
+                payload.setName(userDTO.getRealName());
+                payload.setUsername(userDTO.getLoginName());
+                payload.setOrganizationId(userDTO.getOrganizationId());
                 payloads.add(payload);
             }
         });
@@ -191,47 +189,44 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     private void validatePasswordPolicy(UserDTO userDTO, String password, Long organizationId) {
-        BaseUserDO baseUserDO = new BaseUserDO();
-        BeanUtils.copyProperties(userDTO, baseUserDO);
-        BasePasswordPolicyDO example = new BasePasswordPolicyDO();
+        BaseUserDTO baseUserDTO = new BaseUserDTO();
+        BeanUtils.copyProperties(userDTO, baseUserDTO);
+        BasePasswordPolicyDTO example = new BasePasswordPolicyDTO();
         example.setOrganizationId(organizationId);
-        BasePasswordPolicyDO basePasswordPolicyDO = basePasswordPolicyMapper.selectOne(example);
-        Optional.ofNullable(basePasswordPolicyDO)
+        BasePasswordPolicyDTO basePasswordPolicyDTO = basePasswordPolicyMapper.selectOne(example);
+        Optional.ofNullable(basePasswordPolicyDTO)
                 .map(passwordPolicy -> {
                     if (!password.equals(passwordPolicy.getOriginalPassword())) {
-                        passwordPolicyManager.passwordValidate(password, baseUserDO, passwordPolicy);
+                        passwordPolicyManager.passwordValidate(password, baseUserDTO, passwordPolicy);
                     }
                     return null;
                 });
     }
 
     @Override
-    public Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
-        Page<UserDO> userDOPage =
-                userRepository.pagingQuery(pageRequest, ConvertHelper.convert(user, UserDO.class),
-                        ParamUtils.arrToStr(user.getParam()));
-        return ConvertPageHelper.convertPage(userDOPage, UserDTO.class);
+    public PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user) {
+        return userRepository.pagingQuery(page, size, user, ParamUtils.arrToStr(user.getParam()));
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO update(UserDTO userDTO) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
+//        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
         UserDTO dto;
         if (devopsMessage) {
-            dto = new UserDTO();
+//            dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
-            UserE user = updateUser(userE);
-            userEventPayload.setEmail(user.getEmail());
-            userEventPayload.setId(user.getId().toString());
-            userEventPayload.setName(user.getRealName());
-            userEventPayload.setUsername(user.getLoginName());
-            BeanUtils.copyProperties(user, dto);
+            dto = updateUser(userDTO);
+            userEventPayload.setEmail(dto.getEmail());
+            userEventPayload.setId(dto.getId().toString());
+            userEventPayload.setName(dto.getRealName());
+            userEventPayload.setUsername(dto.getLoginName());
+//            BeanUtils.copyProperties(user, dto);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
                 sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), userDTO.getOrganizationId()));
@@ -239,22 +234,22 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.updateUser.event", e);
             }
         } else {
-            dto = ConvertHelper.convert(updateUser(userE), UserDTO.class);
+            dto = updateUser(userDTO);
         }
         return dto;
     }
 
-    private UserE updateUser(UserE userE) {
-        if (userE.getPassword() != null) {
-            userE.encodePassword();
+    private UserDTO updateUser(UserDTO userDTO) {
+        if (userDTO.getPassword() != null) {
+            userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
         }
-        return userRepository.updateSelective(userE).hiddenPassword();
+        return userRepository.updateSelective(userDTO);
     }
 
     @Transactional
     @Override
     public UserDTO resetUserPassword(Long organizationId, Long userId) {
-        UserE user = userRepository.selectByPrimaryKey(userId);
+        UserDTO user = userRepository.selectByPrimaryKey(userId);
         if (user == null) {
             throw new CommonException("error.user.not.exist", userId);
         }
@@ -264,8 +259,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         }
 
         String defaultPassword = getDefaultPassword(organizationId);
-
-        user.resetPassword(defaultPassword);
+        user.setPassword(ENCODER.encode(defaultPassword));
         userRepository.updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
@@ -289,11 +283,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
      * @return the password
      */
     private String getDefaultPassword(Long organizationId) {
-        BasePasswordPolicyDO basePasswordPolicyDO = new BasePasswordPolicyDO();
-        basePasswordPolicyDO.setOrganizationId(organizationId);
-        basePasswordPolicyDO = basePasswordPolicyMapper.selectOne(basePasswordPolicyDO);
-        if (basePasswordPolicyDO != null && basePasswordPolicyDO.getEnablePassword() && !StringUtils.isEmpty(basePasswordPolicyDO.getOriginalPassword())) {
-            return basePasswordPolicyDO.getOriginalPassword();
+        BasePasswordPolicyDTO basePasswordPolicyDTO = new BasePasswordPolicyDTO();
+        basePasswordPolicyDTO.setOrganizationId(organizationId);
+        basePasswordPolicyDTO = basePasswordPolicyMapper.selectOne(basePasswordPolicyDTO);
+        if (basePasswordPolicyDTO != null && basePasswordPolicyDTO.getEnablePassword() && !StringUtils.isEmpty(basePasswordPolicyDTO.getOriginalPassword())) {
+            return basePasswordPolicyDTO.getOriginalPassword();
         }
 
         SystemSettingDTO setting = systemSettingService.getSetting();
@@ -308,11 +302,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_DELETE, description = "iam删除用户", inputSchemaClass = UserEventPayload.class)
     public void delete(Long organizationId, Long id) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        UserE user = userRepository.selectByPrimaryKey(id);
+        UserDTO user = userRepository.selectByPrimaryKey(id);
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setUsername(user.getLoginName());
         userRepository.deleteById(id);
@@ -329,49 +323,50 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public UserDTO query(Long organizationId, Long id) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return ConvertHelper.convert(userRepository.selectByPrimaryKey(id), UserDTO.class);
+        return userRepository.selectByPrimaryKey(id);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public UserDTO unlock(Long organizationId, Long userId) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return ConvertHelper.convert(unlockUser(userId), UserDTO.class);
+        return unlockUser(userId);
     }
 
-    private UserE unlockUser(Long userId) {
-        UserE userE = userRepository.selectByPrimaryKey(userId);
-        if (userE == null) {
+    private UserDTO unlockUser(Long userId) {
+        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+        if (userDTO == null) {
             throw new CommonException("error.user.not.exist");
         }
-        userE.unlocked();
-        userE = userRepository.updateSelective(userE).hiddenPassword();
-        passwordRecord.unLockUser(userE.getId());
-        return userE;
+        userDTO.setLocked(false);
+        passwordRecord.unLockUser(userDTO.getId());
+        return userRepository.updateSelective(userDTO);
+//        return userDTO;
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO enableUser(Long organizationId, Long userId) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         UserDTO userDTO;
         if (devopsMessage) {
             userDTO = new UserDTO();
-            UserE user = userRepository.selectByPrimaryKey(userId);
+            UserDTO user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            UserDTO dto = ConvertHelper.convert(iUserService.updateUserEnabled(userId), UserDTO.class);
+            UserDTO dto = iUserService.updateUserEnabled(userId);
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
@@ -380,7 +375,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.enableUser.event", e);
             }
         } else {
-            userDTO = ConvertHelper.convert(iUserService.updateUserEnabled(userId), UserDTO.class);
+            userDTO = iUserService.updateUserEnabled(userId);
         }
         return userDTO;
     }
@@ -389,14 +384,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO disableUser(Long organizationId, Long userId) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
         UserDTO userDTO;
         if (devopsMessage) {
             userDTO = new UserDTO();
-            UserE user = userRepository.selectByPrimaryKey(userId);
+            UserDTO user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());

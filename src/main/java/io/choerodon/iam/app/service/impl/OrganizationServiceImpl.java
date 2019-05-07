@@ -8,8 +8,15 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.api.dto.*;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationPayload;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,25 +27,17 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.domain.iam.entity.UserE;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author wuguokai
@@ -84,16 +83,16 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
         }
-        List<ProjectDO> projects = projectRepository.selectByOrgId(organizationId);
-        organizationDO.setProjects(projects);
-        organizationDO.setProjectCount(projects.size());
-        Long userId = organizationDO.getUserId();
-        UserE user = userRepository.selectByPrimaryKey(userId);
-        OrganizationDTO dto = ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        List<ProjectDTO> projects = projectRepository.selectByOrgId(organizationId);
+        organizationDTO.setProjects(projects);
+        organizationDTO.setProjectCount(projects.size());
+        Long userId = organizationDTO.getUserId();
+        UserDTO user = userRepository.selectByPrimaryKey(userId);
+        OrganizationDTO dto = ConvertHelper.convert(organizationDTO, OrganizationDTO.class);
         dto.setOwnerLoginName(user.getLoginName());
         dto.setOwnerRealName(user.getRealName());
         dto.setOwnerPhone(user.getPhone());
@@ -107,17 +106,16 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
         preUpdate(organizationId, organizationDTO);
 
-        OrganizationDO organizationDO = ConvertHelper.convert(organizationDTO, OrganizationDO.class);
-        organizationDO = organizationRepository.update(organizationDO);
+        organizationDTO = organizationRepository.update(organizationDTO);
         if (devopsMessage) {
             OrganizationPayload payload = new OrganizationPayload();
             payload
-                    .setId(organizationDO.getId())
-                    .setName(organizationDO.getName())
-                    .setCode(organizationDO.getCode())
-                    .setUserId(organizationDO.getUserId())
-                    .setAddress(organizationDO.getAddress())
-                    .setImageUrl(organizationDO.getImageUrl());
+                    .setId(organizationDTO.getId())
+                    .setName(organizationDTO.getName())
+                    .setCode(organizationDTO.getCode())
+                    .setUserId(organizationDTO.getUserId())
+                    .setAddress(organizationDTO.getAddress())
+                    .setImageUrl(organizationDTO.getImageUrl());
             try {
                 String input = mapper.writeValueAsString(payload);
                 sagaClient.startSaga(ORG_UPDATE, new StartInstanceDTO(input, "organization", organizationId + "", resourceLevel, sourceId));
@@ -127,11 +125,11 @@ public class OrganizationServiceImpl implements OrganizationService {
                 throw new CommonException("error.organization.update.event", e);
             }
         }
-        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        return organizationDTO;
     }
 
     private void preUpdate(Long organizationId, OrganizationDTO organizationDTO) {
-        OrganizationDO organization = organizationRepository.selectByPrimaryKey(organizationId);
+        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
         if (ObjectUtils.isEmpty(organization)) {
             throw new CommonException("error.organization.notFound");
         }
@@ -153,49 +151,51 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationDTO dto = queryOrganizationById(organizationId);
         long userId = customUserDetails.getUserId();
 
-        List<ProjectDO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, null);
-        dto.setProjects(ConvertHelper.convertList(projects, ProjectDTO.class));
+        List<ProjectDTO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, null);
+        dto.setProjects(projects);
         dto.setProjectCount(projects.size());
 
-        List<RoleDO> roles =
-                roleRepository.selectUsersRolesBySourceIdAndType(ResourceLevel.ORGANIZATION.value(), organizationId, userId);
+        List<RoleDTO> roles =
+                roleRepository.selectUsersRolesBySourceIdAndType(ResourceType.ORGANIZATION.value(), organizationId, userId);
         dto.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
         return dto;
     }
 
     @Override
-    public Page<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param) {
-        Page<OrganizationDO> organizationDOPage =
-                organizationRepository.pagingQuery(ConvertHelper.convert(
-                        organizationDTO, OrganizationDO.class), pageRequest, param);
-        return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
+    public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
+        return organizationRepository.pagingQuery(organizationDTO, page, size, param);
+
+//        Page<OrganizationDO> organizationDOPage =
+//                organizationRepository.pagingQuery(ConvertHelper.convert(
+//                        organizationDTO, OrganizationDO.class), pageRequest, param);
+//        return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
-        OrganizationDO organization = organizationRepository.selectByPrimaryKey(organizationId);
+        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
         if (organization == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
         organization.setEnabled(true);
-        OrganizationDO organizationDO = updateAndSendEvent(organization, ORG_ENABLE, userId);
-        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
+        return updateAndSendEvent(organization, ORG_ENABLE, userId);
+//        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
-        OrganizationDO organizationDO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDO == null) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
             throw new CommonException(ORG_MSG_NOT_EXIST);
         }
-        organizationDO.setEnabled(false);
-        return ConvertHelper.convert(updateAndSendEvent(organizationDO, ORG_DISABLE, userId), OrganizationDTO.class);
+        organizationDTO.setEnabled(false);
+        return updateAndSendEvent(organizationDTO, ORG_DISABLE, userId);
     }
 
-    private OrganizationDO updateAndSendEvent(OrganizationDO organization, String consumerType, Long userId) {
-        OrganizationDO organizationDO = organizationRepository.update(organization);
+    private OrganizationDTO updateAndSendEvent(OrganizationDTO organization, String consumerType, Long userId) {
+        OrganizationDTO organizationDTO = organizationRepository.update(organization);
         if (devopsMessage) {
             OrganizationEventPayload payload = new OrganizationEventPayload();
             payload.setOrganizationId(organization.getId());
@@ -218,7 +218,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 iUserService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
             }
         }
-        return organizationRepository.selectByPrimaryKey(organizationDO.getId());
+        return organizationDTO;
     }
 
     @Override
@@ -232,9 +232,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
-        return ConvertPageHelper.convertPage(
-                userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, pageRequest, param), UserDTO.class);
+    public PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, int page, int size, String param) {
+        return userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param);
+//        return PageHelper.startPage(page, size).doSelectPage(() -> userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param));
+
+//        return ConvertPageHelper.convertPage(
+//                userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, pageRequest, param), UserDTO.class);
     }
 
     @Override
@@ -242,24 +245,25 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return ConvertHelper.convertList(organizationRepository.queryByIds(ids), OrganizationDTO.class);
+            return organizationRepository.queryByIds(ids);
+//            return ConvertHelper.convertList(organizationRepository.queryByIds(ids), OrganizationDTO.class);
         }
     }
 
     private void checkCode(OrganizationDTO organization) {
         Boolean createCheck = StringUtils.isEmpty(organization.getId());
         String code = organization.getCode();
-        OrganizationDO organizationDO = new OrganizationDO();
-        organizationDO.setCode(code);
+        OrganizationDTO organizationDTO = new OrganizationDTO();
+        organizationDTO.setCode(code);
         if (createCheck) {
-            Boolean existed = organizationRepository.selectOne(organizationDO) != null;
+            Boolean existed = organizationRepository.selectOne(organizationDTO) != null;
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         } else {
             Long id = organization.getId();
-            OrganizationDO organizationDO1 = organizationRepository.selectOne(organizationDO);
-            Boolean existed = organizationDO1 != null && !id.equals(organizationDO1.getId());
+            OrganizationDTO dto = organizationRepository.selectOne(organizationDTO);
+            Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
@@ -267,7 +271,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest) {
-        return organizationRepository.selectAllOrgIdAndName(pageRequest);
+    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(int page, int size) {
+        return organizationRepository.selectAllOrgIdAndName(page, size);
     }
 }

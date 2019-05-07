@@ -3,8 +3,7 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.MenuDTO
-import io.choerodon.iam.infra.dataobject.MenuDO
+import io.choerodon.iam.infra.dto.MenuDTO
 import io.choerodon.iam.infra.mapper.MenuMapper
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,33 +35,29 @@ class MenuControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def menuDOList = new ArrayList<MenuDO>()
+    def menuDOList = new ArrayList<MenuDTO>()
 
     def setup() {
         if (needInit) {
             given: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                MenuDO menuDO = new MenuDO()
+                MenuDTO menuDO = new MenuDTO()
                 menuDO.setCode("choerodon.code.testroot" + i)
                 menuDO.setName("菜单测试" + i)
-                menuDO.setZhName("菜单测试" + i)
-                menuDO.setEnName("menu test" + i)
-                menuDO.setLevel("site")
-                menuDO.setParentId(0)
+                menuDO.setResourceLevel("site")
+                menuDO.setParentCode("parent")
                 menuDO.setType("root")
                 menuDO.setIcon("icon")
                 menuDO.setDefault(true)
                 menuDOList.add(menuDO)
             }
             for (int i = 0; i < 3; i++) {
-                MenuDO menuDO = new MenuDO()
+                MenuDTO menuDO = new MenuDTO()
                 menuDO.setCode("choerodon.code.testmenu" + i)
                 menuDO.setName("菜单测试" + i)
-                menuDO.setZhName("菜单测试" + i)
-                menuDO.setEnName("menu test" + i)
-                menuDO.setLevel("site")
-                menuDO.setParentId(1L)
+                menuDO.setResourceLevel("site")
+                menuDO.setParentCode("parent")
                 menuDO.setType("menu")
                 menuDO.setIcon("icon")
                 menuDOList.add(menuDO)
@@ -71,7 +66,7 @@ class MenuControllerSpec extends Specification {
             when: "插入记录"
             //不能insertList，否则不能插入多语言表
             def count = 0
-            for (MenuDO menuDO : menuDOList) {
+            for (MenuDTO menuDO : menuDOList) {
                 menuMapper.insert(menuDO)
             }
 
@@ -87,7 +82,7 @@ class MenuControllerSpec extends Specification {
             def count = 0
 
             when: "删除记录"
-            for (MenuDO menuDO : menuDOList) {
+            for (MenuDTO menuDO : menuDOList) {
                 count += menuMapper.deleteByPrimaryKey(menuDO)
             }
 

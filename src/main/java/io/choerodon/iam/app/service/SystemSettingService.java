@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.iam.api.dto.SystemSettingDTO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

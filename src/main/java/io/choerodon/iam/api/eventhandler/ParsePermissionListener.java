@@ -21,7 +21,7 @@ public class ParsePermissionListener extends AbstractEurekaEventObserver {
 
     @Override
     public void receiveUpEvent(EurekaEventPayload payload) {
-        parsePermissionService.parser(payload);
+        //parsePermissionService.parser(payload);
     }
 
     @Override

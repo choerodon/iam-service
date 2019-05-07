@@ -1,10 +1,8 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.domain.iam.entity.OrganizationE;
-import io.choerodon.iam.infra.dataobject.OrganizationDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -14,40 +12,40 @@ import java.util.Set;
  */
 public interface OrganizationRepository {
 
-    OrganizationE create(OrganizationE organizationE);
+    OrganizationDTO create(OrganizationDTO organizationDTO);
 
-    OrganizationDO update(OrganizationDO organizationDO);
+    OrganizationDTO update(OrganizationDTO organizationDTO);
 
-    OrganizationDO selectByPrimaryKey(Long organizationId);
+    OrganizationDTO selectByPrimaryKey(Long organizationId);
 
     Boolean deleteByKey(Long organizationId);
 
-    Page<OrganizationDO> pagingQuery(OrganizationDO organizationDO, PageRequest pageRequest, String param);
+    PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param);
 
-    List<OrganizationDO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled);
+    List<OrganizationDTO> selectFromMemberRoleByMemberId(Long userId, Boolean includedDisabled);
 
-    List<OrganizationDO> selectOrgByUserAndPros(Long userId, Boolean includedDisabled);
+    List<OrganizationDTO> selectOrgByUserAndPros(Long userId, Boolean includedDisabled);
 
-    List<OrganizationDO> selectAll();
+    List<OrganizationDTO> selectAll();
 
-    List<OrganizationDO> selectAllOrganizationsWithEnabledProjects();
+    List<OrganizationDTO> selectAllOrganizationsWithEnabledProjects();
 
-    List<OrganizationDO> select(OrganizationDO organizationDO);
+    List<OrganizationDTO> select(OrganizationDTO organizationDTO);
 
-    OrganizationDO selectOne(OrganizationDO organizationDO);
+    OrganizationDTO selectOne(OrganizationDTO organizationDTO);
 
-    Page<OrganizationDO> pagingQueryOrganizationAndRoleById(PageRequest pageRequest, Long id, String params);
+    PageInfo<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params);
 
-    Page<OrganizationDO> pagingQueryByUserId(Long userId, OrganizationDO organizationDO, PageRequest pageRequest, String param);
+    PageInfo<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param);
 
     List<Long> listMemberIds(Long organizationId);
 
-    List<OrganizationDO> queryByIds(Set<Long> ids);
+    List<OrganizationDTO> queryByIds(Set<Long> ids);
 
     /**
      * 查询所有组织的ID/Name
      *
      * @return list
      */
-    List<OrganizationSimplifyDTO> selectAllOrgIdAndName(PageRequest pageRequest);
+    PageInfo<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size);
 }

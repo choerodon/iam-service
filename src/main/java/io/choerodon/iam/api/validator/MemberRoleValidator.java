@@ -2,13 +2,12 @@ package io.choerodon.iam.api.validator;
 
 import java.util.List;
 
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.api.dto.MemberRoleDTO;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 
@@ -31,11 +30,11 @@ public class MemberRoleValidator {
             if (memberRoleDTO.getRoleId() == null) {
                 throw new CommonException("error.roleId.null");
             }
-            RoleDO roleDO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
-            if (roleDO == null) {
+            RoleDTO roleDTO = roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId());
+            if (roleDTO == null) {
                 throw new CommonException("error.role.not.exist");
             }
-            if (!roleDO.getLevel().equals(level)) {
+            if (!roleDTO.getResourceLevel().equals(level)) {
                 throw new CommonException("error.roles.in.same.level");
             }
         });
@@ -43,12 +42,12 @@ public class MemberRoleValidator {
 
     public Boolean userHasRoleValidator(CustomUserDetails userDetails, String sourceType, Long sourceId, Boolean isAdmin) {
         if (!isAdmin) {
-            MemberRoleDO memberRoleDO = new MemberRoleDO();
-            memberRoleDO.setMemberId(userDetails.getUserId());
-            memberRoleDO.setMemberType("user");
-            memberRoleDO.setSourceType(sourceType);
-            memberRoleDO.setSourceId(sourceId);
-            if (memberRoleMapper.select(memberRoleDO).isEmpty()) {
+            MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
+            memberRoleDTO.setMemberId(userDetails.getUserId());
+            memberRoleDTO.setMemberType("user");
+            memberRoleDTO.setSourceType(sourceType);
+            memberRoleDTO.setSourceId(sourceId);
+            if (memberRoleMapper.select(memberRoleDTO).isEmpty()) {
                 throw new CommonException("error.memberRole.select");
             }
         }

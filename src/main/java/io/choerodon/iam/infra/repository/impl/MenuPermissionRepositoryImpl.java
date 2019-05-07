@@ -1,7 +1,7 @@
 package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.iam.domain.repository.MenuPermissionRepository;
-import io.choerodon.iam.infra.dataobject.MenuPermissionDO;
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class MenuPermissionRepositoryImpl implements MenuPermissionRepository {
     }
 
     @Override
-    public void delete(MenuPermissionDO menuPermissionDO) {
-        menuPermissionMapper.delete(menuPermissionDO);
+    public void delete(MenuPermissionDTO menuPermissionDTO) {
+        menuPermissionMapper.delete(menuPermissionDTO);
     }
 }

@@ -8,10 +8,13 @@ import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
 import io.choerodon.iam.app.service.UserService
-import io.choerodon.iam.infra.dataobject.*
+import io.choerodon.iam.infra.dto.ClientDTO
+import io.choerodon.iam.infra.dto.MemberRoleDTO
+import io.choerodon.iam.infra.dto.ProjectDTO
+import io.choerodon.iam.infra.dto.RoleDTO
+import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.enums.MemberType
 import io.choerodon.iam.infra.mapper.*
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -52,25 +55,25 @@ class RoleMemberControllerSpec extends Specification {
     @Shared
     def needClean = false
     @Shared
-    def memberRoleDOList = new ArrayList<MemberRoleDO>()
+    def memberRoleDOList = new ArrayList<MemberRoleDTO>()
     @Shared
-    def roleDOList = new ArrayList<RoleDO>()
+    def roleDOList = new ArrayList<RoleDTO>()
     @Shared
-    def userDOList = new ArrayList<UserDO>()
+    def userDOList = new ArrayList<UserDTO>()
     @Shared
     def clientDOList
     @Shared
-    def projectDO = new ProjectDO()
+    def projectDO = new ProjectDTO()
 
     def setup() {
         if (needInit) {
             given: "构造参数"
             needInit = false
             for (int i = 0; i < 3; i++) {
-                RoleDO roleDO = new RoleDO()
+                RoleDTO roleDO = new RoleDTO()
                 roleDO.setCode("role/site/default/rolemember" + i)
                 roleDO.setName("权限管理员")
-                roleDO.setLevel("site")
+                roleDO.setResourceLevel("site")
                 roleDOList.add(roleDO)
             }
             projectDO.setCode("hand")
@@ -80,21 +83,21 @@ class RoleMemberControllerSpec extends Specification {
             when: "插入记录"
             def count = 0
             count += projectMapper.insert(projectDO)
-            for (RoleDO roleDO : roleDOList) {
+            for (RoleDTO roleDO : roleDOList) {
                 count += roleMapper.insert(roleDO)
             }
             for (int i = 0; i < 3; i++) {
-                UserDO userDO = new UserDO()
-                userDO.setLoginName("dengyouquan" + i)
-                userDO.setRealName("dengyouquan" + i)
-                userDO.setEmail("dengyouquan" + i + "@qq.com")
-                userDO.setSourceId(projectDO.getId())
-                userDO.setOrganizationId(1L)
-                userDOList.add(userDO)
+                UserDTO user = new UserDTO()
+                user.setLoginName("dengyouquan" + i)
+                user.setRealName("dengyouquan" + i)
+                user.setEmail("dengyouquan" + i + "@qq.com")
+                user.setSourceId(projectDO.getId())
+                user.setOrganizationId(1L)
+                userDOList.add(user)
             }
             count += userMapper.insertList(userDOList)
             for (int i = 0; i < 3; i++) {
-                MemberRoleDO memberRoleDO = new MemberRoleDO()
+                MemberRoleDTO memberRoleDO = new MemberRoleDTO()
                 memberRoleDO.setMemberType("user")
                 memberRoleDO.setRoleId(roleDOList.get(i).getId())
                 memberRoleDO.setSourceType("site")
@@ -117,17 +120,17 @@ class RoleMemberControllerSpec extends Specification {
             needClean = false
 
             when: "删除记录"
-            for (MemberRoleDO memberRoleDO : memberRoleDOList) {
+            for (MemberRoleDTO memberRoleDO : memberRoleDOList) {
                 count += memberRoleMapper.deleteByPrimaryKey(memberRoleDO)
             }
-            for (UserDO userDO : userDOList) {
+            for (UserDTO userDO : userDOList) {
                 count += userMapper.deleteByPrimaryKey(userDO)
             }
-            for (RoleDO roleDO : roleDOList) {
+            for (RoleDTO roleDO : roleDOList) {
                 count += roleMapper.deleteByPrimaryKey(roleDO)
             }
 
-            for (ClientDO clientDO : clientDOList) {
+            for (ClientDTO clientDO : clientDOList) {
                 clientMapper.deleteByPrimaryKey(clientDO)
             }
             count += projectMapper.deleteByPrimaryKey(projectDO)
@@ -137,10 +140,10 @@ class RoleMemberControllerSpec extends Specification {
         }
     }
 
-    List<ClientDO> initClient() {
-        List<ClientDO> clientDOList = new ArrayList<>()
+    List<ClientDTO> initClient() {
+        List<ClientDTO> clientDOList = new ArrayList<>()
         for (int i = 0; i < 3; i++) {
-            ClientDO clientDO = new ClientDO()
+            ClientDTO clientDO = new ClientDTO()
             clientDO.setName("client" + i)
             clientDO.setOrganizationId(1L)
             clientMapper.insertSelective(clientDO)
@@ -161,8 +164,8 @@ class RoleMemberControllerSpec extends Specification {
         paramsMap.put("member_ids", memberIds)
 
         when: "调用方法[异常-role id为空]"
-        def memberRoleDO = new MemberRoleDO()
-        def memberRoleDOList1 = new ArrayList<MemberRoleDO>()
+        def memberRoleDO = new MemberRoleDTO()
+        def memberRoleDOList1 = new ArrayList<MemberRoleDTO>()
         memberRoleDOList1.add(memberRoleDO)
         def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
 
@@ -196,9 +199,9 @@ class RoleMemberControllerSpec extends Specification {
         paramsMap.put("member_ids", memberIds)
 
         when: "调用方法[异常-role id为空]"
-        def memberRoleDO = new MemberRoleDO()
+        def memberRoleDO = new MemberRoleDTO()
         memberRoleDO.setMemberType(MemberType.CLIENT.value())
-        def memberRoleDOList1 = new ArrayList<MemberRoleDO>()
+        def memberRoleDOList1 = new ArrayList<MemberRoleDTO>()
         memberRoleDOList1.add(memberRoleDO)
         def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
 
@@ -232,7 +235,7 @@ class RoleMemberControllerSpec extends Specification {
         paramsMap.put("organization_id", 1L)
         paramsMap.put("is_edit", true)
         paramsMap.put("member_ids", memberIds)
-        MemberRoleDO memberRoleDO = new MemberRoleDO()
+        MemberRoleDTO memberRoleDO = new MemberRoleDTO()
         memberRoleDO.setSourceType("organization")
         def memberRoleDOList1 = memberRoleMapper.select(memberRoleDO)
 
@@ -258,8 +261,8 @@ class RoleMemberControllerSpec extends Specification {
         memberIds2[0] = 1L
         paramsMap.put("member_ids", memberIds2)
         paramsMap.put("organization_id", 1L)
-        memberRoleDOList1 = new ArrayList<MemberRoleDO>()
-        MemberRoleDO memberRoleDO1 = new MemberRoleDO()
+        memberRoleDOList1 = new ArrayList<MemberRoleDTO>()
+        MemberRoleDTO memberRoleDO1 = new MemberRoleDTO()
         memberRoleDO1.setMemberId(1L)
         memberRoleDO1.setMemberType(MemberType.CLIENT.value())
         memberRoleDO1.setRoleId(2L)
@@ -282,7 +285,7 @@ class RoleMemberControllerSpec extends Specification {
         paramsMap.put("project_id", 1L)
         paramsMap.put("is_edit", true)
         paramsMap.put("member_ids", memberIds)
-        MemberRoleDO memberRoleDO = new MemberRoleDO()
+        MemberRoleDTO memberRoleDO = new MemberRoleDTO()
         memberRoleDO.setSourceType("project")
         //null
         def memberRoleDOList1 = memberRoleMapper.select(memberRoleDO)
@@ -795,10 +798,10 @@ class RoleMemberControllerSpec extends Specification {
     def "queryAllUsers"() {
         given: "构造请求参数"
         RoleMemberController controller = new RoleMemberController(null, userService, null, null, null)
-        PageRequest pageRequest = new PageRequest(0,20)
+//        PageRequest pageRequest = new PageRequest(0,20)
 
         when: "调用方法"
-        def result = controller.queryAllUsers(pageRequest,0L,"param")
+        def result = controller.queryAllUsers(0,20,0L,"param")
         then: "校验结果"
         result.statusCode.is2xxSuccessful()
     }

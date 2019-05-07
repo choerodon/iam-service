@@ -1,0 +1,125 @@
+dashboard:
+  - code: "Guide"
+    icon: APItest
+    title: "快速入门"
+    description: "新手指引"
+    level: site
+    sort: 1
+    delete: true
+  - code: "Document"
+    icon: description
+    title: "文档"
+    description: "文档"
+    level: site
+    sort: 2
+    delete: true
+  - code: "Announcement"
+    icon: import_contacts
+    title: "公告"
+    description: "您可以在此查看平台内的系统公告。"
+    level: site
+    sort: 3
+    position:
+      positionX: 4
+      positionY: 0
+      width: 4
+      height: 4
+  - code: "UserInfo"
+    icon: person
+    title: "我的信息"
+    description: "您可以通过卡片了解您的个人信息。"
+    level: site
+    sort: 4
+    position:
+      positionX: 0
+      positionY: 0
+      width: 4
+      height: 4
+  - code: "ProjectInfo"
+    icon: project
+    title: "项目信息"
+    description: "您可以查看当前项目的类型、所属组织以及您在该项目拥有的角色。"
+    level: project
+    sort: 5
+    position:
+      positionX: 0
+      positionY: 0
+      width: 4
+      height: 4
+  - code: "OrganizationInfo"
+    icon: domain
+    title: "组织信息"
+    description: "您可以查看您在当前组织的拥有的角色和项目数量。"
+    level: organization
+    sort: 6
+    position:
+      positionX: 0
+      positionY: 0
+      width: 4
+      height: 3
+  - code: "MyProject"
+    icon: project_list
+    title: "我的项目"
+    description: "您可以了解您在平台内拥有的所有项目。"
+    level: site
+    sort: 7
+    delete: true
+  - code: "MyOrganization"
+    icon: domain_list
+    title: "我的组织"
+    description: "您可以了解您在平台内拥有的所有组织。"
+    level: site
+    sort: 8
+    delete: true
+  - code: "FailedSaga"
+    icon: task_schedule
+    title: "事务失败情况"
+    needRoles: true
+    description: "您可以在此了解事务实例最近30天的执行失败情况。"
+    level: site
+    sort: 9
+    roles: ['role/site/default/administrator', 'role/site/default/developer']
+    position:
+      positionX: 8
+      positionY: 4
+      width: 4
+      height: 4
+  - code: "AddedUsers"
+    icon: group_add
+    title: "新增用户"
+    description: "您可以在此了解平台今日新增用户与总用户数。"
+    level: site
+    sort: 10
+    roles: ['role/site/default/administrator']
+    needRoles: true
+    position:
+      positionX: 4
+      positionY: 4
+      width: 4
+      height: 4
+  - code: "OnlineUsers"
+    icon: record_voice_over
+    title: "在线用户"
+    description: "您可以实时了解此刻用户访问情况、当天不同时段用户访问情况以及当天的用户总访问量。"
+    level: site
+    sort: 11
+    roles: ['role/site/default/administrator']
+    needRoles: true
+    position:
+      positionX: 0
+      positionY: 4
+      width: 4
+      height: 4
+  - code: "OrganizationStatistics"
+    icon: domain
+    title: "组织统计"
+    description: "您可以在此了解平台组织统计的情况。"
+    level: site
+    sort: 12
+    roles: ['role/site/default/administrator']
+    needRoles: true
+    position:
+      positionX: 8
+      positionY: 0
+      width: 4
+      height: 4

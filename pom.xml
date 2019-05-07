@@ -5,16 +5,27 @@
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.9.0.RELEASE</version>
+        <version>0.11.0.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>iam-service</artifactId>
+    <version>0.16.0.RELEASE</version>
+
     <properties>
-        <choerodon.starters.version>0.10.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.11.0.RELEASE</choerodon.starters.version>
         <powermock.version>2.0.0-beta.5</powermock.version>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+        <choerodon.mainClass>io.choerodon.iam.IAMServiceApplication</choerodon.mainClass>
     </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Choerodon Release</id>
+            <name>Choerodon Release Repository</name>
+            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
+        </pluginRepository>
+    </pluginRepositories>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -52,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-mybatis-mapper</artifactId>
+            <artifactId>choerodon-starter-mybatis</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
@@ -63,6 +74,11 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-oauth-core</artifactId>
+            <version>${choerodon.starters.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-actuator</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
@@ -78,6 +94,11 @@
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-eureka-event</artifactId>
             <version>${choerodon.starters.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign.form</groupId>
@@ -122,7 +143,7 @@
         <!-- 添加cpu监控 -->
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-hitoa</artifactId>
+            <artifactId>choerodon-starter-metric</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
 
@@ -220,42 +241,6 @@
     </dependencies>
     <build>
         <finalName>app</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>addTestSources</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                    <argLine>@{argLine}</argLine>
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/*Spec.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
 </project>

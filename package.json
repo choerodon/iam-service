@@ -1,0 +1,47 @@
+{
+  "name": "@choerodon/iam",
+  "routeName": "iam",
+  "version": "0.1.1",
+  "description": "",
+  "main": "./lib/src/app/iam/containers/IAMIndex.js",
+  "files": [
+    "lib"
+  ],
+  "dependencies": {
+    "@choerodon/boot": "0.1.x",
+    "@choerodon/master": "0.1.x",
+    "echarts": "^4.1.0",
+    "echarts-for-react": "^2.0.12",
+    "hjson": "^3.1.1",
+    "react-codemirror": "^1.0.0",
+    "react-image-lightbox": "^4.6.0",
+    "react-quill": "^1.2.6"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.1",
+    "through2": "^2.0.3"
+  },
+  "scripts": {
+    "start": "choerodon-front-boot start --config ./react/config.js",
+    "dist": "choerodon-front-boot dist --config ./react/config.js",
+    "lint-staged": "lint-staged",
+    "lint-staged:es": "eslint",
+    "compile": "gulp compile"
+  },
+  "author": "",
+  "license": "ISC",
+  "lint-staged": {
+    "react/**/*.{js,jsx}": [
+      "npm run lint-staged:es"
+    ],
+    "react/**/*.scss": "stylelint --syntax scss"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "peerDependencies": {}
+}

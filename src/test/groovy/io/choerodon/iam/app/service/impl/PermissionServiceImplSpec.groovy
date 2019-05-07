@@ -6,11 +6,11 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.CheckPermissionDTO
 import io.choerodon.iam.app.service.PermissionService
-import io.choerodon.iam.domain.iam.entity.PermissionE
 import io.choerodon.iam.domain.repository.MenuPermissionRepository
 import io.choerodon.iam.domain.repository.PermissionRepository
 import io.choerodon.iam.domain.repository.RolePermissionRepository
 import io.choerodon.iam.infra.common.utils.SpockUtils
+import io.choerodon.iam.infra.dto.PermissionDTO
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import org.junit.runner.RunWith
@@ -23,7 +23,6 @@ import org.spockframework.runtime.Sputnik
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.discovery.DiscoveryClient
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient
-import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
 /**
@@ -105,7 +104,20 @@ class PermissionServiceImplSpec extends Specification {
     def "DeleteByCode"() {
         given: "构造请求参数"
         String code = "code"
-        PermissionE permissionE = new PermissionE(code, "path", "method", "level", "description", "action", "resource", true, true, true, "iam-service", 1)
+        PermissionDTO permission = new PermissionDTO()
+        permission.setCode(code)
+        permission.setPath("path")
+        permission.setMethod("method")
+        permission.setResourceLevel("level")
+        permission.setDescription("description")
+        permission.setAction("action")
+        permission.setController("resource")
+        permission.setPublicAccess(true)
+        permission.setLoginAccess(true)
+        permission.setWithin(true)
+        permission.setServiceCode("iam-service")
+
+
         List<ServiceInstance> serviceInstances = new ArrayList<>()
 
         when: "调用方法"
@@ -113,7 +125,7 @@ class PermissionServiceImplSpec extends Specification {
         permissionService.deleteByCode("code")
 
         then: "校验结果"
-        1 * permissionRepository.selectByCode(_) >> { permissionE }
+        1 * permissionRepository.selectByCode(_) >> { permission }
         1 * permissionRepository.deleteById(_)
         1 * rolePermissionRepository.delete(_)
         1 * menuPermissionRepository.delete(_)

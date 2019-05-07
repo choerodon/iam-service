@@ -2,10 +2,10 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.LookupService
-import io.choerodon.iam.domain.iam.entity.LookupE
 import io.choerodon.iam.domain.repository.LookupRepository
 import io.choerodon.iam.domain.repository.LookupValueRepository
 import io.choerodon.iam.domain.service.ILookupService
+import io.choerodon.iam.infra.dto.LookupDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -45,6 +45,6 @@ class LookupServiceImplTestSpec extends Specification {
         lookupService.queryByCode(code)
 
         then: "校验结果"
-        1 * service.queryByCode(_) >> { new LookupE() }
+        1 * service.queryByCode(_) >> { new LookupDTO() }
     }
 }

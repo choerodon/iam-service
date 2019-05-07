@@ -1,35 +1,34 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Set;
+
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author wuguokai
  */
-public interface ProjectMapper extends BaseMapper<ProjectDO> {
+public interface ProjectMapper extends Mapper<ProjectDTO> {
 
-    List<ProjectDO> fulltextSearch(@Param("project") ProjectDO projectDO,
+    List<ProjectDTO> fulltextSearch(@Param("project") ProjectDTO projectDTO,
                                    @Param("param") String param);
 
-    List<ProjectDO> selectProjectsByUserId(@Param("userId") Long userId,
-                                           @Param("projectDO") ProjectDO projectDO);
+    List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
+                                           @Param("projectDTO") ProjectDTO projectDTO);
 
-    List selectProjectsByUserIdWithParam(@Param("userId") Long userId,
-                                         @Param("projectDO") ProjectDO projectDO,
+    List<ProjectDTO> selectProjectsByUserIdWithParam(@Param("userId") Long userId,
+                                         @Param("projectDTO") ProjectDTO projectDTO,
                                          @Param("param") String param);
 
-    List<ProjectDO> selectProjectsWithRoles(
+    List<ProjectDTO> selectProjectsWithRoles(
             @Param("id") Long id,
             @Param("start") Integer start,
             @Param("size") Integer size,
             @Param("params") String params);
 
-    List<ProjectDO> selectUserProjectsUnderOrg(@Param("userId") Long userId,
+    List<ProjectDTO> selectUserProjectsUnderOrg(@Param("userId") Long userId,
                                                @Param("orgId") Long orgId,
                                                @Param("isEnabled") Boolean isEnabled);
 
@@ -39,7 +38,7 @@ public interface ProjectMapper extends BaseMapper<ProjectDO> {
     /**
      * 获取所有项目，附带项目类型名
      */
-    List<ProjectDO> selectAllWithProjectType();
+    List<ProjectDTO> selectAllWithProjectType();
 
     Boolean projectEnabled(@Param("sourceId") Long sourceId);
 

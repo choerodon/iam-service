@@ -2,23 +2,20 @@ package io.choerodon.iam.infra.repository.impl;
 
 import java.util.List;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.domain.iam.entity.MemberRoleE;
 import io.choerodon.iam.domain.repository.MemberRoleRepository;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author superlee
@@ -46,36 +43,33 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public MemberRoleE insertSelective(MemberRoleE memberRoleE) {
-        MemberRoleDO memberRoleDO = ConvertHelper.convert(memberRoleE, MemberRoleDO.class);
-        if (memberRoleDO.getMemberType() == null) {
-            memberRoleDO.setMemberType("user");
+    public MemberRoleDTO insertSelective(MemberRoleDTO memberRoleDTO) {
+        if (memberRoleDTO.getMemberType() == null) {
+            memberRoleDTO.setMemberType("user");
         }
-        if (roleMapper.selectByPrimaryKey(memberRoleDO.getRoleId()) == null) {
+        if (roleMapper.selectByPrimaryKey(memberRoleDTO.getRoleId()) == null) {
             throw new CommonException("error.member_role.insert.role.not.exist");
         }
-        if (ResourceLevel.PROJECT.value().equals(memberRoleDO.getSourceType())
-                && projectMapper.selectByPrimaryKey(memberRoleDO.getSourceId()) == null) {
+        if (ResourceLevel.PROJECT.value().equals(memberRoleDTO.getSourceType())
+                && projectMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
             throw new CommonException("error.member_role.insert.project.not.exist");
         }
-        if (ResourceLevel.ORGANIZATION.value().equals(memberRoleDO.getSourceType())
-                && organizationMapper.selectByPrimaryKey(memberRoleDO.getSourceId()) == null) {
+        if (ResourceLevel.ORGANIZATION.value().equals(memberRoleDTO.getSourceType())
+                && organizationMapper.selectByPrimaryKey(memberRoleDTO.getSourceId()) == null) {
             throw new CommonException("error.member_role.insert.organization.not.exist");
         }
-        if (memberRoleMapper.selectOne(memberRoleDO) != null) {
+        if (memberRoleMapper.selectOne(memberRoleDTO) != null) {
             throw new CommonException("error.member_role.has.existed");
         }
-        if (memberRoleMapper.insertSelective(memberRoleDO) != 1) {
+        if (memberRoleMapper.insertSelective(memberRoleDTO) != 1) {
             throw new CommonException("error.member_role.create");
         }
-        return ConvertHelper.convert(
-                memberRoleMapper.selectByPrimaryKey(memberRoleDO.getId()), MemberRoleE.class);
+        return memberRoleMapper.selectByPrimaryKey(memberRoleDTO.getId());
     }
 
     @Override
-    public List<MemberRoleE> select(MemberRoleE memberRoleE) {
-        MemberRoleDO memberRoleDO = ConvertHelper.convert(memberRoleE, MemberRoleDO.class);
-        return ConvertHelper.convertList(memberRoleMapper.select(memberRoleDO), MemberRoleE.class);
+    public List<MemberRoleDTO> select(MemberRoleDTO memberRoleDTO) {
+        return memberRoleMapper.select(memberRoleDTO);
     }
 
     @Override
@@ -84,17 +78,17 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public MemberRoleE selectByPrimaryKey(Long id) {
-        return ConvertHelper.convert(memberRoleMapper.selectByPrimaryKey(id), MemberRoleE.class);
+    public MemberRoleDTO selectByPrimaryKey(Long id) {
+        return memberRoleMapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public MemberRoleDO selectOne(MemberRoleDO memberRole) {
+    public MemberRoleDTO selectOne(MemberRoleDTO memberRole) {
         return memberRoleMapper.selectOne(memberRole);
     }
 
     @Override
-    public void insert(MemberRoleDO memberRole) {
+    public void insert(MemberRoleDTO memberRole) {
         if (memberRoleMapper.insertSelective(memberRole) != 1) {
             throw new CommonException("error.memberRole.insert.failed");
         }
@@ -106,30 +100,29 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
     }
 
     @Override
-    public Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
-        return pageQueryingClientsWithRoles(pageRequest, clientRoleSearchDTO, sourceId, param, ResourceLevel.ORGANIZATION.value());
+    public PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
+            int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, sourceId, param, ResourceLevel.ORGANIZATION.value());
     }
 
     @Override
-    public Page<ClientDO> pagingQueryClientsWithSiteLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, String param) {
-        return pageQueryingClientsWithRoles(pageRequest, clientRoleSearchDTO, 0L, param, ResourceLevel.SITE.value());
+    public PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, String param) {
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, 0L, param, ResourceLevel.SITE.value());
     }
 
     @Override
-    public Page<ClientDO> pagingQueryClientsWithProjectLevelRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
-        return pageQueryingClientsWithRoles(pageRequest, clientRoleSearchDTO, sourceId, param, ResourceLevel.PROJECT.value());
+    public PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param) {
+        return pageQueryingClientsWithRoles(page, size, clientRoleSearchDTO, sourceId, param, ResourceLevel.PROJECT.value());
     }
 
-    private Page<ClientDO> pageQueryingClientsWithRoles(PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
+    private PageInfo<ClientDTO> pageQueryingClientsWithRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
         //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
         int start = page * size;
-        PageInfo pageInfo = new PageInfo(page, size);
+        Page<ClientDTO> result = new Page<>(page, size);
         int count = memberRoleMapper.selectCountClients(sourceId, sourceType, clientRoleSearchDTO, param);
-        List<ClientDO> clientDOS = memberRoleMapper.selectClientsWithRoles(sourceId, sourceType, clientRoleSearchDTO, param, start, size);
+        result.setTotal(count);
+        result.addAll(memberRoleMapper.selectClientsWithRoles(sourceId, sourceType, clientRoleSearchDTO, param, start, size));
         //筛选非空角色以及角色内部按id排序
-        return new Page<>(clientDOS, pageInfo, count);
+        return result.toPageInfo();
     }
 }

@@ -1,14 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.LanguageDTO;
 import io.choerodon.iam.app.service.LanguageService;
 import io.choerodon.iam.domain.repository.LanguageRepository;
-import io.choerodon.iam.infra.dataobject.LanguageDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.LanguageDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +25,12 @@ public class LanguageServiceImpl implements LanguageService {
     }
 
     @Override
-    public Page<LanguageDTO> pagingQuery(PageRequest pageRequest, LanguageDTO languageDTO) {
-        Page<LanguageDO> languageDOPage =
-                repository.pagingQuery(pageRequest,
-                        ConvertHelper.convert(languageDTO, LanguageDO.class), languageDTO.getParam());
-        return ConvertPageHelper.convertPage(languageDOPage, LanguageDTO.class);
+    public PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
+        return repository.pagingQuery(page,size,languageDTO,param);
+//        Page<LanguageDO> languageDOPage =
+//                repository.pagingQuery(pageRequest,
+//                        ConvertHelper.convert(languageDTO, LanguageDO.class), languageDTO.getParam());
+//        return ConvertPageHelper.convertPage(languageDOPage, LanguageDTO.class);
     }
 
     @Override
@@ -41,22 +39,17 @@ public class LanguageServiceImpl implements LanguageService {
         if (repository.queryById(languageDTO.getId()) == null) {
             throw new CommonException("error.language.not.exist");
         }
-        return ConvertHelper.convert(
-                repository.update(
-                        ConvertHelper.convert(
-                                languageDTO, LanguageDO.class)), LanguageDTO.class);
+        return repository.update(languageDTO);
     }
 
     @Override
     public LanguageDTO queryByCode(LanguageDTO language) {
-        return ConvertHelper.convert(
-                repository.queryByCode(
-                        ConvertHelper.convert(language, LanguageDO.class)), LanguageDTO.class);
+        return repository.queryByCode(language);
     }
 
     @Override
     public List<LanguageDTO> listAll() {
-        return ConvertHelper.convertList(repository.listAll(), LanguageDTO.class);
+        return repository.listAll();
     }
 
 }

@@ -2,24 +2,28 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.core.convertor.ConvertHelper
+//import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.dto.*
+import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
+import io.choerodon.iam.api.dto.UserPasswordDTO
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.UserService
-import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.repository.OrganizationRepository
 import io.choerodon.iam.domain.repository.ProjectRepository
 import io.choerodon.iam.domain.repository.RoleRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dataobject.*
+import io.choerodon.iam.infra.dto.MemberRoleDTO
+import io.choerodon.iam.infra.dto.OrganizationDTO
+import io.choerodon.iam.infra.dto.ProjectDTO
+import io.choerodon.iam.infra.dto.RoleDTO
+import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDO
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
 import io.choerodon.oauth.core.password.record.PasswordRecord
 import org.apache.http.entity.ContentType
@@ -44,7 +48,7 @@ import java.lang.reflect.Field
  * */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper, ConvertHelper])
+@PrepareForTest([DetailsHelper])
 class UserServiceImplSpec extends Specification {
     private UserRepository userRepository = Mock(UserRepository)
     private IUserService iUserService = Mock(IUserService)
@@ -81,39 +85,42 @@ class UserServiceImplSpec extends Specification {
         given: "mock静态方法-ConvertHelper"
         def userDTO = new UserDTO()
         userDTO.setOrganizationId(1L)
-        PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO)
+//        PowerMockito.mockStatic(ConvertHelper)
+//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO)
+        UserDTO user = new UserDTO();
+        user.setPassword("password")
+
 
         when: "调用方法"
         userService.querySelf()
 
         then: "校验结果"
-        1 * userRepository.selectByPrimaryKey(_) >> { new UserE("password") }
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
+        1 * userRepository.selectByPrimaryKey(_) >> { user }
+        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
     }
 
     def "QueryOrganizations"() {
-        given: "mock静态方法-ConvertHelper"
-        PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convertList(Mockito.any(), Mockito.any())).thenReturn(new ArrayList<OrganizationDTO>())
+//        given: "mock静态方法-ConvertHelper"
+//        PowerMockito.mockStatic(ConvertHelper)
+//        PowerMockito.when(ConvertHelper.convertList(Mockito.any(), Mockito.any())).thenReturn(new ArrayList<OrganizationDTO>())
 
         when: "调用方法"
         userService.queryOrganizations(userId, false)
 
         then: "校验结果"
-        1 * organizationRepository.selectAll() >> { new ArrayList<OrganizationDO>() }
+        1 * organizationRepository.selectAll() >> { new ArrayList<OrganizationDTO>() }
     }
 
     def "QueryProjects"() {
         given: "mock静态方法-ConvertHelper"
-        PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convertList(Mockito.any(), Mockito.any())).thenReturn(new ArrayList<ProjectDTO>())
+//        PowerMockito.mockStatic(ConvertHelper)
+//        PowerMockito.when(ConvertHelper.convertList(Mockito.any(), Mockito.any())).thenReturn(new ArrayList<ProjectDTO>())
 
         when: "调用方法"
         userService.queryProjects(userId, false)
 
         then: "校验结果"
-        1 * projectRepository.selectAll() >> { new ArrayList<ProjectDO>() }
+        1 * projectRepository.selectAll() >> { new ArrayList<ProjectDTO>() }
     }
 
     def "UploadPhoto"() {
@@ -177,17 +184,18 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            UserE userE = new UserE("password")
-            Field field = userE.getClass().getDeclaredField("ldap")
+            UserDTO user = new UserDTO()
+            user.setPassword("password")
+            Field field = user.getClass().getDeclaredField("ldap")
             field.setAccessible(true)
-            field.set(userE, false)
-            Field field1 = userE.getClass().getDeclaredField("password")
+            field.set(user, false)
+            Field field1 = user.getClass().getDeclaredField("password")
             field1.setAccessible(true)
-            field1.set(userE, ENCODER.encode("123456"))
-            return userE
+            field1.set(user, ENCODER.encode("123456"))
+            return user
         }
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
-        1 * basePasswordPolicyMapper.selectOne(_) >> { new BasePasswordPolicyDO() }
+        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
+        1 * basePasswordPolicyMapper.selectOne(_) >> { new BasePasswordPolicyDTO() }
         1 * passwordPolicyManager.passwordValidate(_, _, _)
         1 * userRepository.updateSelective(_)
         1 * passwordRecord.updatePassword(_, _)
@@ -205,11 +213,12 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            UserE userE = new UserE("password")
-            Field field = userE.getClass().getDeclaredField("ldap")
+            UserDTO user = new UserDTO()
+            user.setPassword("password")
+            Field field = user.getClass().getDeclaredField("ldap")
             field.setAccessible(true)
-            field.set(userE, true)
-            return userE
+            field.set(user, true)
+            return user
         }
         def exception = thrown(CommonException)
         exception.message.equals("error.ldap.user.can.not.update.password")
@@ -219,11 +228,12 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            UserE userE = new UserE("password")
-            Field field = userE.getClass().getDeclaredField("ldap")
+            UserDTO user = new UserDTO()
+            user.setPassword("password")
+            Field field = user.getClass().getDeclaredField("ldap")
             field.setAccessible(true)
-            field.set(userE, false)
-            return userE
+            field.set(user, false)
+            return user
         }
         exception = thrown(CommonException)
         exception.message.equals("error.password.originalPassword")
@@ -235,20 +245,21 @@ class UserServiceImplSpec extends Specification {
         userDTO.setId(userId)
 
         and: "mock静态方法-ConvertHelper"
-        PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserE("123456")).thenReturn(new UserDTO())
+//        PowerMockito.mockStatic(ConvertHelper)
+//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserE("123456")).thenReturn(new UserDTO())
 
         when: "调用方法"
         userService.updateInfo(userDTO)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDO()
+        1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDTO()
         1 * iUserService.updateUserInfo(_) >> {
-            UserE userE = new UserE("123456")
-            Field field = userE.getClass().getDeclaredField("id")
+            UserDTO user = new UserDTO()
+            user.setPassword("123456")
+            Field field = user.getClass().getDeclaredField("id")
             field.setAccessible(true)
-            field.set(userE, 1L)
-            return userE
+            field.set(user, 1L)
+            return user
         }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
@@ -256,54 +267,56 @@ class UserServiceImplSpec extends Specification {
     def "LockUser"() {
         given: "构造请求参数"
         def lockExpireTime = 1
-
-        and: "mock静态方法-ConvertHelper"
-        PowerMockito.mockStatic(ConvertHelper)
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserDTO())
+        UserDTO user = new UserDTO()
+        user.setPassword("123456")
 
         when: "调用方法"
         userService.lockUser(userId, lockExpireTime)
 
         then: "校验结果"
-        1 * userRepository.selectByPrimaryKey(_) >> { new UserE("123456") }
-        1 * userRepository.updateSelective(_) >> { new UserE("123456") }
+        1 * userRepository.selectByPrimaryKey(_) >> { user }
+        1 * userRepository.updateSelective(_) >> { user }
     }
 
     def "AddAdminUsers"() {
         given: "构造请求参数"
         long[] ids = new long[1]
         ids[0] = userId
+        UserDTO userE = new UserDTO()
+        userE.setPassword("123456")
 
         when: "调用方法"
         userService.addAdminUsers(ids)
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            UserE userE = new UserE("123456")
+            
             Field field = userE.getClass().getDeclaredField("admin")
             field.setAccessible(true)
             field.set(userE, false)
             return userE
         }
-        1 * userRepository.updateSelective(_) >> { new UserE("123456") }
+        1 * userRepository.updateSelective(_) >> { userE }
     }
 
     def "DeleteAdminUser"() {
         given: "构造请求参数"
         long id = 1L
+        UserDTO userE = new UserDTO()
+        userE.setPassword("123456")
 
         when: "调用方法"
         userService.deleteAdminUser(id)
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            UserE userE = new UserE("123456")
+//            UserE userE = new UserE("123456")
             Field field = userE.getClass().getDeclaredField("admin")
             field.setAccessible(true)
             field.set(userE, true)
             return userE
         }
-        1 * userRepository.updateSelective(_) >> { new UserE("123456") }
+        1 * userRepository.updateSelective(_) >> { userE }
         1 * userRepository.selectCount(_) >> { 2 }
     }
 
@@ -311,7 +324,7 @@ class UserServiceImplSpec extends Specification {
         given: "构造请求参数"
         Set<String> roleCodes = new HashSet<>()
         roleCodes.add("code")
-        UserDO userDO = new UserDO()
+        UserDTO userDO = new UserDTO()
         userDO.setLoginName("loginName")
         userDO.setEmail("email")
         userDO.setPassword("123456")
@@ -331,25 +344,25 @@ class UserServiceImplSpec extends Specification {
         userService.createUserAndAssignRoles(userWithRoles)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDO() }
+        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
         1 * roleRepository.selectByCode(_) >> {
-            RoleDO roleDO = new RoleDO()
-            roleDO.setLevel("organization")
+            RoleDTO roleDO = new RoleDTO()
+            roleDO.setResourceLevel("organization")
             return roleDO
         }
         1 * userRepository.selectByLoginName(_)
         1 * userRepository.selectOne(_)
         1 * basePasswordPolicyMapper.selectOne(_) >> {
-            BasePasswordPolicyDO basePasswordPolicyDO = new BasePasswordPolicyDO()
+            BasePasswordPolicyDTO basePasswordPolicyDO = new BasePasswordPolicyDTO()
             basePasswordPolicyDO.setOriginalPassword("123456")
             return basePasswordPolicyDO
         }
         1 * userRepository.insertSelective(_) >> {
-            UserDO user = new UserDO()
+            UserDTO user = new UserDTO()
             user.setPassword("123456")
             return user
         }
-        1 * memberRoleMapper.selectOne(_) >> { new MemberRoleDO() }
+        1 * memberRoleMapper.selectOne(_) >> { new MemberRoleDTO() }
     }
 
     def "PagingQueryProjectsSelf"() {
@@ -369,6 +382,6 @@ class UserServiceImplSpec extends Specification {
         userService.queryOrgIdByEmail(email)
 
         then: "校验结果"
-        1 * userRepository.selectOne(_) >> { new UserDO() }
+        1 * userRepository.selectOne(_) >> { new UserDTO() }
     }
 }

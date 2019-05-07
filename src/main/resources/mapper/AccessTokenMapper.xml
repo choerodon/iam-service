@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.AccessTokenMapper">
-    <select id="selectTokens" resultType="io.choerodon.iam.domain.oauth.entity.UserAccessTokenE">
+    <select id="selectTokens" resultType="io.choerodon.iam.infra.dto.AccessTokenDTO">
         SELECT
         oat.token_id as tokenId,
         oat.token as token,
@@ -21,7 +21,7 @@
         </if>
     </select>
 
-    <select id="selectTokenList" resultType="io.choerodon.iam.infra.dataobject.AccessTokenDO">
+    <select id="selectTokenList" resultType="io.choerodon.iam.infra.dto.AccessTokenDTO">
         SELECT
             TOKEN_ID,
             TOKEN

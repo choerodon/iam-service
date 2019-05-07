@@ -1,11 +1,10 @@
 package io.choerodon.iam.api.validator;
 
+import io.choerodon.iam.infra.dto.ClientDTO;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.ClientDTO;
 import io.choerodon.iam.infra.common.utils.JsonUtils;
-import io.choerodon.iam.infra.dataobject.ClientDO;
 import io.choerodon.iam.infra.mapper.ClientMapper;
 
 /**
@@ -34,9 +33,9 @@ public class ClientValidator {
             throw new CommonException("error.client.secret.regex");
         }
         //校验客户端重名
-        ClientDO clientDO = new ClientDO();
-        clientDO.setName(clientDTO.getName());
-        if (!clientMapper.select(clientDO).isEmpty()) {
+        ClientDTO dto = new ClientDTO();
+        dto.setName(clientDTO.getName());
+        if (!clientMapper.select(dto).isEmpty()) {
             throw new CommonException("error.clientName.exist");
         }
     }
@@ -54,17 +53,17 @@ public class ClientValidator {
         }
         Long clientId = clientDTO.getId();
         Long organizationId = clientDTO.getOrganizationId();
-        ClientDO existedClient = clientMapper.selectByPrimaryKey(clientId);
+        ClientDTO existedClient = clientMapper.selectByPrimaryKey(clientId);
         if (existedClient == null) {
             throw new CommonException("error.client.not.exist");
         }
         if (!organizationId.equals(existedClient.getOrganizationId())) {
             throw new CommonException("error.organizationId.not.same");
         }
-        ClientDO client = new ClientDO();
+        ClientDTO client = new ClientDTO();
         client.setName(name);
-        ClientDO clientDO = clientMapper.selectOne(client);
-        if (clientDO != null && !clientDO.getId().equals(clientId)) {
+        ClientDTO dto = clientMapper.selectOne(client);
+        if (dto != null && !dto.getId().equals(clientId)) {
             throw new CommonException("error.clientName.exist");
         }
         if (clientDTO.getAdditionalInformation() == null) {

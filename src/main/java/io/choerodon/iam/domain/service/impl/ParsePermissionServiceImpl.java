@@ -8,14 +8,13 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.eureka.event.EurekaEventPayload;
-import io.choerodon.iam.domain.iam.entity.PermissionE;
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.PermissionRepository;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.service.ParsePermissionService;
-import io.choerodon.iam.infra.dataobject.PermissionDO;
-import io.choerodon.iam.infra.dataobject.RoleDO;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.RolePermissionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,22 +75,22 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     public void parser(EurekaEventPayload payload) {
         try {
             fetchSwaggerJsonByIp(payload);
-            String serviceName = payload.getAppName();
+            String serviceCode = payload.getAppName();
             String json = payload.getApiData();
-            logger.info("receive service: {} message, version: {}, ip: {}", serviceName, payload.getVersion(), payload.getInstanceAddress());
-            if (!StringUtils.isEmpty(serviceName) && !StringUtils.isEmpty(json)) {
+            logger.info("receive service: {} message, version: {}, ip: {}", serviceCode, payload.getVersion(), payload.getInstanceAddress());
+            if (!StringUtils.isEmpty(serviceCode) && !StringUtils.isEmpty(json)) {
                 JsonNode node = objectMapper.readTree(json);
                 Iterator<Map.Entry<String, JsonNode>> pathIterator = node.get("paths").fields();
-                Map<String, RoleDO> initRoleMap = queryInitRoleByCode();
+                Map<String, RoleDTO> initRoleMap = queryInitRoleByCode();
                 List<String> permissionCodes = new ArrayList<>();
                 while (pathIterator.hasNext()) {
                     Map.Entry<String, JsonNode> pathNode = pathIterator.next();
                     Iterator<Map.Entry<String, JsonNode>> methodIterator = pathNode.getValue().fields();
-                    parserMethod(methodIterator, pathNode, serviceName, initRoleMap, permissionCodes);
+                    parserMethod(methodIterator, pathNode, serviceCode, initRoleMap, permissionCodes);
                 }
                 logger.info("cleanPermission : {}", cleanPermission);
                 if (cleanPermission) {
-                    deleteDeprecatedPermission(permissionCodes, serviceName);
+                    deleteDeprecatedPermission(permissionCodes, serviceCode);
                     //清理role_permission表层级不符的脏数据，会导致基于角色创建失败
                     cleanRolePermission();
                 }
@@ -102,15 +101,16 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     }
 
     private void deleteDeprecatedPermission(List<String> permissionCodes, String serviceName) {
-        PermissionDO permissionDO = new PermissionDO();
-        permissionDO.setServiceName(serviceName);
-        List<PermissionDO> permissions = permissionRepository.select(permissionDO);
+        PermissionDTO dto = new PermissionDTO();
+        dto.setServiceCode(serviceName);
+        List<PermissionDTO> permissions = permissionRepository.select(dto);
         int count = 0;
-        for (PermissionDO permission : permissions) {
+        for (PermissionDTO permission : permissions) {
             if (!permissionCodes.contains(permission.getCode())) {
                 permissionRepository.deleteById(permission.getId());
-                RolePermissionE rolePermissionE = new RolePermissionE(null, null, permission.getId());
-                rolePermissionRepository.delete(rolePermissionE);
+                RolePermissionDTO rolePermissionDTO = new RolePermissionDTO();
+                rolePermissionDTO.setPermissionId(permission.getId());
+                rolePermissionRepository.delete(rolePermissionDTO);
                 logger.info("@@@ service {} delete deprecated permission {}", serviceName, permission.getCode());
                 count++;
             }
@@ -119,15 +119,17 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     }
 
     private void cleanRolePermission() {
-        List<RoleDO> roles = roleRepository.selectAll();
+        List<RoleDTO> roles = roleRepository.selectAll();
         int count = 0;
-        for (RoleDO role : roles) {
-            List<PermissionDO> permissions = permissionRepository.selectErrorLevelPermissionByRole(role);
-            for (PermissionDO permission : permissions) {
-                RolePermissionE rp = new RolePermissionE(null, role.getId(), permission.getId());
+        for (RoleDTO role : roles) {
+            List<PermissionDTO> permissions = permissionRepository.selectErrorLevelPermissionByRole(role);
+            for (PermissionDTO permission : permissions) {
+                RolePermissionDTO rp = new RolePermissionDTO();
+                rp.setRoleId(role.getId());
+                rp.setPermissionId(permission.getId());
                 rolePermissionRepository.delete(rp);
                 logger.info("delete error role_permission, role id: {}, code: {}, level: {} ## permission id: {}, code:{}, level: {}",
-                        role.getId(), role.getCode(), role.getLevel(), permission.getId(), permission.getCode(), permission.getLevel());
+                        role.getId(), role.getCode(), role.getResourceLevel(), permission.getId(), permission.getCode(), permission.getResourceLevel());
                 count++;
             }
         }
@@ -139,11 +141,11 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      *
      * @param methodIterator 所有方法
      * @param pathNode       路径
-     * @param serviceName    服务名
+     * @param serviceCode    服务名
      */
     private void parserMethod(Iterator<Map.Entry<String, JsonNode>> methodIterator,
-                              Map.Entry<String, JsonNode> pathNode, String serviceName,
-                              Map<String, RoleDO> initRoleMap, List<String> permissionCode) {
+                              Map.Entry<String, JsonNode> pathNode, String serviceCode,
+                              Map<String, RoleDTO> initRoleMap, List<String> permissionCode) {
         while (methodIterator.hasNext()) {
             Map.Entry<String, JsonNode> methodNode = methodIterator.next();
             JsonNode tags = methodNode.getValue().get("tags");
@@ -154,15 +156,52 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
                     continue;
                 }
                 SwaggerExtraData extraData = objectMapper.readValue(extraDataNode.asText(), SwaggerExtraData.class);
-                permissionCode.add(processPermission(extraData, pathNode.getKey(), methodNode, serviceName, resourceCode, initRoleMap));
+                permissionCode.add(processPermission(extraData, pathNode.getKey(), methodNode, serviceCode, resourceCode, initRoleMap));
             } catch (IOException e) {
                 logger.info("extraData read failed.", e);
             }
         }
     }
+    @Override
+    public String processPermission(String[] roles, String path, String method, String description, PermissionData permission, String serviceName, String resourceCode, Map<String, RoleDTO> initRoleMap){
+        String action = permission.getAction();
+        String code = serviceName + "." + resourceCode + "." + action;
+        PermissionDTO permissionDTO = permissionRepository.selectByCode(code);
+
+        PermissionDTO newPermission = new PermissionDTO();
+        newPermission.setCode(code);
+        newPermission.setPath(path);
+        newPermission.setMethod(method);
+        newPermission.setResourceLevel(permission.getPermissionLevel());
+        newPermission.setDescription(description);
+        newPermission.setAction(action);
+        newPermission.setController(resourceCode);
+        newPermission.setPublicAccess(permission.isPermissionPublic());
+        newPermission.setLoginAccess(permission.isPermissionLogin());
+        newPermission.setWithin(permission.isPermissionWithin());
+        newPermission.setServiceCode(serviceName);
+        if (permissionDTO == null) {
+            //插入操作
+            PermissionDTO returnPermission = permissionRepository.insertSelective(newPermission);
+            if (returnPermission != null) {
+                insertRolePermission(returnPermission, initRoleMap, roles);
+                logger.debug("###insert permission, {}", newPermission);
+            }
+        } else {
+            //更新操作
+            newPermission.setObjectVersionNumber(permissionDTO.getObjectVersionNumber());
+            newPermission.setId(permissionDTO.getId());
+            if (!permissionDTO.equals(newPermission)) {
+                permissionRepository.updateSelective(newPermission);
+            }
+            updateRolePermission(newPermission, initRoleMap, roles);
+            logger.debug("###update permission, {}", newPermission);
+        }
+        return code;
+    }
 
     private String processPermission(SwaggerExtraData extraData, String path, Map.Entry<String, JsonNode> methodNode,
-                                     String serviceName, String resourceCode, Map<String, RoleDO> initRoleMap) {
+                                     String serviceCode, String resourceCode, Map<String, RoleDTO> initRoleMap) {
         String[] roles = null;
         if (extraData.getPermission() != null) {
             roles = extraData.getPermission().getRoles();
@@ -171,25 +210,35 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         String description = methodNode.getValue().get("summary").asText();
         PermissionData permission = extraData.getPermission();
         String action = permission.getAction();
-        String code = serviceName + "." + resourceCode + "." + action;
-        PermissionE permissionE = permissionRepository.selectByCode(code);
-        if (permissionE == null) {
+        String code = serviceCode + "." + resourceCode + "." + action;
+
+
+        PermissionDTO newPermission = new PermissionDTO();
+        newPermission.setCode(code);
+        newPermission.setPath(path);
+        newPermission.setMethod(method);
+        newPermission.setResourceLevel(permission.getPermissionLevel());
+        newPermission.setDescription(description);
+        newPermission.setAction(action);
+        newPermission.setController(resourceCode);
+        newPermission.setPublicAccess(permission.isPermissionPublic());
+        newPermission.setLoginAccess(permission.isPermissionLogin());
+        newPermission.setWithin(permission.isPermissionWithin());
+        newPermission.setServiceCode(serviceCode);
+
+        PermissionDTO permissionDTO = permissionRepository.selectByCode(code);
+        if (permissionDTO == null) {
             //插入操作
-            PermissionE newPermission =
-                    new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
-                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, null);
-            PermissionE returnPermission = permissionRepository.insertSelective(newPermission);
+            PermissionDTO returnPermission = permissionRepository.insertSelective(newPermission);
             if (returnPermission != null) {
                 insertRolePermission(returnPermission, initRoleMap, roles);
                 logger.debug("###insert permission, {}", newPermission);
             }
         } else {
             //更新操作
-            PermissionE newPermission =
-                    new PermissionE(code, path, method, permission.getPermissionLevel(), description, action,
-                            resourceCode, permission.isPermissionPublic(), permission.isPermissionLogin(), permission.isPermissionWithin(), serviceName, permissionE.getObjectVersionNumber());
-            newPermission.setId(permissionE.getId());
-            if (!permissionE.equals(newPermission)) {
+            newPermission.setId(permissionDTO.getId());
+            newPermission.setObjectVersionNumber(permissionDTO.getObjectVersionNumber());
+            if (!permissionDTO.equals(newPermission)) {
                 permissionRepository.updateSelective(newPermission);
             }
             updateRolePermission(newPermission, initRoleMap, roles);
@@ -222,24 +271,28 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
     }
 
 
-    private void updateRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
+    private void updateRolePermission(PermissionDTO permission, Map<String, RoleDTO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();
-        String level = permission.getLevel();
-        RoleDO role = getRoleByLevel(initRoleMap, level);
+        String level = permission.getResourceLevel();
+        RoleDTO role = getRoleByLevel(initRoleMap, level);
         if (role != null) {
-            RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
+            RolePermissionDTO rp = new RolePermissionDTO();
+            rp.setRoleId(role.getId());
+            rp.setPermissionId(permissionId);
             if (rolePermissionRepository.selectOne(rp) == null) {
                 rolePermissionRepository.insert(rp);
             }
         }
-        List<RoleDO> roleList = roleRepository.selectInitRolesByPermissionId(permissionId);
+        List<RoleDTO> roleList = roleRepository.selectInitRolesByPermissionId(permissionId);
         //删掉除去SITE_ADMINISTRATOR，ORGANIZATION_ADMINISTRATOR，PROJECT_ADMINISTRATOR的所有role_permission关系
-        for (RoleDO roleDO : roleList) {
-            String code = roleDO.getCode();
+        for (RoleDTO roleDTO : roleList) {
+            String code = roleDTO.getCode();
             if (!InitRoleCode.SITE_ADMINISTRATOR.equals(code)
                     && !InitRoleCode.PROJECT_ADMINISTRATOR.equals(code)
                     && !InitRoleCode.ORGANIZATION_ADMINISTRATOR.equals(code)) {
-                RolePermissionE rolePermission = new RolePermissionE(null, roleDO.getId(), permissionId);
+                RolePermissionDTO rolePermission = new RolePermissionDTO();
+                rolePermission.setRoleId(roleDTO.getId());
+                rolePermission.setPermissionId(permissionId);
                 rolePermissionRepository.delete(rolePermission);
             }
         }
@@ -254,12 +307,15 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
      * level=organization -> ORGANIZATION_ADMINISTRATOR
      * level=project -> PROJECT_ADMINISTRATOR
      */
-    private void insertRolePermission(PermissionE permission, Map<String, RoleDO> initRoleMap, String[] roles) {
+    private void insertRolePermission(PermissionDTO permission, Map<String, RoleDTO> initRoleMap, String[] roles) {
         Long permissionId = permission.getId();
-        String level = permission.getLevel();
-        RoleDO role = getRoleByLevel(initRoleMap, level);
+        String level = permission.getResourceLevel();
+        RoleDTO role = getRoleByLevel(initRoleMap, level);
         if (role != null) {
-            rolePermissionRepository.insert(new RolePermissionE(null, role.getId(), permissionId));
+            RolePermissionDTO dto = new RolePermissionDTO();
+            dto.setRoleId(role.getId());
+            dto.setPermissionId(permissionId);
+            rolePermissionRepository.insert(dto);
         }
         //roles不为空，关联自定义角色
         if (roles != null) {
@@ -267,28 +323,30 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         }
     }
 
-    private void processRolePermission(Map<String, RoleDO> initRoleMap, String[] roles, Long permissionId, String level) {
+    private void processRolePermission(Map<String, RoleDTO> initRoleMap, String[] roles, Long permissionId, String level) {
         Set<String> roleSet = new HashSet<>(Arrays.asList(roles));
         for (String roleCode : roleSet) {
-            RoleDO role = initRoleMap.get(roleCode);
+            RoleDTO role = initRoleMap.get(roleCode);
             if (role == null) {
                 //找不到code，说明没有初始化进去角色或者角色code拼错了
                 logger.info("can not find the role, role code is : {}", roleCode);
             } else {
-                if (level.equals(role.getLevel())) {
-                    RolePermissionE rp = new RolePermissionE(null, role.getId(), permissionId);
+                if (level.equals(role.getResourceLevel())) {
+                    RolePermissionDTO rp = new RolePermissionDTO();
+                    rp.setRoleId(role.getId());
+                    rp.setPermissionId(permissionId);
                     if (rolePermissionRepository.selectOne(rp) == null) {
                         rolePermissionRepository.insert(rp);
                     }
                 } else {
                     logger.info("init role level does not match the permission level, permission id: {}, level: {}, @@ role code: {}, level: {}",
-                            permissionId, level, role.getCode(), role.getLevel());
+                            permissionId, level, role.getCode(), role.getResourceLevel());
                 }
             }
         }
     }
 
-    private RoleDO getRoleByLevel(Map<String, RoleDO> initRoleMap, String level) {
+    private RoleDTO getRoleByLevel(Map<String, RoleDTO> initRoleMap, String level) {
         if (ResourceLevel.SITE.value().equals(level)) {
             return initRoleMap.get(InitRoleCode.SITE_ADMINISTRATOR);
         }
@@ -301,11 +359,12 @@ public class ParsePermissionServiceImpl implements ParsePermissionService {
         return null;
     }
 
-    private Map<String, RoleDO> queryInitRoleByCode() {
-        Map<String, RoleDO> map = new HashMap<>(10);
+    @Override
+    public Map<String, RoleDTO> queryInitRoleByCode() {
+        Map<String, RoleDTO> map = new HashMap<>(10);
         String[] codes = InitRoleCode.values();
         for (String code : codes) {
-            RoleDO role = roleRepository.selectByCode(code);
+            RoleDTO role = roleRepository.selectByCode(code);
             if (role == null) {
                 logger.info("init roles do not exist, code: {}", code);
             }

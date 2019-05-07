@@ -4,7 +4,7 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.domain.repository.LabelRepository
-import io.choerodon.iam.infra.dataobject.MemberRoleDO
+import io.choerodon.iam.infra.dto.MemberRoleDTO
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -28,9 +28,9 @@ class DevopsListenerSpec extends Specification {
     def "AssignRolesOnProject"() {
         given: "构造请求参数"
         String message = "message"
-        List<MemberRoleDO> memberRoles = new ArrayList<>()
+        List<MemberRoleDTO> memberRoles = new ArrayList<>()
         for (int i = 0; i < count; i++) {
-            MemberRoleDO memberRoleDO = new MemberRoleDO()
+            MemberRoleDTO memberRoleDO = new MemberRoleDTO()
             memberRoleDO.setSourceId(i)
             memberRoleDO.setMemberId(i)
             memberRoleDO.setSourceType("site")

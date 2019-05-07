@@ -6,13 +6,9 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.domain.iam.entity.LabelE;
-import io.choerodon.iam.domain.iam.entity.PermissionE;
-import io.choerodon.iam.domain.iam.entity.RoleE;
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IRoleService;
-import io.choerodon.iam.infra.dataobject.*;
+import io.choerodon.iam.infra.dto.*;
 import io.choerodon.mybatis.service.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -34,7 +30,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_RO
  */
 @Service
 @RefreshScope
-public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleService {
+public class IRoleServiceImpl extends BaseServiceImpl<RoleDTO> implements IRoleService {
 
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
@@ -80,13 +76,17 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
-    public RoleE create(RoleE roleE) {
-        roleE.createInit();
-        if (roleRepository.selectByCode(roleE.getCode()) != null) {
+    public RoleDTO create(RoleDTO roleDTO) {
+        roleDTO.setBuiltIn(false);
+        roleDTO.setEnabled(true);
+        roleDTO.setEnableForbidden(true);
+        roleDTO.setModified(true);
+        if (roleRepository.selectByCode(roleDTO.getCode()) != null) {
             throw new CommonException("error.role.code.exist");
         }
-        RoleE role = roleRepository.insertSelective(roleE);
-        role.copyPermissionsAndLabels(roleE);
+        RoleDTO role = roleRepository.insertSelective(roleDTO);
+        role.setPermissions(roleDTO.getPermissions());
+        role.setLabels(roleDTO.getLabels());
         //维护role_permission表
         insertRolePermission(role);
         //维护role_label表
@@ -94,10 +94,10 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         return role;
     }
 
-    private void insertRoleLabel(RoleE role) {
-        List<LabelE> labels = role.getLabels();
+    private void insertRoleLabel(RoleDTO role) {
+        List<LabelDTO> labels = role.getLabels();
         if (labels != null) {
-            List<RoleLabelDO> roleLabelDOList = labels.stream().map(l -> {
+            List<RoleLabelDTO> roleLabelDOList = labels.stream().map(l -> {
                 Long labelId = l.getId();
                 if (labelId == null) {
                     throw new CommonException("error.label.id.null");
@@ -105,10 +105,10 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                 if (labelRepository.selectByPrimaryKey(labelId) == null) {
                     throw new CommonException("error.label.not.exist", labelId);
                 }
-                RoleLabelDO roleLabelDO = new RoleLabelDO();
-                roleLabelDO.setLabelId(l.getId());
-                roleLabelDO.setRoleId(role.getId());
-                return roleLabelDO;
+                RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+                roleLabelDTO.setLabelId(l.getId());
+                roleLabelDTO.setRoleId(role.getId());
+                return roleLabelDTO;
             }).collect(Collectors.toList());
             roleLabelRepository.insertList(roleLabelDOList);
         }
@@ -118,12 +118,12 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
     /**
      * skip validate(role, t.getId());
      */
-    private void insertRolePermission(RoleE role) {
-        List<RolePermissionDO> rolePermissionDOList = role.getPermissions().parallelStream().map(permission -> {
-            RolePermissionDO rolePermissionDO = new RolePermissionDO();
-            rolePermissionDO.setPermissionId(permission.getId());
-            rolePermissionDO.setRoleId(role.getId());
-            return rolePermissionDO;
+    private void insertRolePermission(RoleDTO role) {
+        List<RolePermissionDTO> rolePermissionDOList = role.getPermissions().parallelStream().map(permission -> {
+            RolePermissionDTO rolePermissionDTO = new RolePermissionDTO();
+            rolePermissionDTO.setPermissionId(permission.getId());
+            rolePermissionDTO.setRoleId(role.getId());
+            return rolePermissionDTO;
         }).collect(Collectors.toList());
 
         rolePermissionRepository.insertList(rolePermissionDOList);
@@ -131,18 +131,20 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public RoleE update(RoleE roleE) {
-        RoleE role1 = roleRepository.selectByPrimaryKey(roleE.getId());
+    public RoleDTO update(RoleDTO roleDTO) {
+        Long id = roleDTO.getId();
+        RoleDTO role1 = roleRepository.selectByPrimaryKey(id);
         if (role1 == null) {
-            throw new CommonException(ROLE_NOT_EXIST_EXCEPTION, roleE.getId());
+            throw new CommonException(ROLE_NOT_EXIST_EXCEPTION, id);
         }
         //内置的角色不允许更新字段，只能更新label
         if (role1.getBuiltIn()) {
-            updateRoleLabel(roleE);
-            return roleE;
+            updateRoleLabel(roleDTO);
+            return roleDTO;
         } else {
-            RoleE role = roleRepository.updateSelective(roleE);
-            role.copyPermissionsAndLabels(roleE);
+            RoleDTO role = roleRepository.updateSelective(roleDTO);
+            role.setPermissions(roleDTO.getPermissions());
+            role.setLabels(roleDTO.getLabels());
             //维护role_permission关系
             updateRolePermission(role);
             //维护role_label表
@@ -151,16 +153,16 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         }
     }
 
-    private void updateRoleLabel(RoleE roleE) {
-        RoleLabelDO roleLabelDO = new RoleLabelDO();
-        roleLabelDO.setRoleId(roleE.getId());
-        List<RoleLabelDO> roleLabels = roleLabelRepository.select(roleLabelDO);
+    private void updateRoleLabel(RoleDTO roleDTO) {
+        RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+        roleLabelDTO.setRoleId(roleDTO.getId());
+        List<RoleLabelDTO> roleLabels = roleLabelRepository.select(roleLabelDTO);
         List<Long> existingLabelIds = roleLabels.stream()
-                .map(RoleLabelDO::getLabelId).collect(Collectors.toList());
-        List<LabelE> labels = roleE.getLabels();
+                .map(RoleLabelDTO::getLabelId).collect(Collectors.toList());
+        List<LabelDTO> labels = roleDTO.getLabels();
         final List<Long> newLabelIds = new ArrayList<>();
         if (!ObjectUtils.isEmpty(labels)) {
-            newLabelIds.addAll(labels.stream().map(LabelE::getId).collect(Collectors.toList()));
+            newLabelIds.addAll(labels.stream().map(LabelDTO::getId).collect(Collectors.toList()));
         }
         //labelId交集
         List<Long> intersection = existingLabelIds.stream().filter(newLabelIds::contains).collect(Collectors.toList());
@@ -171,19 +173,19 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         List<Long> insertList = newLabelIds.stream().filter(item ->
                 !intersection.contains(item)).collect(Collectors.toList());
         List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
-        List<UserDO> users = userRepository.listUsersByRoleId(roleE.getId(), "user", ResourceLevel.PROJECT.value());
+        List<UserDTO> users = userRepository.listUsersByRoleId(roleDTO.getId(), "user", ResourceLevel.PROJECT.value());
 
         boolean sendSagaEvent = !ObjectUtils.isEmpty(users) && devopsMessage;
-        doUpdateAndDelete(roleE, insertList, deleteList);
+        doUpdateAndDelete(roleDTO, insertList, deleteList);
         if (sendSagaEvent) {
             users.forEach(user -> {
-                List<LabelDO> labelList = labelRepository.selectByUserId(user.getId());
+                List<LabelDTO> labelList = labelRepository.selectByUserId(user.getId());
                 UserMemberEventPayload payload = new UserMemberEventPayload();
                 payload.setResourceId(user.getSourceId());
                 payload.setUserId(user.getId());
                 payload.setResourceType(ResourceLevel.PROJECT.value());
                 payload.setUsername(user.getLoginName());
-                Set<String> nameSet = new HashSet<>(labelList.stream().map(LabelDO::getName).collect(Collectors.toSet()));
+                Set<String> nameSet = new HashSet<>(labelList.stream().map(LabelDTO::getName).collect(Collectors.toSet()));
                 payload.setRoleLabels(nameSet);
                 userMemberEventPayloads.add(payload);
             });
@@ -197,18 +199,18 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         }
     }
 
-    private void doUpdateAndDelete(RoleE roleE, List<Long> insertList, List<Long> deleteList) {
+    private void doUpdateAndDelete(RoleDTO roleDTO, List<Long> insertList, List<Long> deleteList) {
         insertList.forEach(labelId -> {
             checkLabelId(labelId);
-            RoleLabelDO rl = new RoleLabelDO();
-            rl.setRoleId(roleE.getId());
+            RoleLabelDTO rl = new RoleLabelDTO();
+            rl.setRoleId(roleDTO.getId());
             rl.setLabelId(labelId);
             roleLabelRepository.insert(rl);
         });
         deleteList.forEach(labelId -> {
             checkLabelId(labelId);
-            RoleLabelDO rl = new RoleLabelDO();
-            rl.setRoleId(roleE.getId());
+            RoleLabelDTO rl = new RoleLabelDTO();
+            rl.setRoleId(roleDTO.getId());
             rl.setLabelId(labelId);
             roleLabelRepository.delete(rl);
         });
@@ -223,15 +225,16 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
         }
     }
 
-    private void updateRolePermission(RoleE role) {
+    private void updateRolePermission(RoleDTO role) {
         Long roleId = role.getId();
-        List<PermissionE> permissions = role.getPermissions();
-        RolePermissionE rolePermissionE = new RolePermissionE(null, role.getId(), null);
-        List<RolePermissionE> existingRolePermissions = rolePermissionRepository.select(rolePermissionE);
+        List<PermissionDTO> permissions = role.getPermissions();
+        RolePermissionDTO rolePermissionDTO = new RolePermissionDTO();
+        rolePermissionDTO.setRoleId(roleId);
+        List<RolePermissionDTO> existingRolePermissions = rolePermissionRepository.select(rolePermissionDTO);
         List<Long> existingPermissionId =
-                existingRolePermissions.stream().map(RolePermissionE::getPermissionId).collect(Collectors.toList());
+                existingRolePermissions.stream().map(RolePermissionDTO::getPermissionId).collect(Collectors.toList());
         List<Long> newPermissionId =
-                permissions.stream().map(PermissionE::getId).collect(Collectors.toList());
+                permissions.stream().map(PermissionDTO::getId).collect(Collectors.toList());
         //permissionId交集
         List<Long> intersection = existingPermissionId.stream().filter(newPermissionId::contains).collect(Collectors.toList());
         //删除的permissionId集合
@@ -242,32 +245,28 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
                 !intersection.contains(item)).collect(Collectors.toList());
         insertList.forEach(permissionId -> {
             validate(role, permissionId);
-            RolePermissionE rp = new RolePermissionE(null, roleId, permissionId);
+            RolePermissionDTO rp = new RolePermissionDTO();
+            rp.setRoleId(roleId);
+            rp.setPermissionId(permissionId);
             rolePermissionRepository.insert(rp);
         });
         deleteList.forEach(permissionId -> {
             validate(role, permissionId);
-            RolePermissionE rp = new RolePermissionE(null, roleId, permissionId);
+            RolePermissionDTO rp = new RolePermissionDTO();
+            rp.setRoleId(roleId);
+            rp.setPermissionId(permissionId);
             rolePermissionRepository.delete(rp);
         });
     }
 
-    private void validate(RoleE role, Long permissionId) {
+    private void validate(RoleDTO role, Long permissionId) {
         checkIdNotNull(permissionId);
-        PermissionE permission = permissionRepository.selectByPrimaryKey(permissionId);
-        checkPermission(permissionId, permission);
-        checkLevel(permission, role.getLevel());
-    }
-
-    private void checkLevel(PermissionE permission, String roleLevel) {
-        if (!permission.getLevel().equals(roleLevel)) {
-            throw new CommonException("error.role.level.not.equals.to.permission.level");
-        }
-    }
-
-    private void checkPermission(Long permissionId, PermissionE permission) {
+        PermissionDTO permission = permissionRepository.selectByPrimaryKey(permissionId);
         if (permission == null) {
             throw new CommonException("error.permission.not.exist", permissionId);
+        }
+        if (!permission.getResourceLevel().equals(role.getResourceLevel())) {
+            throw new CommonException("error.role.level.not.equals.to.permission.level");
         }
     }
 
@@ -279,39 +278,40 @@ public class IRoleServiceImpl extends BaseServiceImpl<RoleDO> implements IRoleSe
 
     @Override
     public void deleteByPrimaryKey(Long id) {
-        RoleE roleE = roleRepository.selectByPrimaryKey(id);
-        if (roleE == null) {
+        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(id);
+        if (roleDTO == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION);
         }
-        if (roleE.removable()) {
+        if (!roleDTO.getBuiltIn()) {
             roleRepository.deleteByPrimaryKey(id);
         } else {
             throw new CommonException("error.role.not.allow.to.be.delete");
         }
-        RolePermissionE rolePermission = new RolePermissionE(null, id, null);
+        RolePermissionDTO rolePermission = new RolePermissionDTO();
+        rolePermission.setRoleId(id);
         rolePermissionRepository.delete(rolePermission);
-        RoleLabelDO roleLabelDO = new RoleLabelDO();
-        roleLabelDO.setRoleId(id);
-        roleLabelRepository.delete(roleLabelDO);
+        RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+        roleLabelDTO.setRoleId(id);
+        roleLabelRepository.delete(roleLabelDTO);
     }
 
     @Override
-    public RoleE updateRoleEnabled(Long id) {
-        RoleE roleE = roleRepository.selectByPrimaryKey(id);
-        if (roleE == null) {
+    public RoleDTO updateRoleEnabled(Long id) {
+        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(id);
+        if (roleDTO == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION);
         }
-        roleE.enable();
-        return roleRepository.updateSelective(roleE);
+        roleDTO.setEnabled(true);
+        return roleRepository.updateSelective(roleDTO);
     }
 
     @Override
-    public RoleE updateRoleDisabled(Long id) {
-        RoleE roleE = roleRepository.selectByPrimaryKey(id);
-        if (roleE == null) {
+    public RoleDTO updateRoleDisabled(Long id) {
+        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(id);
+        if (roleDTO == null) {
             throw new CommonException(ROLE_NOT_EXIST_EXCEPTION);
         }
-        roleE.disable();
-        return roleRepository.updateSelective(roleE);
+        roleDTO.setEnabled(false);
+        return roleRepository.updateSelective(roleDTO);
     }
 }

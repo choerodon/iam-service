@@ -3,24 +3,25 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.dto.UserSearchDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
 import io.choerodon.iam.api.dto.UserRoleDTO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author wuguokai
  * @author superlee
  */
-public interface UserMapper extends BaseMapper<UserDO> {
+public interface UserMapper extends Mapper<UserDTO> {
 
-    List<UserDO> fulltextSearch(@Param("userDO") UserDO userDO,
+    List<UserDTO> fulltextSearch(@Param("userSearchDTO") UserSearchDTO userSearchDTO,
                                 @Param("param") String param);
 
-    List<UserDO> selectUserWithRolesByOption(
+    List<UserDTO> selectUserWithRolesByOption(
             @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,
@@ -34,7 +35,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
                          @Param("sourceType") String sourceType,
                          @Param("param") String param);
 
-    List<UserDO> selectUsersByLevelAndOptions(@Param("sourceType") String sourceType,
+    List<UserDTO> selectUsersByLevelAndOptions(@Param("sourceType") String sourceType,
                                               @Param("sourceId") Long sourceId,
                                               @Param("userId") Long userId,
                                               @Param("email") String email,
@@ -48,7 +49,7 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                                            RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                    @Param("param") String param);
 
-    List selectUsersFromMemberRoleByOptions(@Param("roleId") Long roleId,
+    List<UserDTO> selectUsersFromMemberRoleByOptions(@Param("roleId") Long roleId,
                                             @Param("memberType") String memberType,
                                             @Param("sourceId") Long sourceId,
                                             @Param("sourceType") String sourceType,
@@ -57,11 +58,11 @@ public interface UserMapper extends BaseMapper<UserDO> {
                                             @Param("param") String param);
 
 
-    List<UserDO> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
+    List<UserDTO> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
 
-    List<UserDO> listUsersByEmails(@Param("emails") String[] emails);
+    List<UserDTO> listUsersByEmails(@Param("emails") String[] emails);
 
-    List<UserDO> selectAdminUserPage(@Param("userDO") UserDO userDO, @Param("params") String params);
+    List<UserDTO> selectAdminUserPage(@Param("userDTO") UserDTO userDTO, @Param("params") String params);
 
     Set<String> matchLoginName(@Param("nameSet") Set<String> nameSet);
 

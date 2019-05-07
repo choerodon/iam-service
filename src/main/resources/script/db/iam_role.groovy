@@ -65,4 +65,26 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
     changeSet(author: 'superleader8@gmail.com', id: '2018-08-27-rename') {
         renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '角色级别', tableName: 'IAM_ROLE')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-16-role-upgrade') {
+        renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "RESOURCE_LEVEL", oldColumnName: "FD_LEVEL", remarks: '角色层级site/organization/project', tableName: 'IAM_ROLE')
+        dropColumn(tableName: 'IAM_ROLE', ColumnName: 'IS_ASSIGNABLE')
+    }
+
+    changeSet(author: 'superlee', id: '2019-05-06-role-tl-add-column') {
+        addColumn(tableName: 'IAM_ROLE_TL') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
+
 }

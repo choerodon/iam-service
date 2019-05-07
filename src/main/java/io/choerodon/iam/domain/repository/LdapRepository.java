@@ -1,15 +1,15 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.domain.oauth.entity.LdapE;
-import io.choerodon.iam.infra.dataobject.LdapDO;
+
+import io.choerodon.iam.infra.dto.LdapDTO;
 
 /**
  * @author wuguokai
  */
 public interface LdapRepository {
-    LdapE create(LdapE ldapE);
+    LdapDTO create(LdapDTO ldapDTO);
 
-    LdapDO update(Long id, LdapDO ldapDO);
+    LdapDTO update(Long id, LdapDTO ldapDTO);
 
     /**
      * 根据ldap id查询ldap
@@ -17,9 +17,9 @@ public interface LdapRepository {
      * @param id 主键id
      * @return ldap data object
      */
-    LdapDO queryById(Long id);
+    LdapDTO queryById(Long id);
 
-    LdapDO queryByOrgId(Long orgId);
+    LdapDTO queryByOrgId(Long orgId);
 
     Boolean delete(Long id);
 }

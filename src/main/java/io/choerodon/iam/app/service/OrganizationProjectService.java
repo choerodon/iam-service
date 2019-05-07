@@ -1,11 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
 import java.util.List;
 import java.util.Map;
+
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.ProjectDTO;
 
 /**
  * @author flyleft
@@ -16,7 +15,7 @@ public interface OrganizationProjectService {
 
     List<ProjectDTO> queryAll(ProjectDTO projectDTO);
 
-    Page<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
 
     ProjectDTO update(Long organizationId, ProjectDTO projectDTO);
 

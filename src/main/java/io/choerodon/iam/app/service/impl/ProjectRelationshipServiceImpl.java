@@ -1,20 +1,13 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.api.dto.RelationshipCheckDTO;
-import io.choerodon.iam.api.dto.payload.ProjectRelationshipInsertPayload;
-import io.choerodon.iam.app.service.ProjectRelationshipService;
-import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
-import io.choerodon.iam.infra.enums.ProjectCategory;
-import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
+
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -22,8 +15,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.RelationshipCheckDTO;
+import io.choerodon.iam.api.dto.payload.ProjectRelationshipInsertPayload;
+import io.choerodon.iam.app.service.ProjectRelationshipService;
+import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.infra.enums.ProjectCategory;
+import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -31,9 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_DELETE;
 
 /**
@@ -66,12 +67,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     @Override
     public List<ProjectRelationshipDTO> getProjUnderGroup(Long projectId, Boolean onlySelectEnable) {
-        ProjectDO projectDO = projectRepository.selectByPrimaryKey(projectId);
-        if (projectDO == null) {
+        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
-        if (!projectDO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value()) &&
-                !projectDO.getCategory().equalsIgnoreCase(ProjectCategory.ANALYTICAL.value())) {
+        if (!projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value()) &&
+                !projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.ANALYTICAL.value())) {
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
         return projectRelationshipRepository.selectProjectsByParentId(projectId, onlySelectEnable);
@@ -80,20 +81,20 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
     @Override
     @Saga(code = PROJECT_RELATIONSHIP_DELETE, description = "项目群下移除项目", inputSchemaClass = ProjectRelationshipInsertPayload.class)
     public void removesAProjUnderGroup(Long orgId, Long groupId) {
-        ProjectRelationshipDO projectRelationshipDO = projectRelationshipRepository.selectByPrimaryKey(groupId);
-        if (projectRelationshipDO == null) {
+        ProjectRelationshipDTO projectRelationshipDTO = projectRelationshipRepository.selectByPrimaryKey(groupId);
+        if (projectRelationshipDTO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
         }
 
         ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
-        ProjectDO parent = projectRepository.selectByPrimaryKey(projectRelationshipDO.getParentId());
+        ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
         sagaPayload.setCategory(parent.getCategory());
         sagaPayload.setParentCode(parent.getCode());
         sagaPayload.setParentId(parent.getId());
-        ProjectDO project = projectRepository.selectByPrimaryKey(projectRelationshipDO.getProjectId());
+        ProjectDTO project = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
         ProjectRelationshipInsertPayload.ProjectRelationship relationship
                 = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
-                projectRelationshipDO.getStartDate(), projectRelationshipDO.getEndDate(), projectRelationshipDO.getEnabled(), STATUS_DELETE);
+                projectRelationshipDTO.getStartDate(), projectRelationshipDTO.getEndDate(), projectRelationshipDTO.getEnabled(), STATUS_DELETE);
         sagaPayload.setRelationships(Collections.singletonList(relationship));
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -113,40 +114,40 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     @Override
     public RelationshipCheckDTO checkRelationshipCanBeEnabled(Long id) {
-        ProjectRelationshipDO projectRelationshipDO = projectRelationshipRepository.selectByPrimaryKey(id);
-        if (projectRelationshipDO == null) {
+        ProjectRelationshipDTO projectRelationshipDTO = projectRelationshipRepository.selectByPrimaryKey(id);
+        if (projectRelationshipDTO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
-        } else if (projectRelationshipDO.getEnabled()) {
+        } else if (projectRelationshipDTO.getEnabled()) {
             throw new CommonException("error.check.relationship.is.already.enabled");
         }
-        return checkDate(projectRelationshipDO);
+        return checkDate(projectRelationshipDTO);
     }
 
     @Override
     public List<Map<String, Date>> getUnavailableTime(Long projectId, Long parentId) {
-        ProjectDO project = projectRepository.selectByPrimaryKey(projectId);
+        ProjectDTO project = projectRepository.selectByPrimaryKey(projectId);
         if (project == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (!project.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
             throw new CommonException(PROGRAM_CANNOT_BE_CONFIGURA_SUBPROJECTS);
         }
-        ProjectDO parent = projectRepository.selectByPrimaryKey(parentId);
+        ProjectDTO parent = projectRepository.selectByPrimaryKey(parentId);
         if (parent == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (parent.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
         //查询projectId所有被建立的关系
-        ProjectRelationshipDO selectTmpDO = new ProjectRelationshipDO();
-        selectTmpDO.setProjectId(projectId);
-        List<ProjectRelationshipDO> relationshipDOS = projectRelationshipRepository.select(selectTmpDO);
+        ProjectRelationshipDTO selectTmpDTO = new ProjectRelationshipDTO();
+        selectTmpDTO.setProjectId(projectId);
+        List<ProjectRelationshipDTO> relationshipDOS = projectRelationshipRepository.select(selectTmpDTO);
         List<Map<String, Date>> list = new ArrayList<>();
         //去除已与当前项目群建立的关系
         relationshipDOS = relationshipDOS.stream().filter(r -> !r.getParentId().equals(parentId)).collect(Collectors.toList());
         relationshipDOS.forEach(r -> {
-            ProjectDO projectDO = projectRepository.selectByPrimaryKey(r.getParentId());
-            if (projectDO != null &&
-                    projectDO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value()) &&
+            ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(r.getParentId());
+            if (projectDTO != null &&
+                    projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value()) &&
                     r.getEnabled()) {
                 Map<String, Date> map = new HashMap<>();
                 map.put("start", r.getStartDate());
@@ -181,7 +182,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         List<ProjectRelationshipDTO> returnList = new ArrayList<>();
         // build project relationship saga payload
         ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
-        ProjectDO parent = projectRepository.selectByPrimaryKey(list.get(0).getParentId());
+        ProjectDTO parent = projectRepository.selectByPrimaryKey(list.get(0).getParentId());
         sagaPayload.setCategory(parent.getCategory());
         sagaPayload.setParentCode(parent.getCode());
         sagaPayload.setParentId(parent.getId());
@@ -193,17 +194,28 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                     .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                 relationshipDTO.setProgramId(relationshipDTO.getParentId());
             }
-            ProjectRelationshipDO checkDO = new ProjectRelationshipDO();
-            checkDO.setParentId(relationshipDTO.getParentId());
-            checkDO.setProjectId(relationshipDTO.getProjectId());
-            if (projectRelationshipRepository.selectOne(checkDO) != null) {
+            ProjectRelationshipDTO checkDTO = new ProjectRelationshipDTO();
+            checkDTO.setParentId(relationshipDTO.getParentId());
+            checkDTO.setProjectId(relationshipDTO.getProjectId());
+            if (projectRelationshipRepository.selectOne(checkDTO) != null) {
                 throw new CommonException("error.relationship.exist");
             }
+            // check date
+            if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                ProjectRelationshipDTO dto = new ProjectRelationshipDTO();
+                BeanUtils.copyProperties(relationshipDTO, dto);
+                RelationshipCheckDTO relationshipCheckDTO = checkDate(dto);
+                if (!relationshipCheckDTO.getResult()) {
+                    throw new CommonException("error.relationship.date.is.not.legal");
+                }
+            }
+
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
             // fill the saga payload
-            ProjectDO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
+            ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
             ProjectRelationshipInsertPayload.ProjectRelationship relationship
                     = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
                     relationshipDTO.getStartDate(), relationshipDTO.getEndDate(), relationshipDTO.getEnabled(), STATUS_ADD);
@@ -220,14 +232,14 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                         .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                     relationshipDTO.setProgramId(relationshipDTO.getParentId());
                 }
-                ProjectRelationshipDO projectRelationshipDO = new ProjectRelationshipDO();
-                BeanUtils.copyProperties(relationshipDTO, projectRelationshipDO);
+                ProjectRelationshipDTO projectRelationship = new ProjectRelationshipDTO();
+                BeanUtils.copyProperties(relationshipDTO, projectRelationship);
                 // update
-                projectRelationshipDO = projectRelationshipRepository.update(projectRelationshipDO);
-                BeanUtils.copyProperties(projectRelationshipDO, relationshipDTO);
+                projectRelationship = projectRelationshipRepository.update(projectRelationship);
+                BeanUtils.copyProperties(projectRelationship, relationshipDTO);
                 returnList.add(relationshipDTO);
                 // fill the saga payload
-                ProjectDO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
+                ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
                 ProjectRelationshipInsertPayload.ProjectRelationship relationship
                         = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
                         relationshipDTO.getStartDate(), relationshipDTO.getEndDate(), relationshipDTO.getEnabled(), STATUS_UPDATE);
@@ -317,7 +329,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
      * @param projectRelationshipDTO
      */
     private void checkGroupIsLegal(ProjectRelationshipDTO projectRelationshipDTO) {
-        ProjectDO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
+        ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
         if (parent == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
@@ -326,7 +338,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
 
-        ProjectDO son = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
+        ProjectDTO son = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
         if (son == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (!son.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
@@ -334,26 +346,26 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         }
     }
 
-    private RelationshipCheckDTO checkDate(ProjectRelationshipDO needCheckDO) {
+    private RelationshipCheckDTO checkDate(ProjectRelationshipDTO needCheckDTO) {
         // db list
-        ProjectRelationshipDO checkDO = new ProjectRelationshipDO();
-        checkDO.setProjectId(needCheckDO.getProjectId());
-        List<ProjectRelationshipDO> dbList = projectRelationshipRepository.select(checkDO);
+        ProjectRelationshipDTO checkDTO = new ProjectRelationshipDTO();
+        checkDTO.setProjectId(needCheckDTO.getProjectId());
+        List<ProjectRelationshipDTO> dbList = projectRelationshipRepository.select(checkDTO);
 
-        long start = needCheckDO.getStartDate().getTime();
+        long start = needCheckDTO.getStartDate().getTime();
         // build result
         RelationshipCheckDTO result = new RelationshipCheckDTO();
         result.setResult(true);
 
         // check
         dbList.forEach(r -> {
-            ProjectDO parent = projectRepository.selectByPrimaryKey(r.getParentId());
-            if (r.getId() != needCheckDO.getId() && r.getEnabled()
+            ProjectDTO parent = projectRepository.selectByPrimaryKey(r.getParentId());
+            if (!r.getId().equals(needCheckDTO.getId()) && r.getEnabled()
                     && parent.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                 long min = r.getStartDate().getTime();
                 Boolean flag = true;
-                if (needCheckDO.getEndDate() != null) {
-                    long end = needCheckDO.getEndDate().getTime();
+                if (needCheckDTO.getEndDate() != null) {
+                    long end = needCheckDTO.getEndDate().getTime();
                     if (r.getEndDate() != null) {
                         long max = r.getEndDate().getTime();
                         if (!(start >= max || end <= min)) {
@@ -379,7 +391,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                     result.setProjectCode(parent.getCode());
                     result.setProjectName(parent.getName());
                     logger.warn("Project associated time is not legal,relationship:{},conflict project name:{},code:{}",
-                            needCheckDO, result.getProjectName(), result.getProjectCode());
+                            needCheckDTO, result.getProjectName(), result.getProjectCode());
                     return;
                 }
             }

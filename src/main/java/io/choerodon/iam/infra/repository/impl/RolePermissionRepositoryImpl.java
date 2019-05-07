@@ -1,10 +1,8 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.iam.entity.RolePermissionE;
 import io.choerodon.iam.domain.repository.RolePermissionRepository;
-import io.choerodon.iam.infra.dataobject.RolePermissionDO;
+import io.choerodon.iam.infra.dto.RolePermissionDTO;
 import io.choerodon.iam.infra.mapper.RolePermissionMapper;
 import org.springframework.stereotype.Component;
 
@@ -23,31 +21,29 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
     }
 
     @Override
-    public RolePermissionE selectOne(RolePermissionE rolePermissionE) {
-        RolePermissionDO rolePermissionDO = ConvertHelper.convert(rolePermissionE, RolePermissionDO.class);
-        return ConvertHelper.convert(rolePermissionMapper.selectOne(rolePermissionDO), RolePermissionE.class);
+    public RolePermissionDTO selectOne(RolePermissionDTO rolePermissionDTO) {
+        return rolePermissionMapper.selectOne(rolePermissionDTO);
     }
 
     @Override
-    public RolePermissionE insert(RolePermissionE rolePermissionE) {
-        RolePermissionDO rolePermissionDO = ConvertHelper.convert(rolePermissionE, RolePermissionDO.class);
-        if (rolePermissionMapper.insert(rolePermissionDO) != 1) {
+    public RolePermissionDTO insert(RolePermissionDTO rolePermissionDTO) {
+        if (rolePermissionMapper.insert(rolePermissionDTO) != 1) {
             throw new CommonException("error.rolePermission.insert");
         }
-        return ConvertHelper.convert(rolePermissionDO, RolePermissionE.class);
+        return rolePermissionMapper.selectByPrimaryKey(rolePermissionDTO);
     }
 
     @Override
-    public void delete(RolePermissionE rolePermissionE) {
-        RolePermissionDO rolePermissionDO = ConvertHelper.convert(rolePermissionE, RolePermissionDO.class);
-        rolePermissionMapper.delete(rolePermissionDO);
+    public void delete(RolePermissionDTO rolePermissionDTO) {
+        rolePermissionMapper.delete(rolePermissionDTO);
     }
 
     @Override
-    public List<RolePermissionE> select(RolePermissionE rolePermissionE) {
-        List<RolePermissionDO> rolePermissionDOList =
-                rolePermissionMapper.select(ConvertHelper.convert(rolePermissionE, RolePermissionDO.class));
-        return ConvertHelper.convertList(rolePermissionDOList, RolePermissionE.class);
+    public List<RolePermissionDTO> select(RolePermissionDTO rolePermissionDTO) {
+        return rolePermissionMapper.select(rolePermissionDTO);
+//        List<RolePermissionDO> rolePermissionDOList =
+//                rolePermissionMapper.select(ConvertHelper.convert(rolePermissionE, RolePermissionDO.class));
+//        return ConvertHelper.convertList(rolePermissionDOList, RolePermissionE.class);
     }
 
     @Override
@@ -56,7 +52,7 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
     }
 
     @Override
-    public void insertList(List<RolePermissionDO> rolePermissionDOList) {
+    public void insertList(List<RolePermissionDTO> rolePermissionDOList) {
         if (rolePermissionDOList != null) {
             try {
                 rolePermissionDOList.forEach(r -> rolePermissionMapper.insertSelective(r));

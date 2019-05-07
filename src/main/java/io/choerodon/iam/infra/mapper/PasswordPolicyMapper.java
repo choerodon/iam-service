@@ -1,10 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.PasswordPolicyDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author wuguokai
  */
-public interface PasswordPolicyMapper extends BaseMapper<PasswordPolicyDO> {
+public interface PasswordPolicyMapper extends Mapper<PasswordPolicyDTO> {
 }

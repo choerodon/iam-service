@@ -1,0 +1,42 @@
+.c7n-iam-chart-date-wrap {
+  display: flex;
+
+  &-btn {
+    display: inline-block;
+    margin-right: 10px;
+    .ant-btn {
+      padding: 0 8px;
+    }
+  }
+
+  .c7n-iam-chart-date-time-pick {
+    //display: inline-block;
+    height: 32px;
+    width: 214px;
+    line-height: 32px;
+    //background: rgba(0, 0, 0, .04);
+    border-radius: 0 2px 2px 0;
+
+    .ant-calendar-picker-input {
+      margin-bottom: 3px;
+      padding-left: 24px;
+    }
+
+    .ant-calendar-range-picker-input {
+      width: 80px;
+    }
+
+    .ant-calendar-picker-icon {
+      left: 8px;
+      font-size: 20px;
+    }
+
+    .ant-calendar-underline {
+      display: none;
+    }
+
+    &-selected {
+      background: rgba(0, 0, 0, .08);
+    }
+  }
+}

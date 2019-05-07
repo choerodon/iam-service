@@ -2,15 +2,14 @@ package io.choerodon.iam.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.iam.domain.iam.entity.DashboardE;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author dongfan117@gmail.com
  */
-public interface DashboardMapper extends BaseMapper<DashboardE> {
+public interface DashboardMapper extends Mapper<DashboardDTO> {
 
     /**
      * 分页模糊查询客户端
@@ -19,9 +18,9 @@ public interface DashboardMapper extends BaseMapper<DashboardE> {
      * @param param     Dashboard模糊查询参数
      * @return Dashboard集合
      */
-    List<DashboardE> fulltextSearch(
-            @Param("dashboard") DashboardE dashboard,
+    List<DashboardDTO> fulltextSearch(
+            @Param("dashboard") DashboardDTO dashboard,
             @Param("param") String param);
 
-    List<DashboardE> selectByLevel(@Param("level") String level);
+    List<DashboardDTO> selectByLevel(@Param("level") String level);
 }

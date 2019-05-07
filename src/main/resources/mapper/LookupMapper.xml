@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.LookupMapper">
-    <resultMap id="lookupWithValues" type="io.choerodon.iam.infra.dataobject.LookupDO">
+    <resultMap id="lookupWithValues" type="io.choerodon.iam.infra.dto.LookupDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
-        <collection property="lookupValues" ofType="io.choerodon.iam.infra.dataobject.LookupValueDO">
+        <collection property="lookupValues" ofType="io.choerodon.iam.infra.dto.LookupValueDTO" autoMapping="true">
             <id column="value_id" property="id"></id>
             <result column="lookup_id" property="lookupId" jdbcType="DECIMAL"/>
             <result column="value_code" property="code" jdbcType="VARCHAR"/>
@@ -14,15 +14,15 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.LookupDO">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dto.LookupDTO">
         SELECT * FROM fd_lookup
         WHERE 1=1
-        <if test="lookupDO != null">
-            <if test="lookupDO.code != null">
-                AND code LIKE concat(concat('%',#{lookupDO.code}),'%')
+        <if test="lookupDTO != null">
+            <if test="lookupDTO.code != null">
+                AND code LIKE concat(concat('%',#{lookupDTO.code}),'%')
             </if>
-            <if test="lookupDO.description != null">
-                AND description LIKE concat(concat('%',#{lookupDO.description}),'%')
+            <if test="lookupDTO.description != null">
+                AND description LIKE concat(concat('%',#{lookupDTO.description}),'%')
             </if>
         </if>
         <if test="param != null">

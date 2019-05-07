@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.service;
 
+import io.choerodon.iam.infra.dto.UserDashboardDTO;
+
 import java.util.List;
 
-import io.choerodon.iam.api.dto.UserDashboardDTO;
 
 /**
  * @author dongfan117@gmail.com

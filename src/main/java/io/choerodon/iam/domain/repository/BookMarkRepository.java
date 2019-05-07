@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.infra.dataobject.BookMarkDO;
+
+import io.choerodon.iam.infra.dto.BookMarkDTO;
 
 import java.util.List;
 
@@ -8,11 +9,11 @@ import java.util.List;
  * @author dengyouquan
  **/
 public interface BookMarkRepository {
-    BookMarkDO create(BookMarkDO bookMarkDO);
+    BookMarkDTO create(BookMarkDTO bookMarkDTO);
 
-    BookMarkDO update(BookMarkDO bookMarkDO);
+    BookMarkDTO update(BookMarkDTO bookMarkDTO);
 
-    List<BookMarkDO> queryByUserId(Long userId);
+    List<BookMarkDTO> queryByUserId(Long userId);
 
     void delete(Long id);
 }

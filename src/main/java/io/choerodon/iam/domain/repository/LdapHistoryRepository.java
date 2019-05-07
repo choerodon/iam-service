@@ -1,19 +1,17 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.LdapHistoryDTO;
-import io.choerodon.iam.infra.dataobject.LdapHistoryDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 
 /**
  * @author superlee
  */
 public interface LdapHistoryRepository {
-    LdapHistoryDO insertSelective(LdapHistoryDO ldapHistory);
+    LdapHistoryDTO insertSelective(LdapHistoryDTO ldapHistory);
 
-    LdapHistoryDO queryLatestHistory(Long ldapId);
+    LdapHistoryDTO queryLatestHistory(Long ldapId);
 
-    LdapHistoryDO updateByPrimaryKeySelective(LdapHistoryDO ldapHistoryDO);
+    LdapHistoryDTO updateByPrimaryKeySelective(LdapHistoryDTO ldapHistoryDTO);
 
-    Page<LdapHistoryDTO> pagingQuery(PageRequest pageRequest, Long ldapId);
+    PageInfo<LdapHistoryDTO> pagingQuery(int page, int size, Long ldapId);
 }

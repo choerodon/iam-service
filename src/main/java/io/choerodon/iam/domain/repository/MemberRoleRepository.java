@@ -1,11 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
-import io.choerodon.iam.domain.iam.entity.MemberRoleE;
-import io.choerodon.iam.infra.dataobject.ClientDO;
-import io.choerodon.iam.infra.dataobject.MemberRoleDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
 
 import java.util.List;
 
@@ -15,26 +13,26 @@ import java.util.List;
  */
 public interface MemberRoleRepository {
 
-    MemberRoleE insertSelective(MemberRoleE memberRoleE);
+    MemberRoleDTO insertSelective(MemberRoleDTO memberRoleDTO);
 
-    List<MemberRoleE> select(MemberRoleE memberRoleE);
+    List<MemberRoleDTO> select(MemberRoleDTO memberRoleDTO);
 
     void deleteById(Long id);
 
-    MemberRoleE selectByPrimaryKey(Long id);
+    MemberRoleDTO selectByPrimaryKey(Long id);
 
-    void insert(MemberRoleDO memberRole);
+    void insert(MemberRoleDTO memberRole);
 
-    MemberRoleDO selectOne(MemberRoleDO memberRole);
+    MemberRoleDTO selectOne(MemberRoleDTO memberRole);
 
     List<Long> selectDeleteList(final List<Long> deleteList, final long memberId, final String memberType, final long sourceId, final String sourceType);
 
-    Page<ClientDO> pagingQueryClientsWithOrganizationLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
+    PageInfo<ClientDTO> pagingQueryClientsWithOrganizationLevelRoles(
+            int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
 
-    Page<ClientDO> pagingQueryClientsWithSiteLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, String param);
+    PageInfo<ClientDTO> pagingQueryClientsWithSiteLevelRoles(
+            int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, String param);
 
-    Page<ClientDO> pagingQueryClientsWithProjectLevelRoles(
-            PageRequest pageRequest, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
+    PageInfo<ClientDTO> pagingQueryClientsWithProjectLevelRoles(
+            int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param);
 }

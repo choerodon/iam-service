@@ -3,13 +3,12 @@ package io.choerodon.iam.domain.repository;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.dto.SimplifiedUserDTO;
 import io.choerodon.iam.api.dto.UserRoleDTO;
-import io.choerodon.iam.domain.iam.entity.UserE;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.api.dto.UserSearchDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 /**
  * @author dongfan117@gmail.com
@@ -17,76 +16,76 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface UserRepository {
 
-    UserE selectByLoginName(String loginName);
+    UserDTO selectByLoginName(String loginName);
 
-    int selectCount(UserDO user);
+    int selectCount(UserDTO user);
 
-    UserDO insertSelective(UserDO userDO);
+    UserDTO insertSelective(UserDTO userDTO);
 
-    Page<UserDO> pagingQuery(PageRequest pageRequest, UserDO userDO, String param);
+    PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO userSearchDTO, String param);
 
-    UserE selectByPrimaryKey(Long id);
+    UserDTO selectByPrimaryKey(Long id);
 
-    UserE updateSelective(UserE userE);
+    UserDTO updateSelective(UserDTO userDTO);
 
     void updatePhoto(Long userId, String photoUrl);
 
     void deleteById(Long id);
 
-    Page<UserDO> pagingQueryUsersWithSiteLevelRoles(
-            PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+    PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(
+            int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
-    Page<UserDO> pagingQueryUsersWithOrganizationLevelRoles(
-            PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
+    PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(
+            int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId);
 
-    Page<UserDO> pagingQueryUsersWithProjectLevelRoles(
-            PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
+    PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(
+            int page,int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
 
-    UserE updateUserInfo(UserE userE);
+    UserDTO updateUserInfo(UserDTO userDTO);
 
-    UserDO selectOne(UserDO user);
+    UserDTO selectOne(UserDTO user);
 
-    Page<UserDO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, PageRequest pageRequest, String param);
+    PageInfo<UserDTO> pagingQueryUsersByProjectId(Long projectId, Long userId, String email, int page, int size, String param);
 
-    Page<UserDO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, PageRequest pageRequest, String param);
+    PageInfo<UserDTO> pagingQueryUsersByOrganizationId(Long organizationId, Long userId, String email, int page, int size, String param);
 
-    Page<UserDO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
+    PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
 
     Integer selectUserCountFromMemberRoleByOptions(Long roleId, String memberType, Long sourceId,
                                                    String sourceType, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                    String param);
 
-    List<UserDO> listUsersByRoleIdOnSiteLevel(Long roleId);
+    List<UserDTO> listUsersByRoleIdOnSiteLevel(Long roleId);
 
-    List<UserDO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId);
+    List<UserDTO> listUsersByRoleIdOnOrganizationLevel(Long orgId, Long roleId);
 
-    List<UserDO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId);
+    List<UserDTO> listUsersByRoleIdOnProjectLevel(Long proId, Long roleId);
 
-    Page<UserDO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest,
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(int page, int size,
                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage);
 
-    List<UserDO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
+    List<UserDTO> listUsersByRoleId(Long roleId, String memberType, String sourceType);
 
     /**
      * 根据用户id集合查询用户的集合
      *
      * @param ids         用户id数组
      * @param onlyEnabled 是否只查询启用的用户
-     * @return List<UserDO> 用户集合
+     * @return List<UserDTO> 用户集合
      */
-    List<UserDO> listUsersByIds(Long[] ids, Boolean onlyEnabled);
+    List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled);
 
     /**
      * 根据用户emails集合查询用户的集合
      *
      * @param emails 用户email数组
-     * @return List<UserDO> 用户集合
+     * @return List<UserDTO> 用户集合
      */
-    List<UserDO> listUsersByEmails(String[] emails);
+    List<UserDTO> listUsersByEmails(String[] emails);
 
-    Page<UserDO> pagingQueryAdminUsers(PageRequest pageRequest, UserDO userDO, String params);
+    PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
 
-    List<UserDO> insertList(List<UserDO> insertUsers);
+    List<UserDTO> insertList(List<UserDTO> insertUsers);
 
     Set<String> matchLoginName(Set<String> nameSet);
 
@@ -98,7 +97,7 @@ public interface UserRepository {
 
     Long[] listUserIds();
 
-    Page<SimplifiedUserDTO> pagingAllUsersByParams(PageRequest pageRequest, String param, Long organizationId);
+    PageInfo<SimplifiedUserDTO> pagingAllUsersByParams(int page, int size, String param, Long organizationId);
 
     /**
      * 全平台用户数（包括停用）
@@ -117,7 +116,7 @@ public interface UserRepository {
     /**
      * 分页获取用户下所有角色列表
      */
-    Page<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId);
+    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
 
-    List<UserDO> select(UserDO example);
+    List<UserDTO> select(UserDTO example);
 }

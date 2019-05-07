@@ -1,8 +1,8 @@
 package io.choerodon.iam.domain.service.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.domain.iam.entity.UserE
 import io.choerodon.iam.domain.repository.UserRepository
+import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.NotifyFeignClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -11,8 +11,7 @@ import spock.lang.Specification
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class IUserServiceImplSpec extends Specification {
@@ -31,7 +30,8 @@ class IUserServiceImplSpec extends Specification {
         userIds.add(fromUserId)
         String code = "addUser"
         Map<String, Object> params = new HashMap<>()
-        UserE userE = new UserE("123456")
+        UserDTO userE = new UserDTO()
+        userE.setPassword("123456")
 
         when: "调用方法"
         iUserService.sendNotice(fromUserId, userIds, code, params, 0L)

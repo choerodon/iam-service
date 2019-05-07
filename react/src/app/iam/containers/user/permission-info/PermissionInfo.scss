@@ -1,0 +1,84 @@
+.c7n-permission-info {
+  &-name {
+    vertical-align: text-top;
+
+    a {
+      width: 100%;
+      color: #000;
+    }
+
+    &-avatar {
+      float: left;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      background: rgb(197, 203, 232);
+      color: rgb(100, 115, 195);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 5px;
+      text-align: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+      text-transform: uppercase;
+
+      &-default {
+        float: left;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-image: url('./favicon.png');
+        margin-right: 5px;
+      }
+    }
+  }
+
+  &-code {
+    vertical-align: text-top;
+  }
+
+  &-level {
+    vertical-align: text-top;
+  }
+
+  &-action {
+    vertical-align: text-top;
+  }
+
+  &-table {
+    table {
+      table-layout: fixed;
+    }
+  }
+
+  &-description {
+    vertical-align: text-top;
+    max-width: 40%;
+    width: 40%;
+    line-height: 2;
+    .role-wrapper {
+      display: inline-block;
+      border-radius: 10px;
+      padding: 0 12px;
+      margin-right: 8px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 12px;
+      background: rgba(0, 0, 0, .08);
+
+      &-disabled {
+        background: rgba(0, 0, 0, 0.04);
+        color: rgba(0, 0, 0, 0.36);
+      }
+
+      &-enabled {
+        background: rgba(0, 0, 0, .08);
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.SystemSettingDTO
+import io.choerodon.iam.infra.dto.SystemSettingDTO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate

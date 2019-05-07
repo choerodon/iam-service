@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.ClientMapper">
-    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dataobject.ClientDO">
+    <select id="fulltextSearch" resultType="io.choerodon.iam.infra.dto.ClientDTO">
         SELECT * FROM oauth_client
         WHERE 1=1
-        <if test="clientDO.organizationId != null">
-            AND organization_id = #{clientDO.organizationId}
+        <if test="clientDTO.organizationId != null">
+            AND organization_id = #{clientDTO.organizationId}
         </if>
-        <if test="clientDO.name != null">
-            AND name LIKE concat(concat('%',#{clientDO.name}),'%')
+        <if test="clientDTO.name != null">
+            AND name LIKE concat(concat('%',#{clientDTO.name}),'%')
         </if>
         <if test="param != null">
             AND
@@ -43,7 +43,7 @@
         ) t
     </select>
 
-    <select id="selectClientsByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dataobject.ClientDO">
+    <select id="selectClientsByRoleIdAndOptions" resultType="io.choerodon.iam.infra.dto.ClientDTO">
         SELECT DISTINCT client.* FROM iam_member_role imr
         INNER JOIN oauth_client client ON imr.member_id = client.id
         WHERE imr.role_id = #{roleId}

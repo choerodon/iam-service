@@ -1,10 +1,10 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.infra.dataobject.RoleLabelDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.iam.infra.dto.RoleLabelDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author superlee
  */
-public interface RoleLabelMapper extends BaseMapper<RoleLabelDO> {
+public interface RoleLabelMapper extends Mapper<RoleLabelDTO> {
 }

@@ -1,8 +1,7 @@
 package io.choerodon.iam.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.PasswordPolicyDTO;
-import io.choerodon.iam.infra.dataobject.PasswordPolicyDO;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,24 +16,24 @@ public class PasswordPolicyValidator {
     private PasswordPolicyMapper passwordPolicyMapper;
 
     public void create(Long orgId, PasswordPolicyDTO passwordPolicyDTO) {
-        PasswordPolicyDO passwordPolicyDO = new PasswordPolicyDO();
-        passwordPolicyDO.setOrganizationId(orgId);
-        if (!passwordPolicyMapper.select(passwordPolicyDO).isEmpty()) {
+        PasswordPolicyDTO dto = new PasswordPolicyDTO();
+        dto.setOrganizationId(orgId);
+        if (!passwordPolicyMapper.select(dto).isEmpty()) {
             throw new CommonException("error.passwordPolicy.organizationId.exist");
         }
-        passwordPolicyDO.setOrganizationId(null);
-        passwordPolicyDO.setCode(passwordPolicyDTO.getCode());
-        if (!passwordPolicyMapper.select(passwordPolicyDO).isEmpty()) {
+        dto.setOrganizationId(null);
+        dto.setCode(passwordPolicyDTO.getCode());
+        if (!passwordPolicyMapper.select(dto).isEmpty()) {
             throw new CommonException("error.passwordPolicy.code.exist");
         }
     }
 
     public void update(Long orgId, Long passwordPolicyId, PasswordPolicyDTO passwordPolicyDTO) {
-        PasswordPolicyDO passwordPolicyDO = passwordPolicyMapper.selectByPrimaryKey(passwordPolicyId);
-        if (passwordPolicyDO == null) {
+        PasswordPolicyDTO dto = passwordPolicyMapper.selectByPrimaryKey(passwordPolicyId);
+        if (dto == null) {
             throw new CommonException("error.passwordPolicy.not.exist");
         }
-        if (!orgId.equals(passwordPolicyDO.getOrganizationId())) {
+        if (!orgId.equals(dto.getOrganizationId())) {
             throw new CommonException("error.passwordPolicy.organizationId.not.same");
         }
 

@@ -3,18 +3,18 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ApplicationExplorationMapper">
 
-    <resultMap id="ApplicationExplorationDO" type="io.choerodon.iam.infra.dataobject.ApplicationExplorationDO">
+    <resultMap id="ApplicationExploration" type="io.choerodon.iam.infra.dto.ApplicationExplorationDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <resultMap id="ApplicationDO" type="io.choerodon.iam.infra.dataobject.ApplicationDO">
+    <resultMap id="Application" type="io.choerodon.iam.infra.dto.ApplicationDTO" autoMapping="true">
         <id property="id" column="id"/>
         <result property="enabled" column="is_enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
 
-    <select id="selectDescendantApplications" resultMap="ApplicationDO">
+    <select id="selectDescendantApplications" resultMap="Application">
         select ia.*, t.app_count from iam_application ia
         join(
         select i.application_id, count(i.application_id) as app_count
@@ -32,7 +32,7 @@
     </select>
 
 
-    <select id="selectDescendantByApplicationIds" resultMap="ApplicationExplorationDO">
+    <select id="selectDescendantByApplicationIds" resultMap="ApplicationExploration">
         SELECT distinct iae.*
         FROM iam_application_exploration iae
         JOIN (
@@ -47,12 +47,12 @@
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
-    <select id="selectDescendantByPath" resultMap="ApplicationExplorationDO">
+    <select id="selectDescendantByPath" resultMap="ApplicationExploration">
           select i.* from iam_application_exploration i
           where i.path like concat(#{path},'%') order by i.id asc
     </select>
 
-    <select id="selectDescendants" resultMap="ApplicationExplorationDO">
+    <select id="selectDescendants" resultMap="ApplicationExploration">
         select
           i.*,
           ia.name application_name,
@@ -70,7 +70,7 @@
         where i.path like concat(#{path},'%') order by i.id asc
     </select>
 
-    <select id="selectDescendantByApplicationIdsAndParentId" resultMap="ApplicationExplorationDO">
+    <select id="selectDescendantByApplicationIdsAndParentId" resultMap="ApplicationExploration">
         SELECT distinct iae.*
         FROM iam_application_exploration iae
         JOIN (
@@ -86,7 +86,7 @@
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
-    <select id="selectDescendantByApplicationIdAndParentId" resultMap="ApplicationExplorationDO">
+    <select id="selectDescendantByApplicationIdAndParentId" resultMap="ApplicationExploration">
         SELECT distinct iae.*
         FROM iam_application_exploration iae
         JOIN (
@@ -98,7 +98,7 @@
         WHERE iae.path LIKE concat(t.path,'%')
     </select>
 
-    <select id="selectAncestorByApplicationId" resultMap="ApplicationExplorationDO">
+    <select id="selectAncestorByApplicationId" resultMap="ApplicationExploration">
         SELECT DISTINCT i.*
         FROM iam_application_exploration i
         JOIN (
@@ -107,7 +107,7 @@
         WHERE t.path LIKE concat(i.path, '%');
     </select>
 
-    <select id="selectDirectDescendantByApplicationId" resultMap="ApplicationExplorationDO">
+    <select id="selectDirectDescendantByApplicationId" resultMap="ApplicationExploration">
         select * from iam_application_exploration
         where parent_id = #{id}
     </select>

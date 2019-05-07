@@ -1,10 +1,10 @@
 package io.choerodon.iam.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.LabelDTO;
 import io.choerodon.iam.app.service.LabelService;
-import io.choerodon.swagger.annotation.Permission;
+import io.choerodon.iam.infra.dto.LabelDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class LabelController extends BaseController {
         this.labelService = labelService;
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<LabelDTO>> listByType(LabelDTO label) {

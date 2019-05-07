@@ -3,24 +3,22 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ProjectDTO;
-import io.choerodon.iam.api.dto.UserDTO;
 import io.choerodon.iam.app.service.ProjectService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author flyleft
@@ -41,7 +39,7 @@ public class ProjectController extends BaseController {
      * @param id 要查询的项目ID
      * @return 查询到的项目
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @GetMapping(value = "/{project_id}")
     @ApiOperation(value = "通过id查询项目")
     public ResponseEntity<ProjectDTO> query(@PathVariable(name = "project_id") Long id) {
@@ -64,29 +62,35 @@ public class ProjectController extends BaseController {
     /**
      * 根据projectId和param模糊查询loginName和realName两列
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页模糊查询项目下的用户")
-    @CustomPageRequest
     @GetMapping(value = "/{project_id}/users")
-    public ResponseEntity<Page<UserDTO>> list(@PathVariable(name = "project_id") Long id,
-                                              @ApiIgnore
-                                              @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                      PageRequest pageRequest,
-                                              @RequestParam(required = false, name = "id") Long userId,
-                                              @RequestParam(required = false) String email,
-                                              @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, pageRequest, param), HttpStatus.OK);
+    public ResponseEntity<PageInfo<UserDTO>> list(@PathVariable(name = "project_id") Long id,
+                                                  @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                  @RequestParam(required = false, name = "id") Long userId,
+                                                  @RequestParam(required = false) String email,
+                                                  @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(projectService.pagingQueryTheUsersOfProject(id, userId, email, page, size, param), HttpStatus.OK);
     }
 
     /**
      * 项目层更新项目，code和organizationId都不可更改
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "修改项目")
     @PutMapping(value = "/{project_id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable(name = "project_id") Long id,
                                              @RequestBody ProjectDTO projectDTO) {
-        projectDTO.updateCheck();
+        if (StringUtils.isEmpty(projectDTO.getName())) {
+            throw new CommonException("error.project.name.empty");
+        }
+        if (projectDTO.getName().length() < 1 || projectDTO.getName().length() > 32) {
+            throw new CommonException("error.project.code.size");
+        }
+        if (projectDTO.getObjectVersionNumber() == null) {
+            throw new CommonException("error.objectVersionNumber.null");
+        }
         projectDTO.setId(id);
         //项目code不可编辑
         projectDTO.setCode(null);
@@ -95,7 +99,7 @@ public class ProjectController extends BaseController {
         return new ResponseEntity<>(projectService.update(projectDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
+    @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "禁用项目")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "project_id") Long id) {

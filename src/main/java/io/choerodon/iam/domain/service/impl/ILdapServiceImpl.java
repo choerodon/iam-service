@@ -2,10 +2,9 @@ package io.choerodon.iam.domain.service.impl;
 
 import io.choerodon.core.ldap.DirectoryType;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
-import io.choerodon.iam.api.dto.LdapDTO;
 import io.choerodon.iam.api.validator.LdapValidator;
 import io.choerodon.iam.domain.service.ILdapService;
-import io.choerodon.iam.infra.dataobject.LdapDO;
+import io.choerodon.iam.infra.dto.LdapDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.AuthenticationException;
@@ -48,40 +47,40 @@ public class ILdapServiceImpl implements ILdapService {
     private static final String OBJECT_CLASS = "objectclass";
 
     @Override
-    public Map<String, Object> testConnect(LdapDO ldapDO) {
-        LdapValidator.validate(ldapDO);
-        boolean anonymous = StringUtils.isEmpty(ldapDO.getAccount()) || StringUtils.isEmpty(ldapDO.getPassword());
+    public Map<String, Object> testConnect(LdapDTO ldapDTO) {
+        LdapValidator.validate(ldapDTO);
+        boolean anonymous = StringUtils.isEmpty(ldapDTO.getAccount()) || StringUtils.isEmpty(ldapDTO.getPassword());
         LdapConnectionDTO ldapConnectionDTO = new LdapConnectionDTO();
         Map<String, Object> returnMap = new HashMap<>(2);
 
-        LdapTemplate ldapTemplate = initLdapTemplate(ldapDO, anonymous);
+        LdapTemplate ldapTemplate = initLdapTemplate(ldapDTO, anonymous);
         returnMap.put(LDAP_TEMPLATE, ldapTemplate);
         //默认将account当作userDn,如果无法登陆，则去ldap服务器抓取ldapDO.getLoginNameField()==account的userDn，然后使用返回的userDn登陆
-        accountAsUserDn(ldapDO, ldapConnectionDTO, ldapTemplate);
+        accountAsUserDn(ldapDTO, ldapConnectionDTO, ldapTemplate);
         //输入的账户无法登陆，去ldap服务器抓取userDn(例外hand ldap)
         if (!anonymous && ldapConnectionDTO.getCanConnectServer() && !ldapConnectionDTO.getCanLogin()) {
-            returnMap.put(LDAP_TEMPLATE, fetchUserDn2Authenticate(ldapDO, ldapConnectionDTO));
+            returnMap.put(LDAP_TEMPLATE, fetchUserDn2Authenticate(ldapDTO, ldapConnectionDTO));
         }
         returnMap.put(LDAP_CONNECTION_DTO, ldapConnectionDTO);
         return returnMap;
     }
 
-    private LdapTemplate fetchUserDn2Authenticate(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO) {
+    private LdapTemplate fetchUserDn2Authenticate(LdapDTO ldapDTO, LdapConnectionDTO ldapConnectionDTO) {
         LdapContextSource contextSource = new LdapContextSource();
-        String url = ldapDO.getServerAddress() + ":" + ldapDO.getPort();
-        int connectionTimeout = ldapDO.getConnectionTimeout();
+        String url = ldapDTO.getServerAddress() + ":" + ldapDTO.getPort();
+        int connectionTimeout = ldapDTO.getConnectionTimeout();
         contextSource.setUrl(url);
-        contextSource.setBase(ldapDO.getBaseDn());
+        contextSource.setBase(ldapDTO.getBaseDn());
         contextSource.setAnonymousReadOnly(true);
         setConnectionTimeout(contextSource, connectionTimeout);
         contextSource.afterPropertiesSet();
         LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
-        if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
+        if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDTO.getDirectoryType())) {
             ldapTemplate.setIgnorePartialResultException(true);
         }
 
         String userDn = null;
-        Filter filter = getFilterByObjectClassAndAttribute(ldapDO);
+        Filter filter = getFilterByObjectClassAndAttribute(ldapDTO);
         try {
             List<String> names =
                     ldapTemplate.search(
@@ -112,13 +111,13 @@ public class ILdapServiceImpl implements ILdapService {
         } else {
             contextSource.setAnonymousReadOnly(false);
             contextSource.setUserDn(userDn);
-            contextSource.setPassword(ldapDO.getPassword());
+            contextSource.setPassword(ldapDTO.getPassword());
 
             ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
             try {
                 LdapTemplate newLdapTemplate = new LdapTemplate(contextSource);
-                matchAttributes(ldapDO, ldapConnectionDTO, newLdapTemplate);
+                matchAttributes(ldapDTO, ldapConnectionDTO, newLdapTemplate);
                 ldapConnectionDTO.setCanLogin(true);
                 return newLdapTemplate;
             } catch (InvalidNameException | AuthenticationException e) {
@@ -131,14 +130,14 @@ public class ILdapServiceImpl implements ILdapService {
         }
     }
 
-    private Filter getFilterByObjectClassAndAttribute(LdapDO ldapDO) {
-        String account = ldapDO.getAccount();
-        AndFilter andFilter = getAndFilterByObjectClass(ldapDO);
-        andFilter.and(new EqualsFilter(ldapDO.getLoginNameField(), account));
+    private Filter getFilterByObjectClassAndAttribute(LdapDTO ldapDTO) {
+        String account = ldapDTO.getAccount();
+        AndFilter andFilter = getAndFilterByObjectClass(ldapDTO);
+        andFilter.and(new EqualsFilter(ldapDTO.getLoginNameField(), account));
         return andFilter;
     }
 
-    private AndFilter getAndFilterByObjectClass(LdapDO ldapDO) {
+    private AndFilter getAndFilterByObjectClass(LdapDTO ldapDO) {
         String objectClass = ldapDO.getObjectClass();
         String[] arr = objectClass.split(",");
         AndFilter andFilter = new AndFilter();
@@ -148,16 +147,16 @@ public class ILdapServiceImpl implements ILdapService {
         return andFilter;
     }
 
-    private void accountAsUserDn(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
+    private void accountAsUserDn(LdapDTO ldapDTO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
         try {
-            if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDO.getDirectoryType())) {
+            if (DirectoryType.MICROSOFT_ACTIVE_DIRECTORY.value().equals(ldapDTO.getDirectoryType())) {
                 ldapTemplate.setIgnorePartialResultException(true);
             }
             ldapConnectionDTO.setCanConnectServer(false);
             ldapConnectionDTO.setCanLogin(false);
             ldapConnectionDTO.setMatchAttribute(false);
             //使用管理员登陆，查询一个objectclass=ldapDO.getObjectClass的对象去匹配属性
-            matchAttributes(ldapDO, ldapConnectionDTO, ldapTemplate);
+            matchAttributes(ldapDTO, ldapConnectionDTO, ldapTemplate);
             ldapConnectionDTO.setCanConnectServer(true);
             ldapConnectionDTO.setCanLogin(true);
         } catch (InvalidNameException | AuthenticationException e) {
@@ -182,17 +181,17 @@ public class ILdapServiceImpl implements ILdapService {
         }
     }
 
-    private LdapTemplate initLdapTemplate(LdapDO ldapDO, boolean anonymous) {
+    private LdapTemplate initLdapTemplate(LdapDTO ldapDTO, boolean anonymous) {
         LdapContextSource contextSource = new LdapContextSource();
-        String url = ldapDO.getServerAddress() + ":" + ldapDO.getPort();
-        int connectionTimeout = ldapDO.getConnectionTimeout();
+        String url = ldapDTO.getServerAddress() + ":" + ldapDTO.getPort();
+        int connectionTimeout = ldapDTO.getConnectionTimeout();
         contextSource.setUrl(url);
-        contextSource.setBase(ldapDO.getBaseDn());
+        contextSource.setBase(ldapDTO.getBaseDn());
         setConnectionTimeout(contextSource, connectionTimeout);
 
         if (!anonymous) {
-            contextSource.setUserDn(ldapDO.getAccount());
-            contextSource.setPassword(ldapDO.getPassword());
+            contextSource.setUserDn(ldapDTO.getAccount());
+            contextSource.setPassword(ldapDTO.getPassword());
         } else {
             contextSource.setAnonymousReadOnly(true);
         }
@@ -207,9 +206,9 @@ public class ILdapServiceImpl implements ILdapService {
         contextSource.setBaseEnvironmentProperties(environment);
     }
 
-    private void matchAttributes(LdapDO ldapDO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
-        Map<String, String> attributeMap = initAttributeMap(ldapDO);
-        Filter filter = getAndFilterByObjectClass(ldapDO);
+    private void matchAttributes(LdapDTO ldapDTO, LdapConnectionDTO ldapConnectionDTO, LdapTemplate ldapTemplate) {
+        Map<String, String> attributeMap = initAttributeMap(ldapDTO);
+        Filter filter = getAndFilterByObjectClass(ldapDTO);
         List<Attributes> attributesList =
                 ldapTemplate.search(
                         query()
@@ -223,10 +222,10 @@ public class ILdapServiceImpl implements ILdapService {
                         });
         if (attributesList.isEmpty()) {
             LOGGER.warn("can not get any attributes while the filter is {}", filter);
-            ldapConnectionDTO.setLoginNameField(ldapDO.getLoginNameField());
-            ldapConnectionDTO.setRealNameField(ldapDO.getRealNameField());
-            ldapConnectionDTO.setPhoneField(ldapDO.getPhoneField());
-            ldapConnectionDTO.setEmailField(ldapDO.getEmailField());
+            ldapConnectionDTO.setLoginNameField(ldapDTO.getLoginNameField());
+            ldapConnectionDTO.setRealNameField(ldapDTO.getRealNameField());
+            ldapConnectionDTO.setPhoneField(ldapDTO.getPhoneField());
+            ldapConnectionDTO.setEmailField(ldapDTO.getEmailField());
         } else {
             Set<String> keySet = new HashSet<>();
             for (Attributes attributes : attributesList) {
@@ -252,7 +251,7 @@ public class ILdapServiceImpl implements ILdapService {
         ldapConnectionDTO.setMatchAttribute(match);
     }
 
-    private Map<String, String> initAttributeMap(LdapDO ldap) {
+    private Map<String, String> initAttributeMap(LdapDTO ldap) {
         Map<String, String> attributeMap = new HashMap<>(10);
         attributeMap.put(LdapDTO.GET_LOGIN_NAME_FIELD, ldap.getLoginNameField());
         attributeMap.put(LdapDTO.GET_REAL_NAME_FIELD, ldap.getRealNameField());

@@ -1,8 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.infra.dataobject.LanguageDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.dto.LanguageDTO;
 
 import java.util.List;
 
@@ -11,13 +12,13 @@ import java.util.List;
  */
 public interface LanguageRepository {
 
-    Page<LanguageDO> pagingQuery(PageRequest pageRequest, LanguageDO languageDO, String param);
+    PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param);
 
-    LanguageDO update(LanguageDO languageDO);
+    LanguageDTO update(LanguageDTO languageDTO);
 
-    LanguageDO queryById(Long id);
+    LanguageDTO queryById(Long id);
 
-    LanguageDO queryByCode(LanguageDO languageDO);
+    LanguageDTO queryByCode(LanguageDTO languageDTO);
 
-    List<LanguageDO> listAll();
+    List<LanguageDTO> listAll();
 }

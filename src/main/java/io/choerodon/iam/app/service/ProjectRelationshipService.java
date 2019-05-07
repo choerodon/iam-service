@@ -1,16 +1,17 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.api.dto.RelationshipCheckDTO;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import io.choerodon.iam.api.dto.RelationshipCheckDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 
 /**
  * @author Eugen
  */
 public interface ProjectRelationshipService {
+
     /**
      * 查询一个项目群下的子项目(默认查所有子项目，可传参只查启用的子项目).
      *

@@ -1,16 +1,16 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.api.dto.SystemSettingDTO;
-import io.choerodon.iam.infra.dataobject.SystemSettingDO;
+
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
 
 /**
  * @author zmf
  * @since 2018-10-15
  */
 public interface SystemSettingRepository {
-    SystemSettingDTO addSetting(SystemSettingDO systemSettingDO);
+    SystemSettingDTO addSetting(SystemSettingDTO systemSettingDTO);
 
-    SystemSettingDTO updateSetting(SystemSettingDO systemSettingDO);
+    SystemSettingDTO updateSetting(SystemSettingDTO systemSettingDTO);
 
     void resetSetting();
 

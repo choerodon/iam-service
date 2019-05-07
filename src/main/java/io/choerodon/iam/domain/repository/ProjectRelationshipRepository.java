@@ -1,9 +1,9 @@
 package io.choerodon.iam.domain.repository;
 
-import io.choerodon.iam.api.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.infra.dataobject.ProjectRelationshipDO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 
 import java.util.List;
+
 
 /**
  * @author Eugen
@@ -12,7 +12,7 @@ public interface ProjectRelationshipRepository {
     /**
      * 查询一个项目群下的子项目(默认查所有子项目，可传参只查启用的子项目).
      *
-     * @param parentId     父级Id
+     * @param parentId         父级Id
      * @param onlySelectEnable 是否只查启用项目
      * @return 项目群下的子项目列表
      */
@@ -24,7 +24,7 @@ public interface ProjectRelationshipRepository {
      * @param projectRelationshipDTO 项目组
      * @return
      */
-    ProjectRelationshipDO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO);
+    ProjectRelationshipDTO addProjToGroup(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * 删除一个group
@@ -39,29 +39,29 @@ public interface ProjectRelationshipRepository {
      * @param id 主键
      * @return
      */
-    ProjectRelationshipDO selectByPrimaryKey(Long id);
+    ProjectRelationshipDTO selectByPrimaryKey(Long id);
 
     /**
      * 更新项目群
      *
-     * @param projectRelationshipDO
+     * @param projectRelationshipDTO
      * @return
      */
-    ProjectRelationshipDO update(ProjectRelationshipDO projectRelationshipDO);
+    ProjectRelationshipDTO update(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * selectOne
      *
-     * @param projectRelationshipDO
+     * @param projectRelationshipDTO
      * @return
      */
-    ProjectRelationshipDO selectOne(ProjectRelationshipDO projectRelationshipDO);
+    ProjectRelationshipDTO selectOne(ProjectRelationshipDTO projectRelationshipDTO);
 
     /**
      * select
      *
-     * @param projectRelationshipDO
+     * @param projectRelationshipDTO
      * @return
      */
-    List<ProjectRelationshipDO> select(ProjectRelationshipDO projectRelationshipDO);
+    List<ProjectRelationshipDTO> select(ProjectRelationshipDTO projectRelationshipDTO);
 }

@@ -26,4 +26,21 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_permission.groovy') {
         }
         addUniqueConstraint(tableName: 'IAM_MENU_PERMISSION', columnNames: 'MENU_ID, PERMISSION_CODE', constraintName: 'UK_IAM_MENU_PERM_U1')
     }
+
+    changeSet(author: 'superlee', id: '2019-04-16-menu-permission-upgrade') {
+        addColumn(tableName: 'IAM_MENU_PERMISSION') {
+            column(name: "OBJECT_VERSION_NUMBER", type: "BIGINT UNSIGNED", defaultValue: "1") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "CREATION_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0") {
+                constraints(nullable: true)
+            }
+            column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+        renameColumn(tableName:'IAM_MENU_PERMISSION',oldColumnName:'MENU_ID',newColumnName:'MENU_CODE',columnDataType:'VARCHAR(128)',remarks:'menu code')
+    }
 }

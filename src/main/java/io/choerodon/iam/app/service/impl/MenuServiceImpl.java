@@ -1,28 +1,24 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
+import io.choerodon.base.enums.MenuType;
+import io.choerodon.base.enums.ProjectCategory;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.MenuAssertHelper;
+import io.choerodon.iam.infra.dto.MenuDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.mapper.MenuMapper;
+import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.MenuDTO;
-import io.choerodon.iam.api.validator.MenuValidator;
 import io.choerodon.iam.app.service.MenuService;
-import io.choerodon.iam.domain.iam.entity.MenuE;
-import io.choerodon.iam.domain.repository.MenuRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.infra.common.utils.menu.MenuTreeUtil;
-import io.choerodon.iam.infra.dataobject.MenuDO;
-import io.choerodon.iam.infra.dataobject.ProjectDO;
-import io.choerodon.iam.infra.enums.ProjectCategory;
 
 /**
  * @author wuguokai
@@ -31,118 +27,220 @@ import io.choerodon.iam.infra.enums.ProjectCategory;
 @Component
 public class MenuServiceImpl implements MenuService {
 
-    private MenuRepository menuRepository;
-    private MenuValidator menuValidator;
     private ProjectRepository projectRepository;
 
+    private MenuMapper menuMapper;
+    private MenuAssertHelper menuAssertHelper;
 
-    public MenuServiceImpl(MenuRepository menuRepository, MenuValidator menuValidator, ProjectRepository projectRepository) {
-        this.menuRepository = menuRepository;
-        this.menuValidator = menuValidator;
+
+    public MenuServiceImpl(ProjectRepository projectRepository,
+                           MenuMapper menuMapper,
+                           MenuAssertHelper menuAssertHelper) {
         this.projectRepository = projectRepository;
+        this.menuMapper = menuMapper;
+        this.menuAssertHelper = menuAssertHelper;
     }
 
     @Override
-    public MenuDTO query(Long menuId) {
-        MenuE menuE = menuRepository.queryById(menuId);
-        return ConvertHelper.convert(menuE, MenuDTO.class);
+    public MenuDTO query(Long id) {
+        return menuMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public MenuDTO create(MenuDTO menuDTO) {
-        MenuE menuE = ConvertHelper.convert(menuDTO, MenuE.class);
-        menuE.nonDefault();
-        menuE = menuRepository.createMenu(menuE);
-        return ConvertHelper.convert(menuE, MenuDTO.class);
+        preCreate(menuDTO);
+        menuMapper.insertSelective(menuDTO);
+        return menuDTO;
     }
 
-    @Override
-    public Boolean delete(Long menuId) {
-        return menuRepository.deleteMenu(menuId);
-    }
-
-    @Override
-    public MenuDTO update(Long menuId, MenuDTO menuDTO) {
-        MenuE menuE = menuRepository.queryById(menuId);
-        if (menuE == null) {
-            throw new CommonException("error.menu.not.exist");
+    private void preCreate(MenuDTO menuDTO) {
+        menuAssertHelper.codeExisted(menuDTO.getCode());
+        if (menuDTO.getSort() == null) {
+            menuDTO.setSort(0);
         }
-        if (menuE.getDefault()) {
+        if (menuDTO.getParentCode() == null) {
+            menuDTO.setParentCode("");
+        }
+        String level = menuDTO.getResourceLevel();
+        if (!ResourceType.contains(level)) {
+            throw new CommonException("error.illegal.level");
+        }
+        String type = menuDTO.getType();
+        if (!MenuType.contains(type)) {
+            throw new CommonException("error.menu.illegal.type", type);
+        }
+    }
+
+    @Override
+    public void delete(Long id) {
+        MenuDTO dto = menuAssertHelper.menuNotExisted(id);
+        if (dto.getDefault()) {
             throw new CommonException("error.menu.default");
         }
-        //菜单已经被更新
-        if (!menuE.getObjectVersionNumber().equals(menuDTO.getObjectVersionNumber())) {
-            throw new CommonException("error.objectNumber.update");
-        }
-        if (menuDTO.getName() != null) {
-            menuE.editName(menuDTO.getName());
-        }
-        if (menuDTO.getParentId() != null) {
-            menuE.setParentId(menuDTO.getParentId());
-        }
-        if (menuDTO.getIcon() != null) {
-            menuE.updateIcon(menuDTO.getIcon());
-        }
-        menuE = menuRepository.updateMenu(menuE);
-        return ConvertHelper.convert(menuE, MenuDTO.class);
+        menuMapper.deleteByPrimaryKey(id);
     }
 
     @Override
-    public List<MenuDTO> list(String level) {
-        return ConvertHelper.convertList(menuRepository.selectByLevel(level), MenuDTO.class);
+    public MenuDTO update(Long id, MenuDTO menuDTO) {
+        MenuDTO dto = menuAssertHelper.menuNotExisted(id);
+        if (dto.getDefault()) {
+            throw new CommonException("error.menu.default");
+        }
+        menuDTO.setId(id);
+        Criteria criteria = new Criteria();
+        criteria.update("name", "icon", "page_permission_code", "search_condition", "category");
+        menuMapper.updateByPrimaryKeyOptions(menuDTO, criteria);
+        return menuMapper.selectByPrimaryKey(id);
     }
 
     @Override
-    public List<MenuDTO> listAfterTestPermission(String level, Long sourceId) {
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        if (userDetails == null) {
-            return new ArrayList<>();
-        }
-        boolean isAdmin = false;
-        if (userDetails.getAdmin() != null) {
-            isAdmin = userDetails.getAdmin();
-        }
-        //例外super admin,如果是的话能看到所有菜单
-        List<MenuDTO> menus;
+    public MenuDTO menus(String code, Long sourceId) {
+        MenuDTO topMenu = getTopMenuByCode(code);
+        String level = topMenu.getResourceLevel();
+        CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
+        Long userId = userDetails.getUserId();
+        boolean isAdmin = userDetails.getAdmin();
+        Set<MenuDTO> menus;
         if (isAdmin) {
-            MenuDO menu = new MenuDO();
-            menu.setLevel(level);
-            List<MenuDO> menuDOList;
-            if (ResourceLevel.PROJECT.value().equals(level)) {
-                menuDOList = menuRepository.queryProjectMenusWithCategoryByRootUser(
-                        this.selectProgramMenuCategory(level, sourceId));
+            if (ResourceType.isProject(level)) {
+                menus = new LinkedHashSet<>(
+                        menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
             } else {
-                menuDOList = menuRepository.select(menu);
+                menus = menuMapper.selectByLevelWithPermissionType(level);
             }
-            menus = ConvertHelper.convertList(menuDOList, MenuDTO.class);
         } else {
-            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
-            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            String projectCategory = this.selectProgramMenuCategory(level, sourceId);
-
-            menus =
-                    ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                            "user", userDetails.getUserId(), sourceType, sourceId, projectCategory), MenuDTO.class);
+            String category = getProjectCategory(level, sourceId);
+            menus = new HashSet<>(
+                    menuMapper.selectMenusAfterCheckPermission(userId, level, sourceId, category, "user"));
+            //查类型为menu的菜单
+            MenuDTO dto = new MenuDTO();
+            dto.setType(MenuType.MENU.value());
+            dto.setResourceLevel(level);
+            menus.addAll(menuMapper.select(dto));
         }
-        return MenuTreeUtil.formatMenu(menus);
+        toTreeMenu(topMenu, menus);
+        return topMenu;
+    }
+
+    private String getProjectCategory(String level, Long sourceId) {
+        String category = null;
+        if (ResourceType.isProject(level)) {
+            ProjectDTO project = projectRepository.selectByPrimaryKey(sourceId);
+            if (project != null && !ProjectCategory.isAgile(project.getCategory())) {
+                category = ProjectCategory.PROGRAM.value();
+            }
+        }
+        return category;
     }
 
     @Override
-    public List<MenuDTO> listTreeMenusWithPermissions(Boolean testPermission, String level) {
-        List<MenuDTO> menus;
-        if (testPermission) {
-            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-            if (userDetails == null) {
-                return new ArrayList<>();
-            }
-            //如果是menu level是user(个人中心)，不在member_role表里判断sourceType
-            String sourceType = ResourceLevel.USER.value().equals(level) ? null : level;
-            menus = ConvertHelper.convertList(menuRepository.queryMenusWithPermissionByTestPermission(level,
-                    "user", userDetails.getUserId(), sourceType, null, null), MenuDTO.class);
-        } else {
-            menus = queryMenusWithPermissions(level, null);
+    public MenuDTO menuConfig(String code) {
+        MenuDTO menu = getTopMenuByCode(code);
+        String level = menu.getResourceLevel();
+        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
+        toTreeMenu(menu, menus);
+        return menu;
+    }
+
+    private MenuDTO getTopMenuByCode(String code) {
+        MenuDTO dto = new MenuDTO();
+        dto.setCode(code);
+        MenuDTO menu = menuMapper.selectOne(dto);
+        if (menu == null) {
+            throw new CommonException("error.menu.top.not.existed");
         }
-        return MenuTreeUtil.formatMenu(menus);
+        return menu;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void saveMenuConfig(String code, List<MenuDTO> menus) {
+        MenuDTO topMenu = getTopMenuByCode(code);
+        menus.forEach(m -> saveOrUpdate(m, topMenu.getResourceLevel()));
+    }
+
+    private void saveOrUpdate(MenuDTO menu, String level) {
+        String code = menu.getCode();
+        if (StringUtils.isEmpty(code)) {
+            throw new CommonException("error.menu.code.empty");
+        }
+        MenuDTO example = new MenuDTO();
+        example.setCode(code);
+        MenuDTO dto = menuMapper.selectOne(example);
+        if (dto == null) {
+            //do insert
+            validate(menu, level);
+            menuMapper.insertSelective(menu);
+        } else {
+            //do update
+            dto.setSort(menu.getSort());
+            dto.setParentCode(menu.getParentCode());
+            menuMapper.updateByPrimaryKey(dto);
+        }
+        List<MenuDTO> subMenus = menu.getSubMenus();
+        if (subMenus != null && !subMenus.isEmpty()) {
+            subMenus.forEach(m -> saveOrUpdate(m, level));
+        }
+    }
+
+    private void validate(MenuDTO menu, String level) {
+        menu.setResourceLevel(level);
+        menu.setType(MenuType.MENU.value());
+        String code = menu.getCode();
+        if (StringUtils.isEmpty(menu.getName())) {
+            throw new CommonException("error.menu.name.empty", code);
+        }
+        if (StringUtils.isEmpty(menu.getParentCode())) {
+            throw new CommonException("error.menu.patentId.null", code);
+        }
+        if (StringUtils.isEmpty(menu.getPagePermissionCode())) {
+            throw new CommonException("error.menu.pagePermissionCode.empty", code);
+        }
+        if (menu.getSort() == null) {
+            menu.setSort(0);
+        }
+        if (menu.getDefault() == null) {
+            menu.setDefault(true);
+        }
+    }
+
+    private List<MenuDTO> getTopMenus(String level) {
+        MenuDTO example = new MenuDTO();
+        example.setResourceLevel(level);
+        example.setType(MenuType.TOP.value());
+        List<MenuDTO> topMenus = menuMapper.select(example);
+        if (topMenus.isEmpty()) {
+            throw new CommonException("error.top.menu.not.existed", level);
+        }
+        return topMenus;
+    }
+
+    private void toTreeMenu(MenuDTO parentMenu, Set<MenuDTO> menus) {
+        String code = parentMenu.getCode();
+        List<MenuDTO> subMenus = new ArrayList<>();
+        menus.forEach(menu -> {
+            if (code.equals(menu.getParentCode())) {
+                subMenus.add(menu);
+                if (MenuType.isMenu(menu.getType())) {
+                    toTreeMenu(menu, menus);
+                }
+            }
+        });
+        //移除type=menu但是没有菜单项的菜单
+//        List<MenuDTO> subList = new ArrayList<>();
+//        subMenus.forEach(menu -> {
+//            if (MenuType.isMenuItem(menu.getType())) {
+//                subList.add(menu);
+//                return;
+//            }
+//            List<MenuDTO> menuList = menu.getSubMenus();
+//            boolean hasMenuItem = (menuList != null && !menuList.isEmpty());
+//            if (MenuType.isMenu(menu.getType()) && hasMenuItem) {
+//                subList.add(menu);
+//            }
+//        });
+        subMenus.sort(Comparator.comparing(MenuDTO::getSort));
+        parentMenu.setSubMenus(subMenus);
     }
 
     @Override
@@ -150,135 +248,25 @@ public class MenuServiceImpl implements MenuService {
         if (StringUtils.isEmpty(menu.getCode())) {
             throw new CommonException("error.menu.code.empty");
         }
-        if (StringUtils.isEmpty(menu.getLevel())) {
-            throw new CommonException("error.menu.level.empty");
-        }
-        if (StringUtils.isEmpty(menu.getType())) {
-            throw new CommonException("error.menu.type.empty");
-        }
         checkCode(menu);
     }
 
+
     private void checkCode(MenuDTO menu) {
         boolean createCheck = menu.getId() == null;
-        MenuDO menuDO = new MenuDO();
-        menuDO.setCode(menu.getCode());
+        MenuDTO dto = new MenuDTO();
+        dto.setCode(menu.getCode());
         if (createCheck) {
-            Boolean existed = menuRepository.selectOne(menuDO) != null;
-            if (existed) {
+            if (!menuMapper.select(dto).isEmpty()) {
                 throw new CommonException("error.menu.code-level-type.exist");
             }
         } else {
             Long id = menu.getId();
-            MenuDO menuDO1 = menuRepository.selectOne(menuDO);
-            Boolean existed = menuDO1 != null && !id.equals(menuDO1.getId());
+            MenuDTO menuDTO = menuMapper.selectOne(dto);
+            Boolean existed = menuDTO != null && !id.equals(menuDTO.getId());
             if (existed) {
                 throw new CommonException("error.menu.code-level-type.exist");
             }
         }
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public List<MenuDTO> saveListTree(String level, List<MenuDTO> menuDTOList) {
-        List<MenuDTO> resultList = deFormatMenu(menuDTOList);
-        resultList = deleteNeedlessOrAddNewMenu(resultList, level);
-        for (MenuDTO menuDTO : resultList) {
-            if (menuDTO.getId() != null) {
-                menuRepository.updateMenu(ConvertHelper.convert(menuDTO, MenuE.class));
-            }
-        }
-        if (level == null) {
-            throw new CommonException("error.menuLevel.null");
-        }
-        return listTreeMenusWithPermissions(false, level);
-    }
-
-    @Override
-    public List<MenuDTO> queryMenusWithPermissions(String level, String type) {
-        return ConvertHelper.convertList(menuRepository.queryMenusWithPermissions(level, type), MenuDTO.class);
-    }
-
-
-    private List<MenuDTO> deleteNeedlessOrAddNewMenu(List<MenuDTO> menuDTOList, String level) {
-        //需要添加的菜单
-        List<MenuDTO> addMenus = menuDTOList.stream().filter(item -> item.getId() == null).collect(Collectors.toList());
-        List<Long> newMenuIds = menuDTOList.stream().filter(item -> item.getId() != null).map(MenuDTO::getId).collect(Collectors.toList());
-        //数据库存在的菜单
-        List<MenuDTO> existMenus = list(level);
-        List<Long> existMenuIds = existMenus.stream().map(MenuDTO::getId).collect(Collectors.toList());
-        //交集，传入的menuId与数据库里存在的menuId相交,需要更新的菜单
-        List<Long> intersection = existMenuIds.stream().filter(newMenuIds::contains).collect(Collectors.toList());
-        List<Long> menuIds = new ArrayList<>();
-        for (MenuDTO dto : existMenus) {
-            Long id = dto.getId();
-            MenuDO menuDO = new MenuDO();
-            menuDO.setParentId(id);
-            //非默认菜单或者没有子菜单情况下才能删除
-            if (menuRepository.select(menuDO).isEmpty()
-                    && !dto.getDefault()) {
-                menuIds.add(dto.getId());
-            }
-        }
-        //数据库存在的roleId与交集的差集为要删除的roleId
-        List<Long> deleteList = menuIds.stream().filter(item ->
-                !intersection.contains(item)).collect(Collectors.toList());
-        //删除多余的菜单
-        if (!deleteList.isEmpty()) {
-            menuRepository.deleteMenusById(deleteList);
-        }
-        //新建菜单
-        addMenus.forEach(menuDTO -> {
-            menuValidator.create(menuDTO);
-            create(menuDTO);
-        });
-        return menuDTOList.stream()
-                .filter(item -> item.getId() != null)
-                .filter(item -> intersection.contains(item.getId()))
-                .collect(Collectors.toList());
-    }
-
-    //将树形菜单解析成list
-    private List<MenuDTO> deFormatMenu(List<MenuDTO> displayMenus) {
-        List<MenuDTO> resultList = new ArrayList<>();
-        for (MenuDTO menuDTO : displayMenus) {
-            autoAddMenu(menuDTO);
-            resultList.add(menuDTO);
-            if (menuDTO.getSubMenus() != null) {
-                deProcessMenu(menuDTO.getSubMenus(), resultList, menuDTO.getId());
-            }
-        }
-        return resultList;
-    }
-
-    //递归解析菜单成list
-    private void deProcessMenu(List<MenuDTO> menuDTOList, List<MenuDTO> resultList, Long parentId) {
-        for (MenuDTO menuDTO : menuDTOList) {
-            menuDTO.setParentId(parentId);
-            autoAddMenu(menuDTO);
-            resultList.add(menuDTO);
-            if (menuDTO.getSubMenus() != null) {
-                deProcessMenu(menuDTO.getSubMenus(), resultList, menuDTO.getId());
-            }
-        }
-    }
-
-    private void autoAddMenu(MenuDTO menuDTO) {
-        if (menuDTO.getId() == null) {
-            menuValidator.create(menuDTO);
-            MenuDTO newMenuDTO = create(menuDTO);
-            menuDTO.setId(newMenuDTO.getId());
-            menuDTO.setObjectVersionNumber(newMenuDTO.getObjectVersionNumber());
-        }
-    }
-
-    private String selectProgramMenuCategory(String level, Long projectId) {
-        if (ResourceLevel.PROJECT.value().equals(level)) {
-            ProjectDO project = projectRepository.selectByPrimaryKey(projectId);
-            if (project.getCategory() != null && !ProjectCategory.AGILE.value().equalsIgnoreCase(project.getCategory())) {
-                return ProjectCategory.PROGRAM.value().toUpperCase();
-            }
-        }
-        return null;
     }
 }

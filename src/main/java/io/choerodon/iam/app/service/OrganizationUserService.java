@@ -1,11 +1,9 @@
 package io.choerodon.iam.app.service;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.iam.api.dto.UserDTO;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.UserSearchDTO;
-import io.choerodon.iam.infra.dataobject.LdapErrorUserDO;
-import io.choerodon.iam.infra.dataobject.UserDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 
 import java.util.List;
 
@@ -17,7 +15,7 @@ public interface OrganizationUserService {
 
     UserDTO create(UserDTO userDTO, boolean checkPassword);
 
-    Page<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user);
+    PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user);
 
     UserDTO update(UserDTO userDTO);
 
@@ -35,9 +33,10 @@ public interface OrganizationUserService {
 
     /**
      * ldap 批量同步用户，发送事件
+     *
      * @param insertUsers
      */
-    List<LdapErrorUserDO> batchCreateUsers(List<UserDO> insertUsers);
+    List<LdapErrorUserDTO> batchCreateUsers(List<UserDTO> insertUsers);
 
     List<Long> listUserIds(Long organizationId);
 

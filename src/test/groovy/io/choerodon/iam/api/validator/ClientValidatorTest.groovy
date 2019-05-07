@@ -2,7 +2,7 @@ package io.choerodon.iam.api.validator
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ClientDTO
+import io.choerodon.iam.infra.dto.ClientDTO
 import io.choerodon.iam.infra.mapper.ClientMapper
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import

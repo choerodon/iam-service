@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.LabelDTO
 import io.choerodon.iam.infra.mapper.LabelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

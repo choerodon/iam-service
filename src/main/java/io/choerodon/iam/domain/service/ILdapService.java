@@ -1,6 +1,7 @@
 package io.choerodon.iam.domain.service;
 
-import io.choerodon.iam.infra.dataobject.LdapDO;
+
+import io.choerodon.iam.infra.dto.LdapDTO;
 
 import java.util.Map;
 
@@ -8,6 +9,6 @@ import java.util.Map;
  * @author superlee
  */
 public interface ILdapService {
-    Map<String, Object> testConnect(LdapDO ldap);
+    Map<String, Object> testConnect(LdapDTO ldap);
 
 }

@@ -2,27 +2,23 @@ package io.choerodon.iam.api.controller.v1;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.api.query.RoleQuery;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.PermissionDTO;
-import io.choerodon.iam.api.dto.RoleDTO;
-import io.choerodon.iam.api.dto.RoleSearchDTO;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -44,21 +40,15 @@ public class RoleController extends BaseController {
     /**
      * 分页查询角色
      *
-     * @param pageRequest 分页封装对象
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询角色")
-    @CustomPageRequest
     @PostMapping(value = "/search")
-    public ResponseEntity<Page<RoleDTO>> list(@ApiIgnore
-                                              @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                              @RequestParam(value = "need_users", required = false) Boolean needUsers,
-                                              @RequestParam(value = "source_id", required = false) Long sourceId,
-                                              @RequestParam(value = "source_type", required = false) String sourceType,
-                                              @RequestBody(required = false) RoleSearchDTO role) {
-        return new ResponseEntity<>(roleService.pagingQuery(
-                pageRequest, needUsers, sourceId, sourceType, role), HttpStatus.OK);
+    public ResponseEntity<PageInfo<RoleDTO>> pagedSearch(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                         @RequestBody RoleQuery roleQuery) {
+        return new ResponseEntity<>(roleService.pagingSearch(page,size,roleQuery), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)
@@ -74,7 +64,7 @@ public class RoleController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "通过id查询角色")
     @GetMapping(value = "/{id}")
     public ResponseEntity<RoleDTO> queryWithPermissionsAndLabels(@PathVariable Long id) {
@@ -105,49 +95,46 @@ public class RoleController extends BaseController {
         return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "创建角色")
     @PostMapping
     public ResponseEntity<RoleDTO> create(@RequestBody @Validated RoleDTO roleDTO) {
-        roleDTO.insertCheck();
         return new ResponseEntity<>(roleService.create(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "基于已有角色创建角色")
     @PostMapping("/base_on_roles")
     public ResponseEntity<RoleDTO> createBaseOnRoles(@RequestBody @Validated RoleDTO roleDTO) {
-        roleDTO.insertCheck();
         return new ResponseEntity<>(roleService.createBaseOnRoles(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "修改角色")
     @PutMapping(value = "/{id}")
     public ResponseEntity<RoleDTO> update(@PathVariable Long id,
                                           @RequestBody RoleDTO roleDTO) {
         roleDTO.setId(id);
-        roleDTO.updateCheck();
         //更新操作不能改level
-        roleDTO.setLevel(null);
+        roleDTO.setResourceLevel(null);
         return new ResponseEntity<>(roleService.update(roleDTO), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "启用角色")
     @PutMapping(value = "/{id}/enable")
     public ResponseEntity<RoleDTO> enableRole(@PathVariable Long id) {
         return new ResponseEntity<>(roleService.enableRole(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "禁用角色")
     @PutMapping(value = "/{id}/disable")
     public ResponseEntity<RoleDTO> disableRole(@PathVariable Long id) {
         return new ResponseEntity<>(roleService.disableRole(id), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "角色信息校验")
     @PostMapping(value = "/check")
     public ResponseEntity check(@RequestBody RoleDTO role) {
@@ -155,15 +142,13 @@ public class RoleController extends BaseController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE, permissionLogin = true)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据角色id查看角色对应的权限")
     @GetMapping("/{id}/permissions")
-    public ResponseEntity<Page<PermissionDTO>> listPermissionById(
-            @ApiIgnore
-            @SortDefault(value = "code", direction = Sort.Direction.ASC)
-                    PageRequest pageRequest,
-            @PathVariable("id") Long id,
-            @RequestParam(value = "params", required = false) String[] params) {
-        return new ResponseEntity<>(permissionService.listPermissionsByRoleId(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    public ResponseEntity<PageInfo<PermissionDTO>> listPermissionById(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                  @PathVariable("id") Long id,
+                                                                  @RequestParam(value = "params", required = false) String[] params) {
+        return new ResponseEntity<>(permissionService.listPermissionsByRoleId(page, size, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 }

@@ -1,21 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
-import io.choerodon.iam.api.dto.PermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
-import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Set;
@@ -40,45 +35,41 @@ public class PermissionController {
         return new ResponseEntity<>(permissionService.checkPermission(checkPermissions), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级查询权限列表")
-    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<Page<PermissionDTO>> pagingQuery(@RequestParam("level") String level,
-                                                           @ApiIgnore
-                                                           @SortDefault(value = "id", direction = Sort.Direction.ASC)
-                                                                   PageRequest pageRequest,
-                                                           @RequestParam(required = false) String[] params) {
-        PermissionDTO permission = new PermissionDTO();
-        permission.setLevel(level);
-        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, permission,
-                ParamUtils.arrToStr(params)), HttpStatus.OK);
+    public ResponseEntity<PageInfo<PermissionDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                               @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                               @RequestParam("level") String level,
+                                                               @RequestParam(required = false) String param) {
+        PermissionDTO dto = new PermissionDTO();
+        dto.setResourceLevel(level);
+        return new ResponseEntity<>(permissionService.pagingQuery(page, size, dto, param), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过角色查询权限列表")
     @PostMapping
     public ResponseEntity<Set<PermissionDTO>> queryByRoleIds(@RequestBody List<Long> roleIds) {
         return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
     public ResponseEntity<List<PermissionDTO>> query(@RequestParam("level") String level,
                                                      @RequestParam(value = "service_name", required = false) String serviceName,
-                                                     @RequestParam(value = "code", required = false) String code,
-                                                     @ApiIgnore
-                                                     @SortDefault(value = "code", direction = Sort.Direction.ASC) PageRequest pageRequest) {
+                                                     @RequestParam(value = "code", required = false) String code) {
         return new ResponseEntity<>(permissionService.query(level, serviceName, code), HttpStatus.OK);
     }
 
     /**
      * 根据传入的permission code，与最新更新的Instance抓取的swagger json对比，如果已经废弃了，就删除，没有废弃抛异常
+     *
      * @param code the code of permission
      * @return
      */
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation("根据permission code删除permission, 只能删除废弃的permission")
     @DeleteMapping
     public ResponseEntity deleteByCode(@RequestParam String code) {

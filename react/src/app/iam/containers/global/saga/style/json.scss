@@ -1,0 +1,15 @@
+.c7n-saga {
+  &-detail {
+    &-json {
+      .string,
+      .number {
+        color: #800;
+      }
+      .boolean,
+      .undefined,
+      .null {
+        color: #00BFA5;
+      }
+    }
+  }
+}

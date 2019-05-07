@@ -2,11 +2,12 @@ package io.choerodon.iam.infra.repository.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.domain.repository.RoleLabelRepository;
-import io.choerodon.iam.infra.dataobject.RoleLabelDO;
+import io.choerodon.iam.infra.dto.RoleLabelDTO;
 import io.choerodon.iam.infra.mapper.RoleLabelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
 
 /**
  * @author superlee
@@ -21,14 +22,14 @@ public class RoleLabelRepositoryImpl implements RoleLabelRepository {
     }
 
     @Override
-    public void insert(RoleLabelDO roleLabelDO) {
-        if (roleLabelMapper.insertSelective(roleLabelDO) != 1) {
+    public void insert(RoleLabelDTO roleLabelDTO) {
+        if (roleLabelMapper.insertSelective(roleLabelDTO) != 1) {
             throw new CommonException("error.roleLabel.create");
         }
     }
 
     @Override
-    public void insertList(List<RoleLabelDO> roleLabels) {
+    public void insertList(List<RoleLabelDTO> roleLabels) {
         if (roleLabels != null) {
             try {
                 roleLabels.forEach(roleLabel -> roleLabelMapper.insertSelective(roleLabel));
@@ -39,12 +40,12 @@ public class RoleLabelRepositoryImpl implements RoleLabelRepository {
     }
 
     @Override
-    public List<RoleLabelDO> select(RoleLabelDO roleLabelDO) {
-        return roleLabelMapper.select(roleLabelDO);
+    public List<RoleLabelDTO> select(RoleLabelDTO roleLabelDTO) {
+        return roleLabelMapper.select(roleLabelDTO);
     }
 
     @Override
-    public void delete(RoleLabelDO rl) {
+    public void delete(RoleLabelDTO rl) {
         roleLabelMapper.delete(rl);
     }
 }

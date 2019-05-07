@@ -3,8 +3,7 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.DashboardDTO
-import io.choerodon.iam.domain.iam.entity.DashboardE
+import io.choerodon.iam.infra.dto.DashboardDTO
 import io.choerodon.iam.infra.mapper.DashboardMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -34,14 +33,14 @@ class DashboardControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Shared
-    List<DashboardE> dashboardList = new ArrayList<>()
+    List<DashboardDTO> dashboardList = new ArrayList<>()
 
     void setup() {
         if (!sharedSetupDone) {
             given: '初始化dashboard'
 
             for (int i = 0; i < 3; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setCode("site-test-" + i);
                 dashboard.setDescription("site-test-desc-" + i);
                 dashboard.setName("site-test-name-" + i)
@@ -53,7 +52,7 @@ class DashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 4; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setCode("project-test-" + i);
                 dashboard.setDescription("project-test-desc-" + i);
                 dashboard.setName("project-test-name-" + i)
@@ -65,7 +64,7 @@ class DashboardControllerSpec extends Specification {
                 dashboardList.add(dashboard)
             }
             for (int i = 0; i < 5; i++) {
-                DashboardE dashboard = new DashboardE();
+                DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setCode("org-test-" + i);
                 dashboard.setDescription("org-test-desc-" + i);
                 dashboard.setName("org-test-name-" + i)
@@ -79,7 +78,7 @@ class DashboardControllerSpec extends Specification {
 
             when: '批量插入dashboard'
             def count = 0;
-            for (DashboardE dashboard : dashboardList) {
+            for (DashboardDTO dashboard : dashboardList) {
                 count = count + dashboardMapper.insert(dashboard)
             }
 
@@ -94,7 +93,7 @@ class DashboardControllerSpec extends Specification {
         if (!sharedCleanupDone) {
             when: '批量删除dashboard'
             def count = 0;
-            for (DashboardE dashboard : dashboardList) {
+            for (DashboardDTO dashboard : dashboardList) {
                 count = count + dashboardMapper.deleteByPrimaryKey(dashboard)
             }
 
@@ -168,7 +167,7 @@ class DashboardControllerSpec extends Specification {
     def "Query"() {
         given: "根据Id 获取Dashboard"
 
-        DashboardE dashboard = dashboardList.get(10)
+        DashboardDTO dashboard = dashboardList.get(10)
         when:
         "查询Dashboard Id=" + dashboard.getId() + "的dashboard"
 
@@ -203,7 +202,7 @@ class DashboardControllerSpec extends Specification {
     def "Update"() {
         given: "根据Id 更新dashboard"
 
-        DashboardE dashboard = dashboardList.get(5)
+        DashboardDTO dashboard = dashboardList.get(5)
         and:
         "查询Dashboard Id=" + dashboard.getId() + "的dashboard"
 

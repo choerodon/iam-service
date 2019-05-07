@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.OrganizationMapper">
-    <resultMap id="organizationWithProjects" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <resultMap id="organizationWithProjects" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="projects" ofType="io.choerodon.iam.infra.dataobject.ProjectDO">
+        <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
             <id column="project_id" property="id"></id>
             <result column="project_name" property="name" jdbcType="VARCHAR"/>
             <result column="project_code" property="code" jdbcType="VARCHAR"/>
@@ -15,17 +15,17 @@
         </collection>
     </resultMap>
 
-    <resultMap id="OrganizationDO" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <resultMap id="OrganizationDTO" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <resultMap id="OrganizationWithRoleDTO" type="io.choerodon.iam.infra.dataobject.OrganizationDO">
+    <resultMap id="OrganizationWithRoleDTO" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
         <id property="id" column="id"></id>
         <result property="name" column="name"/>
         <result property="code" column="code"/>
         <result property="enabled" column="is_enabled"/>
-        <collection property="roles" ofType="io.choerodon.iam.infra.dataobject.RoleDO">
+        <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
             <id property="id" column="role_id"/>
             <result property="name" column="role_name"/>
             <result property="code" column="role_code"/>
@@ -33,7 +33,7 @@
         </collection>
     </resultMap>
 
-    <select id="fulltextSearch" resultMap="OrganizationDO">
+    <select id="fulltextSearch" resultMap="OrganizationDTO">
         SELECT
         org.*,
         CASE
@@ -73,7 +73,7 @@
         </if>
     </select>
 
-    <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDO">
+    <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">
         SELECT
         DISTINCT fd_organization.*
         FROM
@@ -89,7 +89,7 @@
         </if>
     </select>
 
-    <select id="selectOrgByUserAndPros" resultMap="OrganizationDO">
+    <select id="selectOrgByUserAndPros" resultMap="OrganizationDTO">
         SELECT DISTINCT fd_organization.*
         FROM fd_organization
         WHERE id
@@ -245,7 +245,7 @@
         </if>
     </select>
 
-    <select id="selectOrganizationsByUserId" resultMap="OrganizationDO">
+    <select id="selectOrganizationsByUserId" resultMap="OrganizationDTO">
         SELECT DISTINCT fp.*
         FROM iam_member_role imr
         JOIN fd_organization fp
@@ -255,18 +255,18 @@
         <if test="userId != null">
             AND imr.member_id = #{userId}
         </if>
-        <if test="organizationDO != null">
-            <if test="organizationDO.id != null">
-                AND fp.id = #{organizationDO.id}
+        <if test="organizationDTO != null">
+            <if test="organizationDTO.id != null">
+                AND fp.id = #{organizationDTO.id}
             </if>
-            <if test="organizationDO.code != null">
-                AND fp.code LIKE concat(concat('%', #{organizationDO.code}), '%')
+            <if test="organizationDTO.code != null">
+                AND fp.code LIKE concat(concat('%', #{organizationDTO.code}), '%')
             </if>
-            <if test="organizationDO.name != null">
-                AND fp.name LIKE concat(concat('%', #{organizationDO.name}), '%')
+            <if test="organizationDTO.name != null">
+                AND fp.name LIKE concat(concat('%', #{organizationDTO.name}), '%')
             </if>
-            <if test="organizationDO.enabled != null">
-                AND fp.is_enabled = #{organizationDO.enabled}
+            <if test="organizationDTO.enabled != null">
+                AND fp.is_enabled = #{organizationDTO.enabled}
             </if>
         </if>
         <if test="params != null">
@@ -281,7 +281,7 @@
         SELECT is_enabled FROM fd_organization WHERE id = #{sourceId}
     </select>
 
-    <select id="selectByIds" resultMap="OrganizationDO">
+    <select id="selectByIds" resultMap="OrganizationDTO">
         select * from fd_organization
         where id in
         <foreach item="id" index="index" collection="ids"
