@@ -1,7 +1,9 @@
 package io.choerodon.iam.infra.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -36,6 +38,7 @@ public class RoleDTO extends BaseDTO {
 
     @ApiModelProperty(value = "角色层级/必填")
     @NotEmpty(message = "error.role.level.empty")
+    @JsonProperty(value = "level")
     private String resourceLevel;
 
     @ApiModelProperty(value = "是否启用/非必填")
