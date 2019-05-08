@@ -109,7 +109,6 @@
 
     <!-- 根据databaseId找指定的sql，既不是mysql也不是oracle走这条sql，默认是使用mysql的sql -->
     <select id="selectUserWithRolesByOption" resultMap="userWithRoles">
-        <!--<bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />-->
         SELECT
         iu.id,
         iu.login_name,
@@ -163,8 +162,6 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
---         LEFT JOIN iam_role_tl irt ON role.id = irt.id
---         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
@@ -172,7 +169,6 @@
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="mysql" resultMap="userWithRoles">
-        <!--<bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />-->
         SELECT
         iu.id,
         iu.login_name,
@@ -226,8 +222,6 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
---         LEFT JOIN iam_role_tl irt ON role.id = irt.id
---         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
@@ -235,7 +229,6 @@
     </select>
 
     <select id="selectUserWithRolesByOption" databaseId="oracle" resultMap="userWithRoles">
-        <!--<bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />-->
         SELECT
         iu.id,
         iu.login_name,
@@ -304,8 +297,6 @@
         ) iu
         LEFT JOIN iam_member_role imr ON iu.id = imr.member_id
         LEFT JOIN iam_role role ON imr.role_id = role.id
---         LEFT JOIN iam_role_tl irt ON role.id = irt.id
---         AND irt.lang = #{lang}
         WHERE imr.member_type = 'user'
         AND imr.source_id = #{sourceId}
         AND imr.source_type = #{sourceType}
