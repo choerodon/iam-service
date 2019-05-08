@@ -67,8 +67,8 @@ public interface MenuService {
     /**
      * 根据前端传入的树形菜单，更新后端的树形结构
      *
-     * @param level
+     * @param code
      * @param menus
      */
-    void saveMenuConfig(String level, List<MenuDTO> menus);
+    void saveMenuConfig(String code, List<MenuDTO> menus);
 }

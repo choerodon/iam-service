@@ -154,8 +154,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void saveMenuConfig(String level, List<MenuDTO> menus) {
-        menus.forEach(m -> saveOrUpdate(m, level));
+    public void saveMenuConfig(String code, List<MenuDTO> menus) {
+        MenuDTO topMenu = getTopMenuByCode(code);
+        menus.forEach(m -> saveOrUpdate(m, topMenu.getResourceLevel()));
     }
 
     private void saveOrUpdate(MenuDTO menu, String level) {

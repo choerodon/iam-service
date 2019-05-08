@@ -21,8 +21,8 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
     }
 
     @Override
-    public List<ProjectRelationshipDTO> seleteProjectsByParentId(Long parentId) {
-        return projectRelationshipMapper.selectProjectsByParentId(parentId);
+    public List<ProjectRelationshipDTO> selectProjectsByParentId(Long parentId, Boolean onlySelectEnable) {
+        return projectRelationshipMapper.selectProjectsByParentId(parentId, onlySelectEnable);
     }
 
     @Override

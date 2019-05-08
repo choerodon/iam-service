@@ -14,5 +14,14 @@
         LEFT JOIN fd_project fp ON fpr.PROJECT_ID = fp.ID
         WHERE
             fpr.PARENT_ID = #{parentId};
+        <if test="onlySelectEnable">
+            and fpr.is_enabled = 1
+        </if>
+    </select>
+
+    <select id="selectProjectCountInProgramByProjectId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM FD_PROJECT_RELATIONSHIP
+        WHERE PROJECT_ID = #{projectId} AND PROGRAM_ID IS  NOT NULL
     </select>
 </mapper>
