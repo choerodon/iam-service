@@ -5,23 +5,27 @@
 
     <select id="selectProjectsByParentId" resultType="io.choerodon.iam.infra.dto.ProjectRelationshipDTO">
         SELECT
-            fpr.*,
-            fpr.IS_ENABLED AS enabled,
-            fp. CODE AS projCode,
-            fp. NAME AS projName
+        fpr.*,
+        fpr.IS_ENABLED AS enabled,
+        fp.CODE AS projCode,
+        fp.NAME AS projName
         FROM
-            fd_project_relationship fpr
+        fd_project_relationship fpr
         LEFT JOIN fd_project fp ON fpr.PROJECT_ID = fp.ID
         WHERE
-            fpr.PARENT_ID = #{parentId};
+        fpr.PARENT_ID = #{parentId}
         <if test="onlySelectEnable">
             and fpr.is_enabled = 1
         </if>
     </select>
 
-    <select id="selectProjectCountInProgramByProjectId" resultType="java.lang.Integer">
-        SELECT COUNT(*)
-        FROM FD_PROJECT_RELATIONSHIP
-        WHERE PROJECT_ID = #{projectId} AND PROGRAM_ID IS  NOT NULL
+    <select id="selectProjectCountInProgramByProjectId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        SELECT FP.CODE,FP.NAME
+        FROM FD_PROJECT_RELATIONSHIP FPR
+        LEFT JOIN FD_PROJECT FP ON FPR.PROGRAM_ID = FP.ID
+        WHERE FPR.PROJECT_ID = #{projectId} AND FPR.PROGRAM_ID IS NOT NULL
+        <if test="onlySelectEnable">
+            and FPR.IS_ENABLED = 1
+        </if>
     </select>
 </mapper>

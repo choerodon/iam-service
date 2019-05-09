@@ -2,19 +2,10 @@ package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.domain.repository.*;
-import io.choerodon.iam.infra.dto.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -23,10 +14,32 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
+import io.choerodon.iam.domain.repository.LabelRepository;
+import io.choerodon.iam.domain.repository.MemberRoleRepository;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.dto.LabelDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
+import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +56,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDA
 
 /**
  * @author flyleft
- * @date 2018/3/26
+ * @since 2018/3/26
  */
 @Service
 @RefreshScope
@@ -252,21 +265,110 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
+    @Transactional(rollbackFor = Exception.class)
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
         OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        return updateAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
+        return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
     }
 
-    private ProjectDTO updateAndSendEvent(Long projectId, String consumerType, boolean enabled, Long userId) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
+        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
+        if (organizationDTO == null) {
+            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        }
+        return disableProjectAndSendEvent(projectId, userId);
+    }
+
+    @Override
+    @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
+    public ProjectDTO disableProjectAndSendEvent(Long projectId, Long userId) {
+        return updateProjectAndSendEvent(projectId, PROJECT_DISABLE, false, userId);
+    }
+
+    /**
+     * 启用、禁用项目且发送相应通知消息.
+     *
+     * @param projectId    项目Id
+     * @param consumerType saga消息类型
+     * @param enabled      是否启用
+     * @param userId       用户Id
+     * @return 项目信息
+     */
+    private ProjectDTO updateProjectAndSendEvent(Long projectId, String consumerType, boolean enabled, Long userId) {
         ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(projectId);
         projectDTO.setEnabled(enabled);
+        // 更新项目
+        projectDTO = projectRepository.updateSelective(projectDTO);
+        String category = projectDTO.getCategory();
+        // 项目所属项目群Id
+        Long programId = null;
+        if (enabled) {
+            if (ProjectCategory.AGILE.value().equalsIgnoreCase(category)) {
+                //项目启用时，启用项目关联的项目群关系
+                ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
+                relationshipDTO.setProjectId(projectId);
+                relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
+                programId = updateProjectRelationShip(relationshipDTO, Boolean.TRUE);
+            }
+        } else {
+            if (ProjectCategory.AGILE.value().equalsIgnoreCase(category)) {
+                // 项目禁用时，禁用项目关联的项目群关系
+                ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
+                relationshipDTO.setProjectId(projectId);
+                relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
+                programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
+            } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
+                // 项目群禁用时，禁用项目群下所有项目关系
+                List<ProjectRelationshipDTO> relationshipDTOS = projectRelationshipRepository.selectProjectsByParentId(projectId, true);
+                if (CollectionUtils.isNotEmpty(relationshipDTOS)) {
+                    for (ProjectRelationshipDTO relationshipDTO : relationshipDTOS) {
+                        updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
+                    }
+                }
+            }
+        }
+        // 发送通知消息
+        sendEvent(consumerType, enabled, userId, programId, projectDTO);
+        return projectDTO;
+    }
+
+    /**
+     * 启用、禁用项目群关系.
+     *
+     * @param relationshipDTO 项目群关系
+     * @param enabled         是否启用
+     * @return 项目所属项目群Id或null
+     */
+    private Long updateProjectRelationShip(ProjectRelationshipDTO relationshipDTO, boolean enabled) {
+        if (relationshipDTO != null) {
+            relationshipDTO.setEnabled(enabled);
+            projectRelationshipRepository.update(relationshipDTO);
+            return relationshipDTO.getProgramId();
+        }
+        return null;
+    }
+
+    /**
+     * 启用、禁用项目时，发送相应通知消息.
+     *
+     * @param consumerType saga消息类型
+     * @param enabled      是否启用
+     * @param userId       用户Id
+     * @param programId    项目群Id
+     * @param projectDTO   项目DTO
+     */
+    private void sendEvent(String consumerType, boolean enabled, Long userId, Long programId, ProjectDTO projectDTO) {
+        Long projectId = projectDTO.getId();
         if (devopsMessage) {
             ProjectEventPayload payload = new ProjectEventPayload();
             payload.setProjectId(projectId);
-            ProjectDTO dto = projectRepository.updateSelective(projectDTO);
+            payload.setProjectCategory(projectDTO.getCategory());
+            payload.setProgramId(programId);
             //saga
             try {
                 String input = mapper.writeValueAsString(payload);
@@ -274,8 +376,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             } catch (Exception e) {
                 throw new CommonException("error.organizationProjectService.enableOrDisableProject", e);
             }
-            //给asgard发送禁用定时任务通知
-            asgardFeignClient.disableProj(projectId);
+            if (!enabled) {
+                //给asgard发送禁用定时任务通知
+                asgardFeignClient.disableProj(projectId);
+            }
             // 给项目下所有用户发送通知
             List<Long> userIds = projectRepository.listUserIds(projectId);
             Map<String, Object> params = new HashMap<>();
@@ -285,19 +389,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             } else if (PROJECT_ENABLE.equals(consumerType)) {
                 iUserService.sendNotice(userId, userIds, "enableProject", params, projectId);
             }
-            return dto;
-        } else {
-            return projectRepository.updateSelective(projectDTO);
         }
-    }
-
-    @Override
-    public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        return updateAndSendEvent(projectId, PROJECT_DISABLE, false, userId);
     }
 
     @Override

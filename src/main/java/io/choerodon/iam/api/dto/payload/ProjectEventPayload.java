@@ -4,7 +4,7 @@ import java.util.Set;
 
 /**
  * @author flyleft
- * @date 2018/4/9
+ * @since 2018/4/9
  */
 public class ProjectEventPayload {
 
@@ -17,6 +17,7 @@ public class ProjectEventPayload {
     private String userName;
     private Long userId;
     private String imageUrl;
+    private Long programId;
 
     private Set<String> roleLabels;
 
@@ -98,5 +99,13 @@ public class ProjectEventPayload {
 
     public void setProjectCategory(String projectCategory) {
         this.projectCategory = projectCategory;
+    }
+
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
     }
 }
