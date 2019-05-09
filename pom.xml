@@ -17,6 +17,7 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <choerodon.mainClass>io.choerodon.iam.IAMServiceApplication</choerodon.mainClass>
+        <choerodon.serviceBuild>true</choerodon.serviceBuild>
     </properties>
 
     <pluginRepositories>
