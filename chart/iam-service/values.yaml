@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: registry.choerodon.com.cn/choerodon/iam-service
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 preJob:
   timeout: 300
@@ -26,7 +26,7 @@ preJob:
       url: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
       username: username
       password: password
-      exclusion: iam_user.password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name
+      exclusion: iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name
 
 metrics:
   path: /actuator/prometheus

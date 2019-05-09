@@ -3,7 +3,6 @@ package io.choerodon.iam.app.service;
 import java.util.List;
 import java.util.Map;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
@@ -38,9 +37,18 @@ public interface OrganizationProjectService {
     /**
      * 查询组织下可被分配至当前项目群的敏捷项目
      *
-     * @param organizationId
-     * @param projectId
+     * @param organizationId 组织Id
+     * @param projectId      项目Id
      * @return 项目列表
      */
-    List<ProjectDTO> getAvailableAgileProj(Long organizationId,Long projectId);
+    List<ProjectDTO> getAvailableAgileProj(Long organizationId, Long projectId);
+
+    /**
+     * 查询当前项目生效的普通项目群信息(项目为启用状态且当前时间在其有效期内).
+     *
+     * @param organizationId 组织Id
+     * @param projectId      项目Id
+     * @return 普通项目群信息
+     */
+    ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId);
 }

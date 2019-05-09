@@ -72,7 +72,7 @@
 
     <select id="selectRoleWithPermissionsAndLabels" resultMap="roleWithPermissionsAndLabels">
         SELECT
-        ir.*
+        ir.*,
         ip.id permission_id,
         ip.code permission_code,
         ip.path,

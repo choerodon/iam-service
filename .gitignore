@@ -23,6 +23,7 @@ app.jar
 
 # system ignore
 .DS_Store
+.factorypath
 Thumbs.db
 
 gitlabci/.generated

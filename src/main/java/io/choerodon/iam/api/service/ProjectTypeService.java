@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.service;
 
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 

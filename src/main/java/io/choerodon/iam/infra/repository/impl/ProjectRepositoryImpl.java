@@ -194,4 +194,9 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     public List<ProjectDTO> selectProjsNotInAnyGroup(Long orgId) {
         return projectMapper.selectProjsNotInAnyGroup(orgId);
     }
+
+    @Override
+    public ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId) {
+        return projectMapper.selectGroupInfoByEnableProject(orgId, projectId);
+    }
 }

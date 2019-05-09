@@ -19,7 +19,7 @@ public interface ProjectRepository {
 
     PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
 
-    PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page,int size, String param);
+    PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param);
 
     ProjectDTO updateSelective(ProjectDTO projectDTO);
 
@@ -36,7 +36,7 @@ public interface ProjectRepository {
 
     List<ProjectDTO> selectByOrgId(Long organizationId);
 
-    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page,int size, Long id, String params);
+    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params);
 
     List<Long> listUserIds(Long id);
 
@@ -55,15 +55,26 @@ public interface ProjectRepository {
 
     /**
      * 获取组织下不是项目群的项目
-     * @param orgId
-     * @return
+     *
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的项目列表
      */
     List<ProjectDTO> selectProjsNotGroup(Long orgId);
 
     /**
-     * 获取组织下不是项目群且无所属的项目
-     * @param orgId
-     * @return
+     * 获取组织下不是项目群的且无所属的项目
+     *
+     * @param orgId 组织Id
+     * @return 组织下不是项目群的且无所属的项目列表
      */
     List<ProjectDTO> selectProjsNotInAnyGroup(Long orgId);
+
+    /**
+     * 根据项目Id查询当前项目生效的普通项目群信息.
+     *
+     * @param orgId     组织Id
+     * @param projectId 项目Id
+     * @return 普通项目群信息
+     */
+    ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId);
 }
