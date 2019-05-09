@@ -6,18 +6,20 @@ import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
+import { PREFIX_CLS } from '@choerodon/boot/lib/containers/common/constants';
 import './Project.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 import { handleFiltersParams } from '../../../common/util';
 import AvatarUploader from '../../../components/avatarUploader';
 
+const prefixCls = `${PREFIX_CLS}`;
 const { HeaderStore } = stores;
 const FormItem = Form.Item;
 const ORGANIZATION_TYPE = 'organization';
 const PROJECT_TYPE = 'project';
 const { Sidebar } = Modal;
-const Option = Select.Option;
+const { Option } = Select;
 const RadioGroup = Radio.Group;
 const intlPrefix = 'organization.project';
 const formItemLayout = {
@@ -214,6 +216,7 @@ export default class Project extends Component {
     this.props.ProjectStore.setCurrentGroup(null);
     this.props.ProjectStore.clearProjectRelationNeedRemove();
   };
+  
   handleSubmit = (e) => {
     e.preventDefault();
     const { AppState, ProjectStore } = this.props;
@@ -885,6 +888,32 @@ export default class Project extends Component {
     }
   };
 
+  renderExpandRowRender(source) {
+    if (!source.children) {
+      return null;
+    }
+    const columns = [{
+      title: <FormattedMessage id="name" />,
+      dataIndex: 'name',
+      key: 'name',
+      width: '25%',
+    }, {
+      title: <FormattedMessage id="code" />,
+      dataIndex: 'code',
+    }];
+    return (
+      <Table
+        pagination={false}
+        filterBar={false}
+        showHeader={false}
+        bordered={false}
+        columns={columns}
+        dataSource={source.children || []}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => `${!record.children ? 'hidden-expand' : ''}`}
+      />
+    );
+  }
 
   render() {
     const { ProjectStore, AppState, intl } = this.props;
@@ -908,12 +937,6 @@ export default class Project extends Component {
       width: '25%',
       render: (text, record) => (
         <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
-          <div className="c7n-iam-project-name-avatar">
-            {
-              record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} /> :
-              <React.Fragment>{text.split('')[0]}</React.Fragment>
-            }
-          </div>
           <MouseOverWrapper text={text} width={0.2}>
             {text}
           </MouseOverWrapper>
@@ -1016,6 +1039,7 @@ export default class Project extends Component {
 
     return (
       <Page
+        className={`${prefixCls}-iam-project`}
         service={[
           'iam-service.organization-project.list',
           'iam-service.organization-project.create',
@@ -1070,6 +1094,7 @@ export default class Project extends Component {
             filters={this.state.filters.params}
             onChange={this.handlePageChange.bind(this)}
             loading={ProjectStore.isLoading}
+            expandedRowRender={record => this.renderExpandRowRender(record)}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
           />
           <Sidebar

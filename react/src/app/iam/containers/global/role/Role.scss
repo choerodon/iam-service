@@ -112,3 +112,11 @@
 .addPermission {
   color: #3f51b5;
 }
+
+.c7n-roleMsg {
+  .c7n-checkbox-indeterminate {
+    .c7n-checkbox-inner::after {
+      transform: rotate(0) scale(1) !important;
+    }
+  }
+}

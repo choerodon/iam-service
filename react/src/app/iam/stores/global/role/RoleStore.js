@@ -36,11 +36,52 @@ class RoleStore {
     },
   };
 
+  @observable menus = {};
+
+  @observable tabLevel = undefined;
+
+  @observable selectedPermissions = [];
+
   @observable initSelectedPermission = [];
+
+  @observable currentMenu = {};
+
+  @observable siderVisible = false;
+
+  @observable expand = {};
+
+  @observable expandedRowKeys = {};
+
+  @observable roleMsg = {}
 
   constructor(totalPage = 1, totalSize = 0) {
     this.totalPage = totalPage;
     this.totalSize = totalSize;
+  }
+
+  @action
+  setRoleMsg(data) {
+    this.roleMsg = data;
+  }
+
+  @action
+  setSelectedPermissions(data) {
+    this.selectedPermissions = data;
+  }
+
+  @action
+  setCurrentMenu(data) {
+    this.currentMenu = data;
+  }
+
+  @action
+  setSiderVisible(data) {
+    this.siderVisible = data;
+  }
+
+  @action
+  setTabLevel(level) {
+    this.tabLevel = level;
   }
 
   @action
@@ -288,13 +329,13 @@ class RoleStore {
     });
   }
 
-  loadRole({ current = 1, pageSize },
+  loadRole(level, { current = 1, pageSize },
     { columnKey, order },
-    { name, code, level, enabled, builtIn }, params = []) {
+    { name, code, enabled, builtIn }, params = []) {
     const body = {
       name: name && name[0],
       code: code && code[0],
-      level: level && level[0],
+      level,
       enabled: enabled && enabled[0],
       builtIn: builtIn && builtIn[0],
       params,
@@ -324,7 +365,7 @@ class RoleStore {
       });
     }
   };
-  getSelectedRolePermissions = ids => axios.post('iam/v1/permissions', ids);
+  getSelectedRolePermissions = ids => axios.post('/iam/v1/permissions', ids);
 
   createRole = role => axios.post('iam/v1/roles', role);
 
@@ -357,6 +398,8 @@ class RoleStore {
       this.setIsLoading(false);
     });
   }
+
+  loadMenu = level => axios.get(`/iam/v1/menus/menu_config?code=choerodon.code.top.${level}`);
 }
 
 const roleStore = new RoleStore();
