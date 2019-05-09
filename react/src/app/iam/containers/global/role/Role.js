@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { Button, Form, Icon, Table } from 'choerodon-ui';
+import { Button, Form, Icon, Table, Select } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Action, Content, Header, Page, Permission } from '@choerodon/boot';
+import { Action, Content, Header, Page, Permission, Menu, Dropdown } from '@choerodon/boot';
+import { RESOURCES_LEVEL } from '@choerodon/boot/lib/containers/common/constants';
 import RoleStore from '../../../stores/global/role/RoleStore';
 import './Role.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 
 const intlPrefix = 'global.role';
+const levels = RESOURCES_LEVEL.split(',');
 @Form.create({})
 @withRouter
 @injectIntl
@@ -38,6 +40,7 @@ export default class Role extends Component {
         order: 'descend',
       },
       selectedData: '',
+      level: levels[0],
     };
   }
 
@@ -45,15 +48,15 @@ export default class Role extends Component {
     return Object.keys(this.state.selectedRoleIds).map(id => Number(id));
   }
 
-  showModal(ids) {
-    this.props.history.push(`role/edit/${ids}`);
+  showModal = (ids) => {
+    this.props.history.push(`role/create?level=${this.state.level}&roleId=${ids}`);
   }
 
   goCreate = () => {
     RoleStore.setChosenLevel('');
     RoleStore.setLabel([]);
     RoleStore.setSelectedRolesPermission([]);
-    this.props.history.push('role/create');
+    this.props.history.push(`role/create?level=${this.state.level}`);
   };
 
   loadRole(paginationIn, sortIn, filtersIn, paramsIn) {
@@ -62,13 +65,14 @@ export default class Role extends Component {
       sort: sortState,
       filters: filtersState,
       params: paramsState,
+      level,
     } = this.state;
     const pagination = paginationIn || paginationState;
     const sort = sortIn || sortState;
     const filters = filtersIn || filtersState;
     const params = paramsIn || paramsState;
     this.setState({ filters });
-    RoleStore.loadRole(pagination, sort, filters, params)
+    RoleStore.loadRole(level, pagination, sort, filters, params)
       .then((data) => {
         RoleStore.setIsLoading(false);
         RoleStore.setRoles(data.list || []);
@@ -112,6 +116,7 @@ export default class Role extends Component {
       });
     }
   };
+
   changeSelects = (selectedRowKeys, selectedRows) => {
     const { selectedRoleIds } = this.state;
     Object.keys(selectedRoleIds).forEach((id) => {
@@ -131,38 +136,26 @@ export default class Role extends Component {
     this.loadRole(pagination, sort, filters, params);
   };
 
+  handleChangeLevel = (key) => {
+    const { level } = this.state;
+    if (key !== level) {
+      this.setState({
+        level: key,
+      }, () => this.loadRole());
+    }
+  }
+
   createByThis(record) {
-    RoleStore.getRoleById(record.id).then((data) => {
-      RoleStore.setChosenLevel(data.level);
-      RoleStore.setSelectedRolesPermission(data.permissions);
-      RoleStore.loadRoleLabel(data.level);
-      this.linkToChange('role/create');
-    }).catch((err) => {
-      Choerodon.handleResponseError(err);
-    });
+    this.linkToChange(`role/create?level=${this.state.level}&base=${record.id}`);
   }
 
   createByMultiple = () => {
-    const { intl } = this.props;
-    const levels = Object.values(this.state.selectedRoleIds);
-    if (levels.some((level, index) => levels[index + 1] && levels[index + 1] !== level)) {
-      Choerodon.prompt(intl.formatMessage({ id: `${intlPrefix}.create.byselect.level` }));
-    } else {
-      this.createBased();
-    }
+    this.createBased();
   };
 
   createBased = () => {
     const ids = this.getSelectedRowKeys();
-    RoleStore.getSelectedRolePermissions(ids).then((datas) => {
-      RoleStore.setChosenLevel(datas[0].level);
-      RoleStore.setSelectedRolesPermission(datas);
-      RoleStore.setInitSelectedPermission(datas);
-      RoleStore.loadRoleLabel(datas[0].level);
-      this.linkToChange('role/create');
-    }).catch((error) => {
-      Choerodon.prompt(error);
-    });
+    this.linkToChange(`role/create?level=${this.state.level}&base=${ids.join(',')}`);
   };
 
   renderLevel(text) {
@@ -173,6 +166,30 @@ export default class Role extends Component {
     } else {
       return <FormattedMessage id="global" />;
     }
+  }
+
+  renderLevelSelect = () => {
+    // const menu = (
+    //   <Menu onClick={this.handleChangeLevel}>
+    //     {(levels || []).map(level => (
+    //       <Menu.Item key={level}>
+    //         {this.renderLevel(level)}
+    //       </Menu.Item>
+    //     ))}
+    //   </Menu>
+    // );
+    // return (
+    //   <Dropdown overlay={menu}>
+    //     {this.renderLevel(this.state.level)} <Icon type="arrow_drop_down" />
+    //   </Dropdown>
+    // );
+    return (
+      <Select value={this.state.level} onChange={this.handleChangeLevel}>
+        {levels.map(level => (
+          <Select.Option key={level} value={level}>{this.renderLevel(level)}</Select.Option>
+        ))}
+      </Select>
+    );
   }
 
   render() {
@@ -247,7 +264,8 @@ export default class Role extends Component {
           mode="icon"
           name={intl.formatMessage({ id: record.builtIn ? 'predefined' : 'custom' })}
           colorCode={record.builtIn ? 'PREDEFINE' : 'CUSTOM'}
-        />),
+        />
+      ),
       sorter: true,
       sortOrder: columnKey === 'builtIn' && order,
       filteredValue: filters.builtIn || [],
@@ -331,6 +349,7 @@ export default class Role extends Component {
         <Header
           title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
         >
+          {this.renderLevelSelect()}
           <Permission
             service={['iam-service.role.create']}
           >
