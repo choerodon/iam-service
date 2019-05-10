@@ -34,7 +34,7 @@ public class AccessTokenController {
                                                          @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                          @RequestParam(value = "clientName", required = false) String clientName,
                                                          @RequestParam(value = "currentToken") String currentToken) {
-        return new ResponseEntity<>(accessTokenService.pagingTokensByUserIdAndClient(page, size, clientName, currentToken), HttpStatus.OK);
+        return new ResponseEntity<>(accessTokenService.pagedSearch(page, size, clientName, currentToken), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true, type = ResourceType.SITE)
