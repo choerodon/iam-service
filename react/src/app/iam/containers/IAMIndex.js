@@ -3,59 +3,60 @@ import { Route, Switch } from 'react-router-dom';
 import { inject } from 'mobx-react';
 import { asyncLocaleProvider, asyncRouter, nomatch } from '@choerodon/boot';
 
-// global 对应目录
-const announcement = asyncRouter(() => import('./global/announcement'));
-const apiTest = asyncRouter(() => import('./global/api-test'));
-const apiOverview = asyncRouter(() => import('./global/api-overview'));
-const configuration = asyncRouter(() => import('./global/configuration'));
-const instance = asyncRouter(() => import('./global/instance'));
-const inmailTemplate = asyncRouter(() => import('./global/inmail-template'));
-const mailTemplate = asyncRouter(() => import('./global/mail-template'));
-const mailSetting = asyncRouter(() => import('./global/mail-setting'));
-const systemSetting = asyncRouter(() => import('./global/system-setting'));
-const memberRole = asyncRouter(() => import('./global/member-role'));
-const menuSetting = asyncRouter(() => import('./global/menu-setting'));
-const msgRecord = asyncRouter(() => import('./global/msg-record'));
-const microService = asyncRouter(() => import('./global/microservice'));
-const organization = asyncRouter(() => import('./global/organization'));
-const role = asyncRouter(() => import('./global/role'));
-const roleLabel = asyncRouter(() => import('./global/role-label'));
-const rootUser = asyncRouter(() => import('./global/root-user'));
-const route = asyncRouter(() => import('./global/route'));
-const saga = asyncRouter(() => import('./global/saga'));
-const sagaInstance = asyncRouter(() => import('./global/saga-instance'));
-const siteStatistics = asyncRouter(() => import('./global/site-statistics'));
-// const smsTemplate = asyncRouter(() => import('./global/sms-template'));
-// const smsSetting = asyncRouter(() => import('./global/sms-setting'));
-const dashboardSetting = asyncRouter(() => import('./global/dashboard-setting'));
-const sendSetting = asyncRouter(() => import('./global/send-setting'));
-const taskDetail = asyncRouter(() => import('./global/task-detail'));
-const executionRecord = asyncRouter(() => import('./global/execution-record'));
-const executableProgram = asyncRouter(() => import('./global/executable-program'));
-const projectType = asyncRouter(() => import('./global/project-type'));
-
-
-// organization
-const client = asyncRouter(() => import('./organization/client'));
-const ldap = asyncRouter(() => import('./organization/ldap'));
-const passwordPolicy = asyncRouter(() => import('./organization/password-policy'));
-const project = asyncRouter(() => import('./organization/project'));
-const user = asyncRouter(() => import('./organization/user'));
-const organizationSetting = asyncRouter(() => import('./organization/organization-setting'));
 const application = asyncRouter(() => import('./organization/application'));
+// // global 对应目录
+// const announcement = asyncRouter(() => import('./global/announcement'));
+// const apiTest = asyncRouter(() => import('./global/api-test'));
+// const apiOverview = asyncRouter(() => import('./global/api-overview'));
+// const configuration = asyncRouter(() => import('./global/configuration'));
+// const instance = asyncRouter(() => import('./global/instance'));
+// const inmailTemplate = asyncRouter(() => import('./global/inmail-template'));
+// const mailTemplate = asyncRouter(() => import('./global/mail-template'));
+// const mailSetting = asyncRouter(() => import('./global/mail-setting'));
+// const systemSetting = asyncRouter(() => import('./global/system-setting'));
+// const memberRole = asyncRouter(() => import('./global/member-role'));
+// const menuSetting = asyncRouter(() => import('./global/menu-setting'));
+// const msgRecord = asyncRouter(() => import('./global/msg-record'));
+// const microService = asyncRouter(() => import('./global/microservice'));
+// const organization = asyncRouter(() => import('./global/organization'));
+// const role = asyncRouter(() => import('./global/role'));
+// const roleLabel = asyncRouter(() => import('./global/role-label'));
+// const rootUser = asyncRouter(() => import('./global/root-user'));
+// const route = asyncRouter(() => import('./global/route'));
+// const saga = asyncRouter(() => import('./global/saga'));
+// const sagaInstance = asyncRouter(() => import('./global/saga-instance'));
+// const siteStatistics = asyncRouter(() => import('./global/site-statistics'));
+// // const smsTemplate = asyncRouter(() => import('./global/sms-template'));
+// // const smsSetting = asyncRouter(() => import('./global/sms-setting'));
+// const dashboardSetting = asyncRouter(() => import('./global/dashboard-setting'));
+// const sendSetting = asyncRouter(() => import('./global/send-setting'));
+// const taskDetail = asyncRouter(() => import('./global/task-detail'));
+// const executionRecord = asyncRouter(() => import('./global/execution-record'));
+// const executableProgram = asyncRouter(() => import('./global/executable-program'));
+// const projectType = asyncRouter(() => import('./global/project-type'));
 
-// project
-const projectSetting = asyncRouter(() => import('./project/project-setting'));
 
-// user
-const password = asyncRouter(() => import('./user/password'));
-const organizationInfo = asyncRouter(() => import('./user/organization-info'));
-const projectInfo = asyncRouter(() => import('./user/project-info'));
-const tokenManager = asyncRouter(() => import('./user/token-manager'));
-const receiveSetting = asyncRouter(() => import('./user/receive-setting'));
-const userInfo = asyncRouter(() => import('./user/user-info'));
-const userMsg = asyncRouter(() => import('./user/user-msg'));
-const permissionInfo = asyncRouter(() => import('./user/permission-info'));
+// // organization
+// const client = asyncRouter(() => import('./organization/client'));
+// const ldap = asyncRouter(() => import('./organization/ldap'));
+// const passwordPolicy = asyncRouter(() => import('./organization/password-policy'));
+// const project = asyncRouter(() => import('./organization/project'));
+// const user = asyncRouter(() => import('./organization/user'));
+// const organizationSetting = asyncRouter(() => import('./organization/organization-setting'));
+// const application = asyncRouter(() => import('./organization/application'));
+
+// // project
+// const projectSetting = asyncRouter(() => import('./project/project-setting'));
+
+// // user
+// const password = asyncRouter(() => import('./user/password'));
+// const organizationInfo = asyncRouter(() => import('./user/organization-info'));
+// const projectInfo = asyncRouter(() => import('./user/project-info'));
+// const tokenManager = asyncRouter(() => import('./user/token-manager'));
+// const receiveSetting = asyncRouter(() => import('./user/receive-setting'));
+// const userInfo = asyncRouter(() => import('./user/user-info'));
+// const userMsg = asyncRouter(() => import('./user/user-msg'));
+// const permissionInfo = asyncRouter(() => import('./user/permission-info'));
 
 
 @inject('AppState')
@@ -67,7 +68,8 @@ class IAMIndex extends React.Component {
     return (
       <IntlProviderAsync>
         <Switch>
-          <Route path={`${match.url}/announcement`} component={announcement} />
+          <Route path={`${match.url}/application`} component={application} />
+          {/* <Route path={`${match.url}/announcement`} component={announcement} />
           <Route path={`${match.url}/api-test`} component={apiTest} />
           <Route path={`${match.url}/api-overview`} component={apiOverview} />
           <Route path={`${match.url}/configuration`} component={configuration} />
@@ -109,7 +111,7 @@ class IAMIndex extends React.Component {
           <Route path={`${match.url}/site-statistics`} component={siteStatistics} />
           <Route path={`${match.url}/organization-setting`} component={organizationSetting} />
           <Route path={`${match.url}/project-type`} component={projectType} />
-          <Route path={`${match.url}/application`} component={application} />
+          <Route path={`${match.url}/application`} component={application} /> */}
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

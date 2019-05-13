@@ -41,8 +41,7 @@ export default class CreateRole extends Component {
     this.base = (queryObj.base || '').split(',');
     this.roleId = queryObj.roleId || undefined;
     this.isEdit = !!this.roleId;
-    // eslint-disable-next-line prefer-destructuring
-    this.tabLevel = RESOURCES_LEVEL.split(',')[0];
+    this.tabLevel = queryObj.level;
   }
 
   componentDidMount() {
@@ -51,6 +50,7 @@ export default class CreateRole extends Component {
 
   loadLabelsAndMenus = () => {
     const { level, tabLevel, base } = this;
+    RoleStore.setTabLevel(tabLevel);
     this.loadMenu(RoleStore.tabLevel || tabLevel);
     RoleStore.loadRoleLabel(level);
     if (base.length) {
@@ -96,6 +96,15 @@ export default class CreateRole extends Component {
         sign.sign = false;
       }
     }
+  }
+
+  getTabCodes = () => {
+    const LEVEL_OBJ = {
+      site: ['site', 'user'],
+      project: ['project'],
+      organization: ['organization'],
+    };
+    return LEVEL_OBJ[this.level] || [];
   }
 
   getIds = (menu, res) => {
@@ -517,7 +526,7 @@ export default class CreateRole extends Component {
           </Button>
         </div>
         <Tabs onChange={this.handleChangeTabLevel} activeKey={tabLevel}>
-          {RESOURCES_LEVEL.split(',').map(level => (
+          {this.getTabCodes().map(level => (
             <TabPane tab={LEVEL_NAME[level] || level} key={level}>
               {this.renderTable(level)}
             </TabPane>

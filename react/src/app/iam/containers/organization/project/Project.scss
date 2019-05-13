@@ -2,8 +2,14 @@ $c7n-iam-project: #{$c7n-prefix}-iam-project;
 
 .#{$c7n-iam-project} {
   .hidden-expand {
-    .c7n-table-row-expand-icon .c7n-table-row-expanded {
+    .c7n-table-row-expand-icon {
       display: none;
+    }
+  }
+
+  .c7n-table-expanded-row {
+    .c7n-table-wrapper {
+      margin-left: -0.1rem;
     }
   }
 

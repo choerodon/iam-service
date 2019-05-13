@@ -9,7 +9,6 @@ import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 import EditSider from './EditSider';
-import AddApplication from './AddApplication';
 
 const intlPrefix = 'organization.application';
 
@@ -19,8 +18,19 @@ const intlPrefix = 'organization.application';
 @inject('AppState')
 @observer
 export default class Application extends Component {
+  constructor() {
+    super();
+    // this.id = get(this, 'props.match.params.id', undefined);
+    this.id = 123;
+  }
+
   componentDidMount() {
-    this.refresh();
+    if (this.id) {
+      // do something
+      this.refresh();
+    } else {
+      this.refresh();
+    }
   }
 
   refresh = () => {
@@ -32,8 +42,8 @@ export default class Application extends Component {
     const { ApplicationStore, AppState: { currentMenuType: { name, id } } } = this.props;
     ApplicationStore.setEditData(record);
     ApplicationStore.setOperation(operation);
-    // this.props.history.push(`/iam/application/manage/${operation === 'create' ? 0 : record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
-    ApplicationStore.showSidebar();
+    this.props.history.push(`/iam/application/manage/${operation === 'create' ? 0 : record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
+    // ApplicationStore.showSidebar();
   };
 
   handleEnable = (record) => {
@@ -52,22 +62,6 @@ export default class Application extends Component {
   handlePageChange = (pagination, filters, sorter, params) => {
     this.props.ApplicationStore.loadData(pagination, filters, sorter, params);
   };
-
-  handleSaveMsg = () => {
-    const { ApplicationStore } = this.props;
-    ApplicationStore.closeSidebar();
-    ApplicationStore.loadData();
-  }
-
-  handleCancelSider = () => {
-    const { ApplicationStore } = this.props;
-    ApplicationStore.closeSidebar();
-  }
-
-  handleManage = (record) => {
-    const { AppState: { currentMenuType: { name, id } } } = this.props;
-    this.props.history.push(`/iam/application/manage/${record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
-  }
 
   render() {
     const { ApplicationStore: { filters, pagination, params }, AppState, intl, ApplicationStore, ApplicationStore: { applicationData } } = this.props;
@@ -121,7 +115,7 @@ export default class Application extends Component {
         value: 'test',
       }],
       filteredValue: filters.applicationType || [],
-      width: '10%',
+      width: '20%',
       render: text => (
         <MouseOverWrapper text={text} width={0.2}>
           {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
@@ -151,7 +145,7 @@ export default class Application extends Component {
     }, {
       title: <FormattedMessage id="status" />,
       dataIndex: 'enabled',
-      width: '10%',
+      width: '15%',
       filters: [{
         text: intl.formatMessage({ id: 'enable' }),
         value: 'true',
@@ -168,7 +162,7 @@ export default class Application extends Component {
       width: '120px',
       align: 'right',
       render: (text, record) => {
-        if (false) {
+        if (this.id) {
           return (
             <Tooltip
               title={<FormattedMessage id="delete" />}
@@ -204,7 +198,7 @@ export default class Application extends Component {
                   <Button
                     shape="circle"
                     size="small"
-                    onClick={e => this.handleManage(record)}
+                    onClick={e => this.handleopenTab(record, 'edit')}
                     icon={record.category === 'application' ? 'mode_edit' : 'predefine'}
                   />
                 </Tooltip>
@@ -282,15 +276,8 @@ export default class Application extends Component {
             expandedRowRender={this.renderExpandRowRender}
           />
         </Content>
-        {
-          ApplicationStore.sidebarVisible ? (
-            <EditSider
-              onCancel={this.handleCancelSider}
-              onOk={this.handleSaveMsg}
-            />
-          ) : null
-        }
-        {/* <AddApplication /> */}
+        {/* <EditSider /> */}
+        <AddApplication />
       </Page>
     );
   }
