@@ -1,23 +1,18 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Map;
-import javax.validation.Valid;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +21,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author flyleft
@@ -98,7 +97,7 @@ public class OrganizationProjectController extends BaseController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "启用项目")
+    @ApiOperation(value = "启用项目(同时启用项目关联的项目群关系)")
     @PutMapping(value = "/{project_id}/enable")
     public ResponseEntity<ProjectDTO> enableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                     @PathVariable(name = "project_id") Long projectId) {
@@ -107,7 +106,7 @@ public class OrganizationProjectController extends BaseController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "禁用项目")
+    @ApiOperation(value = "禁用项目(同时禁用项目关联的项目群关系)")
     @PutMapping(value = "/{project_id}/disable")
     public ResponseEntity<ProjectDTO> disableProject(@PathVariable(name = "organization_id") Long organizationId,
                                                      @PathVariable(name = "project_id") Long projectId) {

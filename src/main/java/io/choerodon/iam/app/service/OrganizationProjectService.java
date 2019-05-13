@@ -1,10 +1,10 @@
 package io.choerodon.iam.app.service;
 
-import java.util.List;
-import java.util.Map;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author flyleft
@@ -22,6 +22,8 @@ public interface OrganizationProjectService {
     ProjectDTO enableProject(Long organizationId, Long projectId, Long userId);
 
     ProjectDTO disableProject(Long organizationId, Long projectId, Long userId);
+
+    ProjectDTO disableProjectAndSendEvent(Long projectId, Long userId);
 
     void check(ProjectDTO projectDTO);
 

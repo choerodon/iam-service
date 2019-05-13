@@ -1,20 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.stream.Collectors;
-
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -25,8 +10,20 @@ import io.choerodon.iam.api.dto.payload.ProjectRelationshipInsertPayload;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,7 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_DELETE;
 
 /**
@@ -194,23 +193,6 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                     .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                 relationshipDTO.setProgramId(relationshipDTO.getParentId());
             }
-            ProjectRelationshipDTO checkDTO = new ProjectRelationshipDTO();
-            checkDTO.setParentId(relationshipDTO.getParentId());
-            checkDTO.setProjectId(relationshipDTO.getProjectId());
-            if (projectRelationshipRepository.selectOne(checkDTO) != null) {
-                throw new CommonException("error.relationship.exist");
-            }
-            // check date
-            if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
-                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-                ProjectRelationshipDTO dto = new ProjectRelationshipDTO();
-                BeanUtils.copyProperties(relationshipDTO, dto);
-                RelationshipCheckDTO relationshipCheckDTO = checkDate(dto);
-                if (!relationshipCheckDTO.getResult()) {
-                    throw new CommonException("error.relationship.date.is.not.legal");
-                }
-            }
-
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
@@ -224,6 +206,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         //批量更新
         updateNewList.forEach(relationshipDTO -> {
             checkGroupIsLegal(relationshipDTO);
+            // 更新项目群关系的有效结束时间
             updateProjectRelationshipEndDate(relationshipDTO);
             if (projectRelationshipRepository.selectByPrimaryKey(relationshipDTO.getId()) == null) {
                 logger.warn("Batch update project relationship exists Nonexistent relationship,id is{}:{}", relationshipDTO.getId(), relationshipDTO);
@@ -265,17 +248,17 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     /**
      * 更新项目群关系的有效结束时间.
-     * 禁用操作: 结束时间为禁用操作的时间
-     * 启用操作：结束时间置为空
      *
      * @param projectRelationshipDTO 项目群关系
      */
     private void updateProjectRelationshipEndDate(ProjectRelationshipDTO projectRelationshipDTO) {
+        // 启用操作 结束时间置为空
         if (projectRelationshipDTO.getEnabled()) {
             projectRelationshipDTO.setEndDate(null);
         } else {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             try {
+                // 禁用操作 结束时间为禁用操作的时间
                 projectRelationshipDTO.setEndDate(simpleDateFormat.parse(simpleDateFormat.format(new Date())));
             } catch (ParseException e) {
                 logger.info("Relationship end time format failed");
@@ -288,6 +271,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
      * 检验不能为空
      * 校验不能批量更新不同项目群下的项目关系
      * 校验一个项目只能被一个普通项目群添加
+     * 校验一个项目只能被一个普通项目群更新
      *
      * @param list 项目群关系列表
      */
@@ -309,9 +293,19 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             }
             if (r.getId() == null) {
                 // 一个项目只能被一个普通项目群添加
-                int projectCount = relationshipMapper.selectProjectCountInProgramByProjectId(r.getProjectId());
-                if (projectCount > 0) {
-                    throw new CommonException("error.insert.project.relationships.only.add.by.one.program");
+                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), true);
+                if (projectDTOS != null && projectDTOS.size() > 0) {
+                    throw new CommonException("error.insert.project.relationships.exists.one.program", projectDTOS.get(0).getName());
+                }
+            } else {
+                // 一个项目只能被一个普通项目群更新
+                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), false);
+                if (projectDTOS != null && projectDTOS.size() > 1) {
+                    List<String> programs = new ArrayList<>();
+                    for (ProjectDTO projectDTO : projectDTOS) {
+                        programs.add(projectDTO.getName());
+                    }
+                    throw new CommonException("error.update.project.relationships.exists.multiple.program", StringUtils.join(programs, ","));
                 }
             }
         });
