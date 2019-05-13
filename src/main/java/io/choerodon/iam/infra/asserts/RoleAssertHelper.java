@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @since 2019-04-15
  */
 @Component
-public class RoleAssertHelper {
+public class RoleAssertHelper extends AssertHelper {
 
     private RoleMapper roleMapper;
 

@@ -6,7 +6,6 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ApplicationSearchDTO
 import io.choerodon.iam.app.service.ApplicationService
 import io.choerodon.iam.app.service.impl.ApplicationServiceImpl
-import io.choerodon.iam.infra.common.utils.AssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
 import io.choerodon.iam.infra.enums.ApplicationCategory
 import io.choerodon.iam.infra.enums.ApplicationType
@@ -29,8 +28,6 @@ class ApplicationControllerSpec extends Specification {
     @Autowired
     ApplicationMapper applicationMapper
     @Autowired
-    AssertHelper assertHelper
-    @Autowired
     ApplicationExplorationMapper applicationExplorationMapper
 
     ModelMapper modelMapper = new ModelMapper()
@@ -40,7 +37,7 @@ class ApplicationControllerSpec extends Specification {
 
     def "setup"() {
         producer = Mock(TransactionalProducer)
-        ApplicationService service = new ApplicationServiceImpl(applicationMapper, assertHelper, producer, applicationExplorationMapper)
+        ApplicationService service = new ApplicationServiceImpl(applicationMapper, producer, applicationExplorationMapper)
         controller = new ApplicationController(service)
     }
 

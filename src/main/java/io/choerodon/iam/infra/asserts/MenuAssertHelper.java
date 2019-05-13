@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @since 0.16.0
  */
 @Component
-public class MenuAssertHelper {
+public class MenuAssertHelper extends AssertHelper {
 
     private MenuMapper menuMapper;
 

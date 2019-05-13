@@ -191,28 +191,12 @@ public class MenuServiceImpl implements MenuService {
             throw new CommonException("error.menu.name.empty", code);
         }
         if (StringUtils.isEmpty(menu.getParentCode())) {
-            throw new CommonException("error.menu.patentId.null", code);
-        }
-        if (StringUtils.isEmpty(menu.getPagePermissionCode())) {
-            throw new CommonException("error.menu.pagePermissionCode.empty", code);
+            throw new CommonException("error.menu.parentCode.empty", code);
         }
         if (menu.getSort() == null) {
             menu.setSort(0);
         }
-        if (menu.getDefault() == null) {
-            menu.setDefault(true);
-        }
-    }
-
-    private List<MenuDTO> getTopMenus(String level) {
-        MenuDTO example = new MenuDTO();
-        example.setResourceLevel(level);
-        example.setType(MenuType.TOP.value());
-        List<MenuDTO> topMenus = menuMapper.select(example);
-        if (topMenus.isEmpty()) {
-            throw new CommonException("error.top.menu.not.existed", level);
-        }
-        return topMenus;
+        menu.setDefault(false);
     }
 
     private void toTreeMenu(MenuDTO parentMenu, Set<MenuDTO> menus) {
@@ -226,19 +210,6 @@ public class MenuServiceImpl implements MenuService {
                 }
             }
         });
-        //移除type=menu但是没有菜单项的菜单
-//        List<MenuDTO> subList = new ArrayList<>();
-//        subMenus.forEach(menu -> {
-//            if (MenuType.isMenuItem(menu.getType())) {
-//                subList.add(menu);
-//                return;
-//            }
-//            List<MenuDTO> menuList = menu.getSubMenus();
-//            boolean hasMenuItem = (menuList != null && !menuList.isEmpty());
-//            if (MenuType.isMenu(menu.getType()) && hasMenuItem) {
-//                subList.add(menu);
-//            }
-//        });
         subMenus.sort(Comparator.comparing(MenuDTO::getSort));
         parentMenu.setSubMenus(subMenus);
     }
