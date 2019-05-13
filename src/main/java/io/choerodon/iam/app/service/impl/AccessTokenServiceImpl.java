@@ -1,20 +1,17 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.AccessTokenDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.stereotype.Service;
@@ -23,7 +20,6 @@ import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.app.service.AccessTokenService;
-import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.iam.infra.mapper.AccessTokenMapper;
 import io.choerodon.iam.infra.mapper.RefreshTokenMapper;
@@ -36,67 +32,73 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     private static final Logger logger = LoggerFactory.getLogger(AccessTokenServiceImpl.class);
     private AccessTokenMapper accessTokenMapper;
     private RefreshTokenMapper refreshTokenMapper;
-    private UserRepository userRepository;
     private OauthTokenFeignClient oauthTokenFeignClient;
+    private UserAssertHelper userAssertHelper;
 
-    public AccessTokenServiceImpl(AccessTokenMapper accessTokenMapper, RefreshTokenMapper refreshTokenMapper, UserRepository userRepository, OauthTokenFeignClient oauthTokenFeignClient) {
+    public AccessTokenServiceImpl(AccessTokenMapper accessTokenMapper, RefreshTokenMapper refreshTokenMapper,
+                                  OauthTokenFeignClient oauthTokenFeignClient,
+                                  UserAssertHelper userAssertHelper) {
         this.accessTokenMapper = accessTokenMapper;
         this.refreshTokenMapper = refreshTokenMapper;
-        this.userRepository = userRepository;
         this.oauthTokenFeignClient = oauthTokenFeignClient;
+        this.userAssertHelper = userAssertHelper;
     }
 
     @Override
-    public PageInfo<AccessTokenDTO> pagingTokensByUserIdAndClient(int page, int size, String clientName, String currentToken) {
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
-        if (userDTO == null) {
-            throw new CommonException("error.user.not.exist");
-        }
-        return pageConvert(page, size, userDTO.getLoginName(), clientName, currentToken);
+    public PageInfo<AccessTokenDTO> pagedSearch(int page, int size, String clientName, String currentToken) {
+        CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
+        UserDTO userDTO = userAssertHelper.userNotExisted(userDetails.getUserId());
+        List<AccessTokenDTO> result = searchAndOrderBy(clientName, currentToken, userDTO.getLoginName());
+        return doPage(page, size, result);
     }
 
-    public PageInfo<AccessTokenDTO> pageConvert(int page, int size, String loginName, String clientName, String currentToken) {
-        //原分页信息
-        PageInfo<AccessTokenDTO> pageInfo = PageHelper.startPage(page, size).doSelectPageInfo(() -> accessTokenMapper.selectTokens(loginName, clientName));
-        //所有token信息
-        List<AccessTokenDTO> userAccessTokens = accessTokenMapper.selectTokens(loginName, clientName);
-        List<AccessTokenDTO> list = pageInfo.getList();
-        if (list.isEmpty()) {
-            return pageInfo;
+    private PageInfo<AccessTokenDTO> doPage(int page, int size, List<AccessTokenDTO> result) {
+        Page<AccessTokenDTO> pageResult = new Page<>(page, size);
+        int total = result.size();
+        pageResult.setTotal(total);
+        if (size == 0) {
+            pageResult.addAll(result);
         } else {
-            //todo 此处还需优化修改
-            //1.提取tokenDTO
-            List<AccessTokenDTO> userAccessTokenDTOS = userAccessTokens.stream().map(token -> {
-                AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
-                accessTokenDTO.setTokenId(token.getTokenId());
-                accessTokenDTO.setClientId(token.getClientId());
-                accessTokenDTO.setRedirectUri(token.getRedirectUri());
-                DefaultOAuth2AccessToken defaultToken = SerializationUtils.deserialize(token.getToken());
-                accessTokenDTO.setAccesstoken(defaultToken.getValue());
-                accessTokenDTO.setExpirationTime(defaultToken.getExpiration());
-                accessTokenDTO.setExpire(defaultToken.isExpired());
-                accessTokenDTO.setCreateTime((Date) defaultToken.getAdditionalInformation().get("createTime"));
-                accessTokenDTO.setCurrentToken(currentToken.equalsIgnoreCase(accessTokenDTO.getAccesstoken()));
-                return accessTokenDTO;
-            }).collect(Collectors.toList());
-            //2.过滤老token（没有createTime）
-            List<AccessTokenDTO> oldTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() == null).collect(Collectors.toList());
-            //3.过滤并按创建时间将新token排序（有createTime）
-            List<AccessTokenDTO> newAndSortedTokens = userAccessTokenDTOS.stream().filter(o1 -> o1.getCreateTime() != null).sorted(Comparator.comparing(AccessTokenDTO::getCreateTime).reversed()).collect(Collectors.toList());
-            //4.排序：当前token + newAndSortedTokens + oldTokens
-            List<AccessTokenDTO> resultDTO = userAccessTokenDTOS.stream().filter(o1 -> o1.getCurrentToken().equals(true)).collect(Collectors.toList());
-            resultDTO.addAll(newAndSortedTokens.stream().filter(o1 -> !o1.getCurrentToken().equals(true)).collect(Collectors.toList()));
-            resultDTO.addAll(oldTokens);
-
-            list.clear();
-            list.addAll(getFromIndexAndtoIndex(size, page, resultDTO));
-            return pageInfo;
+            int start = (page - 1) * size;
+            int end = page * size > total - 1 ? total - 1 : page * size;
+            pageResult.addAll(result.subList(start, end));
         }
+        return pageResult.toPageInfo();
     }
 
-    List<AccessTokenDTO> getFromIndexAndtoIndex(Integer size, Integer page, List result) {
-        return result.subList(size * page, (size * page + size) < result.size() ? (size * page + size) : result.size());
+    private List<AccessTokenDTO> searchAndOrderBy(String clientName, String currentToken, String loginName) {
+        List<AccessTokenDTO> userAccessTokens = accessTokenMapper.selectTokens(loginName, clientName);
+        List<AccessTokenDTO> result = new ArrayList<>();
+        List<AccessTokenDTO> tokensWithoutCreateTime = new ArrayList<>();
+        List<AccessTokenDTO> tokensWithCreateTime = new ArrayList<>();
+
+        userAccessTokens.forEach(token -> {
+            DefaultOAuth2AccessToken defaultToken = SerializationUtils.deserialize(token.getToken());
+            String tokenValue = defaultToken.getValue();
+            token.setAccesstoken(tokenValue);
+            token.setExpirationTime(defaultToken.getExpiration());
+            token.setExpire(defaultToken.isExpired());
+            boolean isCurrentToken = tokenValue.equalsIgnoreCase(currentToken);
+            token.setCurrentToken(isCurrentToken);
+            Object createTime = defaultToken.getAdditionalInformation().get("createTime");
+            if (isCurrentToken) {
+                //当前token置顶
+                result.add(token);
+            } else {
+                if (createTime == null) {
+                    tokensWithoutCreateTime.add(token);
+                } else {
+                    token.setCreateTime((Date) createTime);
+                    tokensWithCreateTime.add(token);
+                }
+            }
+            token.setCreateTime((Date) createTime);
+        });
+        //有createTime的排序，没有的不排序
+        tokensWithCreateTime.sort(Comparator.comparing(AccessTokenDTO::getCreateTime).reversed());
+        result.addAll(tokensWithCreateTime);
+        result.addAll(tokensWithoutCreateTime);
+        return result;
     }
 
     @Override

@@ -102,7 +102,7 @@ class AccessTokenServiceImplSpec extends Specification {
 
 
         when: "用户不存在"
-        accessTokenService.pagingTokensByUserIdAndClient(1, 20, clientName, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(0).getToken())).getValue())
+        accessTokenService.pagedSearch(1, 20, clientName, ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenList.get(0).getToken())).getValue())
         then: "结果分析"
         def e = thrown(CommonException)
         e.message == "error.user.not.exist"

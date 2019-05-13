@@ -6,7 +6,12 @@
     <resultMap id="projectDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <!--<result column="is_group" property="group" jdbcType="BOOLEAN"/>-->
+        <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO">
+            <id property="id" column="project_id"></id>
+            <result property="name" column="project_name"/>
+            <result property="code" column="project_code"/>
+            <result property="enabled" column="project_enabled"/>
+        </collection>
     </resultMap>
 
     <resultMap id="ProjectWithRoleDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
@@ -16,12 +21,11 @@
         <result property="organizationId" column="organization_id"/>
         <result property="organizationName" column="organization_name" jdbcType="VARCHAR"/>
         <result property="enabled" column="is_enabled"/>
-        <!--<result property="group" column="is_group"/>-->
         <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
-            <id property="id" column="role_id"></id>
-            <result property="name" column="role_name"/>
-            <result property="code" column="role_code"/>
-            <result property="enabled" column="role_is_enabled"/>
+            <id property="id" column="project_id"></id>
+            <result property="name" column="project_name"/>
+            <result property="code" column="project_code"/>
+            <result property="enabled" column="project_enabled"/>
         </collection>
     </resultMap>
 
@@ -60,30 +64,42 @@
     </select>
 
     <select id="fulltextSearch" resultMap="projectDTO">
-        SELECT fp.*, fpt.name AS type_name
-        FROM fd_project fp
-        LEFT JOIN fd_project_type fpt ON fp.type = fpt.code
-        WHERE fp.organization_id = #{project.organizationId}
+        select
+          fp.*,
+          fpt.name as type_name,
+          fp1.id as project_id,
+          fp1.name as project_name,
+          fp1.code as project_code,
+          fp1.is_enabled as project_enabled
+        from fd_project fp
+        left join fd_project_type fpt
+        on fp.type = fpt.code
+        left join fd_project_relationship fpr
+        on fp.id = fpr.project_id
+        and fp.category = 'PROGRAM'
+        left join fd_project fp1
+        on fp.id =  fp1.id
+        where fp.organization_id = #{project.organizationId}
         <if test="project.name != null">
-            AND fp.name LIKE concat(concat('%',#{project.name}),'%')
+            and fp.name like concat(concat('%',#{project.name}),'%')
         </if>
         <if test="project.code != null">
-            AND fp.code LIKE concat(concat('%',#{project.code}),'%')
+            and fp.code like concat(concat('%',#{project.code}),'%')
         </if>
         <if test="project.enabled != null">
-            AND fp.is_enabled = #{project.enabled}
+            and fp.is_enabled = #{project.enabled}
         </if>
         <if test="project.category != null">
-            AND fp.category = #{project.category}
+            and fp.category = #{project.category}
         </if>
         <if test="project.typeName != null">
-            AND fpt.name LIKE concat(concat('%',#{project.typeName}),'%')
+            and fpt.name like concat(concat('%',#{project.typeName}),'%')
         </if>
         <if test="param != null">
-            AND(
-            fp.name LIKE concat(concat('%',#{param}),'%') OR
-            fp.code LIKE concat(concat('%',#{param}),'%') OR
-            fpt.name LIKE concat(concat('%',#{param}),'%')
+            and(
+            fp.name like concat(concat('%',#{param}),'%') or
+            fp.code like concat(concat('%',#{param}),'%') or
+            fpt.name like concat(concat('%',#{param}),'%')
             )
         </if>
     </select>

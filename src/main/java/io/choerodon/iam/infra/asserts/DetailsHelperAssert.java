@@ -19,10 +19,26 @@ public class DetailsHelperAssert {
         return userDetails;
     }
 
+    public static CustomUserDetails userDetailNotExisted(String message) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null) {
+            throw new CommonException(message);
+        }
+        return userDetails;
+    }
+
     public static CustomClientDetails clientDetailNotExisted() {
         CustomClientDetails client = DetailsHelper.getClientDetails();
         if (client == null) {
             throw new CommonException("error.client.not.found");
+        }
+        return client;
+    }
+
+    public static CustomClientDetails clientDetailNotExisted(String message) {
+        CustomClientDetails client = DetailsHelper.getClientDetails();
+        if (client == null) {
+            throw new CommonException(message);
         }
         return client;
     }
