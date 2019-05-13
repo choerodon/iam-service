@@ -11,7 +11,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.app.service.ApplicationService;
-import io.choerodon.iam.infra.common.utils.AssertHelper;
+import io.choerodon.iam.infra.asserts.ApplicationAssertHelper;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
@@ -42,7 +44,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private ApplicationExplorationMapper applicationExplorationMapper;
 
-    private AssertHelper assertHelper;
+    private OrganizationAssertHelper organizationAssertHelper;
+
+    private ProjectAssertHelper projectAssertHelper;
+
+    private ApplicationAssertHelper applicationAssertHelper;
 
     private TransactionalProducer producer;
 
@@ -50,29 +56,32 @@ public class ApplicationServiceImpl implements ApplicationService {
     private boolean devopsMessage;
 
     public ApplicationServiceImpl(ApplicationMapper applicationMapper,
-                                  AssertHelper assertHelper,
                                   TransactionalProducer producer,
-                                  ApplicationExplorationMapper applicationExplorationMapper) {
+                                  ApplicationExplorationMapper applicationExplorationMapper,
+                                  OrganizationAssertHelper organizationAssertHelper,
+                                  ProjectAssertHelper projectAssertHelper,
+                                  ApplicationAssertHelper applicationAssertHelper) {
         this.applicationMapper = applicationMapper;
-        this.assertHelper = assertHelper;
         this.producer = producer;
         this.applicationExplorationMapper = applicationExplorationMapper;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectAssertHelper = projectAssertHelper;
+        this.applicationAssertHelper = applicationAssertHelper;
     }
 
     @Override
     @Saga(code = APP_CREATE, description = "iam创建应用", inputSchemaClass = ApplicationDTO.class)
     public ApplicationDTO create(ApplicationDTO applicationDTO) {
-        assertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
+        organizationAssertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
         validate(applicationDTO);
         //combination-application不能选项目
         String combination = ApplicationCategory.COMBINATION.code();
         if (ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
             applicationDTO.setProjectId(0L);
         }
-//        ApplicationDTO applicationDO = modelMapper.map(applicationDTO, ApplicationDO.class);
         Long projectId = applicationDTO.getProjectId();
         if (!PROJECT_DOES_NOT_EXIST_ID.equals(projectId)) {
-            assertHelper.projectNotExisted(projectId);
+            projectAssertHelper.projectNotExisted(projectId);
         }
 
         ApplicationDTO result;
@@ -139,10 +148,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 ObjectUtils.isEmpty(applicationDTO.getProjectId()) ? PROJECT_DOES_NOT_EXIST_ID : applicationDTO.getProjectId();
         applicationDTO.setProjectId(originProjectId);
         validate(applicationDTO);
-        ApplicationDTO dto = assertHelper.applicationNotExisted(applicationDTO.getId());
+        ApplicationDTO dto = applicationAssertHelper.applicationNotExisted(applicationDTO.getId());
         Long targetProjectId = dto.getProjectId();
         preUpdate(applicationDTO, dto);
-//        ApplicationDO application = modelMapper.map(applicationDTO, ApplicationDO.class);
         ApplicationDTO result;
         String combination = ApplicationCategory.COMBINATION.code();
         if (devopsMessage && !combination.equals(dto.getApplicationCategory())) {
@@ -207,7 +215,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private ApplicationDTO enable(Long id, boolean enabled) {
-        ApplicationDTO applicationDTO = assertHelper.applicationNotExisted(id);
+        ApplicationDTO applicationDTO = applicationAssertHelper.applicationNotExisted(id);
         applicationDTO.setEnabled(enabled);
         String sagaCode = enabled ? APP_ENABLE : APP_DISABLE;
         String combination = ApplicationCategory.COMBINATION.code();
@@ -253,8 +261,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addToCombination(Long organizationId, Long id, Long[] ids) {
-        assertHelper.organizationNotExisted(organizationId);
-        if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        if (!ApplicationCategory.COMBINATION.code().equals(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.addToCombination.not.support");
         }
         Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
@@ -356,7 +364,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationExplorationDTO> queryDescendant(Long id) {
-        if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+        if (!ApplicationCategory.COMBINATION.code().equals(
+                applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
 
@@ -371,7 +380,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationDTO> queryEnabledApplication(Long organizationId, Long id) {
-        if (!ApplicationCategory.COMBINATION.code().equals(assertHelper.applicationNotExisted(id).getApplicationCategory())) {
+        if (!ApplicationCategory.COMBINATION.code().equals(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.query.not.support");
         }
         ApplicationDTO example = new ApplicationDTO();
@@ -484,12 +493,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             //为空的情况下，调用updateByPrimaryKeySelective这一列不会被更新
             applicationDTO.setProjectId(null);
         } else if (!PROJECT_DOES_NOT_EXIST_ID.equals(applicationDTO.getProjectId())) {
-            assertHelper.projectNotExisted(applicationDTO.getProjectId());
+            projectAssertHelper.projectNotExisted(applicationDTO.getProjectId());
         }
         applicationDTO.setOrganizationId(null);
         applicationDTO.setApplicationCategory(null);
         applicationDTO.setCode(null);
-        assertHelper.objectVersionNumberNotNull(applicationDTO.getObjectVersionNumber());
+        applicationAssertHelper.objectVersionNumberNotNull(applicationDTO.getObjectVersionNumber());
     }
 
     private void validate(ApplicationDTO applicationDTO) {

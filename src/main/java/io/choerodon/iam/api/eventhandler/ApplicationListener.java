@@ -6,7 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.infra.common.utils.AssertHelper;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 import io.choerodon.iam.infra.enums.ApplicationCategory;
@@ -42,14 +43,19 @@ public class ApplicationListener {
 
     private ApplicationMapper applicationMapper;
     private ApplicationExplorationMapper applicationExplorationMapper;
-    private AssertHelper assertHelper;
+
+    private OrganizationAssertHelper organizationAssertHelper;
+
+    private ProjectAssertHelper projectAssertHelper;
 
     public ApplicationListener(ApplicationMapper applicationMapper,
-                               AssertHelper assertHelper,
-                               ApplicationExplorationMapper applicationExplorationMapper) {
+                               ApplicationExplorationMapper applicationExplorationMapper,
+                               OrganizationAssertHelper organizationAssertHelper,
+                               ProjectAssertHelper projectAssertHelper) {
         this.applicationMapper = applicationMapper;
-        this.assertHelper = assertHelper;
         this.applicationExplorationMapper = applicationExplorationMapper;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectAssertHelper = projectAssertHelper;
     }
 
 
@@ -103,7 +109,7 @@ public class ApplicationListener {
             logger.error("illegal application because of organization id is empty, application: {}", app);
         } else {
             try {
-                assertHelper.organizationNotExisted(organizationId);
+                organizationAssertHelper.organizationNotExisted(organizationId);
             } catch (CommonException e) {
                 logger.error("illegal application because of organization does not existed, application: {}", app);
                 return true;
@@ -115,7 +121,7 @@ public class ApplicationListener {
             logger.error("illegal application because of project id is empty, application: {}", app);
         } else {
             try {
-                assertHelper.projectNotExisted(projectId);
+                projectAssertHelper.projectNotExisted(projectId);
             } catch (CommonException e) {
                 logger.error("illegal application because of project does not existed, application: {}", app);
                 return true;

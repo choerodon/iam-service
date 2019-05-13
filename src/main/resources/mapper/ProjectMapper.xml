@@ -75,10 +75,13 @@
         left join fd_project_type fpt
         on fp.type = fpt.code
         left join fd_project_relationship fpr
-        on fp.id = fpr.project_id
-        and fp.category = 'PROGRAM'
+        on
+        (
+          fp.id = fpr.program_id
+          and fp.category = 'PROGRAM'
+        )
         left join fd_project fp1
-        on fp.id =  fp1.id
+        on fpr.project_id = fp1.id
         where fp.organization_id = #{project.organizationId}
         <if test="project.name != null">
             and fp.name like concat(concat('%',#{project.name}),'%')

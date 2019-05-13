@@ -12,11 +12,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 public class DetailsHelperAssert {
 
     public static CustomUserDetails userDetailNotExisted() {
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        if (userDetails == null) {
-            throw new CommonException("error.user.not.login");
-        }
-        return userDetails;
+        return userDetailNotExisted("error.user.not.login");
     }
 
     public static CustomUserDetails userDetailNotExisted(String message) {
@@ -28,11 +24,7 @@ public class DetailsHelperAssert {
     }
 
     public static CustomClientDetails clientDetailNotExisted() {
-        CustomClientDetails client = DetailsHelper.getClientDetails();
-        if (client == null) {
-            throw new CommonException("error.client.not.found");
-        }
-        return client;
+        return clientDetailNotExisted("error.client.not.found");
     }
 
     public static CustomClientDetails clientDetailNotExisted(String message) {
@@ -41,5 +33,12 @@ public class DetailsHelperAssert {
             throw new CommonException(message);
         }
         return client;
+    }
+
+    public static void notCurrentUser(Long userId) {
+        CustomUserDetails userDetails = userDetailNotExisted();
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new CommonException("error.bookMark.notCurrentUser");
+        }
     }
 }
