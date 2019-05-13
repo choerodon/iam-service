@@ -285,7 +285,8 @@ export default class MenuSetting extends Component {
               default: false,
               level: type,
               type: 'dir',
-              parentId: 0,
+              // parentId: 0,
+              parentCode: `choerodon.code.top.${type}`,
               subMenus: null,
             };
             defineLevel(menu, 0);
@@ -754,7 +755,7 @@ export default class MenuSetting extends Component {
       key: 'default',
       width: '15%',
       render: (text, { type, default: dft }) => {
-        if (type === 'menu') {
+        if (type === 'menu_item') {
           return (
             <MouseOverWrapper text={text} width={0.10}>
               <span style={{ cursor: 'default' }}>菜单</span>
@@ -781,7 +782,7 @@ export default class MenuSetting extends Component {
       align: 'right',
       render: (text, record) => {
         const { type, default: dft } = record;
-        if (type === 'menu') {
+        if (type === 'menu_item') {
           return (
             <Permission service={['iam-service.menu.query']} type={menuType}>
               <Tooltip

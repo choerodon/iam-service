@@ -889,14 +889,25 @@ export default class Project extends Component {
   };
 
   renderExpandRowRender(source) {
-    if (!source.children) {
+    if (!source.category === 'PROGRAM') {
       return null;
     }
     const columns = [{
       title: <FormattedMessage id="name" />,
       dataIndex: 'name',
       key: 'name',
-      width: '25%',
+      // width: '25%',
+      width: '270px',
+      render: (text, record) => (
+        <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
+          <MouseOverWrapper text={text} width={0.2}>
+            <span style={{ marginRight: 8, marginLeft: 26, fontSize: '10px', lineHeight: '14px', padding: '2px 6px', background: record.enabled ? '#00bfa5' : '#f44336', color: '#fff', borderRadius: '2px' }}>
+              {record.enabled ? '启用' : '停用'}
+            </span>
+            {text}
+          </MouseOverWrapper>
+        </div>
+      ),
     }, {
       title: <FormattedMessage id="code" />,
       dataIndex: 'code',
@@ -908,9 +919,8 @@ export default class Project extends Component {
         showHeader={false}
         bordered={false}
         columns={columns}
-        dataSource={source.children || []}
+        dataSource={source.projects || []}
         rowKey={record => record.id}
-        rowClassName={(record, index) => `${!record.children ? 'hidden-expand' : ''}`}
       />
     );
   }
@@ -923,7 +933,7 @@ export default class Project extends Component {
     const orgId = menuType.id;
     const orgname = menuType.name;
     const { filters, operation } = this.state;
-    const type = menuType.type;
+    const { type } = menuType;
     const filtersType = projectTypes && projectTypes.map(({ name }) => ({
       value: name,
       text: name,
@@ -934,11 +944,12 @@ export default class Project extends Component {
       key: 'name',
       filters: [],
       filteredValue: filters.name || [],
-      width: '25%',
+      // width: '25%',
+      width: '270px',
       render: (text, record) => (
         <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
           <MouseOverWrapper text={text} width={0.2}>
-            {text}
+            <Icon type={record.category === 'PROGRAM' ? 'project_program' : 'project'} style={{ marginRight: 8 }} />{text}
           </MouseOverWrapper>
         </div>
       ),
@@ -1096,6 +1107,7 @@ export default class Project extends Component {
             loading={ProjectStore.isLoading}
             expandedRowRender={record => this.renderExpandRowRender(record)}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
+            rowClassName={(record, index) => `${record.category !== 'PROGRAM' ? 'hidden-expand' : ''}`}
           />
           <Sidebar
             title={this.renderSideTitle()}
