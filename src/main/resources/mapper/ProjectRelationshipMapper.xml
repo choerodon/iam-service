@@ -19,7 +19,7 @@
         </if>
     </select>
 
-    <select id="selectProjectCountInProgramByProjectId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+    <select id="selectProgramsByProjectId" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
         SELECT FP.CODE,FP.NAME
         FROM FD_PROJECT_RELATIONSHIP FPR
         LEFT JOIN FD_PROJECT FP ON FPR.PROGRAM_ID = FP.ID
