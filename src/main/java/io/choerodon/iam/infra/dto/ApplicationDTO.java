@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 /**
  * @author superlee
@@ -54,6 +55,12 @@ public class ApplicationDTO extends BaseDTO {
     @Transient
     @ApiModelProperty(value = "发送saga事件，标记从哪里调用的")
     private String from;
+
+    @Transient
+    private List<ApplicationDTO> descendants;
+
+    @Transient
+    private List<Long> descendantIds;
 
     public Long getId() {
         return id;
@@ -157,5 +164,21 @@ public class ApplicationDTO extends BaseDTO {
 
     public void setFrom(String from) {
         this.from = from;
+    }
+
+    public List<ApplicationDTO> getDescendants() {
+        return descendants;
+    }
+
+    public void setDescendants(List<ApplicationDTO> descendants) {
+        this.descendants = descendants;
+    }
+
+    public List<Long> getDescendantIds() {
+        return descendantIds;
+    }
+
+    public void setDescendantIds(List<Long> descendantIds) {
+        this.descendantIds = descendantIds;
     }
 }

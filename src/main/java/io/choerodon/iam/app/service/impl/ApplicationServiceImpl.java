@@ -71,11 +71,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = APP_CREATE, description = "iam创建应用", inputSchemaClass = ApplicationDTO.class)
+    @Transactional(rollbackFor = Exception.class)
     public ApplicationDTO create(ApplicationDTO applicationDTO) {
         organizationAssertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
         validate(applicationDTO);
         //combination-application不能选项目
-        String combination = ApplicationCategory.COMBINATION.code();
         if (ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
             applicationDTO.setProjectId(0L);
         }
@@ -83,10 +83,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!PROJECT_DOES_NOT_EXIST_ID.equals(projectId)) {
             projectAssertHelper.projectNotExisted(projectId);
         }
+        String combination = ApplicationCategory.COMBINATION.code();
+        boolean isCombination = combination.equals(applicationDTO.getApplicationCategory();
 
         ApplicationDTO result;
         boolean sendMessage =
-                (!combination.equals(applicationDTO.getApplicationCategory())
+                (!isCombination
                         && !PROJECT_DOES_NOT_EXIST_ID.equals(projectId)
                         && devopsMessage);
         if (sendMessage) {
@@ -116,7 +118,18 @@ public class ApplicationServiceImpl implements ApplicationService {
             result = applicationDTO;
         }
         result.setObjectVersionNumber(1L);
+        if (isCombination) {
+            processDescendants(applicationDTO, result);
+        }
         return result;
+    }
+
+    private void processDescendants(ApplicationDTO applicationDTO, ApplicationDTO result) {
+        List<Long> descendantIds = applicationDTO.getDescendantIds();
+        if (descendantIds != null) {
+            Long[] array = new Long[descendantIds.size()];
+            addToCombination(result.getOrganizationId(), result.getId(), descendantIds.toArray(array));
+        }
     }
 
     private void insertExploration(Long appId) {
@@ -143,6 +156,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = APP_UPDATE, description = "iam更新应用", inputSchemaClass = ApplicationDTO.class)
+    @Transactional(rollbackFor = Exception.class)
     public ApplicationDTO update(ApplicationDTO applicationDTO) {
         Long originProjectId =
                 ObjectUtils.isEmpty(applicationDTO.getProjectId()) ? PROJECT_DOES_NOT_EXIST_ID : applicationDTO.getProjectId();
@@ -153,7 +167,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         preUpdate(applicationDTO, dto);
         ApplicationDTO result;
         String combination = ApplicationCategory.COMBINATION.code();
-        if (devopsMessage && !combination.equals(dto.getApplicationCategory())) {
+        boolean isCombination = combination.equals(dto.getApplicationCategory());
+        if (devopsMessage && !isCombination) {
             if (PROJECT_DOES_NOT_EXIST_ID.equals(targetProjectId)) {
                 if (!PROJECT_DOES_NOT_EXIST_ID.equals(originProjectId)) {
                     //send create event
@@ -169,6 +184,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         } else {
             //do not sent event
             result = doUpdate(applicationDTO);
+        }
+        if (isCombination) {
+            processDescendants(applicationDTO, result);
         }
         return result;
     }
@@ -199,7 +217,39 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO) {
+        PageInfo<ApplicationDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
+        result.getList().forEach(app -> {
+            //组合应用查询所有后代
+            if (ApplicationCategory.COMBINATION.value().equals(app.getApplicationCategory())) {
+                List<ApplicationExplorationDTO> applicationExplorations = applicationExplorationMapper.selectDescendants(generatePath(app.getId()));
+                //todo dfs算法优化
+                processTreeData(app, applicationExplorations);
+            }
+        });
         return PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
+    }
+
+    private void processTreeData(ApplicationDTO app, List<ApplicationExplorationDTO> applicationExplorations) {
+        Long appId = app.getId();
+        List<ApplicationDTO> applications = new ArrayList<>();
+        app.setDescendants(applications);
+        applicationExplorations.forEach(ae -> {
+            if (appId.equals(ae.getParentId())) {
+                ApplicationDTO dto = new ApplicationDTO();
+                dto.setId(ae.getApplicationId());
+                dto.setName(ae.getApplicationName());
+                dto.setCode(ae.getApplicationCode());
+                dto.setApplicationCategory(ae.getApplicationCategory());
+                dto.setApplicationType(ae.getApplicationType());
+                dto.setEnabled(ae.getApplicationEnabled());
+                dto.setProjectId(ae.getProjectId());
+                dto.setProjectCode(ae.getProjectCode());
+                dto.setProjectName(ae.getProjectName());
+                dto.setImageUrl(ae.getProjectImageUrl());
+                applications.add(dto);
+                processTreeData(dto, applicationExplorations);
+            }
+        });
     }
 
     @Override
