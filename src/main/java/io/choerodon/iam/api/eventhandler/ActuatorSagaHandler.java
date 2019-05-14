@@ -18,7 +18,9 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Component
@@ -49,7 +51,7 @@ public class ActuatorSagaHandler {
         return actuatorJson;
     }
 
-    @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "刷新菜单表数据", maxRetryCount = 3)
+    @SagaTask(code = INIT_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 1, description = "刷新菜单表数据")
     public String refreshInitData(String actuatorJson) throws IOException, SQLException {
         JsonNode root = OBJECT_MAPPER.readTree(actuatorJson);
         String service = root.get("service").asText();
@@ -61,7 +63,7 @@ public class ActuatorSagaHandler {
         }
         try(Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            MicroServiceInitData.processInitData(data, connection);
+            MicroServiceInitData.processInitData(data, connection, new HashSet<>(Arrays.asList("IAM_PERMISSION", "IAM_MENU_B", "IAM_MENU_PERMISSION")));
             connection.commit();
         }
         return actuatorJson;
