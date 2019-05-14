@@ -881,10 +881,10 @@ export default class Project extends Component {
 
   getCategoryIcon = (category) => {
     switch (category) {
-      case 'AGILE': return 'project';
-      case 'PROGRAM': return 'project_program';
-      case 'ANALYTICAL': return 'project_program_analyze';
-      default: return 'project';
+      case 'AGILE': return 'project_line';
+      case 'PROGRAM': return 'project_group';
+      case 'ANALYTICAL': return 'project_group_analyze';
+      default: return 'project_line';
     }
   };
 
@@ -949,7 +949,7 @@ export default class Project extends Component {
       render: (text, record) => (
         <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
           <MouseOverWrapper text={text} width={0.2}>
-            <Icon type={record.category === 'PROGRAM' ? 'project_program' : 'project'} style={{ marginRight: 8 }} />{text}
+            <Icon type={record.category === 'PROGRAM' ? 'project_group' : 'project_line'} style={{ marginRight: 8 }} />{text}
           </MouseOverWrapper>
         </div>
       ),
