@@ -84,7 +84,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             projectAssertHelper.projectNotExisted(projectId);
         }
         String combination = ApplicationCategory.COMBINATION.code();
-        boolean isCombination = combination.equals(applicationDTO.getApplicationCategory();
+        boolean isCombination = combination.equals(applicationDTO.getApplicationCategory());
 
         ApplicationDTO result;
         boolean sendMessage =
