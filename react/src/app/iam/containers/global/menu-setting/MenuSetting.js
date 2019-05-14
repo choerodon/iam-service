@@ -208,7 +208,7 @@ export default class MenuSetting extends Component {
     if (tempDirs.find(({ code }) => code === value)) {
       callback(errorMsg);
     } else {
-      axios.post('/iam/v1/menus/check', JSON.stringify({ code: value, level: type, type: 'dir' }))
+      axios.post('/iam/v1/menus/check', JSON.stringify({ code: value, level: type, type: 'menu' }))
         .then((mes) => {
           if (mes.failed) {
             callback(errorMsg);
@@ -284,7 +284,7 @@ export default class MenuSetting extends Component {
               name: name.trim(),
               default: false,
               level: type,
-              type: 'dir',
+              type: 'menu',
               // parentId: 0,
               parentCode: `choerodon.code.top.${type}`,
               subMenus: null,
@@ -528,9 +528,9 @@ export default class MenuSetting extends Component {
   // 判断是否能拖入
   checkDropIn(record) {
     const { dragData } = this.state;
-    return dragData && record.type !== 'menu' && dragData.type !== 'root' && !hasDirChild(dragData) 
+    return dragData && record.type !== 'menu_item' && dragData.type !== 'root' && !hasDirChild(dragData) 
       // eslint-disable-next-line no-underscore-dangle
-      && record.__level__ < (dragData.type === 'dir' ? 1 : 2);
+      && record.__level__ < (dragData.type === 'menu' ? 1 : 2);
   }
 
   // 判断是否能插在前后
@@ -613,14 +613,14 @@ export default class MenuSetting extends Component {
     if (dragData && record) {
       deleteNode(menuData, dragData);
       if (currentDropSide === 'in') {
-        dragData.parentId = record.id;
+        dragData.parentCode = record.code;
         record.subMenus = record.subMenus || [];
         record.subMenus.unshift(dragData);
         /* eslint-disable-next-line */
         normalizeMenus([dragData], record.__level__, record.name);
       } else {
-        const { parent, index, parentData: { id = 0, __level__, name } = {} } = findParent(menuData, record);
-        dragData.parentId = id;
+        const { parent, index, parentData: { code = `choerodon.code.top.${type}`, __level__, name } = {} } = findParent(menuData, record);
+        dragData.parentCode = code;
         parent.splice(index + (currentDropSide === 'after' ? 1 : 0), 0, dragData);
         normalizeMenus([dragData], __level__, name);
       }
@@ -629,6 +629,7 @@ export default class MenuSetting extends Component {
         dragData: null,
       });
     }
+    console.log(adjustSort(menuGroup[type]));
   }
 
   handleRow = (record) => {

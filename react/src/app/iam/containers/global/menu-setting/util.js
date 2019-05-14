@@ -11,7 +11,7 @@ function defineProperty(obj, property, value) {
 
 export function hasDirChild({ subMenus }) {
   if (subMenus) {
-    return subMenus.some(record => record.type !== 'menu');
+    return subMenus.some(record => record.type !== 'menu_item');
   }
   return false;
 }
@@ -60,7 +60,7 @@ export function deleteNode(menus, record) {
 
 export function canDelete({ subMenus }) {
   if (subMenus) {
-    return subMenus.every(menu => menu.type === 'dir' && canDelete(menu));
+    return subMenus.every(menu => menu.type === 'menu' && canDelete(menu));
   }
   return true;
 }

@@ -60,7 +60,7 @@ export default class PermissionInfo extends Component {
   }
 
   getTableColumns() {
-    const iconType = { site: 'dvr', project: 'project', organization: 'domain' };
+    const iconType = { site: 'dvr', project: 'project_line', organization: 'domain' };
     const siteInfo = this.props.AppState.getSiteInfo;
     return [{
       title: <FormattedMessage id={`${intlPrefix}.table.name`} />,
