@@ -36,7 +36,7 @@ dashboard:
       width: 4
       height: 4
   - code: "ProjectInfo"
-    icon: project
+    icon: project_line
     title: "项目信息"
     description: "您可以查看当前项目的类型、所属组织以及您在该项目拥有的角色。"
     level: project

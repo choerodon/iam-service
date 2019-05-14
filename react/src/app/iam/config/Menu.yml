@@ -574,7 +574,7 @@
         permission:
           - 'iam-service.user.selfUpdatePassword'
     - "permission-info":
-        icon: project
+        icon: project_line
         Routes: /iam/permission-info
         sort: 3
         permission:
