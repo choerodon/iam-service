@@ -3,12 +3,19 @@ package io.choerodon.iam.app.task;
 import io.choerodon.base.enums.MenuType;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.iam.infra.dto.DashboardRoleDTO;
 import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.iam.infra.dto.MenuPermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.mapper.DashboardMapper;
+import io.choerodon.iam.infra.mapper.DashboardRoleMapper;
 import io.choerodon.iam.infra.mapper.MenuMapper;
 import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
+import io.choerodon.iam.infra.mapper.RoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +39,14 @@ public class FixDataHelper {
     private static final String TOP_PROJECT = "choerodon.code.top.project";
     private static final String TOP_USER = "choerodon.code.top.user";
 
+
+    @Autowired
+    private RoleMapper roleMapper;
+    @Autowired
+    private DashboardMapper dashboardMapper;
+    @Autowired
+    private DashboardRoleMapper dashboardRoleMapper;
+
     private MenuPermissionMapper menuPermissionMapper;
 
     private MenuMapper menuMapper;
@@ -45,6 +60,35 @@ public class FixDataHelper {
     public void fix() {
         fixMenuPermissionData();
         fixMenuData();
+        fixDashboardRole();
+    }
+
+    private void fixDashboardRole(){
+        Map<Long, String> dashboardMap = new HashMap<>();
+        Map<Long, String> roleMap = new HashMap<>();
+        for (DashboardDTO dashboard: dashboardMapper.selectAll()){
+            dashboardMap.put(dashboard.getId(), dashboard.getCode());
+        }
+        for (RoleDTO role: roleMapper.selectAll()){
+            roleMap.put(role.getId(), role.getCode());
+        }
+        for (DashboardRoleDTO dr : dashboardRoleMapper.selectAll()){
+            try {
+                Long roleId = Long.parseLong(dr.getRoleCode());
+                Long dashboardId = Long.parseLong(dr.getDashboardCode());
+                String roleCode = roleMap.get(roleId);
+                String dashboardCode = dashboardMap.get(dashboardId);
+                if (roleCode == null || dashboardCode == null){
+                    logger.warn("not found role[{}] or dashboard[{}] fix skip.", roleId, dashboardCode);
+                    continue;
+                }
+                dr.setRoleCode(roleCode);
+                dr.setDashboardCode(dashboardCode);
+                dashboardRoleMapper.updateByPrimaryKeySelective(dr);
+            }catch (NumberFormatException e){
+                //正常的数据，跳过
+            }
+        }
     }
 
     private void fixMenuData() {
