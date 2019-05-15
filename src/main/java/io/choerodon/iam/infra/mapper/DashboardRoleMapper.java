@@ -11,9 +11,9 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DashboardRoleMapper extends Mapper<DashboardRoleDTO> {
 
-    List<Long> selectRoleIds(@Param("dashboardId") Long dashboardId);
+    List<String> selectRoleCodes(@Param("dashboardCode") String dashboardCode);
 
-    void deleteByDashboardId(@Param("dashboardId") Long dashboardId);
+    void deleteByDashboardCode(@Param("dashboardCode") String dashboardCode);
 
     List<Long> selectDashboardByUserId(@Param("userId") Long userId,
                                        @Param("sourceId") Long sourceId,

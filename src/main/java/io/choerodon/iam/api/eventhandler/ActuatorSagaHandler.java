@@ -63,7 +63,7 @@ public class ActuatorSagaHandler {
         }
         try(Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            MicroServiceInitData.processInitData(data, connection, new HashSet<>(Arrays.asList("IAM_PERMISSION", "IAM_MENU_B", "IAM_MENU_PERMISSION")));
+            MicroServiceInitData.processInitData(data, connection, new HashSet<>(Arrays.asList("IAM_PERMISSION", "IAM_MENU_B", "IAM_MENU_PERMISSION", "IAM_DASHBOARD", "IAM_DASHBOARD_ROLE")));
             connection.commit();
         }
         return actuatorJson;
