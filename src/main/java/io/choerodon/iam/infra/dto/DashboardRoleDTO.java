@@ -15,8 +15,8 @@ public class DashboardRoleDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long dashboardId;
-    private Long roleId;
+    private String dashboardCode;
+    private String roleCode;
 
     @Transient
     @ApiModelProperty(value = "角色名")
@@ -46,20 +46,20 @@ public class DashboardRoleDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getDashboardId() {
-        return dashboardId;
+    public String getDashboardCode() {
+        return dashboardCode;
     }
 
-    public void setDashboardId(Long dashboardId) {
-        this.dashboardId = dashboardId;
+    public void setDashboardCode(String dashboardCode) {
+        this.dashboardCode = dashboardCode;
     }
 
-    public Long getRoleId() {
-        return roleId;
+    public String getRoleCode() {
+        return roleCode;
     }
 
-    public void setRoleId(Long roleId) {
-        this.roleId = roleId;
+    public void setRoleCode(String roleCode) {
+        this.roleCode = roleCode;
     }
 
     public String getName() {

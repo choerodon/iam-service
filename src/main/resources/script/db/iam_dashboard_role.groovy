@@ -31,4 +31,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard_role.groovy') {
         addUniqueConstraint(tableName: 'IAM_DASHBOARD_ROLE', columnNames: 'DASHBOARD_ID, ROLE_ID', constraintName: 'UK_IAM_DASHBOARD_ROLE_U1')
     }
 
+    changeSet(author: 'xausky', id: '2019-05-15-relation-by-code'){
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "ROLE_CODE", oldColumnName: "ROLE_ID", remarks: '角色代码', tableName: 'IAM_DASHBOARD_ROLE')
+        renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "DASHBOARD_CODE", oldColumnName: "DASHBOARD_ID", remarks: 'Dashboard代码', tableName: 'IAM_DASHBOARD_ROLE')
+    }
+
 }
