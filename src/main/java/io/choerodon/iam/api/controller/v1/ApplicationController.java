@@ -58,9 +58,10 @@ public class ApplicationController {
     public ResponseEntity<PageInfo<ApplicationDTO>> pagingQuery(@PathVariable("organization_id") Long organizationId,
                                                                 @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                @RequestParam(defaultValue = "true", name = "with_descendants") Boolean withDescendants,
                                                                 ApplicationSearchDTO applicationSearchDTO) {
         applicationSearchDTO.setOrganizationId(organizationId);
-        return new ResponseEntity<>(applicationService.pagingQuery(page,size,applicationSearchDTO), HttpStatus.OK);
+        return new ResponseEntity<>(applicationService.pagingQuery(page, size, applicationSearchDTO, withDescendants), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
@@ -126,12 +127,12 @@ public class ApplicationController {
     @ApiOperation(value = "查询组合应用下普通应用清单")
     @GetMapping("/{id}/app_list")
     public ResponseEntity<PageInfo<ApplicationDTO>> queryApplicationList(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                     @PathVariable("organization_id") Long organizationId,
-                                                                     @PathVariable("id") Long id,
-                                                                     @RequestParam(required = false) String name,
-                                                                     @RequestParam(required = false) String code) {
-        return new ResponseEntity<>(applicationService.queryApplicationList(page,size, id, name, code), HttpStatus.OK);
+                                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                         @PathVariable("organization_id") Long organizationId,
+                                                                         @PathVariable("id") Long id,
+                                                                         @RequestParam(required = false) String name,
+                                                                         @RequestParam(required = false) String code) {
+        return new ResponseEntity<>(applicationService.queryApplicationList(page, size, id, name, code), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
