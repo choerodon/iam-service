@@ -82,9 +82,16 @@ public class FixDataHelper {
                     logger.warn("not found role[{}] or dashboard[{}] fix skip.", roleId, dashboardCode);
                     continue;
                 }
-                dr.setRoleCode(roleCode);
-                dr.setDashboardCode(dashboardCode);
-                dashboardRoleMapper.updateByPrimaryKeySelective(dr);
+                DashboardRoleDTO example = new DashboardRoleDTO();
+                example.setRoleCode(roleCode);
+                example.setDashboardCode(dashboardCode);
+                if(dashboardRoleMapper.selectOne(example) == null){
+                    dr.setRoleCode(roleCode);
+                    dr.setDashboardCode(dashboardCode);
+                    dashboardRoleMapper.updateByPrimaryKeySelective(dr);
+                } else {
+                    dashboardRoleMapper.deleteByPrimaryKey(dr);
+                }
             }catch (NumberFormatException e){
                 //正常的数据，跳过
             }
