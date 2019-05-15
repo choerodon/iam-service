@@ -79,7 +79,8 @@ public class FixDataHelper {
                 String roleCode = roleMap.get(roleId);
                 String dashboardCode = dashboardMap.get(dashboardId);
                 if (roleCode == null || dashboardCode == null){
-                    logger.warn("not found role[{}] or dashboard[{}] fix skip.", roleId, dashboardCode);
+                    logger.info("not found role[{}] or dashboard[{}] delete it.", roleId, dashboardCode);
+                    dashboardRoleMapper.deleteByPrimaryKey(dr);
                     continue;
                 }
                 DashboardRoleDTO example = new DashboardRoleDTO();
