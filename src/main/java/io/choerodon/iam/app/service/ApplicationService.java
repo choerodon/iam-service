@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
@@ -33,11 +32,12 @@ public interface ApplicationService {
     /**
      * 分页模糊查询applications
      *
-     * @param pageRequest
+     * @param page
+     * @param size
      * @param applicationSearchDTO
      * @return
      */
-    PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO);
+    PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO, Boolean withDescendants);
 
     /**
      * 启用

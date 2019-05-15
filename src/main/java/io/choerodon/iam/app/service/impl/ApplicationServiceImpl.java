@@ -216,17 +216,19 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO) {
+    public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO, Boolean withDescendants) {
         PageInfo<ApplicationDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
-        result.getList().forEach(app -> {
-            //组合应用查询所有后代
-            if (ApplicationCategory.COMBINATION.value().equals(app.getApplicationCategory())) {
-                List<ApplicationExplorationDTO> applicationExplorations = applicationExplorationMapper.selectDescendants(generatePath(app.getId()));
-                //todo dfs算法优化
-                processTreeData(app, applicationExplorations);
-            }
-        });
-        return PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
+        if (withDescendants) {
+            result.getList().forEach(app -> {
+                //组合应用查询所有后代
+                if (ApplicationCategory.COMBINATION.code().equals(app.getApplicationCategory())) {
+                    List<ApplicationExplorationDTO> applicationExplorations = applicationExplorationMapper.selectDescendants(generatePath(app.getId()));
+                    //todo dfs算法优化
+                    processTreeData(app, applicationExplorations);
+                }
+            });
+        }
+        return result;
     }
 
     private void processTreeData(ApplicationDTO app, List<ApplicationExplorationDTO> applicationExplorations) {
