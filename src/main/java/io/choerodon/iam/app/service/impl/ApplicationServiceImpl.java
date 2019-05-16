@@ -1,7 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.*;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -27,8 +25,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DELETE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_ENABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_UPDATE;
 
 /**
  * @author superlee
@@ -189,6 +199,40 @@ public class ApplicationServiceImpl implements ApplicationService {
             processDescendants(applicationDTO, result);
         }
         return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Saga(code = APP_DELETE, description = "iam删除应用", inputSchemaClass = ApplicationDTO.class)
+    public void delete(Long organizationId, Long id) {
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        ApplicationDTO applicationDTO = applicationAssertHelper.applicationNotExisted(id);
+        applicationExplorationMapper.deleteDescendantByApplicationId(id);
+        deleteAndSendEvent(applicationDTO, APP_DELETE);
+    }
+
+    /**
+     * 删除应用并发送saga消息通知.
+     *
+     * @param application 应用DTO
+     * @param sagaCode    saga编码
+     */
+    private void deleteAndSendEvent(ApplicationDTO application, String sagaCode) {
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withRefType("application")
+                        .withSagaCode(sagaCode),
+                builder -> {
+                    if (applicationMapper.deleteByPrimaryKey(application) != 1) {
+                        throw new CommonException("error.application.delete");
+                    }
+                    builder
+                            .withPayloadAndSerialize(application)
+                            .withRefId(String.valueOf(application.getId()))
+                            .withSourceId(application.getOrganizationId());
+                });
     }
 
     private ApplicationDTO sendEvent(ApplicationDTO applicationDTO, String sagaCode) {
