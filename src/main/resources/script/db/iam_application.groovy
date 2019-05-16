@@ -66,4 +66,8 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
             column(name: 'IS_ABNORMAL', type: 'TINYINT UNSIGNED', defaultValue: "0", afterColumn: 'APPLICATION_TYPE', remarks: '是否异常。1异常，0正常')
         }
     }
+
+    changeSet(id: '2019-05-16-iam-application-drop-not-null', author: 'superlee') {
+        dropNotNullConstraint(columnDataType: 'VARCHAR(64)',columnName:'APPLICATION_TYPE', tableName:'IAM_APPLICATION')
+    }
 }
