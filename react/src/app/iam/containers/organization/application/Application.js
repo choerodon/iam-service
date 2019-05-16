@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
-import get from 'lodash/get';
-import { Button, Form, Modal, Table, Tooltip, Radio, Select, Input } from 'choerodon-ui';
+import { Button, Form, Table, Tooltip } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
+import { Content, Header, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 import EditSider from './EditSider';
-import AddApplication from './AddApplication';
 
 const intlPrefix = 'organization.application';
 
@@ -28,11 +26,15 @@ export default class Application extends Component {
     ApplicationStore.refresh();
   }
 
+  handleClickAddApplication = () => {
+    const { AppState: { currentMenuType: { name, id } }, history } = this.props;
+    history.push(`/iam/application/add?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
+  }
+
   handleopenTab = (record, operation) => {
-    const { ApplicationStore, AppState: { currentMenuType: { name, id } } } = this.props;
+    const { ApplicationStore } = this.props;
     ApplicationStore.setEditData(record);
     ApplicationStore.setOperation(operation);
-    // this.props.history.push(`/iam/application/manage/${operation === 'create' ? 0 : record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
     ApplicationStore.showSidebar();
   };
 
@@ -50,7 +52,8 @@ export default class Application extends Component {
   };
 
   handlePageChange = (pagination, filters, sorter, params) => {
-    this.props.ApplicationStore.loadData(pagination, filters, sorter, params);
+    const { ApplicationStore } = this.props;
+    ApplicationStore.loadData(pagination, filters, sorter, params);
   };
 
   handleSaveMsg = () => {
@@ -65,138 +68,121 @@ export default class Application extends Component {
   }
 
   handleManage = (record) => {
-    const { AppState: { currentMenuType: { name, id } } } = this.props;
-    this.props.history.push(`/iam/application/manage/${record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
+    const { AppState: { currentMenuType: { name, id } }, history } = this.props;
+    history.push(`/iam/application/manage/${record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
   }
 
   render() {
     const { ApplicationStore: { filters, pagination, params }, AppState, intl, ApplicationStore, ApplicationStore: { applicationData } } = this.props;
-    const menuType = AppState.currentMenuType;
-    const orgId = menuType.id;
-    const type = menuType.type;
-    const columns = [{
-      title: <FormattedMessage id={`${intlPrefix}.name`} />,
-      dataIndex: 'name',
-      // width: '10%',
-      filters: [],
-      filteredValue: filters.name || [],
-      // render: text => (
-      //   <MouseOverWrapper text={text} width={0.1}>
-      //     {text}
-      //   </MouseOverWrapper>
-      // ),
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.code`} />,
-      dataIndex: 'code',
-      key: 'code',
-      width: '10%',
-      filters: [],
-      filteredValue: filters.code || [],
-      // render: text => (
-      //   <MouseOverWrapper text={text} width={0.1}>
-      //     {text}
-      //   </MouseOverWrapper>
-      // ),
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.category`} />,
-      dataIndex: 'applicationCategory',
-      // width: '25%',
-      render: category => (<StatusTag mode="icon" name={intl.formatMessage({ id: `${intlPrefix}.category.${category.toLowerCase()}` })} iconType={category === 'application' ? 'application_-general' : 'grain'} />),
-      filters: [{
-        text: '组合应用',
-        value: 'combination-application',
-      }, {
-        text: '普通应用',
-        value: 'application',
-      }],
-      filteredValue: filters.applicationCategory || [],
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.application-type`} />,
-      dataIndex: 'applicationType',
-      filters: [{
-        text: '开发应用',
-        value: 'normal',
-      }, {
-        text: '测试应用',
-        value: 'test',
-      }],
-      filteredValue: filters.applicationType || [],
-      width: '10%',
-      render: text => (
-        <MouseOverWrapper text={text} width={0.2}>
-          {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
-        </MouseOverWrapper>
-      ),
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.project-name`} />,
-      dataIndex: 'projectName',
-      filters: [],
-      filteredValue: filters.projectName || [],
-      width: '20%',
-      render: (text, record) => (
-        <div>
-          { text && <div className="c7n-iam-application-name-avatar">
-            {
-              record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} /> :
-              <React.Fragment>{text.split('')[0]}</React.Fragment>
-            }
-          </div>
-          }
-
+    const columns = [
+      {
+        title: <FormattedMessage id={`${intlPrefix}.name`} />,
+        dataIndex: 'name',
+        filters: [],
+        filteredValue: filters.name || [],
+      },
+      {
+        title: <FormattedMessage id={`${intlPrefix}.code`} />,
+        dataIndex: 'code',
+        key: 'code',
+        width: '10%',
+        filters: [],
+        filteredValue: filters.code || [],
+      },
+      {
+        title: <FormattedMessage id={`${intlPrefix}.category`} />,
+        dataIndex: 'applicationCategory',
+        render: category => (<StatusTag mode="icon" name={intl.formatMessage({ id: `${intlPrefix}.category.${category.toLowerCase()}` })} iconType={category === 'application' ? 'application_-general' : 'grain'} />),
+        filters: [{
+          text: '组合应用',
+          value: 'combination-application',
+        }, {
+          text: '普通应用',
+          value: 'application',
+        }],
+        filteredValue: filters.applicationCategory || [],
+      },
+      {
+        title: <FormattedMessage id={`${intlPrefix}.application-type`} />,
+        dataIndex: 'applicationType',
+        filters: [{
+          text: '开发应用',
+          value: 'normal',
+        }, {
+          text: '测试应用',
+          value: 'test',
+        }],
+        filteredValue: filters.applicationType || [],
+        width: '10%',
+        render: text => (
           <MouseOverWrapper text={text} width={0.2}>
-            {text}
+            {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
           </MouseOverWrapper>
-        </div>
-      ),
-    }, {
-      title: <FormattedMessage id="status" />,
-      dataIndex: 'enabled',
-      width: '10%',
-      filters: [{
-        text: intl.formatMessage({ id: 'enable' }),
-        value: 'true',
-      }, {
-        text: intl.formatMessage({ id: 'disable' }),
-        value: 'false',
-      }],
-      filteredValue: filters.enabled || [],
-      key: 'enabled',
-      render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
-    }, {
-      title: '',
-      key: 'action',
-      width: '120px',
-      align: 'right',
-      render: (text, record) => {
-        if (false) {
-          return (
+        ),
+      },
+      {
+        title: <FormattedMessage id={`${intlPrefix}.project-name`} />,
+        dataIndex: 'projectName',
+        filters: [],
+        filteredValue: filters.projectName || [],
+        width: '20%',
+        render: (text, record) => (
+          <div>
+            {
+              text && (
+                <div className="c7n-iam-application-name-avatar">
+                  {
+                    record.imageUrl ? (
+                      <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
+                    ) : (
+                      <React.Fragment>{text.split('')[0]}</React.Fragment>
+                    )
+                  }
+                </div>
+              )
+            }
+
+            <MouseOverWrapper text={text} width={0.2}>
+              {text}
+            </MouseOverWrapper>
+          </div>
+        ),
+      },
+      {
+        title: <FormattedMessage id="status" />,
+        dataIndex: 'enabled',
+        width: '10%',
+        filters: [{
+          text: intl.formatMessage({ id: 'enable' }),
+          value: 'true',
+        }, {
+          text: intl.formatMessage({ id: 'disable' }),
+          value: 'false',
+        }],
+        filteredValue: filters.enabled || [],
+        key: 'enabled',
+        render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
+      },
+      {
+        title: '',
+        key: 'action',
+        width: '120px',
+        align: 'right',
+        render: (text, record) => (
+          <div>
             <Tooltip
-              title={<FormattedMessage id="delete" />}
+              title={<FormattedMessage id="editor" />}
               placement="bottom"
             >
               <Button
                 shape="circle"
                 size="small"
-                // onClick={e => this.handleopenTab(record, 'edit')}
-                icon="delete"
+                onClick={e => this.handleopenTab(record, 'edit')}
+                icon="mode_edit"
               />
             </Tooltip>
-          );
-        } else {
-          return (
-            <div>
-              <Tooltip
-                title={<FormattedMessage id="editor" />}
-                placement="bottom"
-              >
-                <Button
-                  shape="circle"
-                  size="small"
-                  onClick={e => this.handleopenTab(record, 'edit')}
-                  icon="mode_edit"
-                />
-              </Tooltip>
-              <Permission service={['iam-service.application.update']} type={type} organizationId={orgId}>
+            {
+              record.applicationCategory === 'combination-application' && (
                 <Tooltip
                   title={<FormattedMessage id="modify" />}
                   placement="bottom"
@@ -205,61 +191,38 @@ export default class Application extends Component {
                     shape="circle"
                     size="small"
                     onClick={e => this.handleManage(record)}
-                    icon={record.category === 'application' ? 'mode_edit' : 'predefine'}
+                    icon="predefine"
                   />
                 </Tooltip>
-              </Permission>
-              <Permission
-                service={['iam-service.application.disable', 'iam-service.application.enabled']}
-                type={type}
-                organizationId={orgId}
-              >
-                <Tooltip
-                  title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
-                  placement="bottom"
-                >
-                  <Button
-                    shape="circle"
-                    size="small"
-                    onClick={e => this.handleEnable(record)}
-                    icon={record.enabled ? 'remove_circle_outline' : 'finished'}
-                  />
-                </Tooltip>
-              </Permission>
-            </div>
-          );
-        }
+              )
+            }
+            <Tooltip
+              title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
+              placement="bottom"
+            >
+              <Button
+                shape="circle"
+                size="small"
+                onClick={e => this.handleEnable(record)}
+                icon={record.enabled ? 'remove_circle_outline' : 'finished'}
+              />
+            </Tooltip>
+          </div>
+        ),
       },
-    }];
+    ];
 
-    const unHandleData = ApplicationStore.getDataSource.slice();
-    if (unHandleData.length) {
-      unHandleData[0].children = [unHandleData[unHandleData.length - 1]];
-      unHandleData.pop();
-      unHandleData[0].children[0].children = [unHandleData[unHandleData.length - 1]];
-      unHandleData.pop();
-    }
+    const unHandleData = ApplicationStore.applicationData.slice();
 
     return (
-      <Page
-        service={[
-          'iam-service.application.pagingQuery',
-          'iam-service.application.create',
-          'iam-service.application.types',
-          'iam-service.application.update',
-          'iam-service.application.disable',
-          'iam-service.application.enabled',
-        ]}
-      >
+      <Page>
         <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
-          <Permission service={['iam-service.application.create']} type={type} organizationId={orgId}>
-            <Button
-              onClick={e => this.handleopenTab(null, 'create')}
-              icon="playlist_add"
-            >
-              <FormattedMessage id={`${intlPrefix}.create`} />
-            </Button>
-          </Permission>
+          <Button
+            onClick={this.handleClickAddApplication}
+            icon="playlist_add"
+          >
+            <FormattedMessage id={`${intlPrefix}.create`} />
+          </Button>
           <Button
             icon="refresh"
             onClick={this.refresh}
@@ -279,7 +242,7 @@ export default class Application extends Component {
             onChange={this.handlePageChange}
             loading={ApplicationStore.loading}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
-            expandedRowRender={this.renderExpandRowRender}
+            childrenColumnName="descendants"
           />
         </Content>
         {
@@ -290,7 +253,6 @@ export default class Application extends Component {
             />
           ) : null
         }
-        {/* <AddApplication /> */}
       </Page>
     );
   }

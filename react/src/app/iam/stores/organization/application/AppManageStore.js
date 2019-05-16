@@ -128,7 +128,7 @@ class ApplicationStore {
 
   @computed
   get getAddListDataSource() {
-    return this.addListData.map(v => ({ ...v, projectName: this.getProjectById(v.projectId).name, imageUrl: this.getProjectById(v.projectId).imageUrl }));
+    return this.applicationTreeData.slice();
   }
 
   @action
@@ -171,12 +171,11 @@ class ApplicationStore {
   }
 
   @action
-  loadTreeData(id) {
-    return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}/descendant`).then(action((data) => {
+  loadApplications() {
+    return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?size=0&with_descendants=false`).then(action((data) => {
       if (!data.failed) {
-        const treeData = new TreeData(data);
-        this.applicationTreeData = treeData.treeDatas.map(v => ({ ...v, projectName: this.getProjectById(v.projectId).name, imageUrl: this.getProjectById(v.projectId).imageUrl }));
-        this.initSelectedKeys();
+        this.applicationTreeData = data.list;
+        this.selectedRowKeys = [];
       }
     }));
   }
@@ -258,6 +257,11 @@ class ApplicationStore {
     return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?${queryString.stringify(queryObj)}`)
       .then(action(({ failed, list, total }) => {
         if (!failed) {
+          list.forEach((l) => {
+            if (l.descendants && l.descendants.length) {
+              l.children = l.descendants;
+            }
+          });
           this.applicationData = list;
           this.pagination = {
             ...pagination,
@@ -284,7 +288,14 @@ class ApplicationStore {
 
   checkApplicationCode = codes => axios.post(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/check`, JSON.stringify(codes));
 
-  getDetailById = id => axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}`);
+  @action
+  getDetailById(id) {
+    axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}`)
+      .then((res) => {
+        const data = res.descendants || [];
+        this.applicationData = data;
+      });
+  }
 
   /**
    * 添加到组合应用中

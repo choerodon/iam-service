@@ -1,16 +1,29 @@
 import React, { Component } from 'react';
-import get from 'lodash/get';
-import { Button, Form, Modal, Table, Tooltip, Radio, Select, Input } from 'choerodon-ui';
+import remove from 'lodash/remove';
+import { Button, Form, Table, Tooltip, Radio, Select, Input } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
+import { Content, Header, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
-import EditSider from './EditSider';
+import AddSider from './AddSider';
 
+const RadioGroup = Radio.Group;
+const { Option } = Select;
+const FormItem = Form.Item;
 const intlPrefix = 'organization.application';
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 8 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 16 },
+  },
+};
 
 @Form.create({})
 @withRouter
@@ -18,266 +31,351 @@ const intlPrefix = 'organization.application';
 @inject('AppState')
 @observer
 export default class Application extends Component {
-  constructor() {
-    super();
-    // this.id = get(this, 'props.match.params.id', undefined);
-    this.id = 123;
-  }
-
   componentDidMount() {
-    if (this.id) {
-      // do something
-      this.refresh();
-    } else {
-      this.refresh();
-    }
+    this.refresh();
   }
 
   refresh = () => {
     const { ApplicationStore } = this.props;
-    ApplicationStore.refresh();
+    ApplicationStore.loadApplications();
+  };
+
+  checkCode = (rule, value, callback) => {
+    const { ApplicationStore, intl } = this.props;
+    const params = { code: value };
+    ApplicationStore.checkApplicationCode(params)
+      .then((mes) => {
+        if (mes.failed) {
+          callback(intl.formatMessage({ id: `${intlPrefix}.code.exist.msg` }));
+        } else {
+          callback();
+        }
+      }).catch((err) => {
+        callback('校验超时');
+        Choerodon.handleResponseError(err);
+      });
+  };
+
+  checkName = (rule, value, callback) => {
+    const { ApplicationStore, intl, ApplicationStore: { editData } } = this.props;
+    const params = { name: value };
+    ApplicationStore.checkApplicationCode(params)
+      .then((mes) => {
+        if (mes.failed) {
+          callback(intl.formatMessage({ id: `${intlPrefix}.name.exist.msg` }));
+        } else {
+          callback();
+        }
+      }).catch((err) => {
+        callback('校验超时');
+        Choerodon.handleResponseError(err);
+      });
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const { ApplicationStore, AppState: { currentMenuType } } = this.props;
+    const orgId = currentMenuType.id;
+    const orgName = currentMenuType.name;
+    
+    const { validateFields } = this.props.form;
+    validateFields((err, value) => {
+      if (!err) {
+        const { ApplicationStore: { selectedRowKeys }, history, intl } = this.props;
+        const { applicationCategory, code, name, applicationType, projectId } = value;
+        const isCombine = applicationCategory === 'combination-application';
+        const data = {
+          applicationCategory,
+          code,
+          name: name.trim(),
+          applicationType: !isCombine ? applicationType : undefined,
+          projectId: !isCombine ? projectId : undefined,
+          descendantIds: isCombine ? selectedRowKeys : undefined,
+        };
+        ApplicationStore.setSubmitting(true);
+        ApplicationStore.createApplication(data)
+          .then((res) => {
+            ApplicationStore.setSubmitting(false);
+            if (!res.failed) {
+              history.push(`/iam/application?type=organization&id=${orgId}&name=${encodeURIComponent(orgName)}`);
+              Choerodon.prompt(intl.formatMessage({ id: 'create.success' }));
+              ApplicationStore.loadData();
+            } else {
+              Choerodon.prompt(res.message);
+            }
+          }).catch((error) => {
+            ApplicationStore.setSubmitting(false);
+            Choerodon.handleResponseError(error);
+          });
+      }
+    });
+  };
+
+  handleAddApplication = () => {
+    const { ApplicationStore } = this.props;
+    ApplicationStore.showSidebar();
+  };
+
+  handleSiderOk = (selections) => {
+    const { ApplicationStore } = this.props;
+    ApplicationStore.setSelectedRowKeys(selections);
+    ApplicationStore.closeSidebar();
   }
 
-  handleopenTab = (record, operation) => {
-    const { ApplicationStore, AppState: { currentMenuType: { name, id } } } = this.props;
-    ApplicationStore.setEditData(record);
-    ApplicationStore.setOperation(operation);
-    this.props.history.push(`/iam/application/manage/${operation === 'create' ? 0 : record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
-    // ApplicationStore.showSidebar();
-  };
-
-  handleEnable = (record) => {
+  handleSiderCancel = () => {
     const { ApplicationStore } = this.props;
-    if (record.enabled) {
-      ApplicationStore.disableApplication(record.id).then(() => {
-        ApplicationStore.loadData();
-      });
-    } else {
-      ApplicationStore.enableApplication(record.id).then(() => {
-        ApplicationStore.loadData();
-      });
-    }
-  };
+    ApplicationStore.closeSidebar();
+  }
 
-  handlePageChange = (pagination, filters, sorter, params) => {
-    this.props.ApplicationStore.loadData(pagination, filters, sorter, params);
-  };
+  handleDelete = (record) => {
+    const { ApplicationStore } = this.props;
+    const { selectedRowKeys } = ApplicationStore;
+    remove(selectedRowKeys, v => v === record.id);
+    ApplicationStore.setSelectedRowKeys(selectedRowKeys);
+  }
 
-  render() {
-    const { ApplicationStore: { filters, pagination, params }, AppState, intl, ApplicationStore, ApplicationStore: { applicationData } } = this.props;
-    const menuType = AppState.currentMenuType;
-    const orgId = menuType.id;
-    const type = menuType.type;
+  renderForm() {
+    const { intl, ApplicationStore, form } = this.props;
+    const { getFieldDecorator } = form;
+    const { projectData, editData, submitting } = ApplicationStore;
+    const inputWidth = 512;
+    return (
+      <React.Fragment>
+        <Form layout="vertical" className="rightForm" style={{ width: 512 }}>
+          <FormItem
+            {...formItemLayout}
+          >
+            {getFieldDecorator('applicationCategory', {
+              initialValue: 'application',
+            })(
+              <RadioGroup label={<FormattedMessage id={`${intlPrefix}.category`} />} className="c7n-iam-application-radiogroup">
+                {
+                  ['application', 'combination-application'].map(value => <Radio value={value} key={value}>{intl.formatMessage({ id: `${intlPrefix}.category.${value.toLowerCase()}` })}</Radio>)
+                }
+              </RadioGroup>,
+            )}
+          </FormItem>
+          <FormItem
+            {...formItemLayout}
+          >
+            {getFieldDecorator('code', {
+              rules: [{
+                required: true,
+                whitespace: true,
+                message: intl.formatMessage({ id: `${intlPrefix}.code.require.msg` }),
+              }, {
+                pattern: /^[a-z]([-a-z0-9]*[a-z0-9])?$/,
+                message: intl.formatMessage({ id: `${intlPrefix}.code.format.msg` }),
+              }, {
+                validator: this.checkCode,
+              }],
+              validateTrigger: 'onBlur',
+              validateFirst: true,
+            })(
+              <Input
+                autoComplete="off"
+                label={<FormattedMessage id={`${intlPrefix}.code`} />}
+                style={{ width: inputWidth }}
+                ref={(e) => { this.createFocusInput = e; }}
+                maxLength={14}
+                showLengthInfo={false}
+              />,
+            )}
+          </FormItem>
+          <FormItem
+            {...formItemLayout}
+          >
+            {getFieldDecorator('name', {
+              rules: [{
+                required: true,
+                message: intl.formatMessage({ id: `${intlPrefix}.name.require.msg` }),
+              }, {
+                pattern: /^[^\s]*$/,
+                message: intl.formatMessage({ id: `${intlPrefix}.whitespace.msg` }),
+              }, {
+                validator: this.checkName,
+              }],
+              validateTrigger: 'onBlur',
+              validateFirst: true,
+            })(
+              <Input
+                autoComplete="off"
+                label={<FormattedMessage id={`${intlPrefix}.name`} />}
+                style={{ width: inputWidth }}
+                ref={(e) => { this.editFocusInput = e; }}
+                maxLength={14}
+                showLengthInfo={false}
+              />,
+            )}
+          </FormItem>
+          {
+            this.props.form.getFieldValue('applicationCategory') !== 'combination-application' && (
+              <React.Fragment>
+                <FormItem
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('applicationType', {
+                    initialValue: 'normal',
+                  })(
+                    <RadioGroup label={<FormattedMessage id={`${intlPrefix}.type`} />} className="c7n-iam-application-radiogroup">
+                      {
+                        ['normal', 'test'].map(value => <Radio value={value} key={value}>{intl.formatMessage({ id: `${intlPrefix}.type.${value.toLowerCase()}` })}</Radio>)
+                      }
+                    </RadioGroup>,
+                  )}
+                </FormItem>
+                <FormItem
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('projectId', {
+                  })(
+                    <Select
+                      label={<FormattedMessage id={`${intlPrefix}.assignment`} />}
+                      className="c7n-iam-application-radiogroup"
+                      getPopupContainer={that => that}
+                      filterOption={(input, option) => {
+                        const childNode = option.props.children;
+                        if (childNode && React.isValidElement(childNode)) {
+                          return childNode.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+                        }
+                        return false;
+                      }}
+                      disabled={(editData && !!editData.projectId)}
+                      allowClear
+                      filter
+                    >
+                      {
+                        projectData.map(({ id, name, code }) => <Option value={id} key={id} title={name}>
+                          <Tooltip title={code} placement="right" align={{ offset: [20, 0] }}>
+                            <span style={{ display: 'inline-block', width: '100%' }}>{name}</span>
+                          </Tooltip>
+                        </Option>)
+                      }
+                    </Select>,
+                  )}
+                </FormItem>
+              </React.Fragment>
+            )
+          }
+        </Form>
+      </React.Fragment>
+    );
+  }
+
+  renderTable = () => {
     const columns = [{
       title: <FormattedMessage id={`${intlPrefix}.name`} />,
       dataIndex: 'name',
-      // width: '10%',
-      filters: [],
-      filteredValue: filters.name || [],
-      // render: text => (
-      //   <MouseOverWrapper text={text} width={0.1}>
-      //     {text}
-      //   </MouseOverWrapper>
-      // ),
+      width: '30%',
+      render: (text, record) => (<StatusTag mode="icon" name={text} iconType={record.applicationCategory === 'application' ? 'application_-general' : 'grain'} />),
     }, {
       title: <FormattedMessage id={`${intlPrefix}.code`} />,
       dataIndex: 'code',
-      key: 'code',
-      width: '10%',
-      filters: [],
-      filteredValue: filters.code || [],
-      // render: text => (
-      //   <MouseOverWrapper text={text} width={0.1}>
-      //     {text}
-      //   </MouseOverWrapper>
-      // ),
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.category`} />,
-      dataIndex: 'applicationCategory',
-      // width: '25%',
-      render: category => (<StatusTag mode="icon" name={intl.formatMessage({ id: `${intlPrefix}.category.${category.toLowerCase()}` })} iconType={category === 'application' ? 'application_-general' : 'grain'} />),
-      filters: [{
-        text: '组合应用',
-        value: 'combination-application',
-      }, {
-        text: '普通应用',
-        value: 'application',
-      }],
-      filteredValue: filters.applicationCategory || [],
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.application-type`} />,
-      dataIndex: 'applicationType',
-      filters: [{
-        text: '开发应用',
-        value: 'normal',
-      }, {
-        text: '测试应用',
-        value: 'test',
-      }],
-      filteredValue: filters.applicationType || [],
-      width: '20%',
+      key: 'applicationCode',
+      width: '15%',
       render: text => (
-        <MouseOverWrapper text={text} width={0.2}>
-          {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
+        <MouseOverWrapper text={text} width={0.1}>
+          {text}
         </MouseOverWrapper>
       ),
     }, {
-      title: <FormattedMessage id={`${intlPrefix}.project-name`} />,
-      dataIndex: 'projectName',
-      filters: [],
-      filteredValue: filters.projectName || [],
-      width: '20%',
+      dataIndex: 'id',
+      width: '15%',
+      key: 'id',
       render: (text, record) => (
         <div>
-          { text && <div className="c7n-iam-application-name-avatar">
-            {
-              record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} /> :
-              <React.Fragment>{text.split('')[0]}</React.Fragment>
-            }
-          </div>
-          }
-
-          <MouseOverWrapper text={text} width={0.2}>
-            {text}
-          </MouseOverWrapper>
+          <Tooltip
+            title={<FormattedMessage id="delete" />}
+            placement="bottom"
+          >
+            <Button
+              shape="circle"
+              size="small"
+              onClick={e => this.handleDelete(record)}
+              icon="delete"
+            />
+          </Tooltip>
         </div>
       ),
-    }, {
-      title: <FormattedMessage id="status" />,
-      dataIndex: 'enabled',
-      width: '15%',
-      filters: [{
-        text: intl.formatMessage({ id: 'enable' }),
-        value: 'true',
-      }, {
-        text: intl.formatMessage({ id: 'disable' }),
-        value: 'false',
-      }],
-      filteredValue: filters.enabled || [],
-      key: 'enabled',
-      render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
-    }, {
-      title: '',
-      key: 'action',
-      width: '120px',
-      align: 'right',
-      render: (text, record) => {
-        if (this.id) {
-          return (
-            <Tooltip
-              title={<FormattedMessage id="delete" />}
-              placement="bottom"
-            >
-              <Button
-                shape="circle"
-                size="small"
-                // onClick={e => this.handleopenTab(record, 'edit')}
-                icon="delete"
-              />
-            </Tooltip>
-          );
-        } else {
-          return (
-            <div>
-              <Tooltip
-                title={<FormattedMessage id="editor" />}
-                placement="bottom"
-              >
-                <Button
-                  shape="circle"
-                  size="small"
-                  onClick={e => this.handleopenTab(record, 'edit')}
-                  icon="mode_edit"
-                />
-              </Tooltip>
-              <Permission service={['iam-service.application.update']} type={type} organizationId={orgId}>
-                <Tooltip
-                  title={<FormattedMessage id="modify" />}
-                  placement="bottom"
-                >
-                  <Button
-                    shape="circle"
-                    size="small"
-                    onClick={e => this.handleopenTab(record, 'edit')}
-                    icon={record.category === 'application' ? 'mode_edit' : 'predefine'}
-                  />
-                </Tooltip>
-              </Permission>
-              <Permission
-                service={['iam-service.application.disable', 'iam-service.application.enabled']}
-                type={type}
-                organizationId={orgId}
-              >
-                <Tooltip
-                  title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
-                  placement="bottom"
-                >
-                  <Button
-                    shape="circle"
-                    size="small"
-                    onClick={e => this.handleEnable(record)}
-                    icon={record.enabled ? 'remove_circle_outline' : 'finished'}
-                  />
-                </Tooltip>
-              </Permission>
-            </div>
-          );
-        }
-      },
     }];
-
-    const unHandleData = ApplicationStore.getDataSource.slice();
-    if (unHandleData.length) {
-      unHandleData[0].children = [unHandleData[unHandleData.length - 1]];
-      unHandleData.pop();
-      unHandleData[0].children[0].children = [unHandleData[unHandleData.length - 1]];
-      unHandleData.pop();
-    }
-
+    const { ApplicationStore, intl } = this.props;
+    const { listParams, listLoading, applicationTreeData, getAddListDataSource, selectedRowKeys } = ApplicationStore;
+    const data = getAddListDataSource;
+    const filteredData = data.filter(v => selectedRowKeys.includes(v.id));
     return (
-      <Page
-        service={[
-          'iam-service.application.pagingQuery',
-          'iam-service.application.create',
-          'iam-service.application.types',
-          'iam-service.application.update',
-          'iam-service.application.disable',
-          'iam-service.application.enabled',
-        ]}
-      >
-        <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
-          <Permission service={['iam-service.application.create']} type={type} organizationId={orgId}>
-            <Button
-              onClick={e => this.handleopenTab(null, 'create')}
-              icon="playlist_add"
-            >
-              <FormattedMessage id={`${intlPrefix}.create`} />
-            </Button>
-          </Permission>
-          <Button
-            icon="refresh"
-            onClick={this.refresh}
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header>
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="path"
+        className="c7n-iam-application-tree-table"
+        filters={false}
+        filterBar={false}
+        loading={listLoading}
+        filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
+      />
+    );
+  };
+
+  renderTableBlock = () => {
+    if (this.props.form.getFieldValue('applicationCategory') === 'combination-application') {
+      return (
+        <div style={{ width: 512, paddingBottom: 42, marginBottom: 12, borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}>
+          <h5 style={{ marginTop: 24, marginBottom: 10 }}>子应用</h5>
+          {this.renderTable()}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  renderSider = () => {
+    const { ApplicationStore } = this.props;
+    const { sidebarVisible, submitting, getAddListDataSource, selectedRowKeys } = ApplicationStore;
+    if (!sidebarVisible) return null;
+    return (
+      <AddSider
+        data={getAddListDataSource}
+        selection={selectedRowKeys}
+        onOk={this.handleSiderOk}
+        onCancel={this.handleSiderCancel}
+      />
+    );
+  };
+
+  render() {
+    const { AppState, ApplicationStore: { submitting } } = this.props;
+    const menuType = AppState.currentMenuType;
+    const orgId = menuType.id;
+    return (
+      <Page>
+        <Header
+          title="创建应用"
+          backPath={`/iam/application?type=organization&id=${orgId}&name=${encodeURIComponent(menuType.name)}&organizationId=${orgId}`}
+        />
         <Content
-          code={intlPrefix}
+          title="创建应用"
+          description="请在此输入应用的名称、编码，选择项目类型。同时您可以为应用分配开发项目，平台会为您在对应项目下创建git代码库。注意：一旦您分配了开发项目就不能再次修改开发项目，请谨慎操作。"
+          link="#"
+          className="c7n-iam-application"
         >
-          <Table
-            pagination={pagination}
-            columns={columns}
-            dataSource={unHandleData}
-            rowKey={record => record.id}
-            filters={params}
-            onChange={this.handlePageChange}
-            loading={ApplicationStore.loading}
-            filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
-            expandedRowRender={this.renderExpandRowRender}
-          />
+          {this.renderForm()}
+          {
+            this.props.form.getFieldValue('applicationCategory') === 'combination-application' && (
+              <Button
+                onClick={this.handleAddApplication}
+                icon="playlist_add"
+                funcType="raised"
+                style={{ color: '#3f51b5' }}
+              >
+                添加子应用
+              </Button>
+            )
+          }
+          {this.renderTableBlock()}
+          <Button style={{ marginRight: 10 }} loading={submitting} onClick={this.handleSubmit} type="primary" funcType="raised"><FormattedMessage id="create" /></Button>
+          <Button onClick={() => this.props.history.push(`/iam/application?type=organization&id=${orgId}&name=${encodeURIComponent(menuType.name)}&organizationId=${orgId}`)} funcType="raised">取消</Button>
+          {this.renderSider()}
         </Content>
-        {/* <EditSider /> */}
-        <AddApplication />
       </Page>
     );
   }

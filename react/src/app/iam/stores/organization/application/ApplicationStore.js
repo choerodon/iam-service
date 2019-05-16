@@ -128,7 +128,7 @@ class ApplicationStore {
 
   @computed
   get getAddListDataSource() {
-    return this.addListData.map(v => ({ ...v, projectName: this.getProjectById(v.projectId).name, imageUrl: this.getProjectById(v.projectId).imageUrl }));
+    return this.applicationTreeData.slice();
   }
 
   @action
@@ -171,12 +171,11 @@ class ApplicationStore {
   }
 
   @action
-  loadTreeData(id) {
-    return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}/descendant`).then(action((data) => {
+  loadApplications() {
+    return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?size=0&with_descendants=false`).then(action((data) => {
       if (!data.failed) {
-        const treeData = new TreeData(data);
-        this.applicationTreeData = treeData.treeDatas.map(v => ({ ...v, projectName: this.getProjectById(v.projectId).name, imageUrl: this.getProjectById(v.projectId).imageUrl }));
-        this.initSelectedKeys();
+        this.applicationTreeData = data.list;
+        this.selectedRowKeys = [];
       }
     }));
   }

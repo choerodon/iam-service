@@ -5,7 +5,6 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { axios, Content, Header, Page, Permission, Action } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import { handleFiltersParams } from '../../../common/util';
-import TaskDetailStore from '../../../stores/global/task-detail';
 
 const intlPrefix = 'organization.ldap.record';
 const { Sidebar } = Modal;
