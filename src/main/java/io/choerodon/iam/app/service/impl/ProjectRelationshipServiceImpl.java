@@ -270,6 +270,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
      * 校验批量更新DTO
      * 检验不能为空
      * 校验不能批量更新不同项目群下的项目关系
+     * 校验项目本身已停用 则无法被项目群添加或更新
      * 校验一个项目只能被一个普通项目群添加
      * 校验一个项目只能被一个普通项目群更新
      *
@@ -290,6 +291,15 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 } catch (ParseException e) {
                     logger.info("Relationship start time format failed");
                 }
+            }
+
+            // 项目已停用 无法被项目群添加或更新
+            ProjectDTO project = projectRepository.selectByPrimaryKey(r.getProjectId());
+            if (project == null) {
+                throw new CommonException("error.project.not.exist", r.getProjectId());
+            }
+            if (!project.getEnabled()) {
+                throw new CommonException("error.insertOrUpdate.project.relationships.when.project.disabled", project.getName());
             }
             if (r.getId() == null) {
                 // 一个项目只能被一个普通项目群添加
