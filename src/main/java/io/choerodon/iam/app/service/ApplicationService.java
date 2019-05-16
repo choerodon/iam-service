@@ -115,9 +115,10 @@ public interface ApplicationService {
      * 根据id查询应用详情
      *
      * @param id
+     * @param withDescendants 是否携带后代
      * @return
      */
-    ApplicationDTO query(Long id);
+    ApplicationDTO query(Long id, Boolean withDescendants);
 
     /**
      * 从组合应用中移除指定应用

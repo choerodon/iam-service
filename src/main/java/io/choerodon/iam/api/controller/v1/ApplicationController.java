@@ -125,8 +125,8 @@ public class ApplicationController {
     @ApiOperation(value = "将应用/组合应用从组合应用中移除")
     @DeleteMapping("/{id}/delete_combination")
     public ResponseEntity deleteCombination(@PathVariable("organization_id") Long organizationId,
-                                           @PathVariable("id") Long id,
-                                           @RequestBody Long[] ids) {
+                                            @PathVariable("id") Long id,
+                                            @RequestBody Long[] ids) {
         applicationService.deleteCombination(organizationId, id, ids);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -164,8 +164,9 @@ public class ApplicationController {
     @ApiOperation(value = "根据id查询应用详情")
     @GetMapping("/{id}")
     public ResponseEntity<ApplicationDTO> query(@PathVariable("organization_id") Long organizationId,
-                                                @PathVariable("id") Long id) {
-        return new ResponseEntity<>(applicationService.query(id), HttpStatus.OK);
+                                                @PathVariable("id") Long id,
+                                                @RequestParam(defaultValue = "true", name = "with_descendants") Boolean withDescendants) {
+        return new ResponseEntity<>(applicationService.query(id, withDescendants), HttpStatus.OK);
     }
 
 

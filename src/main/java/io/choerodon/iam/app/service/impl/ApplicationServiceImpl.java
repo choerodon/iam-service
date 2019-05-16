@@ -128,36 +128,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         return result;
     }
 
-    private void processDescendants(ApplicationDTO applicationDTO, ApplicationDTO result) {
-        List<Long> descendantIds = applicationDTO.getDescendantIds();
-        if (descendantIds != null) {
-            Long[] array = new Long[descendantIds.size()];
-            addToCombination(result.getOrganizationId(), result.getId(), descendantIds.toArray(array));
-        }
-    }
-
-    private void insertExploration(Long appId) {
-        ApplicationExplorationDTO example = new ApplicationExplorationDTO();
-        example.setApplicationId(appId);
-        String path = generatePath(appId);
-        example.setPath(path);
-        example.setApplicationEnabled(true);
-        example.setRootId(appId);
-        example.setHashcode(String.valueOf(path.hashCode()));
-        applicationExplorationMapper.insertSelective(example);
-    }
-
-    private String generatePath(Long appId) {
-        StringBuilder builder = new StringBuilder();
-        return builder.append(SEPARATOR).append(appId).append(SEPARATOR).toString();
-    }
-
-    private void doInsert(ApplicationDTO applicationDTO) {
-        if (applicationMapper.insertSelective(applicationDTO) != 1) {
-            throw new CommonException("error.application.insert");
-        }
-    }
-
     @Override
     @Saga(code = APP_UPDATE, description = "iam更新应用", inputSchemaClass = ApplicationDTO.class)
     @Transactional(rollbackFor = Exception.class)
@@ -205,54 +175,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         deleteAndSendEvent(applicationDTO, APP_DELETE);
     }
 
-    /**
-     * 删除应用并发送saga消息通知.
-     *
-     * @param application 应用DTO
-     * @param sagaCode    saga编码
-     */
-    private void deleteAndSendEvent(ApplicationDTO application, String sagaCode) {
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.ORGANIZATION)
-                        .withRefType("application")
-                        .withSagaCode(sagaCode),
-                builder -> {
-                    if (applicationMapper.deleteByPrimaryKey(application) != 1) {
-                        throw new CommonException("error.application.delete");
-                    }
-                    builder
-                            .withPayloadAndSerialize(application)
-                            .withRefId(String.valueOf(application.getId()))
-                            .withSourceId(application.getOrganizationId());
-                });
-    }
-
-    private ApplicationDTO sendEvent(ApplicationDTO applicationDTO, String sagaCode) {
-        return producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.ORGANIZATION)
-                        .withRefType("application")
-                        .withSagaCode(sagaCode),
-                builder -> {
-                    ApplicationDTO application = doUpdate(applicationDTO);
-                    builder
-                            .withPayloadAndSerialize(application)
-                            .withRefId(String.valueOf(application.getId()))
-                            .withSourceId(application.getOrganizationId());
-                    return application;
-                });
-    }
-
-    private ApplicationDTO doUpdate(ApplicationDTO applicationDTO) {
-        if (applicationMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
-            throw new CommonException("error.application.update");
-        }
-        return applicationMapper.selectByPrimaryKey(applicationDTO.getId());
-    }
-
     @Override
     public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO, Boolean withDescendants) {
         PageInfo<ApplicationDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
@@ -267,29 +189,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             });
         }
         return result;
-    }
-
-    private void processTreeData(ApplicationDTO app, List<ApplicationExplorationDTO> applicationExplorations) {
-        Long appId = app.getId();
-        List<ApplicationDTO> applications = new ArrayList<>();
-        app.setDescendants(applications);
-        applicationExplorations.forEach(ae -> {
-            if (appId.equals(ae.getParentId())) {
-                ApplicationDTO dto = new ApplicationDTO();
-                dto.setId(ae.getApplicationId());
-                dto.setName(ae.getApplicationName());
-                dto.setCode(ae.getApplicationCode());
-                dto.setApplicationCategory(ae.getApplicationCategory());
-                dto.setApplicationType(ae.getApplicationType());
-                dto.setEnabled(ae.getApplicationEnabled());
-                dto.setProjectId(ae.getProjectId());
-                dto.setProjectCode(ae.getProjectCode());
-                dto.setProjectName(ae.getProjectName());
-                dto.setImageUrl(ae.getProjectImageUrl());
-                applications.add(dto);
-                processTreeData(dto, applicationExplorations);
-            }
-        });
     }
 
     @Override
@@ -380,28 +279,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         deleteDescendants(deleteList, rootIdMap);
     }
 
-    private void deleteDescendants(Collection<Long> deleteList, Map<Long, Set<String>> rootIdMap) {
-        if (!deleteList.isEmpty()) {
-            Map<Long, List<ApplicationExplorationDTO>> descendantMap = getDescendantMap(new HashSet<>(deleteList));
-            for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
-                Set<String> paths = entry.getValue();
-                paths.forEach(path -> deleteTreeNode(descendantMap, path));
-            }
-        }
-    }
-
-    private Set<Long> preValidate(Long organizationId, Long id, Long[] ids, String message) {
-        organizationAssertHelper.organizationNotExisted(organizationId);
-        if (!ApplicationCategory.isCombination(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
-            throw new CommonException(message);
-        }
-        Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
-        if (!idSet.isEmpty()) {
-            isApplicationsIllegal(organizationId, idSet);
-        }
-        return idSet;
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteCombination(Long organizationId, Long id, Long[] ids) {
@@ -409,65 +286,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<Long, Set<String>> rootIdMap = getRootIdMap(id);
         deleteDescendants(idSet, rootIdMap);
     }
-
-    private void addTreeNode(Long id, Map<Long, List<ApplicationExplorationDTO>> descendantMap, Long rootId, String parentPath) {
-        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
-            Long key = entry.getKey();
-            List<ApplicationExplorationDTO> applicationExplorations = entry.getValue();
-            applicationExplorations.forEach(ae -> {
-                StringBuilder builder =
-                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
-                String path = builder.toString();
-                ApplicationExplorationDTO example = new ApplicationExplorationDTO();
-                example.setApplicationId(ae.getApplicationId());
-                example.setPath(path);
-                example.setHashcode(String.valueOf(path.hashCode()));
-                example.setRootId(rootId);
-                if (ae.getApplicationId().equals(key)) {
-                    example.setParentId(id);
-                } else {
-                    example.setParentId(ae.getParentId());
-                }
-                example.setId(null);
-                example.setEnabled(true);
-                applicationExplorationMapper.insertSelective(example);
-            });
-        }
-    }
-
-    private void deleteTreeNode(Map<Long, List<ApplicationExplorationDTO>> descendantMap, String parentPath) {
-        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
-            List<ApplicationExplorationDTO> applicationExplorations = entry.getValue();
-            applicationExplorations.forEach(ae -> {
-                StringBuilder builder =
-                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
-                String path = builder.toString();
-                ApplicationExplorationDTO example = new ApplicationExplorationDTO();
-                example.setPath(path);
-                applicationExplorationMapper.delete(example);
-            });
-        }
-    }
-
-    private void canAddToCombination(Long id, Set<Long> idSet, Map<Long, List<ApplicationExplorationDTO>> descendantMap) {
-        if (idSet.contains(id)) {
-            throw new CommonException("error.application.add2combination.circle", id, id);
-        }
-        Set<ApplicationExplorationDTO> set = new HashSet<>();
-        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
-            set.addAll(entry.getValue());
-        }
-        List<Long> illegalIds =
-                set
-                        .stream()
-                        .filter(ae -> ae.getApplicationId().equals(id))
-                        .map(ApplicationExplorationDTO::getRootId)
-                        .collect(Collectors.toList());
-        if (!illegalIds.isEmpty()) {
-            throw new CommonException("error.application.add2combination.circle", Arrays.toString(illegalIds.toArray()), id);
-        }
-    }
-
 
     @Override
     public List<ApplicationExplorationDTO> queryDescendant(Long id) {
@@ -504,8 +322,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO query(Long id) {
-        return applicationMapper.selectByPrimaryKey(id);
+    public ApplicationDTO query(Long id, Boolean withDescendants) {
+        ApplicationDTO app = applicationAssertHelper.applicationNotExisted(id);
+        if (withDescendants &&
+                ApplicationCategory.isCombination(app.getApplicationCategory())) {
+            List<ApplicationExplorationDTO> applicationExplorations = applicationExplorationMapper.selectDescendants(generatePath(app.getId()));
+            //todo dfs算法优化
+            processTreeData(app, applicationExplorations);
+        }
+        return app;
     }
 
 
@@ -613,6 +438,187 @@ public class ApplicationServiceImpl implements ApplicationService {
         String category = applicationDTO.getApplicationCategory();
         if (!ApplicationCategory.matchCode(category)) {
             throw new CommonException("error.application.applicationCategory.illegal");
+        }
+    }
+
+    private void addTreeNode(Long id, Map<Long, List<ApplicationExplorationDTO>> descendantMap, Long rootId, String parentPath) {
+        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
+            Long key = entry.getKey();
+            List<ApplicationExplorationDTO> applicationExplorations = entry.getValue();
+            applicationExplorations.forEach(ae -> {
+                StringBuilder builder =
+                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
+                String path = builder.toString();
+                ApplicationExplorationDTO example = new ApplicationExplorationDTO();
+                example.setApplicationId(ae.getApplicationId());
+                example.setPath(path);
+                example.setHashcode(String.valueOf(path.hashCode()));
+                example.setRootId(rootId);
+                if (ae.getApplicationId().equals(key)) {
+                    example.setParentId(id);
+                } else {
+                    example.setParentId(ae.getParentId());
+                }
+                example.setId(null);
+                example.setEnabled(true);
+                applicationExplorationMapper.insertSelective(example);
+            });
+        }
+    }
+
+    private void deleteTreeNode(Map<Long, List<ApplicationExplorationDTO>> descendantMap, String parentPath) {
+        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
+            List<ApplicationExplorationDTO> applicationExplorations = entry.getValue();
+            applicationExplorations.forEach(ae -> {
+                StringBuilder builder =
+                        new StringBuilder().append(parentPath).append(ae.getPath().substring(1));
+                String path = builder.toString();
+                ApplicationExplorationDTO example = new ApplicationExplorationDTO();
+                example.setPath(path);
+                applicationExplorationMapper.delete(example);
+            });
+        }
+    }
+
+    private void canAddToCombination(Long id, Set<Long> idSet, Map<Long, List<ApplicationExplorationDTO>> descendantMap) {
+        if (idSet.contains(id)) {
+            throw new CommonException("error.application.add2combination.circle", id, id);
+        }
+        Set<ApplicationExplorationDTO> set = new HashSet<>();
+        for (Map.Entry<Long, List<ApplicationExplorationDTO>> entry : descendantMap.entrySet()) {
+            set.addAll(entry.getValue());
+        }
+        List<Long> illegalIds =
+                set
+                        .stream()
+                        .filter(ae -> ae.getApplicationId().equals(id))
+                        .map(ApplicationExplorationDTO::getRootId)
+                        .collect(Collectors.toList());
+        if (!illegalIds.isEmpty()) {
+            throw new CommonException("error.application.add2combination.circle", Arrays.toString(illegalIds.toArray()), id);
+        }
+    }
+
+    private void deleteDescendants(Collection<Long> deleteList, Map<Long, Set<String>> rootIdMap) {
+        if (!deleteList.isEmpty()) {
+            Map<Long, List<ApplicationExplorationDTO>> descendantMap = getDescendantMap(new HashSet<>(deleteList));
+            for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
+                Set<String> paths = entry.getValue();
+                paths.forEach(path -> deleteTreeNode(descendantMap, path));
+            }
+        }
+    }
+
+    private Set<Long> preValidate(Long organizationId, Long id, Long[] ids, String message) {
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        if (!ApplicationCategory.isCombination(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
+            throw new CommonException(message);
+        }
+        Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
+        if (!idSet.isEmpty()) {
+            isApplicationsIllegal(organizationId, idSet);
+        }
+        return idSet;
+    }
+
+    private void processTreeData(ApplicationDTO app, List<ApplicationExplorationDTO> applicationExplorations) {
+        Long appId = app.getId();
+        List<ApplicationDTO> applications = new ArrayList<>();
+        applicationExplorations.forEach(ae -> {
+            if (appId.equals(ae.getParentId())) {
+                ApplicationDTO dto = new ApplicationDTO();
+                dto.setId(ae.getApplicationId());
+                dto.setName(ae.getApplicationName());
+                dto.setCode(ae.getApplicationCode());
+                dto.setApplicationCategory(ae.getApplicationCategory());
+                dto.setApplicationType(ae.getApplicationType());
+                dto.setEnabled(ae.getApplicationEnabled());
+                dto.setProjectId(ae.getProjectId());
+                dto.setProjectCode(ae.getProjectCode());
+                dto.setProjectName(ae.getProjectName());
+                dto.setImageUrl(ae.getProjectImageUrl());
+                applications.add(dto);
+                processTreeData(dto, applicationExplorations);
+            }
+        });
+        app.setDescendants(applications.isEmpty() ? null : applications);
+    }
+
+    /**
+     * 删除应用并发送saga消息通知.
+     *
+     * @param application 应用DTO
+     * @param sagaCode    saga编码
+     */
+    private void deleteAndSendEvent(ApplicationDTO application, String sagaCode) {
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withRefType("application")
+                        .withSagaCode(sagaCode),
+                builder -> {
+                    if (applicationMapper.deleteByPrimaryKey(application) != 1) {
+                        throw new CommonException("error.application.delete");
+                    }
+                    builder
+                            .withPayloadAndSerialize(application)
+                            .withRefId(String.valueOf(application.getId()))
+                            .withSourceId(application.getOrganizationId());
+                });
+    }
+
+    private ApplicationDTO sendEvent(ApplicationDTO applicationDTO, String sagaCode) {
+        return producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withRefType("application")
+                        .withSagaCode(sagaCode),
+                builder -> {
+                    ApplicationDTO application = doUpdate(applicationDTO);
+                    builder
+                            .withPayloadAndSerialize(application)
+                            .withRefId(String.valueOf(application.getId()))
+                            .withSourceId(application.getOrganizationId());
+                    return application;
+                });
+    }
+
+    private ApplicationDTO doUpdate(ApplicationDTO applicationDTO) {
+        if (applicationMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
+            throw new CommonException("error.application.update");
+        }
+        return applicationMapper.selectByPrimaryKey(applicationDTO.getId());
+    }
+
+    private void processDescendants(ApplicationDTO applicationDTO, ApplicationDTO result) {
+        List<Long> descendantIds = applicationDTO.getDescendantIds();
+        if (descendantIds != null) {
+            Long[] array = new Long[descendantIds.size()];
+            addToCombination(result.getOrganizationId(), result.getId(), descendantIds.toArray(array));
+        }
+    }
+
+    private void insertExploration(Long appId) {
+        ApplicationExplorationDTO example = new ApplicationExplorationDTO();
+        example.setApplicationId(appId);
+        String path = generatePath(appId);
+        example.setPath(path);
+        example.setApplicationEnabled(true);
+        example.setRootId(appId);
+        example.setHashcode(String.valueOf(path.hashCode()));
+        applicationExplorationMapper.insertSelective(example);
+    }
+
+    private String generatePath(Long appId) {
+        StringBuilder builder = new StringBuilder();
+        return builder.append(SEPARATOR).append(appId).append(SEPARATOR).toString();
+    }
+
+    private void doInsert(ApplicationDTO applicationDTO) {
+        if (applicationMapper.insertSelective(applicationDTO) != 1) {
+            throw new CommonException("error.application.insert");
         }
     }
 }
