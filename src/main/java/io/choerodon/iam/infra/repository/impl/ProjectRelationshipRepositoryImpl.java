@@ -50,7 +50,7 @@ public class ProjectRelationshipRepositoryImpl implements ProjectRelationshipRep
 
     @Override
     public ProjectRelationshipDTO update(ProjectRelationshipDTO projectRelationshipDTO) {
-        if (projectRelationshipMapper.updateByPrimaryKeySelective(projectRelationshipDTO) != 1) {
+        if (projectRelationshipMapper.updateByPrimaryKey(projectRelationshipDTO) != 1) {
             throw new CommonException("error.project.group.update");
         }
         return projectRelationshipMapper.selectByPrimaryKey(projectRelationshipDTO.getId());
