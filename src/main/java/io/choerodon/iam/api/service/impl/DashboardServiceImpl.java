@@ -2,7 +2,6 @@ package io.choerodon.iam.api.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
@@ -46,15 +45,6 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public DashboardDTO update(Long dashboardId, DashboardDTO dashboardDTO, Boolean updateRole) {
         dashboardDTO.setId(dashboardId);
-//        DashboardE dashboard = new DashboardE(
-//                dashboardId,
-//                dashboardDTO.getName(),
-//                dashboardDTO.getTitle(),
-//                dashboardDTO.getDescription(),
-//                dashboardDTO.getIcon(),
-//                dashboardDTO.getNeedRoles(),
-//                dashboardDTO.getObjectVersionNumber());
-//        dashboard.setEnabled(dashboardDTO.getEnabled());
         dashboardDTO.setPosition(convertPositionDTOToJson(dashboardDTO.getPositionDTO()));
         int isUpdate = dashboardMapper.updateByPrimaryKeySelective(dashboardDTO);
         if (isUpdate != 1) {
@@ -66,17 +56,17 @@ public class DashboardServiceImpl implements DashboardService {
         if (!updateRole && select.getNeedRoles() != null && !select.getNeedRoles()) {
             return select;
         }
-        List<String> roles = dashboardDTO.getRoles();
-        if (roles != null && !roles.isEmpty()) {
+        List<String> roleCodes = dashboardDTO.getRoleCodes();
+        if (roleCodes != null && !roleCodes.isEmpty()) {
             dashboardRoleMapper.deleteByDashboardCode(select.getCode());
-            for (String role : roles) {
+            for (String role : roleCodes) {
                 DashboardRoleDTO dto = new DashboardRoleDTO();
                 dto.setRoleCode(role);
                 dto.setDashboardCode(select.getCode());
                 dashboardRoleMapper.insertSelective(dto);
             }
         }
-        select.setRoles(dashboardRoleMapper.selectRoleCodes(select.getCode()));
+        select.setRoleCodes(dashboardRoleMapper.selectRoleCodes(select.getCode()));
         return select;
     }
 
