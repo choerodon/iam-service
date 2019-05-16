@@ -26,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -455,14 +454,11 @@ public class UserServiceImpl implements UserService {
         userDTO.setLocked(true);
         userDTO.setLockedUntilAt(new Date(System.currentTimeMillis() + lockExpireTime * 1000));
         return userRepository.updateSelective(userDTO);
-//        return ConvertHelper.convert(userE, UserDTO.class);
     }
 
     @Override
     public PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params) {
         return userRepository.pagingQueryAdminUsers(page, size, userDTO, params);
-//        return ConvertPageHelper.convertPage(userRepository
-//                .pagingQueryAdminUsers(pageRequest, userDO, params), UserDTO.class);
     }
 
     @Override
@@ -542,7 +538,7 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException("error.memberRole.insert");
             }
         });
-        return ConvertHelper.convert(userDTO, UserDTO.class);
+        return userDTO;
     }
 
     @Override

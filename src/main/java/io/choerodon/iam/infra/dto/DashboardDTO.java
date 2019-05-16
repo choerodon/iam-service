@@ -63,7 +63,7 @@ public class DashboardDTO extends BaseDTO {
 
     @Transient
     @ApiModelProperty(value = "角色ID 列表/非必填")
-    private List<String> roles;
+    private List<String> roleCodes;
 
     @JsonIgnore
     private String position;
@@ -160,12 +160,12 @@ public class DashboardDTO extends BaseDTO {
         this.enabled = enabled;
     }
 
-    public List<String> getRoles() {
-        return roles;
+    public List<String> getRoleCodes() {
+        return roleCodes;
     }
 
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
+    public void setRoleCodes(List<String> roleCodes) {
+        this.roleCodes = roleCodes;
     }
 
     public String getPosition() {

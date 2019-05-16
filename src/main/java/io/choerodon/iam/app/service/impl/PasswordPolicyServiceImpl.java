@@ -30,7 +30,6 @@ public class PasswordPolicyServiceImpl implements PasswordPolicyService {
         }
         passwordPolicyDTO.setOrganizationId(orgId);
         return passwordPolicyRepository.create(passwordPolicyDTO);
-//        return ConvertHelper.convert(passwordPolicyE, PasswordPolicyDTO.class);
     }
 
     @Override
@@ -55,6 +54,5 @@ public class PasswordPolicyServiceImpl implements PasswordPolicyService {
         }
         return
                 passwordPolicyRepository.update(id, passwordPolicyDTO);
-//        return ConvertHelper.convert(passwordPolicyE, PasswordPolicyDTO.class);
     }
 }

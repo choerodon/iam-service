@@ -7,8 +7,8 @@
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
         <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="roleIds" ofType="java.lang.Long" select="selectRoleIds"
-                    column="{dashboardId=id, fdLevel=fd_level}"></collection>
+        <collection property="roleCodes" ofType="java.lang.String" select="selectRoleCodes"
+                    column="{dashboardCode=code, fdLevel=fd_level}"></collection>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
@@ -46,14 +46,14 @@
         WHERE d.FD_LEVEL IN ('site', #{level})
     </select>
 
-    <select id="selectRoleIds" resultType="java.lang.Long">
+    <select id="selectRoleCodes" resultType="java.lang.String">
         SELECT
-			dr.ROLE_ID
+			dr.role_code
 		FROM
-			IAM_DASHBOARD_ROLE dr
-			LEFT JOIN IAM_ROLE r ON dr.ROLE_ID = r.ID
+			iam_dashboard_role dr
+			LEFT JOIN iam_role r ON dr.role_code = r.code
 		WHERE
-			dr.DASHBOARD_ID = #{dashboardId} AND
-			r.RESOURCE_LEVEL = #{fdLevel}
+			dr.dashboard_code = #{dashboardCode} AND
+			r.resource_level = #{fdLevel}
     </select>
 </mapper>

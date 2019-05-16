@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
@@ -25,7 +24,6 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -128,7 +126,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.createUser.event", e);
             }
         }
-        return ConvertHelper.convert(user, UserDTO.class);
+        return user;
     }
 
     private UserDTO createUser(UserDTO userDTO) {
@@ -216,17 +214,14 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-//        UserE userE = ConvertHelper.convert(userDTO, UserE.class);
         UserDTO dto;
         if (devopsMessage) {
-//            dto = new UserDTO();
             UserEventPayload userEventPayload = new UserEventPayload();
             dto = updateUser(userDTO);
             userEventPayload.setEmail(dto.getEmail());
             userEventPayload.setId(dto.getId().toString());
             userEventPayload.setName(dto.getRealName());
             userEventPayload.setUsername(dto.getLoginName());
-//            BeanUtils.copyProperties(user, dto);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
                 sagaClient.startSaga(USER_UPDATE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), userDTO.getOrganizationId()));
@@ -273,7 +268,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         List<Long> userIds = Collections.singletonList(userId);
         iUserService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
 
-        return ConvertHelper.convert(user, UserDTO.class);
+        return user;
     }
 
     /**
@@ -395,7 +390,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            UserDTO dto = ConvertHelper.convert(iUserService.updateUserDisabled(userId), UserDTO.class);
+            UserDTO dto = iUserService.updateUserDisabled(userId);
             BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
@@ -404,7 +399,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
         } else {
-            userDTO = ConvertHelper.convert(iUserService.updateUserDisabled(userId), UserDTO.class);
+            userDTO = iUserService.updateUserDisabled(userId);
         }
         return userDTO;
     }

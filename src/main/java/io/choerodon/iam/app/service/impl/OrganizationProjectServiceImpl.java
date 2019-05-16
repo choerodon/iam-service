@@ -6,7 +6,6 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -164,7 +163,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         } catch (Exception e) {
             throw new CommonException("error.organizationProjectService.createProject.event", e);
         }
-        return ConvertHelper.convert(dto, ProjectDTO.class);
+        return dto;
     }
 
 

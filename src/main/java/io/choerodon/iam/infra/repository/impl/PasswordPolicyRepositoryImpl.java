@@ -21,7 +21,6 @@ public class PasswordPolicyRepositoryImpl implements PasswordPolicyRepository {
     @Override
     public PasswordPolicyDTO query(Long id) {
         return passwordPolicyMapper.selectByPrimaryKey(id);
-//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
     }
 
     @Override
@@ -29,29 +28,24 @@ public class PasswordPolicyRepositoryImpl implements PasswordPolicyRepository {
         PasswordPolicyDTO dto = new PasswordPolicyDTO();
         dto.setOrganizationId(orgId);
         return passwordPolicyMapper.selectOne(dto);
-//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyDTO.class);
     }
 
     @Override
     public PasswordPolicyDTO create(PasswordPolicyDTO passwordPolicyDTO) {
-//        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyDTO, PasswordPolicyDO.class);
         int isInsert = passwordPolicyMapper.insertSelective(passwordPolicyDTO);
         if (isInsert != 1) {
             throw new CommonException("error.passwordPolicy.create");
         }
         return  passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
-//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
     }
 
     @Override
     public PasswordPolicyDTO update(Long id, PasswordPolicyDTO passwordPolicyDTO) {
-//        PasswordPolicyDO passwordPolicyDO = ConvertHelper.convert(passwordPolicyDTO, PasswordPolicyDO.class);
         passwordPolicyDTO.setId(id);
         int isUpdate = passwordPolicyMapper.updateByPrimaryKeySelective(passwordPolicyDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.passwordPolicy.update");
         }
         return passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
-//        return ConvertHelper.convert(passwordPolicyDO, PasswordPolicyE.class);
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
@@ -82,7 +81,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientDTO query(Long orgId, Long clientId) {
-        ClientDTO clientDTO = ConvertHelper.convert(clientRepository.query(clientId), ClientDTO.class);
+        ClientDTO clientDTO = clientRepository.query(clientId);
         if (clientDTO == null) {
             throw new CommonException("error.client.not.exist");
         }
@@ -94,7 +93,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientDTO queryByName(Long orgId, String clientName) {
-        ClientDTO clientDTO = ConvertHelper.convert(clientRepository.queryByClientName(clientName), ClientDTO.class);
+        ClientDTO clientDTO = clientRepository.queryByClientName(clientName);
         if (clientDTO == null) {
             throw new CommonException("error.client.not.exist");
         }

@@ -27,10 +27,6 @@ public class LanguageServiceImpl implements LanguageService {
     @Override
     public PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param) {
         return repository.pagingQuery(page,size,languageDTO,param);
-//        Page<LanguageDO> languageDOPage =
-//                repository.pagingQuery(pageRequest,
-//                        ConvertHelper.convert(languageDTO, LanguageDO.class), languageDTO.getParam());
-//        return ConvertPageHelper.convertPage(languageDOPage, LanguageDTO.class);
     }
 
     @Override

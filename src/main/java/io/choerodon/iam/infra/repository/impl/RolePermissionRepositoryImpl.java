@@ -41,9 +41,6 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
     @Override
     public List<RolePermissionDTO> select(RolePermissionDTO rolePermissionDTO) {
         return rolePermissionMapper.select(rolePermissionDTO);
-//        List<RolePermissionDO> rolePermissionDOList =
-//                rolePermissionMapper.select(ConvertHelper.convert(rolePermissionE, RolePermissionDO.class));
-//        return ConvertHelper.convertList(rolePermissionDOList, RolePermissionE.class);
     }
 
     @Override
