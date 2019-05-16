@@ -144,17 +144,17 @@ public class LdapController {
                                                                          @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                          @PathVariable("organization_id") Long organizationId,
                                                                          @PathVariable Long id) {
-        return new ResponseEntity<>(ldapService.pagingQueryHistories(page,size, id), HttpStatus.OK);
+        return new ResponseEntity<>(ldapService.pagingQueryHistories(page, size, id), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据ldap history id查询同步用户错误详情")
     @GetMapping("/ldap_histories/{id}/error_users")
     public ResponseEntity<PageInfo<LdapErrorUserDTO>> pagingQueryErrorUsers(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                        @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                        @PathVariable Long id,
-                                                                        LdapErrorUserDTO ldapErrorUserDTO) {
-        return new ResponseEntity<>(ldapService.pagingQueryErrorUsers(page,size, id, ldapErrorUserDTO), HttpStatus.OK);
+                                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                            @PathVariable Long id,
+                                                                            LdapErrorUserDTO ldapErrorUserDTO) {
+        return new ResponseEntity<>(ldapService.pagingQueryErrorUsers(page, size, id, ldapErrorUserDTO), HttpStatus.OK);
     }
 
 

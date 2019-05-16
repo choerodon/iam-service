@@ -10,6 +10,7 @@
         WHERE
             ldap_id = #{ldapId}
         AND sync_end_time IS NOT NULL
+        order by id desc
     </select>
 
 </mapper>

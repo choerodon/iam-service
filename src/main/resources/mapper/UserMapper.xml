@@ -473,6 +473,7 @@
             real_name LIKE concat(concat('%',#{params}),'%')
             )
         </if>
+        order by id desc
     </select>
 
     <select id="matchLoginName" resultType="java.lang.String">
