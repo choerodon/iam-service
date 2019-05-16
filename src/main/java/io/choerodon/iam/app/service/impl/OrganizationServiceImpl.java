@@ -8,7 +8,6 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
@@ -26,7 +25,6 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -92,12 +90,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         organizationDTO.setProjectCount(projects.size());
         Long userId = organizationDTO.getUserId();
         UserDTO user = userRepository.selectByPrimaryKey(userId);
-        OrganizationDTO dto = ConvertHelper.convert(organizationDTO, OrganizationDTO.class);
-        dto.setOwnerLoginName(user.getLoginName());
-        dto.setOwnerRealName(user.getRealName());
-        dto.setOwnerPhone(user.getPhone());
-        dto.setOwnerEmail(user.getEmail());
-        return dto;
+        organizationDTO.setOwnerLoginName(user.getLoginName());
+        organizationDTO.setOwnerRealName(user.getRealName());
+        organizationDTO.setOwnerPhone(user.getPhone());
+        organizationDTO.setOwnerEmail(user.getEmail());
+        return organizationDTO;
     }
 
     @Override
@@ -157,18 +154,13 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         List<RoleDTO> roles =
                 roleRepository.selectUsersRolesBySourceIdAndType(ResourceType.ORGANIZATION.value(), organizationId, userId);
-        dto.setRoles(ConvertHelper.convertList(roles, RoleDTO.class));
+        dto.setRoles(roles);
         return dto;
     }
 
     @Override
     public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
         return organizationRepository.pagingQuery(organizationDTO, page, size, param);
-
-//        Page<OrganizationDO> organizationDOPage =
-//                organizationRepository.pagingQuery(ConvertHelper.convert(
-//                        organizationDTO, OrganizationDO.class), pageRequest, param);
-//        return ConvertPageHelper.convertPage(organizationDOPage, OrganizationDTO.class);
     }
 
     @Override
@@ -180,7 +172,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         organization.setEnabled(true);
         return updateAndSendEvent(organization, ORG_ENABLE, userId);
-//        return ConvertHelper.convert(organizationDO, OrganizationDTO.class);
     }
 
     @Override
@@ -234,10 +225,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, int page, int size, String param) {
         return userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param);
-//        return PageHelper.startPage(page, size).doSelectPage(() -> userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param));
-
-//        return ConvertPageHelper.convertPage(
-//                userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, pageRequest, param), UserDTO.class);
     }
 
     @Override
@@ -246,7 +233,6 @@ public class OrganizationServiceImpl implements OrganizationService {
             return new ArrayList<>();
         } else {
             return organizationRepository.queryByIds(ids);
-//            return ConvertHelper.convertList(organizationRepository.queryByIds(ids), OrganizationDTO.class);
         }
     }
 

@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.iam.app.service.LabelService;
 import io.choerodon.iam.domain.repository.LabelRepository;
 import io.choerodon.iam.infra.dto.LabelDTO;
@@ -23,8 +22,5 @@ public class LabelServiceImpl implements LabelService {
     @Override
     public List<LabelDTO> listByOption(LabelDTO label) {
         return labelRepository.listByOption(label);
-//        return ConvertHelper.convertList(
-//                labelRepository.listByOption(
-//                        ConvertHelper.convert(label, LabelDO.class)), LabelDTO.class);
     }
 }

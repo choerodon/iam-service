@@ -81,7 +81,6 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Saga(code = PROJECT_UPDATE, description = "iam更新项目", inputSchemaClass = ProjectEventPayload.class)
     public ProjectDTO update(ProjectDTO projectDTO) {
-//        ProjectDO project = ConvertHelper.convert(projectDTO, ProjectDO.class);
         if (devopsMessage) {
             ProjectDTO dto = new ProjectDTO();
             CustomUserDetails details = DetailsHelper.getUserDetails();
