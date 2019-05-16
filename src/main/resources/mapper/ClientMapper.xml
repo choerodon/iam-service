@@ -14,6 +14,7 @@
             AND
             name LIKE concat(concat('%',#{param}),'%')
         </if>
+        order by id desc
     </select>
 
     <select id="selectClientCountFromMemberRoleByOptions" resultType="int"

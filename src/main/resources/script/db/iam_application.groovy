@@ -60,4 +60,8 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
         addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'ORGANIZATION_ID,NAME,PROJECT_ID',
                 constraintName: 'UK_IAM_APPLICATION_U3')
     }
+
+    changeSet(id: '2019-05-16-iam-application-drop-not-null', author: 'superlee') {
+        dropNotNullConstraint(columnDataType: 'VARCHAR(64)',columnName:'APPLICATION_TYPE', tableName:'IAM_APPLICATION')
+    }
 }

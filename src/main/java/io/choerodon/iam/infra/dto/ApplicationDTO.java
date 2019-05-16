@@ -40,7 +40,6 @@ public class ApplicationDTO extends BaseDTO {
     @NotEmpty(message = "error.application.applicationCategory.empty")
     private String applicationCategory;
 
-    @NotEmpty(message = "error.application.applicationType.empty")
     private String applicationType;
 
     @Transient

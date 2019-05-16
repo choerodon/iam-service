@@ -140,7 +140,6 @@ public class ClientController extends BaseController {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);
-
         return new ResponseEntity<>(clientService.list(clientDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 

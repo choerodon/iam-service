@@ -555,12 +555,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private void validate(ApplicationDTO applicationDTO) {
         String category = applicationDTO.getApplicationCategory();
-        String type = applicationDTO.getApplicationType();
         if (!ApplicationCategory.matchCode(category)) {
             throw new CommonException("error.application.applicationCategory.illegal");
-        }
-        if (!ApplicationType.matchCode(type)) {
-            throw new CommonException("error.application.applicationType.illegal");
         }
     }
 }
