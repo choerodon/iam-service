@@ -121,6 +121,16 @@ public class ApplicationController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "将应用/组合应用从组合应用中移除")
+    @DeleteMapping("/{id}/delete_combination")
+    public ResponseEntity deleteCombination(@PathVariable("organization_id") Long organizationId,
+                                           @PathVariable("id") Long id,
+                                           @RequestBody Long[] ids) {
+        applicationService.deleteCombination(organizationId, id, ids);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "查询组合应用的后代")

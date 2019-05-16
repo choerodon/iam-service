@@ -118,4 +118,13 @@ public interface ApplicationService {
      * @return
      */
     ApplicationDTO query(Long id);
+
+    /**
+     * 从组合应用中移除指定应用
+     *
+     * @param organizationId 组织id
+     * @param id             应用id
+     * @param ids            被移除的应用id数组
+     */
+    void deleteCombination(Long organizationId, Long id, Long[] ids);
 }
