@@ -25,13 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_CREATE;
@@ -265,7 +259,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (withDescendants) {
             result.getList().forEach(app -> {
                 //组合应用查询所有后代
-                if (ApplicationCategory.COMBINATION.code().equals(app.getApplicationCategory())) {
+                if (ApplicationCategory.isCombination(app.getApplicationCategory())) {
                     List<ApplicationExplorationDTO> applicationExplorations = applicationExplorationMapper.selectDescendants(generatePath(app.getId()));
                     //todo dfs算法优化
                     processTreeData(app, applicationExplorations);
@@ -357,14 +351,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addToCombination(Long organizationId, Long id, Long[] ids) {
-        organizationAssertHelper.organizationNotExisted(organizationId);
-        if (!ApplicationCategory.COMBINATION.code().equals(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
-            throw new CommonException("error.application.addToCombination.not.support");
-        }
-        Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
-        if (!idSet.isEmpty()) {
-            isApplicationsIllegal(organizationId, idSet);
-        }
+        Set<Long> idSet = preValidate(organizationId, id, ids, "error.application.addToCombination.not.support");
 
         //查询直接儿子
         List<ApplicationExplorationDTO> originDirectDescendant =
@@ -390,6 +377,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 paths.forEach(path -> addTreeNode(id, descendantMap, rootId, path));
             }
         }
+        deleteDescendants(deleteList, rootIdMap);
+    }
+
+    private void deleteDescendants(Collection<Long> deleteList, Map<Long, Set<String>> rootIdMap) {
         if (!deleteList.isEmpty()) {
             Map<Long, List<ApplicationExplorationDTO>> descendantMap = getDescendantMap(new HashSet<>(deleteList));
             for (Map.Entry<Long, Set<String>> entry : rootIdMap.entrySet()) {
@@ -397,6 +388,26 @@ public class ApplicationServiceImpl implements ApplicationService {
                 paths.forEach(path -> deleteTreeNode(descendantMap, path));
             }
         }
+    }
+
+    private Set<Long> preValidate(Long organizationId, Long id, Long[] ids, String message) {
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        if (!ApplicationCategory.isCombination(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
+            throw new CommonException(message);
+        }
+        Set<Long> idSet = new HashSet<>(Arrays.asList(ids));
+        if (!idSet.isEmpty()) {
+            isApplicationsIllegal(organizationId, idSet);
+        }
+        return idSet;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCombination(Long organizationId, Long id, Long[] ids) {
+        Set<Long> idSet = preValidate(organizationId, id, ids, "error.application.deleteCombination.not.support");
+        Map<Long, Set<String>> rootIdMap = getRootIdMap(id);
+        deleteDescendants(idSet, rootIdMap);
     }
 
     private void addTreeNode(Long id, Map<Long, List<ApplicationExplorationDTO>> descendantMap, Long rootId, String parentPath) {
@@ -460,7 +471,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationExplorationDTO> queryDescendant(Long id) {
-        if (!ApplicationCategory.COMBINATION.code().equals(
+        if (!ApplicationCategory.isCombination(
                 applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.queryDescendant.not.support");
         }
@@ -476,7 +487,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationDTO> queryEnabledApplication(Long organizationId, Long id) {
-        if (!ApplicationCategory.COMBINATION.code().equals(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
+        if (!ApplicationCategory.isCombination(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.query.not.support");
         }
         ApplicationDTO example = new ApplicationDTO();
@@ -496,6 +507,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationDTO query(Long id) {
         return applicationMapper.selectByPrimaryKey(id);
     }
+
 
     private Map<Long, Set<String>> getRootIdMap(Long id) {
         ApplicationExplorationDTO example = new ApplicationExplorationDTO();

@@ -42,4 +42,12 @@ public enum ApplicationCategory {
         }
         return false;
     }
+
+    public static boolean isApplication(String code) {
+        return APPLICATION.code.equals(code);
+    }
+
+    public static boolean isCombination(String code) {
+        return COMBINATION.code.equals(code);
+    }
 }
