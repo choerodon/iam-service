@@ -4,7 +4,12 @@ import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -42,6 +47,9 @@ public class ApplicationDTO extends BaseDTO {
 
     @NotEmpty(message = "error.application.applicationType.empty")
     private String applicationType;
+
+    @Column(name = "is_abnormal")
+    private Boolean abnormal;
 
     @Transient
     private Integer appCount;
@@ -180,5 +188,13 @@ public class ApplicationDTO extends BaseDTO {
 
     public void setDescendantIds(List<Long> descendantIds) {
         this.descendantIds = descendantIds;
+    }
+
+    public Boolean getAbnormal() {
+        return abnormal;
+    }
+
+    public void setAbnormal(Boolean abnormal) {
+        this.abnormal = abnormal;
     }
 }
