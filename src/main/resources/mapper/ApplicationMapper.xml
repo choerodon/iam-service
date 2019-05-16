@@ -3,16 +3,17 @@
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ApplicationMapper">
     <resultMap id="ApplicationDO" type="io.choerodon.iam.infra.dto.ApplicationDTO" autoMapping="true">
-        <id column="id" property="id"></id>
+        <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_abnormal" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <select id="fuzzyQuery" resultMap="ApplicationDO">
         SELECT
-          ia.*,
-          fp.name as project_name,
-          fp.code as project_code,
-          fp.image_url as image_url
+        ia.*,
+        fp.name as project_name,
+        fp.code as project_code,
+        fp.image_url as image_url
         FROM iam_application ia
         LEFT JOIN fd_project fp ON ia.project_id = fp.id
         WHERE 1=1

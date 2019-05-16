@@ -1,7 +1,5 @@
 package io.choerodon.iam.api.eventhandler;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.*;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
@@ -24,6 +22,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DEVOPS_CREATE_FAIL;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_SYNC;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_UPDATE_ABNORMAL;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.IAM_SYNC_APP;
 
 /**
  * 应用监听器
@@ -58,12 +61,6 @@ public class ApplicationListener {
         this.projectAssertHelper = projectAssertHelper;
     }
 
-
-    /**
-     * devops端创建app失败，发送消息，iam端执行回滚操作，在devops-service后执行
-     *
-     * @param message
-     */
     @SagaTask(code = IAM_SYNC_APP, sagaCode = APP_SYNC, seq = 1, description = "devops发送application集合进行同步")
     public void syncApplications(String message) throws IOException {
         List<ApplicationDTO> applications = objectMapper.readValue(message, new TypeReference<List<ApplicationDTO>>() {
@@ -166,5 +163,18 @@ public class ApplicationListener {
         }
         app.setApplicationCategory(ApplicationCategory.APPLICATION.code());
         return false;
+    }
+
+    @SagaTask(code = APP_UPDATE_ABNORMAL, sagaCode = APP_DEVOPS_CREATE_FAIL, seq = 1, description = "iam接收devops创建应用失败事件")
+    public void updateApplicationAbnormal(String message) throws IOException {
+        ApplicationDTO applicationDTO = objectMapper.readValue(message, ApplicationDTO.class);
+        if (applicationDTO == null) {
+            logger.warn("iam receiving no one application while devops create application failed!");
+            return;
+        }
+        ApplicationDTO updateApp = new ApplicationDTO();
+        updateApp.setAbnormal(true);
+        updateApp.setId(applicationDTO.getId());
+        applicationMapper.updateByPrimaryKey(updateApp);
     }
 }

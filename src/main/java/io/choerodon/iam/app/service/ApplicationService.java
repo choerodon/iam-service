@@ -30,7 +30,15 @@ public interface ApplicationService {
     ApplicationDTO update(ApplicationDTO applicationDTO);
 
     /**
-     * 分页模糊查询applications
+     * 删除应用.
+     *
+     * @param organizationId 组织Id
+     * @param id             应用Id
+     */
+    void delete(Long organizationId, Long id);
+
+    /**
+     * 分页模糊查询applications.
      *
      * @param page
      * @param size

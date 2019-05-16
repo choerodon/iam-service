@@ -55,10 +55,16 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
     }
 
     changeSet(id: '2018-03-19-modify-unique-column', author: 'superlee') {
-        dropUniqueConstraint(tableName:'IAM_APPLICATION', constraintName:'UK_IAM_APPLICATION_U2')
+        dropUniqueConstraint(tableName: 'IAM_APPLICATION', constraintName: 'UK_IAM_APPLICATION_U2')
         //name在组织和项目下唯一
         addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'ORGANIZATION_ID,NAME,PROJECT_ID',
                 constraintName: 'UK_IAM_APPLICATION_U3')
+    }
+
+    changeSet(id: '2019-05-16-iam-application-add-column', author: 'qiang.zeng') {
+        addColumn(tableName: 'IAM_APPLICATION') {
+            column(name: 'IS_ABNORMAL', type: 'TINYINT UNSIGNED', defaultValue: "0", afterColumn: 'APPLICATION_TYPE', remarks: '是否异常。1异常，0正常')
+        }
     }
 
     changeSet(id: '2019-05-16-iam-application-drop-not-null', author: 'superlee') {
