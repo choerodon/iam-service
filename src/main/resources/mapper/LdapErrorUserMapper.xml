@@ -21,5 +21,6 @@
                 AND phone LIKE concat(concat('%',#{ldapErrorUserDTO.phone}),'%')
             </if>
         </if>
+        order by id desc
     </select>
 </mapper>

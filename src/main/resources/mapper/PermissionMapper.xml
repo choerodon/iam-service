@@ -45,6 +45,7 @@
             iam_permission.description LIKE concat(concat('%', #{params), '%')
             )
         </if>
+        order by iam_permission.code asc
     </select>
 
     <select id="checkPermission" resultType="String">

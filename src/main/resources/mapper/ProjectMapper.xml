@@ -136,6 +136,7 @@
             fd_project.code LIKE concat(concat('%', #{param}), '%')
             )
         </if>
+        order by fd_project.id desc
     </select>
 
     <select id="selectProjectsByUserId" resultMap="projectDTO">

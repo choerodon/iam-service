@@ -71,6 +71,7 @@
             org.code LIKE concat(concat('%',#{param}),'%')
             )
         </if>
+        order by org.id desc
     </select>
 
     <select id="selectFromMemberRoleByMemberId" resultMap="OrganizationDTO">
@@ -275,6 +276,7 @@
             fp.code LIKE concat(concat('%', #{params}), '%')
             )
         </if>
+        order by fp.id desc
     </select>
 
     <select id="organizationEnabled" resultType="java.lang.Boolean">
