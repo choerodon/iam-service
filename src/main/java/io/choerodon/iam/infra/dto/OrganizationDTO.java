@@ -46,6 +46,9 @@ public class OrganizationDTO extends BaseDTO {
     @ApiModelProperty(value = "是否启用/非必填/默认：true")
     private Boolean enabled;
 
+    @ApiModelProperty(value = "组织官网地址")
+    private String homePage;
+
     @Transient
     private List<ProjectDTO> projects;
 
@@ -202,5 +205,13 @@ public class OrganizationDTO extends BaseDTO {
     @Override
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getHomePage() {
+        return homePage;
+    }
+
+    public void setHomePage(String homePage) {
+        this.homePage = homePage;
     }
 }
