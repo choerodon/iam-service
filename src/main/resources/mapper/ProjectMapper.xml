@@ -22,10 +22,10 @@
         <result property="organizationName" column="organization_name" jdbcType="VARCHAR"/>
         <result property="enabled" column="is_enabled"/>
         <collection property="roles" ofType="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
-            <id property="id" column="project_id"></id>
-            <result property="name" column="project_name"/>
-            <result property="code" column="project_code"/>
-            <result property="enabled" column="project_enabled"/>
+            <id property="id" column="role_id"></id>
+            <result property="name" column="role_name"/>
+            <result property="code" column="role_code"/>
+            <result property="enabled" column="role_is_enabled"/>
         </collection>
     </resultMap>
 
