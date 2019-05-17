@@ -155,12 +155,18 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
-        int start = page * size;
-        int count = memberRoleMapper.selectCountBySourceId(id, "project");
-        Page<ProjectDTO> result = new Page<>(page, size, true);
-        result.setTotal(count);
-        List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
-        result.addAll(projectList);
+        Page<ProjectDTO> result = new Page<>(page, size);
+        if (size == 0) {
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+            result.setTotal(projectList.size());
+            result.addAll(projectList);
+        } else {
+            int start = page * size;
+            int count = memberRoleMapper.selectCountBySourceId(id, "project");
+            result.setTotal(count);
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+            result.addAll(projectList);
+        }
         return result.toPageInfo();
     }
 
