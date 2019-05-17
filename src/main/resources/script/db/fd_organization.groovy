@@ -2,8 +2,8 @@ package script.db
 
 databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
     changeSet(author: 'jcalaz@163.com', id: '2018-03-21-fd-organization') {
-        if(helper.dbType().isSupportSequence()){
-            createSequence(sequenceName: 'FD_ORGANIZATION_S', startValue:"1")
+        if (helper.dbType().isSupportSequence()) {
+            createSequence(sequenceName: 'FD_ORGANIZATION_S', startValue: "1")
         }
         createTable(tableName: "FD_ORGANIZATION") {
             column(name: 'ID', type: 'BIGINT UNSIGNED', autoIncrement: true, remarks: '表ID，主键，供其他表做外键，unsigned bigint、单表时自增、步长为 1') {
@@ -57,4 +57,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: 'SCALE', type: 'TINYINT UNSIGNED', remarks: '组织规模。0：0-30,1：30-100,2：100', afterColumn: 'IMAGE_URL')
         }
     }
+
+    changeSet(author: 'qiang.zeng', id: '2019-05-16-fd-organization-add') {
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'HOME_PAGE', type: 'VARCHAR(255)', remarks: '组织官网地址', afterColumn: 'SCALE')
+        }
+    }
+
 }

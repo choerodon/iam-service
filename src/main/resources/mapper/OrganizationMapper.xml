@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.OrganizationMapper">
     <resultMap id="organizationWithProjects" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
-        <id column="id" property="id"></id>
+        <id column="id" property="id"/>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
-            <id column="project_id" property="id"></id>
+            <id column="project_id" property="id"/>
             <result column="project_name" property="name" jdbcType="VARCHAR"/>
             <result column="project_code" property="code" jdbcType="VARCHAR"/>
             <result column="organization_id" property="organizationId" jdbcType="DECIMAL"/>
@@ -16,12 +16,12 @@
     </resultMap>
 
     <resultMap id="OrganizationDTO" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
-        <id column="id" property="id"></id>
+        <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <resultMap id="OrganizationWithRoleDTO" type="io.choerodon.iam.infra.dto.OrganizationDTO" autoMapping="true">
-        <id property="id" column="id"></id>
+        <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="code" column="code"/>
         <result property="enabled" column="is_enabled"/>
