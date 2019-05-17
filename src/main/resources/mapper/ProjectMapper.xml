@@ -180,7 +180,9 @@
         AND member_type = 'user'
         AND source_type = 'project'
         ORDER BY source_id ASC
-        LIMIT #{start}, #{size}
+        <if test="start != null and size != null ">
+            LIMIT #{start}, #{size}
+        </if>
         ) t
         ON fp.id = t.source_id
         INNER JOIN iam_member_role imr ON imr.source_id = fp.id
@@ -218,7 +220,9 @@
         AND member_type = 'user'
         AND source_type = 'project'
         ORDER BY source_id ASC
-        LIMIT #{start}, #{size}
+        <if test="start != null and size != null ">
+            LIMIT #{start}, #{size}
+        </if>
         ) t
         ON fp.id = t.source_id
         INNER JOIN iam_member_role imr ON imr.source_id = fp.id
