@@ -75,7 +75,7 @@
         </if>
         <choose>
             <when test="category == 'PROGRAM'">
-                and imb.category like 'PROGRAM'
+                and imb.category = 'PROGRAM'
             </when>
             <otherwise>
                 and ( imb.category not like 'PROGRAM' or imb.category is null )
@@ -151,7 +151,7 @@
         and imb.type != 'top'
         <choose>
             <when test="category != null and category == 'PROGRAM'">
-                and imb.CATEGORY LIKE 'PROGRAM'
+                and imb.CATEGORY = 'PROGRAM'
             </when>
             <otherwise>
                 and ( imb.CATEGORY NOT LIKE 'PROGRAM' OR imb.CATEGORY IS NULL )

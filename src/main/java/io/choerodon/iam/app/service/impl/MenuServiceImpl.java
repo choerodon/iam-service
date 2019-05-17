@@ -1,10 +1,11 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.*;
-
 import io.choerodon.base.enums.MenuType;
-import io.choerodon.base.enums.ProjectCategory;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.app.service.MenuService;
+import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.iam.infra.dto.MenuDTO;
@@ -15,10 +16,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.iam.app.service.MenuService;
-import io.choerodon.iam.domain.repository.ProjectRepository;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -126,8 +129,8 @@ public class MenuServiceImpl implements MenuService {
         String category = null;
         if (ResourceType.isProject(level)) {
             ProjectDTO project = projectRepository.selectByPrimaryKey(sourceId);
-            if (project != null && !ProjectCategory.isAgile(project.getCategory())) {
-                category = ProjectCategory.PROGRAM.value();
+            if (project != null) {
+                category = project.getCategory();
             }
         }
         return category;
