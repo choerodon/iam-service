@@ -1,12 +1,14 @@
-import { action, computed, observable, toJS } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { axios, store } from '@choerodon/boot';
-import moment from 'moment';
 
 @store('OrganizationStatisticsStore')
 class OrganizationStatisticsStore {
   @observable loading = true;
+
   @observable organizations = [];
+
   @observable currentorg = null;
+  
   @observable chartData = {};
 
   @action setLoading(flag) {
@@ -39,10 +41,10 @@ class OrganizationStatisticsStore {
 
   @action loadOrganizations = () => axios.get('/iam/v1/organizations/all?size=500')
     .then(action((data) => {
-      this.organizations = data;
-      if (data.length) {
-        this.currentorg = data[0].id;
-        this.loadPie(data[0].id);
+      this.organizations = data.list;
+      if (data.list.length) {
+        this.currentorg = data.list[0].id;
+        this.loadPie(data.list[0].id);
       }
     }))
 

@@ -93,6 +93,8 @@ class ApplicationStore {
   @observable operation;
   @observable submitting = false;
 
+  @observable data = {};
+
   refresh() {
     this.loadProject();
     this.loadData();
@@ -257,11 +259,10 @@ class ApplicationStore {
     return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?${queryString.stringify(queryObj)}`)
       .then(action(({ failed, list, total }) => {
         if (!failed) {
-          list.forEach((l) => {
-            if (l.descendants && l.descendants.length) {
-              l.children = l.descendants;
-            }
-          });
+          if (list.length) {
+            // eslint-disable-next-line no-return-assign
+            list.forEach(v => v.isFirst = true);
+          }
           this.applicationData = list;
           this.pagination = {
             ...pagination,
@@ -293,7 +294,12 @@ class ApplicationStore {
     axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}`)
       .then((res) => {
         const data = res.descendants || [];
+        if (data.length) {
+          // eslint-disable-next-line no-return-assign
+          data.forEach(v => v.isFirst = true);
+        }
         this.applicationData = data;
+        this.data = res;
       });
   }
 

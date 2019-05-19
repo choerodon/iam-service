@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Form, Table, Tooltip } from 'choerodon-ui';
+import { Button, Form, Table, Tooltip, Icon } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Content, Header, Page } from '@choerodon/boot';
@@ -34,7 +34,6 @@ export default class Application extends Component {
   handleopenTab = (record, operation) => {
     const { ApplicationStore } = this.props;
     ApplicationStore.setEditData(record);
-    ApplicationStore.setOperation(operation);
     ApplicationStore.showSidebar();
   };
 
@@ -74,25 +73,43 @@ export default class Application extends Component {
 
   render() {
     const { ApplicationStore: { filters, pagination, params }, AppState, intl, ApplicationStore, ApplicationStore: { applicationData } } = this.props;
+    const unHandleData = ApplicationStore.applicationData.slice();
+    const hasChild = unHandleData.some(v => v.applicationCategory === 'combination-application' && v.descendants && v.descendants.length);
     const columns = [
       {
         title: <FormattedMessage id={`${intlPrefix}.name`} />,
         dataIndex: 'name',
         filters: [],
         filteredValue: filters.name || [],
+        render: (text, record) => (
+          <span
+            style={{
+              borderLeft: record.isFirst && hasChild ? '1px solid rgba(0, 0, 0, 0.12)' : 'none',
+              paddingLeft: hasChild ? 20 : 'auto',
+            }}
+          >
+            <Icon type={record.applicationCategory === 'combination-application' ? 'grain' : 'predefine'} style={{ marginRight: 5, verticalAlign: 'text-top' }} />
+            {text}
+          </span>
+        ),
       },
       {
         title: <FormattedMessage id={`${intlPrefix}.code`} />,
         dataIndex: 'code',
         key: 'code',
-        width: '10%',
+        width: '15%',
         filters: [],
         filteredValue: filters.code || [],
+        render: (text, record) => {
+          if (!record.isFirst) return null;
+          return <span>{text}</span>;
+        },
       },
       {
         title: <FormattedMessage id={`${intlPrefix}.category`} />,
         dataIndex: 'applicationCategory',
-        render: category => (<StatusTag mode="icon" name={intl.formatMessage({ id: `${intlPrefix}.category.${category.toLowerCase()}` })} iconType={category === 'application' ? 'application_-general' : 'grain'} />),
+        width: '10%',
+        render: (category, record) => (!record.isFirst ? null : <FormattedMessage id={`${intlPrefix}.category.${category.toLowerCase()}`} />),
         filters: [{
           text: '组合应用',
           value: 'combination-application',
@@ -114,10 +131,13 @@ export default class Application extends Component {
         }],
         filteredValue: filters.applicationType || [],
         width: '10%',
-        render: text => (
-          <MouseOverWrapper text={text} width={0.2}>
-            {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
-          </MouseOverWrapper>
+        render: (text, record) => (
+          !record.isFirst ? null
+            : (
+              <MouseOverWrapper text={text} width={0.2}>
+                {text ? intl.formatMessage({ id: `${intlPrefix}.type.${text}` }) : ''}
+              </MouseOverWrapper>
+            )
         ),
       },
       {
@@ -127,25 +147,28 @@ export default class Application extends Component {
         filteredValue: filters.projectName || [],
         width: '20%',
         render: (text, record) => (
-          <div>
-            {
-              text && (
-                <div className="c7n-iam-application-name-avatar">
-                  {
-                    record.imageUrl ? (
-                      <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
-                    ) : (
-                      <React.Fragment>{text.split('')[0]}</React.Fragment>
-                    )
-                  }
-                </div>
-              )
-            }
+          !record.isFirst ? null
+            : (
+              <div>
+                {
+                  text && (
+                    <div className="c7n-iam-application-name-avatar">
+                      {
+                        record.imageUrl ? (
+                          <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
+                        ) : (
+                          <React.Fragment>{text.split('')[0]}</React.Fragment>
+                        )
+                      }
+                    </div>
+                  )
+                }
 
-            <MouseOverWrapper text={text} width={0.2}>
-              {text}
-            </MouseOverWrapper>
-          </div>
+                <MouseOverWrapper text={text} width={0.2}>
+                  {text}
+                </MouseOverWrapper>
+              </div>
+            )
         ),
       },
       {
@@ -161,7 +184,14 @@ export default class Application extends Component {
         }],
         filteredValue: filters.enabled || [],
         key: 'enabled',
-        render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
+        render: (enabled, record) => (
+          !record.isFirst ? null
+            : (
+              <span style={{ marginRight: 8, fontSize: '12px', lineHeight: '18px', padding: '2px 6px', background: record.enabled ? 'rgba(0, 191, 165, 0.1)' : 'rgba(244, 67, 54, 0.1)', color: record.enabled ? '#009688' : '#D50000', borderRadius: '2px', border: '1px solid', borderColor: record.enabled ? '#009688' : '#D50000' }}>
+                {record.enabled ? '启用' : '停用'}
+              </span>
+            )
+        ),
       },
       {
         title: '',
@@ -169,54 +199,60 @@ export default class Application extends Component {
         width: '120px',
         align: 'right',
         render: (text, record) => (
-          <div>
-            <Tooltip
-              title={<FormattedMessage id="editor" />}
-              placement="bottom"
-            >
-              <Button
-                shape="circle"
-                size="small"
-                onClick={e => this.handleopenTab(record, 'edit')}
-                icon="mode_edit"
-              />
-            </Tooltip>
-            {
-              record.applicationCategory === 'combination-application' && (
+          !record.isFirst ? null
+            : (
+              <div>
                 <Tooltip
-                  title={<FormattedMessage id="modify" />}
+                  title={<FormattedMessage id="editor" />}
                   placement="bottom"
                 >
                   <Button
                     shape="circle"
                     size="small"
-                    onClick={e => this.handleManage(record)}
-                    icon="predefine"
+                    onClick={e => this.handleopenTab(record, 'edit')}
+                    icon="mode_edit"
                   />
                 </Tooltip>
-              )
-            }
-            <Tooltip
-              title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
-              placement="bottom"
-            >
-              <Button
-                shape="circle"
-                size="small"
-                onClick={e => this.handleEnable(record)}
-                icon={record.enabled ? 'remove_circle_outline' : 'finished'}
-              />
-            </Tooltip>
-          </div>
+                {
+                  record.applicationCategory === 'combination-application' && (
+                    <Tooltip
+                      title={<FormattedMessage id="modify" />}
+                      placement="bottom"
+                    >
+                      <Button
+                        shape="circle"
+                        size="small"
+                        onClick={e => this.handleManage(record)}
+                        icon="predefine"
+                      />
+                    </Tooltip>
+                  )
+                }
+                <Tooltip
+                  title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
+                  placement="bottom"
+                >
+                  <Button
+                    shape="circle"
+                    size="small"
+                    onClick={e => this.handleEnable(record)}
+                    icon={record.enabled ? 'remove_circle_outline' : 'finished'}
+                  />
+                </Tooltip>
+              </div>
+            )
         ),
       },
     ];
 
-    const unHandleData = ApplicationStore.applicationData.slice();
+    
+    // if (unHandleData.length) {
+    //   unHandleData[0].descendants = [{ ...unHandleData[1], id: 1001, isFirst: false }, { ...unHandleData[1], id: 1002, isFirst: false }];
+    // }
 
     return (
       <Page>
-        <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
+        <Header title="应用管理">
           <Button
             onClick={this.handleClickAddApplication}
             icon="playlist_add"
@@ -238,7 +274,7 @@ export default class Application extends Component {
             columns={columns}
             dataSource={unHandleData}
             rowKey={record => record.id}
-            filters={params}
+            filters={params.slice()}
             onChange={this.handlePageChange}
             loading={ApplicationStore.loading}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}

@@ -257,6 +257,10 @@ class ApplicationStore {
     return axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications?${queryString.stringify(queryObj)}`)
       .then(action(({ failed, list, total }) => {
         if (!failed) {
+          if (list.length) {
+            // eslint-disable-next-line no-return-assign
+            list.forEach(v => v.isFirst = true);
+          }
           this.applicationData = list;
           this.pagination = {
             ...pagination,
