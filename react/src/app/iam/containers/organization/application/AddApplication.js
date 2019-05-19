@@ -245,11 +245,13 @@ export default class Application extends Component {
                       filter
                     >
                       {
-                        projectData.map(({ id, name, code }) => <Option value={id} key={id} title={name}>
-                          <Tooltip title={code} placement="right" align={{ offset: [20, 0] }}>
-                            <span style={{ display: 'inline-block', width: '100%' }}>{name}</span>
-                          </Tooltip>
-                        </Option>)
+                        projectData.map(({ id, name, code }) => (
+                          <Option value={id} key={id} title={name}>
+                            <Tooltip title={code} placement="right" align={{ offset: [20, 0] }}>
+                              <span style={{ display: 'inline-block', width: '100%' }}>{name}</span>
+                            </Tooltip>
+                          </Option>
+                        ))
                       }
                     </Select>,
                   )}
@@ -266,13 +268,11 @@ export default class Application extends Component {
     const columns = [{
       title: <FormattedMessage id={`${intlPrefix}.name`} />,
       dataIndex: 'name',
-      width: '30%',
-      render: (text, record) => (<StatusTag mode="icon" name={text} iconType={record.applicationCategory === 'application' ? 'application_-general' : 'grain'} />),
+      width: '160px',
     }, {
       title: <FormattedMessage id={`${intlPrefix}.code`} />,
       dataIndex: 'code',
       key: 'applicationCode',
-      width: '15%',
       render: text => (
         <MouseOverWrapper text={text} width={0.1}>
           {text}
@@ -280,7 +280,7 @@ export default class Application extends Component {
       ),
     }, {
       dataIndex: 'id',
-      width: '15%',
+      width: '50px',
       key: 'id',
       render: (text, record) => (
         <div>
@@ -320,7 +320,7 @@ export default class Application extends Component {
     if (this.props.form.getFieldValue('applicationCategory') === 'combination-application') {
       return (
         <div style={{ width: 512, paddingBottom: 42, marginBottom: 12, borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}>
-          <h5 style={{ marginTop: 24, marginBottom: 10 }}>子应用</h5>
+          <h3 style={{ marginTop: 24, marginBottom: 10 }}>子应用</h3>
           {this.renderTable()}
         </div>
       );
@@ -335,7 +335,7 @@ export default class Application extends Component {
     return (
       <AddSider
         data={getAddListDataSource}
-        selection={selectedRowKeys}
+        selections={selectedRowKeys.slice()}
         onOk={this.handleSiderOk}
         onCancel={this.handleSiderCancel}
       />

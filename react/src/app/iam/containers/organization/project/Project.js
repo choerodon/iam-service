@@ -7,7 +7,7 @@ import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
 import { PREFIX_CLS } from '@choerodon/boot/lib/containers/common/constants';
-import './Project.scss';
+import './Project.less';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 import { handleFiltersParams } from '../../../common/util';
@@ -889,6 +889,7 @@ export default class Project extends Component {
   };
 
   renderExpandRowRender(source) {
+    const { intl } = this.props;
     if (!source.category === 'PROGRAM') {
       return null;
     }
@@ -899,12 +900,10 @@ export default class Project extends Component {
       // width: '25%',
       width: '270px',
       render: (text, record) => (
-        <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
+        <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)} style={{ paddingLeft: 26 }}>
           <MouseOverWrapper text={text} width={0.2}>
-            <span style={{ marginRight: 8, marginLeft: 26, fontSize: '10px', lineHeight: '14px', padding: '2px 6px', background: record.enabled ? '#00bfa5' : '#f44336', color: '#fff', borderRadius: '2px' }}>
-              {record.enabled ? '启用' : '停用'}
-            </span>
-            {text}
+            <StatusTag mode="icon" name={text} colorCode={record.enabled ? 'COMPLETED' : 'DISABLE'} />
+            {/* {text} */}
           </MouseOverWrapper>
         </div>
       ),
@@ -984,7 +983,11 @@ export default class Project extends Component {
       }],
       filteredValue: filters.enabled || [],
       key: 'enabled',
-      render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
+      render: (enabled, record) => (
+        <span style={{ marginRight: 8, fontSize: '12px', lineHeight: '18px', padding: '2px 6px', background: record.enabled ? 'rgba(0, 191, 165, 0.1)' : 'rgba(244, 67, 54, 0.1)', color: record.enabled ? '#009688' : '#D50000', borderRadius: '2px', border: '1px solid', borderColor: record.enabled ? '#009688' : '#D50000' }}>
+          {record.enabled ? '启用' : '停用'}
+        </span>
+      ),
     }, {
       title: <FormattedMessage id={`${intlPrefix}.type.category`} />,
       dataIndex: 'category',
@@ -1013,7 +1016,7 @@ export default class Project extends Component {
               />
             </Tooltip>
           </Permission>
-          {record.category !== 'AGILE' && (
+          {record.category !== 'AGILE' && record.enabled && (
             <Tooltip
               title={<FormattedMessage id={`${intlPrefix}.config`} />}
               placement="bottom"
@@ -1107,7 +1110,7 @@ export default class Project extends Component {
             loading={ProjectStore.isLoading}
             expandedRowRender={record => this.renderExpandRowRender(record)}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
-            rowClassName={(record, index) => `${record.category !== 'PROGRAM' ? 'hidden-expand' : ''}`}
+            rowClassName={(record, index) => `${record.category === 'PROGRAM' && record.projects && record.projects.length ? '' : 'hidden-expand'}`}
           />
           <Sidebar
             title={this.renderSideTitle()}

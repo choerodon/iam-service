@@ -612,7 +612,7 @@ export default class MemberRole extends Component {
   loadUsers = (queryObj) => {
     const { MemberRoleStore } = this.props;
     MemberRoleStore.loadUsers(queryObj).then((data) => {
-      MemberRoleStore.setUsersData(data.content.slice());
+      MemberRoleStore.setUsersData(data.list.slice());
       this.setState({
         selectLoading: false,
       });
@@ -623,7 +623,7 @@ export default class MemberRole extends Component {
   loadClients = (queryObj) => {
     const { MemberRoleStore } = this.props;
     MemberRoleStore.loadClients(queryObj).then((data) => {
-      MemberRoleStore.setClientsData(data.content.slice());
+      MemberRoleStore.setClientsData(data.list.slice());
       this.setState({
         selectLoading: false,
       });
@@ -969,8 +969,8 @@ export default class MemberRole extends Component {
         pageSize,
       }, {
         loginName: [loginName],
-      }).then(({ content }) => {
-        this.editRole(content.find(memberData => memberData.loginName === loginName));
+      }).then(({ list }) => {
+        this.editRole(list.find(memberData => memberData.loginName === loginName));
       });
     } else {
       this.editRole(member);
@@ -985,8 +985,8 @@ export default class MemberRole extends Component {
         pageSize,
       }, {
         clientName,
-      }).then(({ content }) => {
-        this.editRole(content.find(memberData => memberData.name === clientName));
+      }).then(({ list }) => {
+        this.editRole(list.find(memberData => memberData.name === clientName));
       });
     } else {
       this.editRole(member);
