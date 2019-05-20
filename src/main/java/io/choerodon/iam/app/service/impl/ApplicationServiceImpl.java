@@ -537,6 +537,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 dto.setProjectCode(ae.getProjectCode());
                 dto.setProjectName(ae.getProjectName());
                 dto.setImageUrl(ae.getProjectImageUrl());
+                dto.setParentId(appId);
                 applications.add(dto);
                 processTreeData(dto, applicationExplorations);
             }

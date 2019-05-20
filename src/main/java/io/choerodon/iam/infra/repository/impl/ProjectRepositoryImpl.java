@@ -6,6 +6,7 @@ import java.util.Set;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import org.springframework.stereotype.Repository;
@@ -161,7 +162,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             result.setTotal(projectList.size());
             result.addAll(projectList);
         } else {
-            int start = page * size;
+            int start = PageUtils.getBegin(page, size);
             int count = memberRoleMapper.selectCountBySourceId(id, "project");
             result.setTotal(count);
             List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);

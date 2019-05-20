@@ -2,13 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.iam.infra.mapper.ApplicationMapper">
-    <resultMap id="ApplicationDO" type="io.choerodon.iam.infra.dto.ApplicationDTO" autoMapping="true">
+    <resultMap id="ApplicationDTO" type="io.choerodon.iam.infra.dto.ApplicationDTO" autoMapping="true">
         <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
-        <result column="is_abnormal" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="is_abnormal" property="abnormal" jdbcType="BOOLEAN"/>
     </resultMap>
 
-    <select id="fuzzyQuery" resultMap="ApplicationDO">
+    <select id="fuzzyQuery" resultMap="ApplicationDTO">
         SELECT
         ia.*,
         fp.name as project_name,
@@ -50,7 +50,7 @@
         </if>
     </select>
 
-    <select id="matchId" resultMap="ApplicationDO">
+    <select id="matchId" resultMap="ApplicationDTO">
         SELECT *
         FROM iam_application
         WHERE id IN

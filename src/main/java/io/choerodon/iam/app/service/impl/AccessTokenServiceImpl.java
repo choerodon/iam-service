@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.AccessTokenDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         if (size == 0) {
             pageResult.addAll(result);
         } else {
-            int start = (page - 1) * size;
+            int start = PageUtils.getBegin(page, size);
             int end = page * size > total - 1 ? total - 1 : page * size;
             pageResult.addAll(result.subList(start, end));
         }
