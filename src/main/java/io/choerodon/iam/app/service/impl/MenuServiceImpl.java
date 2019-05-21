@@ -176,6 +176,12 @@ public class MenuServiceImpl implements MenuService {
             menuMapper.insertSelective(menu);
         } else {
             //do update
+            boolean notDefault = MenuType.isMenu(dto.getType()) && dto.getDefault() != null && !dto.getDefault();
+            // only self menu can update name and icon
+            if (notDefault) {
+                dto.setName(dto.getName());
+                dto.setIcon(dto.getIcon());
+            }
             dto.setSort(menu.getSort());
             dto.setParentCode(menu.getParentCode());
             menuMapper.updateByPrimaryKey(dto);
