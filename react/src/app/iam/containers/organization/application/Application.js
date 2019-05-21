@@ -251,7 +251,7 @@ export default class Application extends Component {
     // }
 
     return (
-      <Page>
+      <Page className="c7n-iam-application">
         <Header title="应用管理">
           <Button
             onClick={this.handleClickAddApplication}
@@ -273,7 +273,7 @@ export default class Application extends Component {
             pagination={pagination}
             columns={columns}
             dataSource={unHandleData}
-            rowKey={record => record.id}
+            rowKey={record => `${record.parentId || 0} - ${record.id}`}
             filters={params.slice()}
             onChange={this.handlePageChange}
             loading={ApplicationStore.loading}

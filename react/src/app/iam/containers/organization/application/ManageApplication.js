@@ -3,7 +3,7 @@ import get from 'lodash/get';
 import { Button, Form, Table, Tooltip, Icon } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page } from '@choerodon/boot';
+import { Content, Header, Page, axios } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -82,7 +82,11 @@ export default class Application extends Component {
   }
 
   handleDelete = (record) => {
-    // need API
+    const { AppState: { currentMenuType: { organizationId } } } = this.props;
+    axios.post(`/v1/organizations/${organizationId}/applications/${this.id}/delete_combination`, [record.id])
+      .then(() => {
+        this.refresh();
+      });
   }
 
   render() {

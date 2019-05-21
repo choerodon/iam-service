@@ -1,8 +1,8 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.1.9",
-  "description": "publish 0.1.9, fix latest menu, fix member-role uncorrent content use, fix style of add application, fix style of application, fix manager application(need delete child application api), fix project style and logic of operation, fix dashboard crash bug",
+  "version": "0.1.10",
+  "description": "publish 0.1.10, fix AddSider null uncorrent display, fix application rowkey with parentId and style cover, add manager application delete, fix project sider logic and post data format.",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
