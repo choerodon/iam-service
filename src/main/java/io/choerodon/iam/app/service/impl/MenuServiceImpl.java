@@ -14,6 +14,7 @@ import io.choerodon.iam.infra.mapper.MenuMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -232,15 +233,19 @@ public class MenuServiceImpl implements MenuService {
                         subMenus.add(menu);
                     } else {
                         // 目录有叶子菜单 放到父级目录的子目录里面
-                        if (!menu.getSubMenus().isEmpty()) {
+                        if (!CollectionUtils.isEmpty(menu.getSubMenus())) {
                             subMenus.add(menu);
                         }
                     }
                 }
             }
         }
-        subMenus.sort(Comparator.comparing(MenuDTO::getSort));
-        parentMenu.setSubMenus(subMenus);
+        if (CollectionUtils.isEmpty(subMenus)) {
+            parentMenu.setSubMenus(null);
+        } else {
+            subMenus.sort(Comparator.comparing(MenuDTO::getSort));
+            parentMenu.setSubMenus(subMenus);
+        }
     }
 
     @Override
