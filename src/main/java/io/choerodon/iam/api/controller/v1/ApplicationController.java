@@ -123,7 +123,7 @@ public class ApplicationController {
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "将应用/组合应用从组合应用中移除")
-    @DeleteMapping("/{id}/delete_combination")
+    @PostMapping("/{id}/delete_combination")
     public ResponseEntity deleteCombination(@PathVariable("organization_id") Long organizationId,
                                             @PathVariable("id") Long id,
                                             @RequestBody Long[] ids) {
