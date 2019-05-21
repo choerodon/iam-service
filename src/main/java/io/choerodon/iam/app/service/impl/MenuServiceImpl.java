@@ -121,7 +121,7 @@ public class MenuServiceImpl implements MenuService {
             dto.setResourceLevel(level);
             menus.addAll(menuMapper.select(dto));
         }
-        toTreeMenu(topMenu, menus);
+        toTreeMenu(topMenu, menus, false);
         return topMenu;
     }
 
@@ -141,7 +141,7 @@ public class MenuServiceImpl implements MenuService {
         MenuDTO menu = getTopMenuByCode(code);
         String level = menu.getResourceLevel();
         Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
-        toTreeMenu(menu, menus);
+        toTreeMenu(menu, menus, true);
         return menu;
     }
 
@@ -176,6 +176,12 @@ public class MenuServiceImpl implements MenuService {
             menuMapper.insertSelective(menu);
         } else {
             //do update
+            boolean notDefault = MenuType.isMenu(dto.getType()) && dto.getDefault() != null && !dto.getDefault();
+            // only self menu can update name and icon
+            if (notDefault) {
+                dto.setName(dto.getName());
+                dto.setIcon(dto.getIcon());
+            }
             dto.setSort(menu.getSort());
             dto.setParentCode(menu.getParentCode());
             menuMapper.updateByPrimaryKey(dto);
@@ -202,17 +208,37 @@ public class MenuServiceImpl implements MenuService {
         menu.setDefault(false);
     }
 
-    private void toTreeMenu(MenuDTO parentMenu, Set<MenuDTO> menus) {
+    /**
+     * 转换树形菜单.
+     * 情况1：用户菜单不显示空目录
+     * 情况2：菜单配置显示空目录
+     *
+     * @param parentMenu      父级菜单
+     * @param menus           所有菜单列表
+     * @param isShowEmptyMenu 是否显示空目录
+     */
+    private void toTreeMenu(MenuDTO parentMenu, Set<MenuDTO> menus, Boolean isShowEmptyMenu) {
         String code = parentMenu.getCode();
         List<MenuDTO> subMenus = new ArrayList<>();
-        menus.forEach(menu -> {
-            if (code.equals(menu.getParentCode())) {
-                subMenus.add(menu);
+        for (MenuDTO menu : menus) {
+            if (code.equalsIgnoreCase(menu.getParentCode())) {
+                // 如果是叶子菜单 直接放到父级目录的子菜单列表里面
+                if (MenuType.isMenuItem(menu.getType())) {
+                    subMenus.add(menu);
+                }
                 if (MenuType.isMenu(menu.getType())) {
-                    toTreeMenu(menu, menus);
+                    toTreeMenu(menu, menus, isShowEmptyMenu);
+                    if (isShowEmptyMenu) {
+                        subMenus.add(menu);
+                    } else {
+                        // 目录有叶子菜单 放到父级目录的子目录里面
+                        if (!menu.getSubMenus().isEmpty()) {
+                            subMenus.add(menu);
+                        }
+                    }
                 }
             }
-        });
+        }
         subMenus.sort(Comparator.comparing(MenuDTO::getSort));
         parentMenu.setSubMenus(subMenus);
     }
