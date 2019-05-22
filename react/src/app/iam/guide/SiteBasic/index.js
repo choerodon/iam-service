@@ -215,7 +215,7 @@ export default class SiteBasic extends Component {
                 <p>拖动目录/菜单，调整目录/菜单的顺序。</p>
                 <p>点击 <GuideMask highLight="icon-playlist_add" level={1} siteLevel="site" route="/iam/menu-setting">创建目录</GuideMask>按钮。向对应层级添加目录。</p>
                 <EasyImg src={picAddMenu} />
-                <p>点击<GuideMask highLight="ant-btn-primary" level={0} siteLevel="site" route="/iam/menu-setting">保存</GuideMask>按钮完成菜单配置。</p>
+                <p>点击<GuideMask highLight="c7n-btn-primary" level={0} siteLevel="site" route="/iam/menu-setting">保存</GuideMask>按钮完成菜单配置。</p>
               </Timeline.Item>
               <Timeline.Item>
                 <p>
@@ -246,7 +246,7 @@ export default class SiteBasic extends Component {
                   {this.getGuideCard('settings', '系统配置')}
                 </GuideMask>
                 <p>您可以上传平台徽标、图形标，自定义平台简称、全称，更改平台默认密码和默认语言的顺序。</p>
-                <p>点击<GuideMask highLight="ant-btn-primary" level={0} siteLevel="site" route="/iam/system-setting">保存</GuideMask>按钮完成系统配置。</p>
+                <p>点击<GuideMask highLight="c7n-btn-primary" level={0} siteLevel="site" route="/iam/system-setting">保存</GuideMask>按钮完成系统配置。</p>
                 <p>您可以点击 <GuideMask highLight="icon-swap_horiz" level={1} siteLevel="site" route="/iam/system-setting">重置</GuideMask>按钮，还原到默认配置。</p>
               </Timeline.Item>
             </Timeline>

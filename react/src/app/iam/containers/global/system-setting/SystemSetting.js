@@ -360,9 +360,9 @@ export default class SystemSetting extends Component {
               <Icon type="help" style={{ fontSize: 16, color: '#bdbdbd' }} />
             </Popover>
           </span>
-          <div className="ant-upload ant-upload-select ant-upload-select-picture-card">
+          <div className="c7n-upload c7n-upload-select c7n-upload-select-picture-card">
             <LogoUploader type="logo" visible={uploadLogoVisible} onVisibleChange={this.handleUploadLogoVisibleChange} onSave={(res) => { SystemSettingStore.setLogo(res); }} />
-            {systemLogo ? <div className="ant-upload" onClick={this.handleUploadLogoVisibleChange}><img src={systemLogo} alt="" style={{ width: '80px', height: '80px' }} /></div> : uploadButton}
+            {systemLogo ? <div className="c7n-upload" onClick={this.handleUploadLogoVisibleChange}><img src={systemLogo} alt="" style={{ width: '80px', height: '80px' }} /></div> : uploadButton}
           </div>
         </FormItem>
         <FormItem

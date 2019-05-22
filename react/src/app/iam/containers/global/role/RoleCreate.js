@@ -461,7 +461,7 @@ export default class CreateRole extends Component {
                   rowKey="id"
                 />
                 {!firstLoad && !currentPermission.length ? (
-                  <div style={{ color: '#d50000' }} className="ant-form-explain">
+                  <div style={{ color: '#d50000' }} className="c7n-form-explain">
                     <FormattedMessage id={`${intlPrefix}.permission.require.msg`} />
                   </div>
                 ) : null}
