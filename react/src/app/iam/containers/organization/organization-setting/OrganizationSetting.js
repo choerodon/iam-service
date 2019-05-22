@@ -13,7 +13,7 @@ import AvatarUploader from '../../../components/avatarUploader';
 
 const { HeaderStore } = stores;
 const FormItem = Form.Item;
-const Option = Select.Option;
+const { Option } = Select;
 const intlPrefix = 'organization.info';
 const ORGANIZATION_TYPE = 'organization';
 const PROJECT_TYPE = 'project';
@@ -40,7 +40,7 @@ export default class OrganizationSetting extends Component {
 
   loadOrganization = () => {
     const { AppState } = this.props;
-    const id = AppState.currentMenuType.id;
+    const { id } = AppState.currentMenuType;
     OrganizationSettingStore.axiosGetOrganizationInfo(id).then((data) => {
       OrganizationSettingStore.setImageUrl(data.imageUrl);
       OrganizationSettingStore.setOrganizationInfo(data);
@@ -144,7 +144,7 @@ export default class OrganizationSetting extends Component {
     const { submitting } = this.state;
     const { intl } = this.props;
     const { getFieldDecorator } = this.props.form;
-    const { enabled, name, code, address, ownerRealName } = OrganizationSettingStore.getOrganizationInfo;
+    const { enabled, name, code, address, ownerRealName, homePage } = OrganizationSettingStore.getOrganizationInfo;
     return (
       <Page
         service={[
@@ -202,6 +202,13 @@ export default class OrganizationSetting extends Component {
                   <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.owner`} />} disabled style={{ width: 512 }} />,
                 )}
               </FormItem>
+              <FormItem>
+                {getFieldDecorator('homePage', {
+                  initialValue: homePage,
+                })(
+                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.homePage`} />} style={{ width: 512 }} />,
+                )}
+              </FormItem>
               <div>
                 <span style={{ color: 'rgba(0,0,0,.6)' }}>{intl.formatMessage({ id: `${intlPrefix}.avatar` })}</span>
                 {this.getAvatar()}
@@ -215,7 +222,9 @@ export default class OrganizationSetting extends Component {
                     type="primary"
                     loading={submitting}
                     disabled={!enabled}
-                  ><FormattedMessage id="save" /></Button>
+                  >
+                    <FormattedMessage id="save" />
+                  </Button>
                   <Button
                     funcType="raised"
                     onClick={this.cancelValue}

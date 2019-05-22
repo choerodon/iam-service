@@ -131,7 +131,7 @@ class OrganizationStore {
     axios.post('/iam/v1/organizations/check', JSON.stringify({ code: value }));
 
   @action
-  createOrUpdateOrg({ code, name, address, userId }, modify, imgUrl = null, HeaderStore) {
+  createOrUpdateOrg({ code, name, address, userId, homePage }, modify, imgUrl = null, HeaderStore) {
     const { show, editData: { id, code: originCode, objectVersionNumber } } = this;
     const isCreate = show === 'create';
     if (!modify && !isCreate) {
@@ -156,12 +156,17 @@ class OrganizationStore {
           body.userId = userId;
         }
 
+        if (homePage) {
+          body.homePage = homePage;
+        }
+
         message = 'create.success';
         method = 'post';
       } else {
         url = `/iam/v1/organizations/${id}`;
         body = {
           name,
+          homePage,
           objectVersionNumber,
           code: originCode,
           address: address || null,
