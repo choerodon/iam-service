@@ -741,6 +741,7 @@ const zh_CN = {
   'global.organization.codepatternmsg': '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾且不能连续出现两个"-"',
   'global.organization.namerequiredmsg': '请输入组织名称',
   'global.organization.project.count': '项目数量',
+  'global.organization.home.page': '官网地址',
   'global.organization.project.creationDate': '创建时间',
   'global.organization.detail': '组织信息',
   'global.organization.detail.title': '查看组织"{name}"的组织信息',
@@ -1571,6 +1572,7 @@ const zh_CN = {
   'organization.info.avatar': '组织图标',
   'organization.info.address': '组织所在地',
   'organization.info.owner': '组织所有者',
+  'organization.info.homePage': '官网地址',
   'organization.info.namerequiredmsg': '请输入组织名称',
   'organization.info.name.pattern.msg': '组织名称只能由汉字、字母、数字、"_"、"."、"-"、"——"和空格组成',
 

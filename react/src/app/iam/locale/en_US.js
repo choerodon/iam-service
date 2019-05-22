@@ -53,6 +53,7 @@ const en_US = {
   'client.tokenType': 'TokenType',
 
   'global.organization.project.creationDate': 'creatitonDate',
+  'global.organization.home.page': 'homePage',
 
   'global.system-setting.registerEnabled': 'registerEnabled',
   'global.system-setting.registerUrl': 'registerUrl',
@@ -117,6 +118,7 @@ const en_US = {
   'organization.idTip': 'Organization ID is required',
   'organization.nameTip': 'Organization name is required',
   'organization.editWarn': 'Organization name is same as before',
+  'organization.info.homePage': 'homePage',
 
   // service
   'service.id': 'Service ID',
