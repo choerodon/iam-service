@@ -7,11 +7,11 @@ import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.swagger.PermissionData;
+import io.choerodon.iam.app.task.FixDataHelper;
 import io.choerodon.iam.domain.service.ParsePermissionService;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -30,11 +30,20 @@ public class ActuatorSagaHandler {
     private static final String ACTUATOR_REFRESH_SAGA_CODE = "mgmt-actuator-refresh";
     private static final String PERMISSION_REFRESH_TASK_SAGA_CODE = "iam-permission-task-refresh";
     private static final String INIT_DATA_REFRESH_TASK_SAGA_CODE = "iam-init-data-task-refresh";
+    private static final String FIX_DATA_REFRESH_TASK_SAGA_CODE = "iam-fix-data-task-refresh";
 
-    @Autowired
     private ParsePermissionService parsePermissionService;
-    @Autowired
+
     private DataSource dataSource;
+
+    private FixDataHelper fixDataHelper;
+
+    public ActuatorSagaHandler(ParsePermissionService parsePermissionService, DataSource dataSource,
+                               FixDataHelper fixDataHelper) {
+        this.parsePermissionService = parsePermissionService;
+        this.dataSource = dataSource;
+        this.fixDataHelper = fixDataHelper;
+    }
 
     @SagaTask(code = PERMISSION_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 1, description = "刷新权限表数据")
     public String refreshPermission(String actuatorJson) throws IOException {
@@ -43,9 +52,9 @@ public class ActuatorSagaHandler {
         Map permissionNode = (Map) actuator.get("permission");
         LOGGER.info("start to refresh permission, service: {}", service);
         String permissionJson = OBJECT_MAPPER.writeValueAsString(permissionNode);
-        Map <String, PermissionDescription> descriptions = OBJECT_MAPPER.readValue(permissionJson, OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, PermissionDescription.class));
+        Map<String, PermissionDescription> descriptions = OBJECT_MAPPER.readValue(permissionJson, OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, PermissionDescription.class));
         Map<String, RoleDTO> initRoleMap = parsePermissionService.queryInitRoleByCode();
-        for (Map.Entry<String, PermissionDescription> entry: descriptions.entrySet()){
+        for (Map.Entry<String, PermissionDescription> entry : descriptions.entrySet()) {
             processDescription(service, entry.getKey(), entry.getValue(), initRoleMap);
         }
         return actuatorJson;
@@ -57,11 +66,11 @@ public class ActuatorSagaHandler {
         String service = root.get("service").asText();
         LOGGER.info("start to refresh init data, service: {}", service);
         JsonNode data = root.get("init-data");
-        if (data == null || data.size() == 0){
+        if (data == null || data.size() == 0) {
             LOGGER.info("actuator init-data is empty skip iam-init-data-task-refresh.");
             return actuatorJson;
         }
-        try(Connection connection = dataSource.getConnection()) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             MicroServiceInitData.processInitData(data, connection, new HashSet<>(Arrays.asList("IAM_PERMISSION", "IAM_MENU_B", "IAM_MENU_PERMISSION", "IAM_DASHBOARD", "IAM_DASHBOARD_ROLE")));
             connection.commit();
@@ -69,13 +78,20 @@ public class ActuatorSagaHandler {
         return actuatorJson;
     }
 
-    private void processDescription(String service, String key, PermissionDescription description, Map<String, RoleDTO> initRoleMap){
+    @SagaTask(code = FIX_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "0.16.0升级0.17.0菜单修数据")
+    public String fixData(String actuatorJson) {
+        LOGGER.info("start to fix menu data");
+        fixDataHelper.fix();
+        return actuatorJson;
+    }
+
+    private void processDescription(String service, String key, PermissionDescription description, Map<String, RoleDTO> initRoleMap) {
         String[] names = key.split("\\.");
         String controllerClassName = names[names.length - 2];
         String action = names[names.length - 1];
         String resource = camelToHyphenLine(controllerClassName).replace("-controller", "");
         PermissionEntity permissionEntity = description.getPermission();
-        if (permissionEntity == null){
+        if (permissionEntity == null) {
             return;
         }
         PermissionData permissionData = new PermissionData();
@@ -103,7 +119,7 @@ public class ActuatorSagaHandler {
         for (int i = 0; i < len; i++) {
             char c = param.charAt(i);
             if (Character.isUpperCase(c)) {
-                if (i > 0){
+                if (i > 0) {
                     sb.append('-');
                 }
                 sb.append(Character.toLowerCase(c));

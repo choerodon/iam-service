@@ -39,21 +39,24 @@ public class FixDataHelper {
     private static final String TOP_PROJECT = "choerodon.code.top.project";
     private static final String TOP_USER = "choerodon.code.top.user";
 
-
-    @Autowired
     private RoleMapper roleMapper;
-    @Autowired
+
     private DashboardMapper dashboardMapper;
-    @Autowired
+
     private DashboardRoleMapper dashboardRoleMapper;
 
     private MenuPermissionMapper menuPermissionMapper;
 
     private MenuMapper menuMapper;
 
-    public FixDataHelper(MenuPermissionMapper menuPermissionMapper, MenuMapper menuMapper) {
+    public FixDataHelper(MenuPermissionMapper menuPermissionMapper, MenuMapper menuMapper,
+                         RoleMapper roleMapper, DashboardMapper dashboardMapper,
+                         DashboardRoleMapper dashboardRoleMapper) {
         this.menuPermissionMapper = menuPermissionMapper;
         this.menuMapper = menuMapper;
+        this.roleMapper = roleMapper;
+        this.dashboardMapper = dashboardMapper;
+        this.dashboardRoleMapper = dashboardRoleMapper;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -63,22 +66,22 @@ public class FixDataHelper {
         fixDashboardRole();
     }
 
-    private void fixDashboardRole(){
+    private void fixDashboardRole() {
         Map<Long, String> dashboardMap = new HashMap<>();
         Map<Long, String> roleMap = new HashMap<>();
-        for (DashboardDTO dashboard: dashboardMapper.selectAll()){
+        for (DashboardDTO dashboard : dashboardMapper.selectAll()) {
             dashboardMap.put(dashboard.getId(), dashboard.getCode());
         }
-        for (RoleDTO role: roleMapper.selectAll()){
+        for (RoleDTO role : roleMapper.selectAll()) {
             roleMap.put(role.getId(), role.getCode());
         }
-        for (DashboardRoleDTO dr : dashboardRoleMapper.selectAll()){
+        for (DashboardRoleDTO dr : dashboardRoleMapper.selectAll()) {
             try {
                 Long roleId = Long.parseLong(dr.getRoleCode());
                 Long dashboardId = Long.parseLong(dr.getDashboardCode());
                 String roleCode = roleMap.get(roleId);
                 String dashboardCode = dashboardMap.get(dashboardId);
-                if (roleCode == null || dashboardCode == null){
+                if (roleCode == null || dashboardCode == null) {
                     logger.info("not found role[{}] or dashboard[{}] delete it.", roleId, dashboardCode);
                     dashboardRoleMapper.deleteByPrimaryKey(dr);
                     continue;
@@ -86,14 +89,14 @@ public class FixDataHelper {
                 DashboardRoleDTO example = new DashboardRoleDTO();
                 example.setRoleCode(roleCode);
                 example.setDashboardCode(dashboardCode);
-                if(dashboardRoleMapper.selectOne(example) == null){
+                if (dashboardRoleMapper.selectOne(example) == null) {
                     dr.setRoleCode(roleCode);
                     dr.setDashboardCode(dashboardCode);
                     dashboardRoleMapper.updateByPrimaryKeySelective(dr);
                 } else {
                     dashboardRoleMapper.deleteByPrimaryKey(dr);
                 }
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 //正常的数据，跳过
             }
         }
@@ -104,7 +107,7 @@ public class FixDataHelper {
         Map<String, Long> topMenuMap = getTopMenu();
 
         updateParentId(topMenuMap);
-        
+
         updateType("dir", MenuType.MENU.value());
 
         updateResourceLevel();
