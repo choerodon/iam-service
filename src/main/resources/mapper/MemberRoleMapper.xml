@@ -64,9 +64,7 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
---         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
---         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
@@ -123,9 +121,7 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
---         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
---         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
@@ -199,9 +195,7 @@
         ) ic
         LEFT JOIN iam_member_role ON iam_member_role.MEMBER_ID = ic.id
         LEFT JOIN iam_role ON iam_member_role.ROLE_ID = iam_role.ID
---         LEFT JOIN iam_role_tl irt ON iam_role.id = irt.id
         WHERE iam_member_role.MEMBER_TYPE = 'client'
---         AND irt.lang = #{lang}
         AND iam_member_role.source_id = #{sourceId}
         AND iam_member_role.source_type = #{sourceType}
         ORDER BY iam_member_role.LAST_UPDATE_DATE DESC
