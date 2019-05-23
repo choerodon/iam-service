@@ -3,7 +3,6 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.dto.test.UserDTO
 import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.domain.repository.OrganizationRepository
 import io.choerodon.iam.domain.repository.ProjectRepository

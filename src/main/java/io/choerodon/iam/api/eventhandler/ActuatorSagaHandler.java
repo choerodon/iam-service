@@ -80,7 +80,7 @@ public class ActuatorSagaHandler {
 
     @SagaTask(code = FIX_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "0.16.0升级0.17.0菜单修数据")
     public String fixData(String actuatorJson) {
-        LOGGER.info("start to fix menu data");
+        LOGGER.info("start to fix menu and dashboard data");
         fixDataHelper.fix();
         return actuatorJson;
     }
