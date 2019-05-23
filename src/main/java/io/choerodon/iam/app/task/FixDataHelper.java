@@ -15,7 +15,6 @@ import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,9 +105,11 @@ public class FixDataHelper {
         logger.info("start to fix data in iam_menu");
         Map<String, Long> topMenuMap = getTopMenu();
 
-        updateParentId(topMenuMap);
-
+        updateType("menu", MenuType.MENU_ITEM.value());
         updateType("dir", MenuType.MENU.value());
+        updateType("root", MenuType.MENU.value());
+
+        updateParentId(topMenuMap);
 
         updateResourceLevel();
     }
@@ -125,8 +126,14 @@ public class FixDataHelper {
     private void updateType(String oldType, String newType) {
         MenuDTO example = new MenuDTO();
         example.setType(oldType);
-        example.setDefault(false);
         menuMapper.select(example).forEach(m -> {
+            String parentCode = m.getParentCode();
+            //只有第一次修数据,parentCode才能转为id
+            try {
+                Long.valueOf(parentCode);
+            } catch (Exception e) {
+                return;
+            }
             m.setType(newType);
             menuMapper.updateByPrimaryKey(m);
         });
