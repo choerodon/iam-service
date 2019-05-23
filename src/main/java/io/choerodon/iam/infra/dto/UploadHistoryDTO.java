@@ -13,7 +13,7 @@ import java.util.Date;
  * @author superlee
  * @since 2019-04-23
  */
-@Table(name = "iam_menu_b")
+@Table(name = "iam_upload_history")
 public class UploadHistoryDTO extends BaseDTO {
 
     @Id
