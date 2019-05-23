@@ -506,7 +506,7 @@ export default class Organization extends Component {
       dataIndex: 'name',
       key: 'name',
       filters: [],
-      width: '25%',
+      width: '35%',
       render: (text, record) => (
         <React.Fragment>
           <div className="c7n-iam-organization-name-avatar">
@@ -522,20 +522,22 @@ export default class Organization extends Component {
       ),
       sortOrder: columnKey === 'name' && order,
       filteredValue: filters.name || [],
-    }, {
-      key: 'homePage',
-      width: '20%',
-      title: <FormattedMessage id="global.organization.home.page" />,
-      dataIndex: 'homePage',
-      // filters: [],
-      sortOrder: columnKey === 'homePage' && order,
-      // filteredValue: filters.homePage || [],
-      render: text => (
-        <MouseOverWrapper text={text} width={0.3}>
-          {text}
-        </MouseOverWrapper>
-      ),
-    }, {
+    }, 
+    // {
+    //   key: 'homePage',
+    //   width: '20%',
+    //   title: <FormattedMessage id="global.organization.home.page" />,
+    //   dataIndex: 'homePage',
+    //   // filters: [],
+    //   sortOrder: columnKey === 'homePage' && order,
+    //   // filteredValue: filters.homePage || [],
+    //   render: text => (
+    //     <MouseOverWrapper text={text} width={0.3}>
+    //       {text}
+    //     </MouseOverWrapper>
+    //   ),
+    // }, 
+    {
       title: <FormattedMessage id="code" />,
       dataIndex: 'code',
       key: 'code',
