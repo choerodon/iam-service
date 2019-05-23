@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { Button, Form, Icon, Table, Select } from 'choerodon-ui';
+import { Button, Form, Icon, Table, Select, Menu, Dropdown } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Action, Content, Header, Page, Permission, Menu, Dropdown } from '@choerodon/boot';
+import { Action, Content, Header, Page, Permission } from '@choerodon/boot';
 import { RESOURCES_LEVEL } from '@choerodon/boot/lib/containers/common/constants';
 import RoleStore from '../../../stores/global/role/RoleStore';
 import './Role.scss';
@@ -136,7 +136,7 @@ export default class Role extends Component {
     this.loadRole(pagination, sort, filters, params);
   };
 
-  handleChangeLevel = (key) => {
+  handleChangeLevel = ({ key }) => {
     const { level } = this.state;
     if (key !== level) {
       this.setState({
@@ -169,26 +169,23 @@ export default class Role extends Component {
   }
 
   renderLevelSelect = () => {
-    // const menu = (
-    //   <Menu onClick={this.handleChangeLevel}>
-    //     {(levels || []).map(level => (
-    //       <Menu.Item key={level}>
-    //         {this.renderLevel(level)}
-    //       </Menu.Item>
-    //     ))}
-    //   </Menu>
-    // );
-    // return (
-    //   <Dropdown overlay={menu}>
-    //     {this.renderLevel(this.state.level)} <Icon type="arrow_drop_down" />
-    //   </Dropdown>
-    // );
+    const menu = (
+      <Menu onClick={this.handleChangeLevel}>
+        {
+          levels.filter(v => v !== 'user').map(level => (
+            <Menu.Item key={level}>
+              {this.renderLevel(level)}
+            </Menu.Item>
+          ))
+        }
+      </Menu>
+    );
     return (
-      <Select value={this.state.level} onChange={this.handleChangeLevel}>
-        {levels.map(level => (
-          <Select.Option key={level} value={level}>{this.renderLevel(level)}</Select.Option>
-        ))}
-      </Select>
+      <Dropdown overlay={menu} trigger={['click']}>
+        <a className="c7n-dropdown-link" href="#">
+          {this.renderLevel(this.state.level)} <Icon type="arrow_drop_down" />
+        </a>
+      </Dropdown>
     );
   }
 
@@ -356,6 +353,7 @@ export default class Role extends Component {
             <Button
               icon="playlist_add"
               onClick={this.goCreate}
+              style={{ marginLeft: 15 }}
             >
               <FormattedMessage id={`${intlPrefix}.create`} />
             </Button>

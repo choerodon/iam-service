@@ -1,15 +1,15 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.1.11",
-  "description": "publish 0.1.11, fix incorrent prefix ant2c7n, fix application manager style bug, add logic of select selected applications in application manager page.",
+  "version": "0.17.0",
+  "description": "publish 0.17.0, init menu, fix dashboard-setting page can not open sider bug, fix dashboard incorrect link bug, fix role page select level style bug.",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
   "dependencies": {
-    "@choerodon/boot": "0.1.x",
-    "@choerodon/master": "0.1.x",
+    "@choerodon/boot": "0.17.x",
+    "@choerodon/master": "0.17.x",
     "choerodon-ui-font": "^0.1.3",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
