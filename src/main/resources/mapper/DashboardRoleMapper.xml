@@ -22,19 +22,25 @@
         DELETE FROM IAM_DASHBOARD_ROLE WHERE DASHBOARD_CODE = #{dashboardCode}
     </delete>
 
-    <select id="selectDashboardByUserId" resultType="java.lang.String">
-        SELECT
-        d.ID
-        FROM
-        IAM_DASHBOARD_ROLE dr
-        LEFT JOIN IAM_ROLE r ON dr.ROLE_CODE = dr.ROLE_CODE
-        LEFT JOIN IAM_MEMBER_ROLE mr ON mr.ROLE_ID = r.ID
-        LEFT JOIN IAM_DASHBOARD d ON d.CODE = dr.DASHBOARD_CODE
-        WHERE
-        mr.MEMBER_TYPE = 'user'
-        AND mr.MEMBER_ID = #{userId}
-        AND mr.SOURCE_ID = #{sourceId}
-        AND mr.SOURCE_TYPE = #{level}
-        AND r.IS_ENABLED = true
+    <select id="selectDashboardByUserId" resultType="java.lang.Long">
+      select d.id
+      from iam_dashboard d
+      join
+      (
+          select idr.dashboard_code
+          from iam_dashboard_role idr
+          join
+          (
+              select ir.code from  iam_role ir
+              join
+              (
+                 select distinct imr.role_id as id from  iam_member_role imr
+                 where imr.member_type = 'user'
+                 and imr.member_id = #{userId}
+                 and imr.source_id = #{sourceId}
+                 and imr.source_type = #{level}
+             ) t1 on (ir.id = t1.id and ir.is_enabled = 1)
+          ) t2 on t2.code = idr.role_code
+      ) t3 on d.code = t3.dashboard_code
     </select>
 </mapper>
