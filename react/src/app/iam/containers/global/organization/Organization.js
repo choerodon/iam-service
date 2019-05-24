@@ -522,29 +522,27 @@ export default class Organization extends Component {
       ),
       sortOrder: columnKey === 'name' && order,
       filteredValue: filters.name || [],
-    }, 
-    // {
-    //   key: 'homePage',
-    //   width: '20%',
-    //   title: <FormattedMessage id="global.organization.home.page" />,
-    //   dataIndex: 'homePage',
-    //   // filters: [],
-    //   sortOrder: columnKey === 'homePage' && order,
-    //   // filteredValue: filters.homePage || [],
-    //   render: text => (
-    //     <MouseOverWrapper text={text} width={0.3}>
-    //       {text}
-    //     </MouseOverWrapper>
-    //   ),
-    // }, 
-    {
+    }, {
+      key: 'homePage',
+      width: '17%',
+      title: <FormattedMessage id="global.organization.home.page" />,
+      dataIndex: 'homePage',
+      // filters: [],
+      sortOrder: columnKey === 'homePage' && order,
+      // filteredValue: filters.homePage || [],
+      render: text => (
+        <MouseOverWrapper text={text} width={0.3}>
+          {text}
+        </MouseOverWrapper>
+      ),
+    }, {
       title: <FormattedMessage id="code" />,
       dataIndex: 'code',
       key: 'code',
       filters: [],
       sortOrder: columnKey === 'code' && order,
       filteredValue: filters.code || [],
-      width: '20%',
+      width: '13%',
       render: text => (
         <MouseOverWrapper text={text} width={0.3}>
           {text}
@@ -552,11 +550,13 @@ export default class Organization extends Component {
       ),
     }, {
       title: <FormattedMessage id="global.organization.project.count" />,
+      width: '80px',
       dataIndex: 'projectCount',
       key: 'projectCount',
       align: 'center',
     }, {
       title: <FormattedMessage id="status" />,
+      width: '100px',
       dataIndex: 'enabled',
       key: 'enabled',
       filters: [{
@@ -570,6 +570,7 @@ export default class Organization extends Component {
       render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
     }, {
       title: <FormattedMessage id="global.organization.project.creationDate" />,
+      width: '200px',
       dataIndex: 'creationDate',
       key: 'creationDate',
     }, {
