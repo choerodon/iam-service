@@ -4,6 +4,19 @@
 
 # [0.17.0] -2019-05-24
 
+## 前端
+
+### 修改
+
+- 重构菜单管理
+- 重构角色管理
+- 重构应用管理
+- 重构项目管理
+- 拆分不同服务的页面
+- 重构消息通知
+
+## 后端
+
 ### 修改
 
 - choerodon-starter-mybatis-mapper更换为choerodon-starter-mybatis依赖
