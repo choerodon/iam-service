@@ -76,12 +76,24 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public List<ProjectDTO> query(ProjectDTO projectDTO) {
-        return projectMapper.fulltextSearch(projectDTO, null);
+        return projectMapper.fulltextSearch(projectDTO, null, null, null);
     }
 
     @Override
     public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPageInfo(() -> projectMapper.fulltextSearch(projectDTO, param));
+        Page<ProjectDTO> result = new Page<>(page, size);
+        if (size == 0) {
+            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, null, null);
+            result.setTotal(projectList.size());
+            result.addAll(projectList);
+        } else {
+            int start = PageUtils.getBegin(page, size);
+            int count = projectMapper.fulltextSearchCount(projectDTO, param);
+            result.setTotal(count);
+            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, start, size);
+            result.addAll(projectList);
+        }
+        return result.toPageInfo();
     }
 
     @Override

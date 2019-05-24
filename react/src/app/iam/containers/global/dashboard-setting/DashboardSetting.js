@@ -97,7 +97,7 @@ class DashboardSetting extends Component {
   editCard(record) {
     const { DashboardSettingStore, form } = this.props;
     DashboardSettingStore.setNeedRoles(record.needRoles);
-    RoleStore.loadRole({ pageSize: 999 }, {}, { level: record.level }).then((data) => {
+    RoleStore.loadRole(record.level, { pageSize: 999 }, {}, {}).then((data) => {
       RoleStore.setRoles(data.list || []);
     });
     DashboardSettingStore.setEditData(record);
@@ -240,14 +240,14 @@ class DashboardSetting extends Component {
   renderRoleSelect = () => {
     const roles = RoleStore.getRoles;
     return roles.map(item =>
-      <Option key={item.id} value={item.id}>{item.name}</Option>);
+      <Option key={item.code} value={item.code}>{item.name}</Option>);
   };
 
   renderForm() {
     const roles = RoleStore.getRoles;
     const {
       form: { getFieldDecorator }, intl,
-      DashboardSettingStore: { editData: { code, name, level, icon, title, namespace, roleIds }, needRoles },
+      DashboardSettingStore: { editData: { code, name, level, icon, title, namespace, roleCodes }, needRoles },
     } = this.props;
     return (
       <Content
@@ -347,9 +347,9 @@ class DashboardSetting extends Component {
           <FormItem
             {...formItemLayout}
           >
-            {getFieldDecorator('roleIds', {
+            {getFieldDecorator('roleCodes', {
               valuePropName: 'value',
-              initialValue: roleIds && roleIds.slice(),
+              initialValue: roleCodes && roleCodes.slice(),
             })(
               <Select
                 mode="multiple"

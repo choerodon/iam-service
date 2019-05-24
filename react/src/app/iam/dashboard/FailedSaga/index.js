@@ -163,7 +163,7 @@ export default class FailedSaga extends Component {
           </div>
         </Spin>
         <DashBoardNavBar>
-          <Link to="/iam/saga-instance"><FormattedMessage id={`${intlPrefix}.redirect`} /></Link>
+          <Link to="/asgard/saga-instance"><FormattedMessage id={`${intlPrefix}.redirect`} /></Link>
         </DashBoardNavBar>
       </div>
     );

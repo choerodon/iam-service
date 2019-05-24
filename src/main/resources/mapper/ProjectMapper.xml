@@ -11,6 +11,7 @@
             <result property="name" column="project_name"/>
             <result property="code" column="project_code"/>
             <result property="enabled" column="project_enabled"/>
+            <result property="organizationId" column="project_organization_id"/>
         </collection>
     </resultMap>
 
@@ -63,25 +64,10 @@
         </if>
     </select>
 
-    <select id="fulltextSearch" resultMap="projectDTO">
-        select
-          fp.*,
-          fpt.name as type_name,
-          fp1.id as project_id,
-          fp1.name as project_name,
-          fp1.code as project_code,
-          fp1.is_enabled as project_enabled
-        from fd_project fp
+    <select id="fulltextSearchCount" resultType="java.lang.Integer">
+        select count(fp.id) from fd_project fp
         left join fd_project_type fpt
         on fp.type = fpt.code
-        left join fd_project_relationship fpr
-        on
-        (
-          fp.id = fpr.program_id
-          and fp.category = 'PROGRAM'
-        )
-        left join fd_project fp1
-        on fpr.project_id = fp1.id
         where fp.organization_id = #{project.organizationId}
         <if test="project.name != null">
             and fp.name like concat(concat('%',#{project.name}),'%')
@@ -105,7 +91,58 @@
             fpt.name like concat(concat('%',#{param}),'%')
             )
         </if>
-        order by id desc
+    </select>
+
+    <select id="fulltextSearch" resultMap="projectDTO">
+        select
+        t1.*,
+        fp1.id as project_id,
+        fp1.name as project_name,
+        fp1.code as project_code,
+        fp1.is_enabled as project_enabled,
+        fp1.organization_id as project_organization_id
+        from
+        (
+            select fp.*, fpt.name as type_name
+            from fd_project fp
+            left join fd_project_type fpt
+            on fp.type = fpt.code
+            where fp.organization_id = #{project.organizationId}
+            <if test="project.name != null">
+                and fp.name like concat(concat('%',#{project.name}),'%')
+            </if>
+            <if test="project.code != null">
+                and fp.code like concat(concat('%',#{project.code}),'%')
+            </if>
+            <if test="project.enabled != null">
+                and fp.is_enabled = #{project.enabled}
+            </if>
+            <if test="project.category != null">
+                and fp.category = #{project.category}
+            </if>
+            <if test="project.typeName != null">
+                and fpt.name like concat(concat('%',#{project.typeName}),'%')
+            </if>
+            <if test="param != null">
+                and(
+                fp.name like concat(concat('%',#{param}),'%') or
+                fp.code like concat(concat('%',#{param}),'%') or
+                fpt.name like concat(concat('%',#{param}),'%')
+                )
+            </if>
+            order by fp.id desc
+            <if test="start != null and size != null">
+                limit #{start}, #{size}
+            </if>
+        ) t1
+        left join fd_project_relationship fpr
+        on
+        (
+            t1.id = fpr.program_id
+            and t1.category = 'PROGRAM'
+        )
+        left join fd_project fp1
+        on fpr.project_id = fp1.id
     </select>
 
 

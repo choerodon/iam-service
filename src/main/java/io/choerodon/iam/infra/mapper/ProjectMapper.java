@@ -13,7 +13,12 @@ import org.apache.ibatis.annotations.Param;
 public interface ProjectMapper extends Mapper<ProjectDTO> {
 
     List<ProjectDTO> fulltextSearch(@Param("project") ProjectDTO projectDTO,
-                                   @Param("param") String param);
+                                   @Param("param") String param,
+                                    @Param("start") Integer start,
+                                    @Param("size") Integer size);
+
+    int fulltextSearchCount(@Param("project") ProjectDTO projectDTO,
+                                    @Param("param") String param);
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
                                            @Param("projectDTO") ProjectDTO projectDTO);

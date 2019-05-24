@@ -67,7 +67,7 @@ export default class Announcement extends Component {
           />
         </Modal>
         <DashBoardNavBar>
-          <Link to="/iam/user-msg?type=site&msgType=announcement">转至所有公告</Link>
+          <Link to="/notify/user-msg?type=site&msgType=announcement">转至所有公告</Link>
         </DashBoardNavBar>
       </div>
     );

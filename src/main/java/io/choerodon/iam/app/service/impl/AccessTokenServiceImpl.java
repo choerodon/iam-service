@@ -61,7 +61,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             pageResult.addAll(result);
         } else {
             int start = PageUtils.getBegin(page, size);
-            int end = page * size > total - 1 ? total - 1 : page * size;
+            int end = page * size > total ? total : page * size;
             pageResult.addAll(result.subList(start, end));
         }
         return pageResult.toPageInfo();
