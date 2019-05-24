@@ -181,7 +181,7 @@ export default class Role extends Component {
       </Menu>
     );
     return (
-      <Dropdown overlay={menu} trigger={['click']}>
+      <Dropdown overlay={menu} trigger={['click']} overlayClassName="c7n-role-popover">
         <a className="c7n-dropdown-link" href="#">
           {this.renderLevel(this.state.level)} <Icon type="arrow_drop_down" />
         </a>
@@ -353,7 +353,7 @@ export default class Role extends Component {
             <Button
               icon="playlist_add"
               onClick={this.goCreate}
-              style={{ marginLeft: 15 }}
+              style={{ marginLeft: 30 }}
             >
               <FormattedMessage id={`${intlPrefix}.create`} />
             </Button>

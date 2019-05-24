@@ -156,7 +156,11 @@ export default class CreateRole extends Component {
   }
 
   checkCode = (rule, value, callback) => {
-    const validValue = `role/${this.level}/custom/${value}`;
+    const { isEdit, level } = this;
+    if (isEdit) {
+      callback();
+    }
+    const validValue = `role/${level}/custom/${value}`;
     const params = { code: validValue };
     axios.post('/iam/v1/roles/check', JSON.stringify(params)).then((mes) => {
       if (mes.failed) {
@@ -210,6 +214,11 @@ export default class CreateRole extends Component {
   }
 
   handleCreate = (e) => {
+    const { level, isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
+    const codePrefix = isDefault
+      ? `role/${level}/default/`
+      : `role/${level}/custom/`;
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err) => {
       if (!err) {
@@ -217,7 +226,7 @@ export default class CreateRole extends Component {
         const labelIds = labelValues && labelValues.map(labelId => ({ id: labelId }));
         const role = {
           name: this.props.form.getFieldValue('name').trim(),
-          code: `role/${this.level}/custom/${this.props.form.getFieldValue('code').trim()}`,
+          code: `${codePrefix}${this.props.form.getFieldValue('code').trim()}`,
           level: this.level,
           permissions: RoleStore.selectedPermissions.map(p => ({ id: p })),
           labels: labelIds,
@@ -227,8 +236,12 @@ export default class CreateRole extends Component {
         if (this.isEdit) {
           RoleStore.editRoleByid(this.roleId, role)
             .then((data) => {
-              Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
-              this.linkToChange('/iam/role');
+              if (!data.failed) {
+                Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
+                this.linkToChange('/iam/role');
+              } else {
+                Choerodon.prompt(data.message);
+              }
             });
         } else {
           RoleStore.createRole(role)
@@ -313,8 +326,11 @@ export default class CreateRole extends Component {
   };
 
   renderForm = () => {
-    const { level, props: { intl, form: { getFieldDecorator } } } = this;
-    const codePrefix = `role/${level}/custom/`;
+    const { level, props: { intl, form: { getFieldDecorator } }, isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
+    const codePrefix = isDefault
+      ? `role/${level}/default/`
+      : `role/${level}/custom/`;
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -341,7 +357,7 @@ export default class CreateRole extends Component {
               validator: this.checkCode,
             }],
             validateFirst: true,
-            initialValue: (RoleStore.roleMsg.code || '').slice(codePrefix.length),
+            initialValue: isEdit ? (RoleStore.roleMsg.code || '').slice(codePrefix.length) : undefined,
           })(
             <Input
               autoComplete="off"
@@ -349,7 +365,7 @@ export default class CreateRole extends Component {
               prefix={codePrefix}
               size="default"
               style={{ width: 250 }}
-              disabled={false}
+              disabled={isEdit}
               maxLength={64}
               showLengthInfo={false}
             />,
@@ -362,7 +378,7 @@ export default class CreateRole extends Component {
               whitespace: true,
               message: intl.formatMessage({ id: `${intlPrefix}.name.require.msg` }),
             }],
-            initialValue: RoleStore.roleMsg.name,
+            initialValue: isEdit ? RoleStore.roleMsg.name : undefined,
           })(
             <Input
               autoComplete="off"
@@ -370,6 +386,7 @@ export default class CreateRole extends Component {
               style={{ width: 250 }}
               maxLength={64}
               showLengthInfo={false}
+              disabled={isDefault}
             />,
           )}
         </FormItem>
@@ -377,7 +394,7 @@ export default class CreateRole extends Component {
           {...formItemLayout}
         >
           {getFieldDecorator('label', {
-            initialValue: (RoleStore.roleMsg.labels || []).map(l => l.id),
+            initialValue: isEdit ? (RoleStore.roleMsg.labels || []).map(l => l.id) : [],
           })(
             <Select
               mode="multiple"
