@@ -506,7 +506,7 @@ export default class Organization extends Component {
       dataIndex: 'name',
       key: 'name',
       filters: [],
-      width: '22%',
+      width: '20%',
       render: (text, record) => (
         <React.Fragment>
           <div className="c7n-iam-organization-name-avatar">
@@ -524,7 +524,7 @@ export default class Organization extends Component {
       filteredValue: filters.name || [],
     }, {
       key: 'homePage',
-      width: '17%',
+      // width: '20%',
       title: <FormattedMessage id="global.organization.home.page" />,
       dataIndex: 'homePage',
       // filters: [],
@@ -542,7 +542,7 @@ export default class Organization extends Component {
       filters: [],
       sortOrder: columnKey === 'code' && order,
       filteredValue: filters.code || [],
-      width: '11%',
+      width: '15%',
       render: text => (
         <MouseOverWrapper text={text} width={0.3}>
           {text}
@@ -550,13 +550,13 @@ export default class Organization extends Component {
       ),
     }, {
       title: <FormattedMessage id="global.organization.project.count" />,
-      width: '12%',
+      width: '10%',
       dataIndex: 'projectCount',
       key: 'projectCount',
       align: 'center',
     }, {
       title: <FormattedMessage id="status" />,
-      width: '12%',
+      width: '15%',
       dataIndex: 'enabled',
       key: 'enabled',
       filters: [{
@@ -575,7 +575,7 @@ export default class Organization extends Component {
       key: 'creationDate',
     }, {
       title: '',
-      width: 150,
+      width: 120,
       key: 'action',
       align: 'right',
       render: (text, record) => (
@@ -674,6 +674,7 @@ export default class Organization extends Component {
             loading={loading}
             rowKey="id"
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
+            scroll={{ x: true }}
           />
           <Sidebar
             title={<FormattedMessage id={this.renderSidebarTitle()} />}

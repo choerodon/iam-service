@@ -2,7 +2,7 @@
   "name": "@choerodon/iam",
   "routeName": "iam",
   "version": "0.17.0",
-  "description": "publish 0.17.0, init menu, fix dashboard-setting page can not open sider bug, fix dashboard incorrect link bug, fix role page select level style bug.",
+  "description": "",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
