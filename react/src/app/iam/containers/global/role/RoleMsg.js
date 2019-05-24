@@ -303,7 +303,7 @@ export default class CreateRole extends Component {
     set(RoleStore.expand, tabLevel, !expand);
   }
 
-  renderCheckbox = () => {
+  renderCheckbox = (isDefault) => {
     const { selectedPermissions } = RoleStore;
     const allPermissionsByLevel = this.getAllPermissionsByLevel(RoleStore.tabLevel);
     const checkedAll = allPermissionsByLevel.every(p => selectedPermissions.includes(p));
@@ -314,6 +314,7 @@ export default class CreateRole extends Component {
         indeterminate={checkedSome}
         onChange={this.handleCheckboxAllClick.bind(this, checkedAll, checkedNone, checkedSome)}
         checked={!checkedNone}
+        disabled={isDefault}
       />
     );
   }
@@ -414,6 +415,8 @@ export default class CreateRole extends Component {
   renderTable = (level) => {
     const data = get(RoleStore.menus, level);
     const expandedRowKeys = get(RoleStore.expandedRowKeys, level) || [];
+    const { isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${this.level}/default/`);
     const columns = [{
       title: '菜单',
       dataIndex: 'name',
@@ -426,7 +429,7 @@ export default class CreateRole extends Component {
         </span>
       ),
     }, {
-      title: this.renderCheckbox(),
+      title: this.renderCheckbox(isDefault),
       dataIndex: 'id',
       key: 'id',
       width: '36px',
@@ -440,6 +443,7 @@ export default class CreateRole extends Component {
             indeterminate={checkedSome}
             onChange={this.handleCheckboxClick.bind(this, record, checkedAll, checkedNone, checkedSome)}
             checked={!checkedNone}
+            disabled={isDefault}
           />
         );
       },

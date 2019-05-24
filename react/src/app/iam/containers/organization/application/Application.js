@@ -210,7 +210,7 @@ export default class Application extends Component {
             : (
               <div>
                 <Tooltip
-                  title={<FormattedMessage id="editor" />}
+                  title={<FormattedMessage id="modify" />}
                   placement="bottom"
                 >
                   <Button
