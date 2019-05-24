@@ -506,7 +506,7 @@ export default class Organization extends Component {
       dataIndex: 'name',
       key: 'name',
       filters: [],
-      width: '35%',
+      width: '22%',
       render: (text, record) => (
         <React.Fragment>
           <div className="c7n-iam-organization-name-avatar">
@@ -542,7 +542,7 @@ export default class Organization extends Component {
       filters: [],
       sortOrder: columnKey === 'code' && order,
       filteredValue: filters.code || [],
-      width: '13%',
+      width: '11%',
       render: text => (
         <MouseOverWrapper text={text} width={0.3}>
           {text}
@@ -550,13 +550,13 @@ export default class Organization extends Component {
       ),
     }, {
       title: <FormattedMessage id="global.organization.project.count" />,
-      width: '80px',
+      width: '12%',
       dataIndex: 'projectCount',
       key: 'projectCount',
       align: 'center',
     }, {
       title: <FormattedMessage id="status" />,
-      width: '100px',
+      width: '12%',
       dataIndex: 'enabled',
       key: 'enabled',
       filters: [{
@@ -570,7 +570,7 @@ export default class Organization extends Component {
       render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
     }, {
       title: <FormattedMessage id="global.organization.project.creationDate" />,
-      width: '200px',
+      width: '15%',
       dataIndex: 'creationDate',
       key: 'creationDate',
     }, {
