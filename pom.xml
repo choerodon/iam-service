@@ -224,7 +224,6 @@
             <version>3.24.0-GA</version>
         </dependency>
 
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
