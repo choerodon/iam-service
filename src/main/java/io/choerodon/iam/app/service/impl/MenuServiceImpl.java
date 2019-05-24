@@ -4,6 +4,7 @@ import io.choerodon.base.enums.MenuType;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.iam.api.validator.MenuValidator;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author wuguokai
@@ -160,53 +162,135 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public void saveMenuConfig(String code, List<MenuDTO> menus) {
         MenuDTO topMenu = getTopMenuByCode(code);
-        menus.forEach(m -> saveOrUpdate(m, topMenu.getResourceLevel()));
-    }
-
-    private void saveOrUpdate(MenuDTO menu, String level) {
-        String code = menu.getCode();
-        if (StringUtils.isEmpty(code)) {
-            throw new CommonException("error.menu.code.empty");
-        }
-        MenuDTO example = new MenuDTO();
-        example.setCode(code);
-        MenuDTO dto = menuMapper.selectOne(example);
-        if (dto == null) {
-            //do insert
-            validate(menu, level);
-            menuMapper.insertSelective(menu);
-        } else {
-            //do update
-            boolean notDefault = MenuType.isMenu(dto.getType()) && dto.getDefault() != null && !dto.getDefault();
-            // only self menu can update name and icon
-            if (notDefault) {
-                dto.setName(dto.getName());
-                dto.setIcon(dto.getIcon());
+        String level = topMenu.getResourceLevel();
+        // 传入的菜单列表
+        List<MenuDTO> submitMenuList = menuTreeToList(menus);
+        // 数据库已存在的菜单
+        List<MenuDTO> existMenus = getMenuByResourceLevel(level);
+        // 实际要插入的菜单
+        List<MenuDTO> insertMenus = submitMenuList.stream().filter(item -> item.getId() == null).collect(Collectors.toList());
+        // 传入的更新菜单列表
+        List<MenuDTO> submitUpdateMenus = submitMenuList.stream().filter(item -> item.getId() != null).collect(Collectors.toList());
+        // 实际要更新的菜单
+        List<MenuDTO> updateMenus = new ArrayList<>();
+        // 实际要删除的菜单
+        List<MenuDTO> deleteMenus = new ArrayList<>();
+        // 数据库已存在的菜单跟传入的更新菜单做对比  如果已存在的菜单不在更新菜单列表里 表示菜单已被删除 否则表示菜单需更新
+        if (!CollectionUtils.isEmpty(existMenus)) {
+            for (MenuDTO existMenu : existMenus) {
+                boolean needToDelete = true;
+                for (MenuDTO submitMenu : submitUpdateMenus) {
+                    if (existMenu.getId().equals(submitMenu.getId())) {
+                        updateMenus.add(submitMenu);
+                        needToDelete = false;
+                        break;
+                    }
+                }
+                if (needToDelete) {
+                    if (MenuType.isMenu(existMenu.getType())) {
+                        boolean isNotDefaultMenu = existMenu.getDefault() != null && !existMenu.getDefault();
+                        // 追溯到自设目录的根目录 只有与传入根目录相同的才删除
+                        if (isNotDefaultMenu) {
+                            MenuDTO deleteTopMenu = getTopMenu(existMenu);
+                            if (topMenu.getCode().equalsIgnoreCase(deleteTopMenu.getCode())) {
+                                deleteMenus.add(existMenu);
+                            }
+                        }
+                    }
+                }
             }
-            dto.setSort(menu.getSort());
-            dto.setParentCode(menu.getParentCode());
-            menuMapper.updateByPrimaryKey(dto);
         }
-        List<MenuDTO> subMenus = menu.getSubMenus();
-        if (subMenus != null && !subMenus.isEmpty()) {
-            subMenus.forEach(m -> saveOrUpdate(m, level));
+        //do insert
+        if (!CollectionUtils.isEmpty(insertMenus)) {
+            for (MenuDTO insertMenu : insertMenus) {
+                MenuValidator.insertValidate(insertMenu, level);
+                menuMapper.insertSelective(insertMenu);
+            }
+        }
+        // do update
+        if (!CollectionUtils.isEmpty(updateMenus)) {
+            for (MenuDTO updateMenu : updateMenus) {
+                boolean isNotDefault = MenuType.isMenu(updateMenu.getType()) && updateMenu.getDefault() != null && !updateMenu.getDefault();
+                // only self menu can update name and icon
+                MenuDTO menuDTO = new MenuDTO();
+                if (isNotDefault) {
+                    menuDTO.setName(updateMenu.getName());
+                    menuDTO.setIcon(updateMenu.getIcon());
+                }
+                menuDTO.setSort(updateMenu.getSort());
+                menuDTO.setParentCode(updateMenu.getParentCode());
+                menuDTO.setId(updateMenu.getId());
+                menuDTO.setObjectVersionNumber(updateMenu.getObjectVersionNumber());
+                menuMapper.updateByPrimaryKeySelective(menuDTO);
+            }
+        }
+        // do delete
+        if (!CollectionUtils.isEmpty(deleteMenus)) {
+            for (MenuDTO deleteMenu : deleteMenus) {
+                MenuValidator.deleteValidate(deleteMenu);
+                menuMapper.deleteByPrimaryKey(deleteMenu);
+            }
         }
     }
 
-    private void validate(MenuDTO menu, String level) {
-        menu.setResourceLevel(level);
-        menu.setType(MenuType.MENU.value());
-        String code = menu.getCode();
-        if (StringUtils.isEmpty(menu.getName())) {
-            throw new CommonException("error.menu.name.empty", code);
+    /**
+     * 根据自设目录追溯到根目录.
+     *
+     * @param menuDTO 自设目录
+     * @return 根目录
+     */
+    private MenuDTO getTopMenu(MenuDTO menuDTO) {
+        if (MenuType.isTop(menuDTO.getType())) {
+            return menuDTO;
         }
-        if (StringUtils.isEmpty(menu.getParentCode())) {
-            throw new CommonException("error.menu.parentCode.empty", code);
+        MenuDTO result = new MenuDTO();
+        result.setCode(menuDTO.getParentCode());
+        result = menuMapper.selectOne(result);
+        if (!MenuType.isTop(result.getType())) {
+            result = getTopMenu(result);
         }
-        if (menu.getSort() == null) {
-            menu.setSort(0);
+        return result;
+    }
+
+    /**
+     * 根据资源层级查询菜单列表.
+     *
+     * @param level 资源层级
+     * @return 菜单列表
+     */
+    private List<MenuDTO> getMenuByResourceLevel(String level) {
+        MenuDTO menuDTO = new MenuDTO();
+        menuDTO.setResourceLevel(level);
+        return menuMapper.select(menuDTO);
+    }
+
+    /**
+     * 树形菜单转换为List菜单.
+     *
+     * @param menus 树形菜单
+     * @return List菜单
+     */
+    private List<MenuDTO> menuTreeToList(List<MenuDTO> menus) {
+        List<MenuDTO> menuList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(menus)) {
+            doProcessMenu(menus, menuList);
         }
-        menu.setDefault(false);
+        return menuList;
+    }
+
+    /**
+     * 递归解析树形菜单为List菜单.
+     *
+     * @param menus    树形菜单
+     * @param menuList List菜单
+     */
+    private void doProcessMenu(List<MenuDTO> menus, List<MenuDTO> menuList) {
+        for (MenuDTO menuDTO : menus) {
+            menuList.add(menuDTO);
+            if (menuDTO.getSubMenus() != null) {
+                doProcessMenu(menuDTO.getSubMenus(), menuList);
+            }
+        }
     }
 
     /**
@@ -232,7 +316,7 @@ public class MenuServiceImpl implements MenuService {
                     if (isShowEmptyMenu) {
                         subMenus.add(menu);
                     } else {
-                        // 目录有叶子菜单 放到父级目录的子目录里面
+                        // 目录有叶子菜单 放到父级目录的子目录里面(过滤空目录)
                         if (!CollectionUtils.isEmpty(menu.getSubMenus())) {
                             subMenus.add(menu);
                         }
@@ -255,7 +339,6 @@ public class MenuServiceImpl implements MenuService {
         }
         checkCode(menu);
     }
-
 
     private void checkCode(MenuDTO menu) {
         boolean createCheck = menu.getId() == null;
