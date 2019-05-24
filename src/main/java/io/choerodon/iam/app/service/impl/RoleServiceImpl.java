@@ -134,6 +134,8 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO update(RoleDTO roleDTO) {
         updateCheck(roleDTO);
+        //更新操作不能改level
+        roleDTO.setResourceLevel(null);
         return iRoleService.update(roleDTO);
     }
 

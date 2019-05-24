@@ -115,8 +115,6 @@ public class RoleController extends BaseController {
     public ResponseEntity<RoleDTO> update(@PathVariable Long id,
                                           @RequestBody RoleDTO roleDTO) {
         roleDTO.setId(id);
-        //更新操作不能改level
-        roleDTO.setResourceLevel(null);
         return new ResponseEntity<>(roleService.update(roleDTO), HttpStatus.OK);
     }
 
