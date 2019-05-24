@@ -74,7 +74,7 @@ public class DashboardController extends BaseController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String level,
-            @RequestParam(required = false) String nameSpace,
+            @RequestParam(required = false) String namespace,
             @RequestParam(required = false) Boolean enable,
             @RequestParam(required = false) Boolean needRoles,
             @RequestParam(required = false) String[] params) {
@@ -84,7 +84,7 @@ public class DashboardController extends BaseController {
         dashboardDTO.setCode(code);
         dashboardDTO.setEnabled(enable);
         dashboardDTO.setLevel(level);
-        dashboardDTO.setNamespace(nameSpace);
+        dashboardDTO.setNamespace(namespace);
         dashboardDTO.setNeedRoles(needRoles);
         return new ResponseEntity<>(dashboardService.list(dashboardDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
