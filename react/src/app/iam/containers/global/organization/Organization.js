@@ -405,7 +405,13 @@ export default class Organization extends Component {
           >
             {
               getFieldDecorator('homePage', {
-                rules: [],
+                rules: [
+                  {
+                    pattern: /(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
+                    message: intl.formatMessage({ id: `${intlPrefix}.homepage.pattern.msg` }),
+                  },
+                ],
+                validateTrigger: 'onBlur',
                 initialValue: show === 'create' ? undefined : editData.homePage,
               })(
                 <Input
