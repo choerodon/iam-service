@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>iam-service</artifactId>
-    <version>0.16.0.RELEASE</version>
+    <version>0.17.0.RELEASE</version>
 
     <properties>
         <choerodon.starters.version>0.11.0.RELEASE</choerodon.starters.version>
