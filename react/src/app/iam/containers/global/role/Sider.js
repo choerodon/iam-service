@@ -58,7 +58,7 @@ export default class Application extends Component {
   }
 
   renderContent() {
-    const { menu: { permissions = [] } } = this.props;
+    const { menu: { permissions = [] }, disabled } = this.props;
     const { selections } = this.state;
     const columns = [{
       title: '权限',
@@ -78,6 +78,10 @@ export default class Application extends Component {
       onSelectAll: (selected, selectedRows, changeRows) => {
         this.handleSelectAll(selected, selectedRows, changeRows);
       },
+      // getCheckboxProps: record => ({
+      //   disabled,
+      //   // name: record.name,
+      // }),
     };
     return (
       <Table
