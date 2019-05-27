@@ -23,6 +23,8 @@ class ProjectStore {
   @observable disabledTime = {};
   projectRelationNeedRemove = [];
 
+  @observable originPros = [];
+
   constructor(totalPage = 1, totalSize = 0) {
     this.totalPage = totalPage;
     this.totalSize = totalSize;
@@ -67,6 +69,7 @@ class ProjectStore {
   @action
   setGroupProjects(data) {
     this.groupProjects = data;
+    this.originPros = data;
   }
 
   @action
@@ -76,7 +79,7 @@ class ProjectStore {
 
   @action
   addNewProjectToGroup() {
-    this.groupProjects = [...this.groupProjects, { projectId: null, startDate: null, endDate: null, enabled: true }];
+    this.groupProjects = [...this.groupProjects, { projectId: null, enabled: true }];
   }
 
   @action
@@ -199,12 +202,24 @@ class ProjectStore {
       if (data[k] && isNum.test(data[k])) {
         copyGroupProjects[k].projectId = data[k];
         copyGroupProjects[k].enabled = !!data[`enabled-${k}`];
-        copyGroupProjects[k].startDate = data[`startDate-${k}`] && data[`startDate-${k}`].format('YYYY-MM-DD 00:00:00');
-        copyGroupProjects[k].endDate = data[`endDate-${k}`] && data[`endDate-${k}`].format('YYYY-MM-DD 00:00:00');
         copyGroupProjects[k].parentId = this.currentGroup.id;
       }
     });
-    return axios.put(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations`, copyGroupProjects.filter(value => value.projectId !== null));
+    const filteredPros = copyGroupProjects
+      .filter(value => value.projectId !== null)
+      .filter((value) => {
+        if (this.originPros.find(v => v.projectId === value.projectId && v.enabled === value.enabled)) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+    if (!filteredPros.length) {
+      return new Promise((resolve, reject) => {
+        resolve({ empty: true });
+      });
+    }
+    return axios.put(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations`, filteredPros);
   };
 
   getProjectsByGroupId = parentId => axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations/${parentId}`);

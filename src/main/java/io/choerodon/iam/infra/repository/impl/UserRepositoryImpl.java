@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.springframework.stereotype.Component;
@@ -91,9 +92,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page, int size,
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-
-
-        int start = page * size;
+        int start = PageUtils.getBegin(page, size);
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, 0L, ResourceLevel.SITE.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
         List<UserDTO> userDOList =
@@ -112,7 +111,7 @@ public class UserRepositoryImpl implements UserRepository {
     public PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page, int size,
                                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                         Long sourceId) {
-        int start = page * size;
+        int start = PageUtils.getBegin(page, size);
         Page<UserDTO> result = new Page<>(page, size);
         int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.ORGANIZATION.value(),
                 ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
@@ -132,7 +131,7 @@ public class UserRepositoryImpl implements UserRepository {
                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                    Long sourceId, boolean doPage) {
         if (doPage) {
-            int start = page * size;
+            int start = PageUtils.getBegin(page, size);
             Page<UserDTO> result = new Page<>(page, size);
             int count = mapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, ResourceLevel.PROJECT.value(),
                     ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));

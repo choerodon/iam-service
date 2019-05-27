@@ -8,6 +8,7 @@ import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
 import EditSider from './EditSider';
+import { callbackify } from 'util';
 
 const intlPrefix = 'organization.application';
 
@@ -79,6 +80,7 @@ export default class Application extends Component {
       {
         title: <FormattedMessage id={`${intlPrefix}.name`} />,
         dataIndex: 'name',
+        width: '25%',
         filters: [],
         filteredValue: filters.name || [],
         render: (text, record) => (
@@ -86,6 +88,11 @@ export default class Application extends Component {
             style={{
               borderLeft: record.isFirst && hasChild ? '1px solid rgba(0, 0, 0, 0.12)' : 'none',
               paddingLeft: hasChild ? 20 : 'auto',
+              display: 'inline-block',
+              maxWidth: hasChild ? 'calc(100% - 50px)' : '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             <Icon type={record.applicationCategory === 'combination-application' ? 'grain' : 'predefine'} style={{ marginRight: 5, verticalAlign: 'text-top' }} />
@@ -196,14 +203,14 @@ export default class Application extends Component {
       {
         title: '',
         key: 'action',
-        width: '120px',
+        width: '10%',
         align: 'right',
         render: (text, record) => (
           !record.isFirst ? null
             : (
               <div>
                 <Tooltip
-                  title={<FormattedMessage id="editor" />}
+                  title={<FormattedMessage id="modify" />}
                   placement="bottom"
                 >
                   <Button
@@ -216,7 +223,7 @@ export default class Application extends Component {
                 {
                   record.applicationCategory === 'combination-application' && (
                     <Tooltip
-                      title={<FormattedMessage id="modify" />}
+                      title={<FormattedMessage id="edit" />}
                       placement="bottom"
                     >
                       <Button
@@ -251,7 +258,7 @@ export default class Application extends Component {
     // }
 
     return (
-      <Page>
+      <Page className="c7n-iam-application">
         <Header title="应用管理">
           <Button
             onClick={this.handleClickAddApplication}
@@ -273,12 +280,13 @@ export default class Application extends Component {
             pagination={pagination}
             columns={columns}
             dataSource={unHandleData}
-            rowKey={record => record.id}
+            rowKey={record => `${record.parentId || 0} - ${record.id}`}
             filters={params.slice()}
             onChange={this.handlePageChange}
             loading={ApplicationStore.loading}
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
             childrenColumnName="descendants"
+            scroll={{ x: true }}
           />
         </Content>
         {

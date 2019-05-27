@@ -11,7 +11,7 @@
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
-        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO" autoMapping="true">
+        <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO">
             <id column="permission_id" property="id"></id>
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
             <result column="path" property="path" jdbcType="VARCHAR"/>
@@ -24,7 +24,7 @@
             <result column="service_code" property="serviceCode" jdbcType="VARCHAR"/>
             <result column="permission_description" property="description" jdbcType="VARCHAR"/>
         </collection>
-        <collection property="labels" ofType="io.choerodon.iam.infra.dto.LabelDTO" autoMapping="true">
+        <collection property="labels" ofType="io.choerodon.iam.infra.dto.LabelDTO">
             <id column="label_id" property="id"></id>
             <result column="label_name" property="name" jdbcType="VARCHAR"/>
             <result column="label_type" property="type" jdbcType="VARCHAR"/>

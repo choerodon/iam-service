@@ -6,6 +6,7 @@ import java.util.Set;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import org.springframework.stereotype.Component;
 
@@ -100,7 +101,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override
     public PageInfo<OrganizationDTO> pagingQueryOrganizationAndRoleById(int page, int size, Long id, String params) {
         Page<OrganizationDTO> result = new Page<>(page, size);
-        int start = page * size;
+        int start = PageUtils.getBegin(page, size);
         int count = memberRoleMapper.selectCountBySourceId(id, "organization");
         result.setTotal(count);
         result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
@@ -108,8 +109,8 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     }
 
     @Override
-    public PageInfo<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page,int size, String param) {
-        return PageHelper.startPage(page,size).doSelectPageInfo(()->organizationMapper.selectOrganizationsByUserId(userId, organizationDTO, param));
+    public PageInfo<OrganizationDTO> pagingQueryByUserId(Long userId, OrganizationDTO organizationDTO, int page, int size, String param) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> organizationMapper.selectOrganizationsByUserId(userId, organizationDTO, param));
     }
 
     @Override
@@ -124,6 +125,6 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
 
     @Override
     public PageInfo<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size) {
-        return PageHelper.startPage(page,size).doSelectPageInfo(() ->organizationMapper.selectAllOrgIdAndName());
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> organizationMapper.selectAllOrgIdAndName());
     }
 }

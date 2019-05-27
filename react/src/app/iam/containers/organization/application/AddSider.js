@@ -95,7 +95,7 @@ export default class Application extends Component {
         width: '20%',
         render: text => (
           <span>
-            {intl.formatMessage({ id: `${intlPrefix}.type.${text}` })}
+            {text ? intl.formatMessage({ id: `${intlPrefix}.type.${text}` }) : ''}
           </span>
         ),
       },

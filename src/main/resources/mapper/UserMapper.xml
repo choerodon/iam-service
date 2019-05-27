@@ -72,7 +72,7 @@
     <select id="fulltextSearch" resultMap="userDTO">
         SELECT * FROM iam_user WHERE 1=1
         <if test="userSearchDTO.loginName!= null">
-            AND login_name LIKE concat(concat('%',#{userSearchDT.loginName}),'%')
+            AND login_name LIKE concat(concat('%',#{userSearchDTO.loginName}),'%')
         </if>
         <if test="userSearchDTO.organizationId != null">
             AND organization_id = #{userSearchDTO.organizationId}

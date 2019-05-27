@@ -1,63 +1,62 @@
 package io.choerodon.iam.api.validator;
 
+import io.choerodon.base.enums.MenuType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.MenuDTO;
-import io.choerodon.iam.infra.mapper.MenuMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * @author wuguokai
+ * @author azengqiang
  */
-@Component
 public class MenuValidator {
-    private MenuMapper menuMapper;
-
-    public MenuValidator(MenuMapper menuMapper) {
-        this.menuMapper = menuMapper;
-    }
-
-    //code不能重复
-    public void create(MenuDTO menuDTO) {
-        String level = menuDTO.getResourceLevel();
-        String type = menuDTO.getType();
-        MenuTypeValidator.validate(type);
-        ResourceLevelValidator.validate(level);
-        MenuDTO menu = new MenuDTO();
-        menu.setCode(menuDTO.getCode());
+    /**
+     * 插入菜单校验.
+     * 编码不能为空
+     * 名称不能为空
+     * 图标不能为空
+     * 父级编码不能为空
+     *
+     * @param menu  菜单DTO
+     * @param level 资源层级
+     */
+    public static void insertValidate(MenuDTO menu, String level) {
         menu.setResourceLevel(level);
-        menu.setType(type);
-        if (!menuMapper.select(menu).isEmpty()) {
-            throw new CommonException("error.menuCode.exist");
+        menu.setType(MenuType.MENU.value());
+        String code = menu.getCode();
+        if (StringUtils.isEmpty(code)) {
+            throw new CommonException("error.menu.code.empty");
         }
+        if (StringUtils.isEmpty(menu.getName())) {
+            throw new CommonException("error.menu.name.empty", code);
+        }
+        if (StringUtils.isEmpty(menu.getIcon())) {
+            throw new CommonException("error.menu.icon.empty", code);
+        }
+        if (StringUtils.isEmpty(menu.getParentCode())) {
+            throw new CommonException("error.menu.parent.code.empty", code);
+        }
+        if (menu.getSort() == null) {
+            menu.setSort(0);
+        }
+        menu.setDefault(false);
     }
 
-    //只能更新名称和图标
-    public MenuDTO update(Long menuId, MenuDTO menuDTO) {
-        if (menuMapper.selectByPrimaryKey(menuId) == null) {
-            throw new CommonException("error.menu.not.exist");
-        }
-        MenuDTO menuDTO1 = new MenuDTO();
-        menuDTO1.setId(menuId);
-        menuDTO1.setName(menuDTO.getName());
-        menuDTO1.setIcon(menuDTO.getIcon());
-        menuDTO1.setObjectVersionNumber(menuDTO.getObjectVersionNumber());
-        return menuDTO1;
-    }
-
-    //有子节点的目录不能删除
-    public void delete(Long menuId) {
-        MenuDTO menuDTO = menuMapper.selectByPrimaryKey(menuId);
-        if (menuDTO == null) {
-            throw new CommonException("error.menu.not.exist");
-        }
-        if (menuDTO.getDefault()) {
+    /**
+     * 删除菜单校验.
+     * 菜单下有其他菜单，不能删除
+     *
+     * @param menu 菜单DTO
+     */
+    public static void deleteValidate(MenuDTO menu) {
+        if (menu.getDefault()) {
             throw new CommonException("error.menu.default");
         }
-
-        MenuDTO example = new MenuDTO();
-        example.setParentCode(menuDTO.getCode());
-        if (!menuMapper.select(menuDTO).isEmpty()) {
-            throw new CommonException("error.menu.have.children");
+        if (!MenuType.isMenu(menu.getType())) {
+            throw new CommonException("error.menu.not.self", menu.getName());
+        }
+        if (!CollectionUtils.isEmpty(menu.getSubMenus())) {
+            throw new CommonException("error.menu.have.children", menu.getName());
         }
     }
 }

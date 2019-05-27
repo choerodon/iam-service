@@ -69,6 +69,9 @@ public class ApplicationDTO extends BaseDTO {
     @Transient
     private List<Long> descendantIds;
 
+    @Transient
+    private Long parentId;
+
     public Long getId() {
         return id;
     }
@@ -195,5 +198,13 @@ public class ApplicationDTO extends BaseDTO {
 
     public void setAbnormal(Boolean abnormal) {
         this.abnormal = abnormal;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 }

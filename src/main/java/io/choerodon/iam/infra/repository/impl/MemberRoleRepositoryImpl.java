@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import org.springframework.stereotype.Component;
@@ -117,7 +118,7 @@ public class MemberRoleRepositoryImpl implements MemberRoleRepository {
 
     private PageInfo<ClientDTO> pageQueryingClientsWithRoles(int page, int size, ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId, String param, String sourceType) {
         //这里的分页是写死的只支持mysql分页，暂时先实现功能，后续做优化，使用PageHelper进行分页
-        int start = page * size;
+        int start = PageUtils.getBegin(page, size);
         Page<ClientDTO> result = new Page<>(page, size);
         int count = memberRoleMapper.selectCountClients(sourceId, sourceType, clientRoleSearchDTO, param);
         result.setTotal(count);

@@ -167,7 +167,7 @@ export default class Application extends Component {
                     }
                     return false;
                   }}
-                  // disabled={(editData && !!editData.projectId)}
+                  disabled={(editData && !!editData.projectId)}
                   allowClear
                   filter
                 >

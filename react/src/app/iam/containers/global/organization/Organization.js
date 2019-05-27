@@ -267,6 +267,9 @@ export default class Organization extends Component {
       key: formatMessage({ id: `${intlPrefix}.owner.user.name` }),
       value: partDetail.ownerRealName,
     }, {
+      key: formatMessage({ id: `${intlPrefix}.home.page` }),
+      value: partDetail.homePage,
+    }, {
       key: formatMessage({ id: `${intlPrefix}.phone` }),
       value: partDetail.ownerPhone ? partDetail.ownerPhone : '无',
     }, {
@@ -282,12 +285,15 @@ export default class Organization extends Component {
     return (
       <Content
         className="sidebar-content"
-        code={'global.organization.detail'}
+        code="global.organization.detail"
         values={{ name: `${editData.code}` }}
       >
         {
-          infoList.map(({ key, value }) =>
-            <Row key={key} className={classnames('c7n-organization-detail-row', { 'c7n-organization-detail-row-hide': value === null })}>
+          infoList.map(({ key, value }) => (
+            <Row
+              key={key}
+              className={classnames('c7n-organization-detail-row', { 'c7n-organization-detail-row-hide': value === null })}
+            >
               <Col span={3}>{key}:</Col>
               {
                 key === formatMessage({ id: `${intlPrefix}.avatar` }) ? (
@@ -306,8 +312,8 @@ export default class Organization extends Component {
                   <Col span={21}>{value}</Col>
                 )
               }
-            </Row>,
-          )
+            </Row>
+          ))
         }
       </Content>
     );
@@ -389,6 +395,21 @@ export default class Organization extends Component {
               })(
                 <Input
                   label={<FormattedMessage id="global.organization.region" />}
+                  autoComplete="off"
+                  style={{ width: inputWidth }}
+                />,
+              )}
+          </FormItem>
+          <FormItem
+            {...formItemLayout}
+          >
+            {
+              getFieldDecorator('homePage', {
+                rules: [],
+                initialValue: show === 'create' ? undefined : editData.homePage,
+              })(
+                <Input
+                  label={<FormattedMessage id="global.organization.home.page" />}
                   autoComplete="off"
                   style={{ width: inputWidth }}
                 />,
@@ -485,13 +506,13 @@ export default class Organization extends Component {
       dataIndex: 'name',
       key: 'name',
       filters: [],
-      width: '35%',
+      width: '20%',
       render: (text, record) => (
         <React.Fragment>
           <div className="c7n-iam-organization-name-avatar">
             {
-              record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} /> :
-              <React.Fragment>{text.split('')[0]}</React.Fragment>
+              record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
+                : <React.Fragment>{text.split('')[0]}</React.Fragment>
             }
           </div>
           <MouseOverWrapper text={text} width={0.3}>
@@ -502,13 +523,26 @@ export default class Organization extends Component {
       sortOrder: columnKey === 'name' && order,
       filteredValue: filters.name || [],
     }, {
+      key: 'homePage',
+      // width: '20%',
+      title: <FormattedMessage id="global.organization.home.page" />,
+      dataIndex: 'homePage',
+      // filters: [],
+      sortOrder: columnKey === 'homePage' && order,
+      // filteredValue: filters.homePage || [],
+      render: text => (
+        <MouseOverWrapper text={text} width={0.3}>
+          {text}
+        </MouseOverWrapper>
+      ),
+    }, {
       title: <FormattedMessage id="code" />,
       dataIndex: 'code',
       key: 'code',
       filters: [],
       sortOrder: columnKey === 'code' && order,
       filteredValue: filters.code || [],
-      width: '20%',
+      width: '15%',
       render: text => (
         <MouseOverWrapper text={text} width={0.3}>
           {text}
@@ -516,11 +550,13 @@ export default class Organization extends Component {
       ),
     }, {
       title: <FormattedMessage id="global.organization.project.count" />,
+      width: '10%',
       dataIndex: 'projectCount',
       key: 'projectCount',
       align: 'center',
     }, {
       title: <FormattedMessage id="status" />,
+      width: '15%',
       dataIndex: 'enabled',
       key: 'enabled',
       filters: [{
@@ -534,11 +570,12 @@ export default class Organization extends Component {
       render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
     }, {
       title: <FormattedMessage id="global.organization.project.creationDate" />,
+      width: '15%',
       dataIndex: 'creationDate',
       key: 'creationDate',
     }, {
       title: '',
-      width: 150,
+      width: 120,
       key: 'action',
       align: 'right',
       render: (text, record) => (
@@ -630,13 +667,14 @@ export default class Organization extends Component {
         >
           <Table
             columns={this.getTableColumns()}
-            dataSource={orgData}
+            dataSource={orgData.slice()}
             pagination={pagination}
             onChange={this.handlePageChange}
-            filters={params}
+            filters={params.slice()}
             loading={loading}
             rowKey="id"
             filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
+            scroll={{ x: true }}
           />
           <Sidebar
             title={<FormattedMessage id={this.renderSidebarTitle()} />}

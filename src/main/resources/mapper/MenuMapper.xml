@@ -31,6 +31,7 @@
           imb.icon,
           imb.category,
           imb.page_permission_code,
+          imb.object_version_number,
           ip2.path as route,
           ip2.permission_type as page_permission_type
         from iam_menu_b imb
@@ -102,6 +103,7 @@
         imb.icon,
         imb.category,
         imb.page_permission_code,
+        imb.object_version_number,
         ip2.path as route,
         ip.id permission_id,
         ip.code permission_code,
@@ -139,6 +141,7 @@
             imb.icon,
             imb.category,
             imb.page_permission_code,
+            imb.object_version_number,
             ip.path as route,
             ip.permission_type as page_permission_type
         from iam_menu_b imb
@@ -178,6 +181,7 @@
         imb.icon,
         imb.category,
         imb.page_permission_code,
+        imb.object_version_number,
         ip.path as route,
         ip.permission_type as page_permission_type
         from iam_menu_b imb

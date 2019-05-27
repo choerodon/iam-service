@@ -402,7 +402,7 @@ export default class EditRole extends Component {
                   }}
                 />
                 {currentPermission.length === 0 ? (
-                  <div style={{ color: '#d50000' }} className="ant-form-explain">
+                  <div style={{ color: '#d50000' }} className="c7n-form-explain">
                     <FormattedMessage id={`${intlPrefix}.permission.require.msg`} />
                   </div>
                 ) : ''}

@@ -306,15 +306,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         String category = projectDTO.getCategory();
         // 项目所属项目群Id
         Long programId = null;
-        if (enabled) {
-            if (ProjectCategory.AGILE.value().equalsIgnoreCase(category)) {
-                //项目启用时，启用项目关联的项目群关系
-                ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
-                relationshipDTO.setProjectId(projectId);
-                relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
-                programId = updateProjectRelationShip(relationshipDTO, Boolean.TRUE);
-            }
-        } else {
+        if (!enabled) {
             if (ProjectCategory.AGILE.value().equalsIgnoreCase(category)) {
                 // 项目禁用时，禁用项目关联的项目群关系
                 ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
@@ -344,12 +336,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
      * @return 项目所属项目群Id或null
      */
     private Long updateProjectRelationShip(ProjectRelationshipDTO relationshipDTO, boolean enabled) {
-        if (relationshipDTO != null) {
-            relationshipDTO.setEnabled(enabled);
-            projectRelationshipRepository.update(relationshipDTO);
-            return relationshipDTO.getProgramId();
+        if (relationshipDTO == null || !relationshipDTO.getEnabled()) {
+            return null;
         }
-        return null;
+        relationshipDTO.setEnabled(enabled);
+        projectRelationshipRepository.update(relationshipDTO);
+        return relationshipDTO.getProgramId();
     }
 
     /**

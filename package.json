@@ -1,15 +1,15 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.1.9",
-  "description": "publish 0.1.9, fix latest menu, fix member-role uncorrent content use, fix style of add application, fix style of application, fix manager application(need delete child application api), fix project style and logic of operation, fix dashboard crash bug",
+  "version": "0.17.0",
+  "description": "",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
   "dependencies": {
-    "@choerodon/boot": "0.1.x",
-    "@choerodon/master": "0.1.x",
+    "@choerodon/boot": "0.17.x",
+    "@choerodon/master": "0.17.x",
     "choerodon-ui-font": "^0.1.3",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",

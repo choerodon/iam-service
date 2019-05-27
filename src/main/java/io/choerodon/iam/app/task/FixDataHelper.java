@@ -15,7 +15,6 @@ import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,21 +38,24 @@ public class FixDataHelper {
     private static final String TOP_PROJECT = "choerodon.code.top.project";
     private static final String TOP_USER = "choerodon.code.top.user";
 
-
-    @Autowired
     private RoleMapper roleMapper;
-    @Autowired
+
     private DashboardMapper dashboardMapper;
-    @Autowired
+
     private DashboardRoleMapper dashboardRoleMapper;
 
     private MenuPermissionMapper menuPermissionMapper;
 
     private MenuMapper menuMapper;
 
-    public FixDataHelper(MenuPermissionMapper menuPermissionMapper, MenuMapper menuMapper) {
+    public FixDataHelper(MenuPermissionMapper menuPermissionMapper, MenuMapper menuMapper,
+                         RoleMapper roleMapper, DashboardMapper dashboardMapper,
+                         DashboardRoleMapper dashboardRoleMapper) {
         this.menuPermissionMapper = menuPermissionMapper;
         this.menuMapper = menuMapper;
+        this.roleMapper = roleMapper;
+        this.dashboardMapper = dashboardMapper;
+        this.dashboardRoleMapper = dashboardRoleMapper;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -63,22 +65,22 @@ public class FixDataHelper {
         fixDashboardRole();
     }
 
-    private void fixDashboardRole(){
+    private void fixDashboardRole() {
         Map<Long, String> dashboardMap = new HashMap<>();
         Map<Long, String> roleMap = new HashMap<>();
-        for (DashboardDTO dashboard: dashboardMapper.selectAll()){
+        for (DashboardDTO dashboard : dashboardMapper.selectAll()) {
             dashboardMap.put(dashboard.getId(), dashboard.getCode());
         }
-        for (RoleDTO role: roleMapper.selectAll()){
+        for (RoleDTO role : roleMapper.selectAll()) {
             roleMap.put(role.getId(), role.getCode());
         }
-        for (DashboardRoleDTO dr : dashboardRoleMapper.selectAll()){
+        for (DashboardRoleDTO dr : dashboardRoleMapper.selectAll()) {
             try {
                 Long roleId = Long.parseLong(dr.getRoleCode());
                 Long dashboardId = Long.parseLong(dr.getDashboardCode());
                 String roleCode = roleMap.get(roleId);
                 String dashboardCode = dashboardMap.get(dashboardId);
-                if (roleCode == null || dashboardCode == null){
+                if (roleCode == null || dashboardCode == null) {
                     logger.info("not found role[{}] or dashboard[{}] delete it.", roleId, dashboardCode);
                     dashboardRoleMapper.deleteByPrimaryKey(dr);
                     continue;
@@ -86,14 +88,14 @@ public class FixDataHelper {
                 DashboardRoleDTO example = new DashboardRoleDTO();
                 example.setRoleCode(roleCode);
                 example.setDashboardCode(dashboardCode);
-                if(dashboardRoleMapper.selectOne(example) == null){
+                if (dashboardRoleMapper.selectOne(example) == null) {
                     dr.setRoleCode(roleCode);
                     dr.setDashboardCode(dashboardCode);
                     dashboardRoleMapper.updateByPrimaryKeySelective(dr);
                 } else {
                     dashboardRoleMapper.deleteByPrimaryKey(dr);
                 }
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 //正常的数据，跳过
             }
         }
@@ -103,9 +105,11 @@ public class FixDataHelper {
         logger.info("start to fix data in iam_menu");
         Map<String, Long> topMenuMap = getTopMenu();
 
-        updateParentId(topMenuMap);
-        
+        updateType("menu", MenuType.MENU_ITEM.value());
         updateType("dir", MenuType.MENU.value());
+        updateType("root", MenuType.MENU.value());
+
+        updateParentId(topMenuMap);
 
         updateResourceLevel();
     }
@@ -122,8 +126,14 @@ public class FixDataHelper {
     private void updateType(String oldType, String newType) {
         MenuDTO example = new MenuDTO();
         example.setType(oldType);
-        example.setDefault(false);
         menuMapper.select(example).forEach(m -> {
+            String parentCode = m.getParentCode();
+            //只有第一次修数据,parentCode才能转为id
+            try {
+                Long.valueOf(parentCode);
+            } catch (Exception e) {
+                return;
+            }
             m.setType(newType);
             menuMapper.updateByPrimaryKey(m);
         });

@@ -3,7 +3,7 @@ import get from 'lodash/get';
 import { Button, Form, Table, Tooltip, Icon } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page } from '@choerodon/boot';
+import { Content, Header, Page, axios } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -64,11 +64,35 @@ export default class Application extends Component {
 
   handleSaveMsg = (selections) => {
     const { ApplicationStore } = this.props;
-    ApplicationStore.addToCombination(this.id, selections)
-      .then(() => {
-        ApplicationStore.closeSidebar();
-        this.refresh();
-      });
+    const { AppState: { currentMenuType: { organizationId } } } = this.props;
+    const unHandleData = ApplicationStore.applicationData.slice();
+    const originSelections = unHandleData.map(v => v.id);
+    const needDelete = originSelections.filter(v => !selections.includes(v));
+    const needAdd = selections.filter(v => !originSelections.includes(v));
+    if (needAdd.length && needDelete.length) {
+      Promise.all([ApplicationStore.addToCombination(this.id, needAdd), axios.post(`/iam/v1/organizations/${organizationId}/applications/${this.id}/delete_combination`, needDelete)])
+        .then(([res1, res2]) => {
+          ApplicationStore.closeSidebar();
+          this.forceUpdate();
+          this.refresh();
+        });
+    } else if (needAdd.length && !needDelete.length) {
+      ApplicationStore.addToCombination(this.id, selections)
+        .then(() => {
+          ApplicationStore.closeSidebar();
+          this.forceUpdate();
+          this.refresh();
+        });
+    } else if (!needAdd.length && needDelete.length) {
+      axios.post(`/iam/v1/organizations/${organizationId}/applications/${this.id}/delete_combination`, needDelete)
+        .then(() => {
+          ApplicationStore.closeSidebar();
+          this.forceUpdate();
+          this.refresh();
+        });
+    } else {
+      ApplicationStore.closeSidebar();
+    }
   }
 
   handleCancelSider = () => {
@@ -81,8 +105,12 @@ export default class Application extends Component {
     history.push(`/iam/application/manage/${record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
   }
 
-  handleDelete = (record) => {
-    // need API
+  handleDelete = (idArr) => {
+    const { AppState: { currentMenuType: { organizationId } } } = this.props;
+    axios.post(`/iam/v1/organizations/${organizationId}/applications/${this.id}/delete_combination`, idArr)
+      .then(() => {
+        this.refresh();
+      });
   }
 
   render() {
@@ -90,6 +118,7 @@ export default class Application extends Component {
     const menuType = AppState.currentMenuType;
     const orgId = menuType.id;
     const unHandleData = ApplicationStore.applicationData.slice();
+    const selections = unHandleData.map(v => v.id);
     const hasChild = unHandleData.some(v => v.applicationCategory === 'combination-application' && v.descendants && v.descendants.length);
     const columns = [
       {
@@ -224,7 +253,7 @@ export default class Application extends Component {
                 <Button
                   shape="circle"
                   size="small"
-                  onClick={e => this.handleDelete(record)}
+                  onClick={e => this.handleDelete([record.id])}
                   icon="delete"
                 />
               </Tooltip>
@@ -275,6 +304,7 @@ export default class Application extends Component {
               onCancel={this.handleCancelSider}
               onOk={this.handleSaveMsg}
               id={this.id}
+              selections={selections}
             />
           ) : null
         }

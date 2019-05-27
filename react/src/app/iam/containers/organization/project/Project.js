@@ -302,12 +302,17 @@ export default class Project extends Component {
           this.setState({ submitting: true, buttonClicked: true });
           ProjectStore.axiosDeleteProjectsFromGroup();
           ProjectStore.saveProjectGroup(rawData).then((savedData) => {
+            if (savedData.empty) {
+              this.setState({ submitting: false, buttonClicked: false, sidebar: false });
+              this.loadProjects();
+            }
             if (savedData.failed) {
               Choerodon.prompt(this.props.intl.formatMessage({ id: savedData.message }));
               this.setState({ submitting: false, buttonClicked: false, sidebar: true });
             } else {
               Choerodon.prompt(this.props.intl.formatMessage({ id: 'save.success' }));
               this.setState({ submitting: false, buttonClicked: false, sidebar: false });
+              this.loadProjects();
             }
           }).catch((error) => {
             Choerodon.prompt(this.props.intl.formatMessage({ id: 'save.error' }));
@@ -532,55 +537,46 @@ export default class Project extends Component {
   handleCheckboxChange = (value, index) => {
     const { form, ProjectStore, ProjectStore: { groupProjects, currentGroup } } = this.props;
     if (currentGroup.category === 'ANALYTICAL') return;
-    if ((form.getFieldValue(`startDate-${index}`) && form.getFieldValue(`startDate-${index}`).format('YYYY-MM-DD 00:00:00')) !== groupProjects[index].startDate
-      || (form.getFieldValue(`endDate-${index}`) && form.getFieldValue(`endDate-${index}`).format('YYYY-MM-DD 00:00:00')) !== groupProjects[index].endDate
-    ) return;
-    if (value && value.target.checked && groupProjects[index].id) {
-      ProjectStore.checkCanEnable(groupProjects[index].id).then((data) => {
-        const newValue = {};
-        newValue[`enabled-${index}`] = false;
-        newValue[`startDate-${index}`] = null;
-        newValue[`endDate-${index}`] = null;
-        if (data.result === false) {
-          Choerodon.prompt(`该项目当前时间段与项目群"${data.projectName}"中的该项目有冲突`);
-          form.setFieldsValue(newValue);
-          ProjectStore.setGroupProject({ ...groupProjects[index], enabled: !groupProjects.enabled });
-          form.resetFields(`enabled-${index}`);
-        }
-      });
+    if (value && groupProjects[index].id) {
+      const newValue = {};
+      newValue[`enabled-${index}`] = value.target.checked;
+      form.setFieldsValue(newValue);
+      ProjectStore.setGroupProjectByIndex(index, { ...groupProjects[index], enabled: value.target.checked });
+      form.resetFields(`enabled-${index}`);
     }
   };
 
   validateDate = (projectId, index, callback) => {
-    const { ProjectStore: { disabledTime, groupProjects }, form, ProjectStore } = this.props;
-    if (!projectId) callback();
-    if (groupProjects[projectId] && groupProjects[projectId].id) callback();
-    if (projectId) {
-      ProjectStore.setDisabledTime(projectId).then(() => {
-        if (disabledTime[projectId]) {
-          const startValue = form.getFieldValue(`startDate-${index}`);
-          const endValue = form.getFieldValue(`endDate-${index}`);
-          if (this.disabledStartDate(startValue, index) || this.disabledEndDate(endValue, index)) {
-            callback('日期冲突，请重新选择日期');
-          } else {
-            callback();
-          }
-        }
-      }).catch((err) => {
-        callback('网络错误');
-        Choerodon.handleResponseError(err);
-      });
-    }
+    callback();
+    // const { ProjectStore: { disabledTime, groupProjects }, form, ProjectStore } = this.props;
+    // if (!projectId) callback();
+    // if (groupProjects[projectId] && groupProjects[projectId].id) callback();
+    // if (projectId) {
+    //   ProjectStore.setDisabledTime(projectId).then(() => {
+    //     if (disabledTime[projectId]) {
+    //       const startValue = form.getFieldValue(`startDate-${index}`);
+    //       const endValue = form.getFieldValue(`endDate-${index}`);
+    //       if (this.disabledStartDate(startValue, index) || this.disabledEndDate(endValue, index)) {
+    //         callback('日期冲突，请重新选择日期');
+    //       } else {
+    //         callback();
+    //       }
+    //     }
+    //   }).catch((err) => {
+    //     callback('网络错误');
+    //     Choerodon.handleResponseError(err);
+    //   });
+    // }
   };
 
   getAddGroupProjectContent = (operation) => {
     const { intl, ProjectStore: { groupProjects }, form } = this.props;
     const { getFieldDecorator } = form;
     if (operation !== 'add') return;
-    const formItems = groupProjects.map(({ projectId, startDate, endDate, enabled, id }, index) => {
+    const formItems = groupProjects.map(({ projectId, enabled, id }, index) => {
       const key = !projectId ? `project-index-${index}` : String(projectId);
       return (
-        <React.Fragment key={key}>
+        <React.Fragment>
           <FormItem
             {...formItemLayout}
             key={key}
@@ -614,42 +610,6 @@ export default class Project extends Component {
               </Select>,
             )}
           </FormItem>
-          {/* <FormItem
-            {...formItemLayout}
-            className="c7n-iam-project-inline-formitem"
-          >
-            {getFieldDecorator(`startDate-${index}`, {
-              initialValue: startDate && moment(startDate),
-              rules: [{
-                required: true,
-                message: '请选择有效开始时间',
-              }],
-            })(
-              <DatePicker
-                label={<FormattedMessage id={`${intlPrefix}.start.time`} />}
-                style={{ width: 200 }}
-                onOpenChange={() => this.handleDatePickerOpen(index)}
-                disabledDate={startValue => this.disabledStartDate(startValue, index)}
-                format="YYYY-MM-DD"
-              />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-            className="c7n-iam-project-inline-formitem"
-          >
-            {getFieldDecorator(`endDate-${index}`, {
-              initialValue: endDate && moment(endDate),
-            })(
-              <DatePicker
-                label={<FormattedMessage id={`${intlPrefix}.end.time`} />}
-                style={{ width: 200 }}
-                onOpenChange={() => this.handleDatePickerOpen(index)}
-                disabledDate={endValue => this.disabledEndDate(endValue, index)}
-                format="YYYY-MM-DD"
-              />,
-            )}
-          </FormItem> */}
           <FormItem
             {...formItemLayout}
             className="c7n-iam-project-inline-formitem c7n-iam-project-inline-formitem-checkbox"
