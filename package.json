@@ -3,7 +3,7 @@
   "routeName": "iam",
   "version": "0.17.1",
   "description": "",
-  "main": "./react/src/app/iam/containers/IAMIndex.js",
+  "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],

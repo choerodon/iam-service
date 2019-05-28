@@ -46,6 +46,7 @@ export default class CreateRole extends Component {
 
   componentDidMount() {
     this.loadLabelsAndMenus();
+    RoleStore.setSelectedPermissions([]);
   }
 
   loadLabelsAndMenus = () => {
@@ -228,7 +229,7 @@ export default class CreateRole extends Component {
           name: this.props.form.getFieldValue('name').trim(),
           code: `${codePrefix}${this.props.form.getFieldValue('code').trim()}`,
           level: this.level,
-          permissions: RoleStore.selectedPermissions.map(p => ({ id: p })),
+          permissions: RoleStore.selectedPermissions.slice().map(p => ({ id: p })),
           labels: labelIds,
           objectVersionNumber: RoleStore.roleMsg.objectVersionNumber,
         };
@@ -282,12 +283,12 @@ export default class CreateRole extends Component {
   }
 
   handleSiderOk = (selectedPermissions) => {
-    // const { level, isEdit } = this;
-    // const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
-    // if (isDefault) {
-    //   RoleStore.setSiderVisible(false);
-    //   return;
-    // }
+    const { level, isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
+    if (isDefault) {
+      RoleStore.setSiderVisible(false);
+      return;
+    }
     RoleStore.setSelectedPermissions(selectedPermissions);
     RoleStore.setSiderVisible(false);
   }
@@ -320,7 +321,7 @@ export default class CreateRole extends Component {
         indeterminate={checkedSome}
         onChange={this.handleCheckboxAllClick.bind(this, checkedAll, checkedNone, checkedSome)}
         checked={!checkedNone}
-        // disabled={isDefault}
+        disabled={isDefault}
       />
     );
   }
@@ -449,7 +450,7 @@ export default class CreateRole extends Component {
             indeterminate={checkedSome}
             onChange={this.handleCheckboxClick.bind(this, record, checkedAll, checkedNone, checkedSome)}
             checked={!checkedNone}
-            // disabled={isDefault}
+            disabled={isDefault}
           />
         );
       },
@@ -523,8 +524,8 @@ export default class CreateRole extends Component {
 
   renderSider = () => {
     const { siderVisible, currentMenu, selectedPermissions } = RoleStore;
-    // const { isEdit } = this;
-    // const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${this.level}/default/`);
+    const { isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${this.level}/default/`);
     if (siderVisible) {
       return (
         <Sider
@@ -532,7 +533,7 @@ export default class CreateRole extends Component {
           menu={currentMenu}
           onOk={this.handleSiderOk}
           onCancel={this.handleSiderCancel}
-          // disabled={isDefault}
+          disabled={isDefault}
         />
       );
     }

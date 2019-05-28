@@ -51,7 +51,6 @@ export default class Application extends Component {
   handleOk = () => {
     const { onOk } = this.props;
     const { selections } = this.state;
-    // do something
     if (onOk) {
       onOk(selections);
     }
@@ -78,10 +77,10 @@ export default class Application extends Component {
       onSelectAll: (selected, selectedRows, changeRows) => {
         this.handleSelectAll(selected, selectedRows, changeRows);
       },
-      // getCheckboxProps: record => ({
-      //   disabled,
-      //   // name: record.name,
-      // }),
+      getCheckboxProps: record => ({
+        disabled,
+        // name: record.name,
+      }),
     };
     return (
       <Table

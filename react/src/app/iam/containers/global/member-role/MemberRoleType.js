@@ -87,6 +87,7 @@ export default class MemberRoleType {
     const body = {
       loginName: loginName && loginName[0],
       realName: realName && realName[0],
+      param: params && params.length ? params : undefined,
     };
     const queryObj = { role_id: roleId, size: pageSize, page: current };
     roleData.loading = true;
@@ -147,11 +148,12 @@ export default class MemberRoleType {
   }
 
   // 用户模式下的角色数据
-  loadRoleMemberDatas({ loginName, realName, name }) {
+  loadRoleMemberDatas({ loginName, realName, roleName }, params) {
     const body = {
-      roleName: name && name[0],
+      roleName: roleName && roleName[0],
       loginName: loginName && loginName[0],
       realName: realName && realName[0],
+      param: params && params.length ? params : undefined,
     };
     return axios.post(this.urlUserCount, JSON.stringify(body));
   }

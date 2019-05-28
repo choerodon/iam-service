@@ -1052,7 +1052,7 @@ export default class MemberRole extends Component {
     };
     newState.loading = true;
     const { expandedKeys } = this.state;
-    this.roles.loadRoleMemberDatas({ name: params, ...roleMemberFilters })
+    this.roles.loadRoleMemberDatas({ ...roleMemberFilters }, params)
       .then((roleData) => {
         const roleMemberDatas = roleData.filter((role) => {
           role.users = role.users || [];
@@ -1061,7 +1061,7 @@ export default class MemberRole extends Component {
               this.roles.loadRoleMemberData(role, {
                 current: 1,
                 pageSize,
-              }, roleMemberFilters);
+              }, roleMemberFilters, params);
             }
             return true;
           }
@@ -1135,7 +1135,7 @@ export default class MemberRole extends Component {
   });
 
   renderRoleLoginNameColumn = (text, data) => {
-    const { roleMemberFilters } = this.state;
+    const { roleMemberFilters, roleMemberParams } = this.state;
     const { loginName, name } = data;
     if (loginName) {
       return loginName;
@@ -1144,9 +1144,9 @@ export default class MemberRole extends Component {
       const more = isLoading ? (<Progress type="loading" width={12} />) : (length > 0 && userCount > length && (
         <a onClick={() => {
           this.roles.loadRoleMemberData(data, {
-            current: (length / pageSize),
+            current: Math.floor(length / pageSize) + 1,
             pageSize,
-          }, roleMemberFilters);
+          }, roleMemberFilters, roleMemberParams);
           this.forceUpdate();
         }}
         >更多</a>
