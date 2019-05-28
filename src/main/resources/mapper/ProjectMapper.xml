@@ -99,7 +99,7 @@
         fp1.id as project_id,
         fp1.name as project_name,
         fp1.code as project_code,
-        fp1.is_enabled as project_enabled,
+        fpr.is_enabled as project_enabled,
         fp1.organization_id as project_organization_id
         from
         (

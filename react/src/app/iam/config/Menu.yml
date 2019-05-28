@@ -272,13 +272,13 @@
         permission:
           - 'iam-service.user.selfUpdatePassword'
     - "permission-info":
-        icon: project_line
+        icon: authority
         Routes: /iam/permission-info
         sort: 3
         permission:
         - 'iam-service.user.pagingQueryRole'
     - "token-manager":
-        icon: authority
+        icon: token
         Routes: /iam/token-manager
         sort: 4
         permission:

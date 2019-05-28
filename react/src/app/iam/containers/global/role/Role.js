@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
+import querystring from 'query-string';
 import { Button, Form, Icon, Table, Select, Menu, Dropdown } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Action, Content, Header, Page, Permission } from '@choerodon/boot';
@@ -18,13 +19,33 @@ const levels = RESOURCES_LEVEL.split(',');
 @inject('AppState')
 @observer
 export default class Role extends Component {
-  state = this.getInitState();
+  constructor(props) {
+    super(props);
+    const queryObj = querystring.parse(props.location.search);
+    this.state = {
+      selectedRoleIds: {},
+      params: [],
+      filters: {},
+      pagination: {
+        current: 1,
+        pageSize: 10,
+        total: 0,
+      },
+      sort: {
+        columnKey: 'id',
+        order: 'descend',
+      },
+      level: queryObj.level || levels[0],
+    };
+  }
+
+  // state = this.getInitState();
 
   componentDidMount() {
     this.loadRole();
   }
 
-  getInitState() {
+  getInitStat() {
     return {
       id: '',
       selectedRoleIds: {},
@@ -97,9 +118,10 @@ export default class Role extends Component {
   };
 
   handleRefresh = () => {
-    this.setState(this.getInitState(), () => {
-      this.loadRole();
-    });
+    // this.setState(this.getInitState(), () => {
+    //   this.loadRole();
+    // });
+    this.loadRole();
   };
 
   handleEnable = (record) => {

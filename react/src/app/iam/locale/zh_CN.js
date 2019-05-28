@@ -742,6 +742,7 @@ const zh_CN = {
   'global.organization.namerequiredmsg': '请输入组织名称',
   'global.organization.project.count': '项目数量',
   'global.organization.home.page': '官网地址',
+  'global.organization.homepage.pattern.msg': '请输入正确的url，由小写字母，数字、和 .组成，以http:// 或https:// 开始，以字母或数字结束',
   'global.organization.project.creationDate': '创建时间',
   'global.organization.detail': '组织信息',
   'global.organization.detail.title': '查看组织"{name}"的组织信息',

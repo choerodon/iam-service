@@ -46,6 +46,7 @@ export default class CreateRole extends Component {
 
   componentDidMount() {
     this.loadLabelsAndMenus();
+    RoleStore.setSelectedPermissions([]);
   }
 
   loadLabelsAndMenus = () => {
@@ -228,7 +229,7 @@ export default class CreateRole extends Component {
           name: this.props.form.getFieldValue('name').trim(),
           code: `${codePrefix}${this.props.form.getFieldValue('code').trim()}`,
           level: this.level,
-          permissions: RoleStore.selectedPermissions.map(p => ({ id: p })),
+          permissions: RoleStore.selectedPermissions.slice().map(p => ({ id: p })),
           labels: labelIds,
           objectVersionNumber: RoleStore.roleMsg.objectVersionNumber,
         };
@@ -238,7 +239,7 @@ export default class CreateRole extends Component {
             .then((data) => {
               if (!data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
-                this.linkToChange('/iam/role');
+                this.linkToChange(`/iam/role?level=${this.level}`);
               } else {
                 Choerodon.prompt(data.message);
               }
@@ -248,7 +249,7 @@ export default class CreateRole extends Component {
             .then((data) => {
               if (data && !data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'create.success' }));
-                this.linkToChange('/iam/role');
+                this.linkToChange(`/iam/role?level=${this.level}`);
               } else {
                 Choerodon.prompt(data.message);
               }
@@ -266,7 +267,7 @@ export default class CreateRole extends Component {
   };
 
   handleReset = () => {
-    this.linkToChange('/iam/role');
+    this.linkToChange(`/iam/role?level=${this.level}`);
   };
 
   handleChangeTabLevel = (key) => {
@@ -282,6 +283,12 @@ export default class CreateRole extends Component {
   }
 
   handleSiderOk = (selectedPermissions) => {
+    const { level, isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
+    if (isDefault) {
+      RoleStore.setSiderVisible(false);
+      return;
+    }
     RoleStore.setSelectedPermissions(selectedPermissions);
     RoleStore.setSiderVisible(false);
   }
@@ -517,6 +524,8 @@ export default class CreateRole extends Component {
 
   renderSider = () => {
     const { siderVisible, currentMenu, selectedPermissions } = RoleStore;
+    const { isEdit } = this;
+    const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${this.level}/default/`);
     if (siderVisible) {
       return (
         <Sider
@@ -524,6 +533,7 @@ export default class CreateRole extends Component {
           menu={currentMenu}
           onOk={this.handleSiderOk}
           onCancel={this.handleSiderCancel}
+          disabled={isDefault}
         />
       );
     }
@@ -562,7 +572,7 @@ export default class CreateRole extends Component {
       <Page className="c7n-roleMsg">
         <Header
           title={`${!this.isEdit ? '创建' : '修改'}${LEVEL_NAME[this.level]}角色`}
-          backPath="/iam/role"
+          backPath={`/iam/role?level=${this.level}`}
         />
         <Content>
           {this.renderForm()}

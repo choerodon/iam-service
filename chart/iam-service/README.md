@@ -71,8 +71,8 @@ choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
 service.enabled | 是否创建service
 persistence.enabled | 是否启用持久化存储
 persistence.existingClaim | 绑定的pvc名称
-preJob.preConfig.mysql | 初始化配置所需manager_service数据库信息
-preJob.preInitDB.mysql | 	初始化数据库所需数据库信息
+preJob.preConfig.enabled | 是否初始化manager_service数据库
+preJob.preInitDB.enabled | 	是否初始化iam_service数据库
 env.open.SPRING_DATASOURCE_URL | 数据库链接地址
 env.open.SPRING_DATASOURCE_USERNAME | 数据库用户名
 env.open.SPRING_DATASOURCE_PASSWORD | 数据库密码
