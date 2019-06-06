@@ -63,9 +63,10 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: 'HOME_PAGE', type: 'VARCHAR(255)', remarks: '组织官网地址', afterColumn: 'SCALE')
         }
     }
+
     changeSet(author: 'jiameng.cao@hand-china.com', id: '2019-06-04-fd-organization-add-category') {
         addColumn(tableName: 'FD_ORGANIZATION') {
-            column(name: 'CATEGORY', type: 'VARCHAR(255)', remarks: '组织类型code', afterColumn: 'HOME_PAGE')
+            column(name: 'CATEGORY', type: 'VARCHAR(255)', remarks: '组织类型code', afterColumn: 'HOME_PAGE', defaultValue: 'test')
         }
     }
 
