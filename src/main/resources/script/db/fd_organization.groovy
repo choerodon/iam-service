@@ -76,4 +76,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
         }
     }
 
+    changeSet(author: 'jiameng.cao@hand-china.com', id: '2019-06-06-exchange-fd-organization.groovy') {
+        dropColumn(tableName: 'FD_ORGANIZATION', columnName: 'CATEGORY')
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'CATEGORY', type: 'VARCHAR(255)', remarks: '组织类型code', afterColumn: 'HOME_PAGE', defaultValue: 'DEFAULT')
+        }
+    }
+
 }
