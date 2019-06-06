@@ -68,6 +68,14 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
     }
 
     changeSet(id: '2019-05-16-iam-application-drop-not-null', author: 'superlee') {
-        dropNotNullConstraint(columnDataType: 'VARCHAR(64)',columnName:'APPLICATION_TYPE', tableName:'IAM_APPLICATION')
+        dropNotNullConstraint(columnDataType: 'VARCHAR(64)', columnName: 'APPLICATION_TYPE', tableName: 'IAM_APPLICATION')
+    }
+
+    changeSet(id: '2019-06-06-iam-application-add-column', author: 'jiameng.cao') {
+        addColumn(tableName: 'IAM_APPLICATION') {
+            column(name: 'APPLICATION_TOKEN', type: 'VARCHAR(64)', afterColumn: 'APPLICATION_TYPE', remarks: '应用生成的token，用于feedback确定应用身份') {
+                constraints(nullable: true)
+            }
+        }
     }
 }

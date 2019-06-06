@@ -25,7 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_CREATE;
@@ -226,6 +234,23 @@ public class ApplicationServiceImpl implements ApplicationService {
             types.add(applicationType.code());
         }
         return types;
+    }
+
+    @Override
+    public String getToken(Long id) {
+        return applicationMapper.selectByPrimaryKey(id).getApplicationToken();
+    }
+
+    @Override
+    @Transactional
+    public String createToken(Long id) {
+        String token = UUID.randomUUID().toString();
+        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(id);
+        applicationDTO.setApplicationToken(token);
+        if (applicationMapper.updateByPrimaryKey(applicationDTO) != 1) {
+            throw new CommonException("error.application.update");
+        }
+        return token;
     }
 
     @Override

@@ -102,6 +102,22 @@ public class ApplicationController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "获取application的token")
+    @GetMapping(value = "/{id}/token")
+    public ResponseEntity<String> getToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
+        return new ResponseEntity<>(applicationService.getToken(id), HttpStatus.OK);
+
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "创建application的token")
+    @PostMapping(value = "/{id}/token")
+    public ResponseEntity<String> createToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
+        return new ResponseEntity<>(applicationService.createToken(id), HttpStatus.OK);
+
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "重名校验")
     @PostMapping("/check")
     public ResponseEntity check(@PathVariable("organization_id") Long organizationId,

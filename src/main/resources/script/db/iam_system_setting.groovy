@@ -56,4 +56,12 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             column(name: 'REGISTER_URL', type: 'VARCHAR(255)', remarks: '注册组织链接', afterColumn: 'REGISTER_ENABLED')
         }
     }
+
+    changeSet(author: 'jiameng.cao', id: '2019-06-06-iam-add-column') {
+        addColumn(tableName: 'IAM_SYSTEM_SETTING') {
+            column(name: 'RESET_GITLAB_PASSWORD_URL', type: 'VARCHAR(255)', remarks: '重置gitlab密码的地址', afterColumn: 'REGISTER_URL') {
+                constraints(nullable: true)
+            }
+        }
+    }
 }
