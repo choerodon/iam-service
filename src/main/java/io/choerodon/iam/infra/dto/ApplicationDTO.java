@@ -47,6 +47,8 @@ public class ApplicationDTO extends BaseDTO {
 
     private String applicationType;
 
+    private String applicationToken;
+
     @Column(name = "is_abnormal")
     private Boolean abnormal;
 
@@ -206,5 +208,13 @@ public class ApplicationDTO extends BaseDTO {
 
     public void setParentId(Long parentId) {
         this.parentId = parentId;
+    }
+
+    public String getApplicationToken() {
+        return applicationToken;
+    }
+
+    public void setApplicationToken(String applicationToken) {
+        this.applicationToken = applicationToken;
     }
 }

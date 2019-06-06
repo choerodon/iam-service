@@ -128,4 +128,8 @@ public interface ApplicationService {
      * @param ids            被移除的应用id数组
      */
     void deleteCombination(Long organizationId, Long id, Long[] ids);
+
+    String getToken(Long id);
+
+    String createToken(Long id);
 }

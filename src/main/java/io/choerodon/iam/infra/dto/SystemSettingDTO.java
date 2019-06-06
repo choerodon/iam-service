@@ -58,6 +58,8 @@ public class SystemSettingDTO extends BaseDTO {
 
     private String registerUrl;
 
+    private String resetGitlabPasswordUrl;
+
     public Long getId() {
         return id;
     }
@@ -144,5 +146,13 @@ public class SystemSettingDTO extends BaseDTO {
 
     public void setRegisterUrl(String registerUrl) {
         this.registerUrl = registerUrl;
+    }
+
+    public String getResetGitlabPasswordUrl() {
+        return resetGitlabPasswordUrl;
+    }
+
+    public void setResetGitlabPasswordUrl(String resetGitlabPasswordUrl) {
+        this.resetGitlabPasswordUrl = resetGitlabPasswordUrl;
     }
 }
