@@ -87,4 +87,11 @@ public class MenuController {
         menuService.check(menu);
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "查询所有菜单")
+    @GetMapping(value = "/list")
+    public ResponseEntity<List<MenuDTO>> list() {
+        return new ResponseEntity<>(menuService.list(), HttpStatus.OK);
+    }
 }

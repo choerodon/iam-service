@@ -233,6 +233,11 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
+    @Override
+    public List<MenuDTO> list() {
+        return menuMapper.selectAll();
+    }
+
     /**
      * 根据自设目录追溯到根目录.
      *

@@ -71,4 +71,10 @@ public interface MenuService {
      * @param menus
      */
     void saveMenuConfig(String code, List<MenuDTO> menus);
+
+    /**
+     * 查询所有菜单
+     * @return
+     */
+    List<MenuDTO> list();
 }
