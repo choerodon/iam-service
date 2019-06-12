@@ -691,7 +691,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId) {
-        if (StringUtils.isEmpty(param)) {
+        if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
             Page<SimplifiedUserDTO> result = new Page<>(0, 20);
             result.setTotal(0);
             return result.toPageInfo();
