@@ -48,6 +48,7 @@ env:
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.io-choerodon:8000/eureka/
     # 清理permission表中的旧接口和role_permission表中角色和权限层级不匹配的脏数据
     CHOERODON_CLEANPERMISSION: false
+    CHOERODON_CATEGORY_ENABLED: false
     # skywalking 代理端配置
 #    SKYWALKING_OPTS: >-
 #      -javaagent:/agent/skywalking-agent.jar

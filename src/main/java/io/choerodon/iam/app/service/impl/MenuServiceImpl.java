@@ -10,20 +10,19 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.iam.infra.dto.MenuDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.mybatis.entity.Criteria;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,18 +32,24 @@ import java.util.stream.Collectors;
 @Component
 public class MenuServiceImpl implements MenuService {
 
-    private ProjectRepository projectRepository;
+    @Value("${choerodon.category.enabled:false}")
+    private boolean enableCategory;
 
+    private ProjectRepository projectRepository;
+    private OrganizationMapper organizationMapper;
     private MenuMapper menuMapper;
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
     private MenuAssertHelper menuAssertHelper;
 
 
-    public MenuServiceImpl(ProjectRepository projectRepository,
-                           MenuMapper menuMapper,
-                           MenuAssertHelper menuAssertHelper) {
+    public MenuServiceImpl(ProjectRepository projectRepository, OrganizationMapper organizationMapper,
+                           MenuMapper menuMapper, MenuAssertHelper menuAssertHelper,
+                           ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.projectRepository = projectRepository;
+        this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.menuAssertHelper = menuAssertHelper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
     }
 
     @Override
@@ -107,27 +112,67 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin();
         Set<MenuDTO> menus;
+        if (enableCategory) {
+            menus = menusByCategory(isAdmin, userId, level, sourceId);
+        } else {
+            if (isAdmin) {
+                if (ResourceType.isProject(level)) {
+                    menus = new LinkedHashSet<>(
+                            menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
+                } else {
+                    menus = menuMapper.selectByLevelWithPermissionType(level);
+                }
+            } else {
+                menus = new HashSet<>(
+                        menuMapper.selectMenusAfterCheckPermission(userId, level, sourceId, getProjectCategory(level, sourceId), "user"));
+                //查类型为menu的菜单
+                MenuDTO dto = new MenuDTO();
+                dto.setType(MenuType.MENU.value());
+                dto.setResourceLevel(level);
+                menus.addAll(menuMapper.select(dto));
+            }
+        }
+
+        toTreeMenu(topMenu, menus, false);
+        return topMenu;
+    }
+
+
+    private Set<MenuDTO> menusByCategory(Boolean isAdmin, Long userId, String level, Long sourceId) {
+        Set<MenuDTO> menus;
+        List<String> categories = getCategories(level, sourceId);
+        if (CollectionUtils.isEmpty(categories)) {
+            throw new CommonException("error.category.not.exist");
+        }
         if (isAdmin) {
-            if (ResourceType.isProject(level)) {
+            if (ResourceType.isProject(level) || ResourceType.isOrganization(level)) {
                 menus = new LinkedHashSet<>(
-                        menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
+                        menuMapper.queryMenusWithCategoryAndLevelByRootUser(getCategories(level, sourceId), level));
             } else {
                 menus = menuMapper.selectByLevelWithPermissionType(level);
             }
         } else {
-            String category = getProjectCategory(level, sourceId);
             menus = new HashSet<>(
-                    menuMapper.selectMenusAfterCheckPermission(userId, level, sourceId, category, "user"));
+                    menuMapper.selectMenusAfterPassingThePermissionCheck(userId, level, sourceId, getCategories(level, sourceId), "user"));
+
             //查类型为menu的菜单
             MenuDTO dto = new MenuDTO();
             dto.setType(MenuType.MENU.value());
             dto.setResourceLevel(level);
             menus.addAll(menuMapper.select(dto));
         }
-        toTreeMenu(topMenu, menus, false);
-        return topMenu;
+        return menus;
     }
 
+    /**
+     * 开源版本获取 category
+     * project 与 category 一对一，存于 FD_PROJECT 表中
+     * organization 没有 category
+     *
+     * @param level
+     * @param sourceId
+     * @return
+     */
     private String getProjectCategory(String level, Long sourceId) {
         String category = null;
         if (ResourceType.isProject(level)) {
@@ -137,6 +182,30 @@ public class MenuServiceImpl implements MenuService {
             }
         }
         return category;
+    }
+
+
+    /**
+     * 非开源版本获取 category
+     * organization 与 category 一对一，存于 FD_ORGANIZATION 表中
+     * project 与 category 一对多，存于 FD_PROJECT_MAP_CATEGORY 表中
+     *
+     * @param level
+     * @param sourceId
+     * @return
+     */
+    private List<String> getCategories(String level, Long sourceId) {
+        List<String> categories = new ArrayList<>();
+        if (ResourceType.isProject(level)) {
+            categories.addAll(projectMapCategoryMapper.selectProjectCategories(sourceId));
+        }
+        if (ResourceType.isOrganization(level)) {
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(sourceId);
+            if (organizationDTO != null) {
+                categories.add(organizationDTO.getCategory());
+            }
+        }
+        return categories;
     }
 
     @Override
