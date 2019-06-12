@@ -5,6 +5,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.iam.api.dto.ResetPasswordDTO;
 import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.swagger.annotations.ApiOperation;
@@ -115,10 +116,17 @@ public class SystemSettingController extends BaseController {
     @GetMapping(value = "/enable_resetPassword")
     @ApiOperation(value = "是否允许修改仓库密码")
     @Permission(type = ResourceType.SITE, roles = InitRoleCode.SITE_ADMINISTRATOR)
-    public ResponseEntity<Boolean> enableResetPassword() {
+    public ResponseEntity<ResetPasswordDTO> enableResetPassword() {
         SystemSettingDTO systemSettingDTO = systemSettingService.getSetting();
         Boolean result;
         result = systemSettingDTO.getResetGitlabPasswordUrl() == null ? false : true;
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        ResetPasswordDTO resetPasswordDTO = new ResetPasswordDTO();
+        if (result) {
+            resetPasswordDTO.setEnable_reset(result);
+            resetPasswordDTO.setResetGitlabPasswordUrl(systemSettingDTO.getResetGitlabPasswordUrl());
+        } else {
+            resetPasswordDTO.setEnable_reset(false);
+        }
+        return new ResponseEntity<>(resetPasswordDTO, HttpStatus.OK);
     }
 }
