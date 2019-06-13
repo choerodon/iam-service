@@ -54,4 +54,10 @@ public interface SystemSettingService {
      * @return ，如果存在返回数据，否则返回 null
      */
     SystemSettingDTO getSetting();
+
+    /**
+     * 获取是否启用项目/组织类型控制
+     * @return
+     */
+    Boolean getEnabledStateOfTheCategory();
 }

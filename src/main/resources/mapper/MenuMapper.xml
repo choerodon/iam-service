@@ -15,54 +15,54 @@
     <select id="selectMenusAfterCheckPermission" resultMap="Menu">
         <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
         select
-          imb.id,
-          imb.code,
-          case
-            when
-            imt.name is null
-            then imb.name
-            else imt.name
-          end as name,
-          imb.resource_level,
-          imb.parent_code,
-          imb.type,
-          imb.sort,
-          imb.is_default,
-          imb.icon,
-          imb.category,
-          imb.page_permission_code,
-          imb.object_version_number,
-          ip2.path as route,
-          ip2.permission_type as page_permission_type
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip2.path as route,
+        ip2.permission_type as page_permission_type
         from iam_menu_b imb
         inner join iam_menu_permission imp
         on imb.code = imp.menu_code
         inner join (
-            select distinct t2.code from (
-            select ip.* from iam_permission ip
-            inner join iam_role_permission irp
-            on ip.id = irp.permission_id
-            inner join (
-            select distinct imr.role_id
-            from iam_member_role imr
-            inner join iam_role ir
-            on imr.role_id = ir.id
-            and ir.is_enabled = 1
-            where imr.member_id = #{memberId}
-            <if test="sourceType != null">
-                and imr.source_type = #{sourceType}
-                and imr.source_id = #{sourceId}
-            </if>
-            <if test="memberType != null">
-                and imr.member_type = #{memberType}
-            </if>
-            ) t1
-            on t1.role_id = irp.role_id
-            union
-            select ip1.* from iam_permission ip1
-            where ip1.is_login_access = 1
-            or ip1.is_public_access = 1
-            ) t2
+        select distinct t2.code from (
+        select ip.* from iam_permission ip
+        inner join iam_role_permission irp
+        on ip.id = irp.permission_id
+        inner join (
+        select distinct imr.role_id
+        from iam_member_role imr
+        inner join iam_role ir
+        on imr.role_id = ir.id
+        and ir.is_enabled = 1
+        where imr.member_id = #{memberId}
+        <if test="sourceType != null">
+            and imr.source_type = #{sourceType}
+            and imr.source_id = #{sourceId}
+        </if>
+        <if test="memberType != null">
+            and imr.member_type = #{memberType}
+        </if>
+        ) t1
+        on t1.role_id = irp.role_id
+        union
+        select ip1.* from iam_permission ip1
+        where ip1.is_login_access = 1
+        or ip1.is_public_access = 1
+        ) t2
         ) t3
         on imp.permission_code = t3.code
         left join iam_menu_tl imt
@@ -85,7 +85,7 @@
     </select>
 
     <select id="selectMenusWithPermission" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
         select
         imb.id,
         imb.code,
@@ -123,27 +123,27 @@
     </select>
 
     <select id="queryProjectMenusWithCategoryByRootUser" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
         select distinct
-            imb.id,
-            imb.code,
-            case
-                when
-                imt.name is null
-                then imb.name
-                else imt.name
-            end as name,
-            imb.resource_level,
-            imb.parent_code,
-            imb.type,
-            imb.sort,
-            imb.is_default,
-            imb.icon,
-            imb.category,
-            imb.page_permission_code,
-            imb.object_version_number,
-            ip.path as route,
-            ip.permission_type as page_permission_type
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip.path as route,
+        ip.permission_type as page_permission_type
         from iam_menu_b imb
         left join iam_menu_tl imt
         on imb.id = imt.id
@@ -163,7 +163,7 @@
     </select>
 
     <select id="selectByLevelWithPermissionType" resultMap="Menu">
-        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()" />
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
         select
         imb.id,
         imb.code,
@@ -193,4 +193,112 @@
         where imb.resource_level = #{level}
     </select>
 
+
+    <select id="queryMenusWithCategoryAndLevelByRootUser" resultMap="Menu">
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        select distinct
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip.path as route,
+        ip.permission_type as page_permission_type
+        from iam_menu_b imb
+        left join iam_menu_tl imt
+        on imb.id = imt.id
+        and lang = #{lang}
+        left join iam_permission ip
+        on imb.page_permission_code = ip.code
+        where imb.resource_level = #{level}
+        and imb.type != 'top'
+        AND imb.code in
+        (select menu_code from FD_CATEGORY_MENU WHERE CATEGORY_code IN
+        <foreach item="category" index="index" collection="categories" open="(" separator="," close=")">
+            #{category}
+        </foreach>)
+    </select>
+
+
+    <select id="selectMenusAfterPassingThePermissionCheck" resultMap="Menu">
+        <bind name="lang" value="@io.choerodon.mybatis.util.OGNL@language()"/>
+        select
+        imb.id,
+        imb.code,
+        case
+        when
+        imt.name is null
+        then imb.name
+        else imt.name
+        end as name,
+        imb.resource_level,
+        imb.parent_code,
+        imb.type,
+        imb.sort,
+        imb.is_default,
+        imb.icon,
+        imb.category,
+        imb.page_permission_code,
+        imb.object_version_number,
+        ip2.path as route,
+        ip2.permission_type as page_permission_type
+        from iam_menu_b imb
+        inner join iam_menu_permission imp
+        on imb.code = imp.menu_code
+        inner join (
+        select distinct t2.code from (
+        select ip.* from iam_permission ip
+        inner join iam_role_permission irp
+        on ip.id = irp.permission_id
+        inner join (
+        select distinct imr.role_id
+        from iam_member_role imr
+        inner join iam_role ir
+        on imr.role_id = ir.id
+        and ir.is_enabled = 1
+        where imr.member_id = #{memberId}
+        <if test="sourceType != null">
+            and imr.source_type = #{sourceType}
+            and imr.source_id = #{sourceId}
+        </if>
+        <if test="memberType != null">
+            and imr.member_type = #{memberType}
+        </if>
+        ) t1
+        on t1.role_id = irp.role_id
+        union
+        select ip1.* from iam_permission ip1
+        where ip1.is_login_access = 1
+        or ip1.is_public_access = 1
+        ) t2
+        ) t3
+        on imp.permission_code = t3.code
+        left join iam_menu_tl imt
+        on imb.id = imt.id
+        and imt.lang = #{lang}
+        left join iam_permission ip2
+        on imb.page_permission_code = ip2.code
+        where 1=1
+        <if test="sourceType != null">
+            and imb.resource_level = #{sourceType}
+        </if>
+        AND imb.code in
+        (select menu_code from FD_CATEGORY_MENU WHERE CATEGORY_code IN
+        <foreach item="category" index="index" collection="categories" open="(" separator="," close=")">
+            #{category}
+        </foreach>
+        )
+    </select>
 </mapper>

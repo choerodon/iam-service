@@ -8,6 +8,8 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 choerodon:
+  category:
+    enabled: false # 是否开启项目/组织类型控制
   devops:
     message: true
   eureka:

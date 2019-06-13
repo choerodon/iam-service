@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper">
+    <select id="selectProjectCategories" resultType="java.lang.String">
+        SELECT
+            pc. CODE
+        FROM
+            FD_PROJECT_MAP_CATEGORY pmc
+        LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        WHERE pmc.project_id = #{projectId}
+    </select>
+</mapper>

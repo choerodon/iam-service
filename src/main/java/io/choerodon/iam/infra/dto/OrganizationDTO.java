@@ -39,6 +39,9 @@ public class OrganizationDTO extends BaseDTO {
 
     private String address;
 
+    @ApiModelProperty(value = "组织类别")
+    private String category;
+
     @ApiModelProperty(value = "组织图标url")
     private String imageUrl;
 
@@ -213,5 +216,13 @@ public class OrganizationDTO extends BaseDTO {
 
     public void setHomePage(String homePage) {
         this.homePage = homePage;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
