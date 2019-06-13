@@ -112,7 +112,7 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin();
         Set<MenuDTO> menus;
-        if (enableCategory) {
+        if ((ResourceType.isProject(level) || ResourceType.isOrganization(level)) && enableCategory) {
             menus = menusByCategory(isAdmin, userId, level, sourceId);
         } else {
             if (isAdmin) {
@@ -138,6 +138,14 @@ public class MenuServiceImpl implements MenuService {
     }
 
 
+    /**
+     * menus 项目/组织  开启类别控制
+     * @param isAdmin
+     * @param userId
+     * @param level
+     * @param sourceId
+     * @return
+     */
     private Set<MenuDTO> menusByCategory(Boolean isAdmin, Long userId, String level, Long sourceId) {
         Set<MenuDTO> menus;
         List<String> categories = getCategories(level, sourceId);
@@ -145,12 +153,9 @@ public class MenuServiceImpl implements MenuService {
             throw new CommonException("error.category.not.exist");
         }
         if (isAdmin) {
-            if (ResourceType.isProject(level) || ResourceType.isOrganization(level)) {
-                menus = new LinkedHashSet<>(
-                        menuMapper.queryMenusWithCategoryAndLevelByRootUser(getCategories(level, sourceId), level));
-            } else {
-                menus = menuMapper.selectByLevelWithPermissionType(level);
-            }
+            menus = new LinkedHashSet<>(
+                    menuMapper.queryMenusWithCategoryAndLevelByRootUser(getCategories(level, sourceId), level));
+
         } else {
             menus = new HashSet<>(
                     menuMapper.selectMenusAfterPassingThePermissionCheck(userId, level, sourceId, getCategories(level, sourceId), "user"));
