@@ -47,13 +47,14 @@ public class OrganizationProjectController extends BaseController {
      * @return 项目信息
      */
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "创建项目")
+    @ApiOperation(value = "")
     @PostMapping
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectDTO project) {
+                                             @RequestBody @Valid ProjectDTO project,
+                                             @RequestParam(required = false) List<Long> categoryIds) {
         project.setId(null);
         project.setOrganizationId(organizationId);
-        return new ResponseEntity<>(organizationProjectService.createProject(project), HttpStatus.OK);
+        return new ResponseEntity<>(organizationProjectService.createProject(project, categoryIds), HttpStatus.OK);
     }
 
     /**

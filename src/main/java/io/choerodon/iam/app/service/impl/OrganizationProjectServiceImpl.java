@@ -25,6 +25,7 @@ import io.choerodon.iam.infra.dto.LabelDTO;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.iam.infra.dto.RoleDTO;
@@ -32,6 +33,7 @@ import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +72,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Value("${spring.application.name:default}")
     private String serviceName;
 
+    @Value("${choerodon.category.enabled:false}")
+    private Boolean categoryEnable;
+
     private ProjectRepository projectRepository;
 
     private UserRepository userRepository;
@@ -90,6 +95,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     private ProjectTypeService projectTypeService;
 
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
+
     private ProjectRelationshipRepository projectRelationshipRepository;
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -103,7 +110,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           IUserService iUserService,
                                           AsgardFeignClient asgardFeignClient,
                                           ProjectTypeService projectTypeService,
-                                          ProjectRelationshipRepository projectRelationshipRepository) {
+                                          ProjectRelationshipRepository projectRelationshipRepository,
+                                          ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -115,12 +123,14 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.asgardFeignClient = asgardFeignClient;
         this.projectTypeService = projectTypeService;
         this.projectRelationshipRepository = projectRelationshipRepository;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
     }
 
     @Transactional
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
-    public ProjectDTO createProject(ProjectDTO projectDTO) {
+    public ProjectDTO createProject(ProjectDTO projectDTO, List<Long> categoryIds) {
+
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
@@ -130,6 +140,18 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         } else {
             dto = projectRepository.create(projectDTO);
             initMemberRole(dto);
+        }
+        if (categoryEnable) {
+            if (categoryIds.size() > 0) {
+                for (Long categoryId : categoryIds) {
+                    ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+                    projectMapCategoryDTO.setCategoryId(categoryId);
+                    projectMapCategoryDTO.setProjectId(dto.getId());
+                    if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+                        throw new CommonException("error.projectMapCategory.insert");
+                    }
+                }
+            }
         }
         return dto;
     }

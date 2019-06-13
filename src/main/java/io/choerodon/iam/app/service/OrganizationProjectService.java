@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface OrganizationProjectService {
 
-    ProjectDTO createProject(ProjectDTO projectDTO);
+    ProjectDTO createProject(ProjectDTO projectDTO, List<Long> categoryIds);
 
     List<ProjectDTO> queryAll(ProjectDTO projectDTO);
 
