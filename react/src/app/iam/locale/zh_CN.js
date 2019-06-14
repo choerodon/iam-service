@@ -1627,6 +1627,7 @@ const zh_CN = {
   // 修改密码
   'user.changepwd.twopwd.pattern.msg': '两次密码输入不一致',
   'user.changepwd.header.title': '修改密码',
+  'user.changepwd.gitlab': '修改仓库密码',
   'user.changepwd.oldpassword': '原密码',
   'user.changepwd.oldpassword.require.msg': '请输入原密码',
   'user.changepwd.newpassword': '新密码',
