@@ -1,10 +1,9 @@
-
 import React, { Component } from 'react';
-import { Button, Col, Form, Input, Row } from 'choerodon-ui';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { Button, Col, Form, Input, Modal, Row } from 'choerodon-ui';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
-import { Content, Header, Page, Permission } from '@choerodon/boot';
+import { axios, Content, Header, Page, Permission } from '@choerodon/boot';
 import UserInfoStore from '../../../stores/user/user-info/UserInfoStore';
 import './Password.scss';
 
@@ -33,18 +32,32 @@ export default class Password extends Component {
     super(props);
     this.editFocusInput = React.createRef();
   }
+
   state = {
     submitting: false,
     confirmDirty: null,
+    visible: false,
+    res: {},
   };
 
   componentWillMount() {
     this.loadUserInfo();
+    this.loadEnablePwd();
   }
 
   loadUserInfo = () => {
     UserInfoStore.setUserInfo(this.props.AppState.getUserInfo);
   };
+
+  loadEnablePwd = () => {
+    axios.get(`/iam/v1/system/setting/enable_resetPassword`)
+      .then((response) => {
+        this.setState({
+          res: response,
+        });
+      });
+  };
+
 
   compareToFirstPassword = (rule, value, callback) => {
     const { intl, form } = this.props;
@@ -59,7 +72,8 @@ export default class Password extends Component {
     const form = this.props.form;
     if (value && this.state.confirmDirty) {
       form.validateFields(['confirm'], { force: true });
-    } if (value.indexOf(' ') !== -1) {
+    }
+    if (value.indexOf(' ') !== -1) {
       callback('密码不能包含空格');
     }
     callback();
@@ -103,10 +117,30 @@ export default class Password extends Component {
     resetFields();
   };
 
+  showModal = () => {
+    this.setState({
+      visible: true,
+    });
+    Modal.confirm({
+      className: 'c7n-iam-confirm-modal',
+      title: '修改仓库密码',
+      content: '确定要修改您的gitlab仓库密码吗？点击确定后，您将跳转至GitLab仓库克隆密码的修改页面。',
+      okText: '修改',
+      width: 560,
+      onOk: () => {
+        const { res: { enable_reset, resetGitlabPasswordUrl } } = this.state;
+        if (enable_reset) {
+          window.open(resetGitlabPasswordUrl);
+        }
+      },
+    });
+  };
+
+
   render() {
     const { intl, form } = this.props;
     const { getFieldDecorator } = form;
-    const { submitting } = this.state;
+    const { submitting, res: { enable_reset } } = this.state;
     const user = UserInfoStore.getUserInfo;
     return (
       <Page
@@ -115,6 +149,13 @@ export default class Password extends Component {
         ]}
       >
         <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
+          {
+            enable_reset ? (
+              <Button onClick={this.showModal} icon="vpn_key">
+                <FormattedMessage id={`${intlPrefix}.gitlab`} />
+              </Button>
+            ) : null
+          }
           <Button onClick={this.reload} icon="refresh">
             <FormattedMessage id="refresh" />
           </Button>
@@ -142,7 +183,9 @@ export default class Password extends Component {
                     label={<FormattedMessage id={`${intlPrefix}.oldpassword`} />}
                     type="password"
                     style={{ width: inputWidth }}
-                    ref={(e) => { this.editFocusInput = e; }}
+                    ref={(e) => {
+                      this.editFocusInput = e;
+                    }}
                     disabled={user.ldap}
                   />,
                 )}

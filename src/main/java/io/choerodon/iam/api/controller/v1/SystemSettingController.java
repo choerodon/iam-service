@@ -111,7 +111,7 @@ public class SystemSettingController extends BaseController {
     public ResponseEntity<ResetPasswordDTO> enableResetPassword() {
         SystemSettingDTO systemSettingDTO = systemSettingService.getSetting();
         Boolean result;
-        result = systemSettingDTO.getResetGitlabPasswordUrl() == null ? false : true;
+        result = (systemSettingDTO.getResetGitlabPasswordUrl() == null || systemSettingDTO.getResetGitlabPasswordUrl().equals("")) ? false : true;
         ResetPasswordDTO resetPasswordDTO = new ResetPasswordDTO();
         if (result) {
             resetPasswordDTO.setEnable_reset(result);
