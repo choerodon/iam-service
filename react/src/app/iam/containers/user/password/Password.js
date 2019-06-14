@@ -36,7 +36,6 @@ export default class Password extends Component {
   state = {
     submitting: false,
     confirmDirty: null,
-    visible: false,
     res: {},
   };
 
@@ -69,7 +68,7 @@ export default class Password extends Component {
   };
 
   validateToNextPassword = (rule, value, callback) => {
-    const form = this.props.form;
+    const { form } = this.props;
     if (value && this.state.confirmDirty) {
       form.validateFields(['confirm'], { force: true });
     }
