@@ -142,7 +142,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             initMemberRole(dto);
         }
         if (categoryEnable) {
-            if (categoryIds.size() > 0) {
+            if (categoryIds != null) {
                 for (Long categoryId : categoryIds) {
                     ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
                     projectMapCategoryDTO.setCategoryId(categoryId);
