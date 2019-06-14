@@ -5,14 +5,19 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.api.dto.RelationshipCheckDTO;
 import io.choerodon.iam.api.dto.payload.ProjectRelationshipInsertPayload;
 import io.choerodon.iam.app.service.ProjectRelationshipService;
 import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -55,13 +60,21 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
     private ProjectRepository projectRepository;
     private TransactionalProducer producer;
     private ProjectRelationshipMapper relationshipMapper;
+    private ProjectCategoryMapper projectCategoryMapper;
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
+    private ProjectMapper projectMapper;
 
     public ProjectRelationshipServiceImpl(ProjectRelationshipRepository projectRelationshipRepository, ProjectRepository projectRepository,
-                                          TransactionalProducer producer, ProjectRelationshipMapper relationshipMapper) {
+                                          TransactionalProducer producer, ProjectRelationshipMapper relationshipMapper,
+                                          ProjectCategoryMapper projectCategoryMapper, ProjectMapCategoryMapper projectMapCategoryMapper,
+                                          ProjectMapper projectMapper) {
         this.projectRelationshipRepository = projectRelationshipRepository;
         this.projectRepository = projectRepository;
         this.producer = producer;
         this.relationshipMapper = relationshipMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.projectMapper = projectMapper;
     }
 
     @Override
@@ -84,6 +97,21 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         if (projectRelationshipDTO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
         }
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectRelationshipDTO.getProjectId());
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode("PROGRAM_PROJECT");
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+        if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.projectMapCategory.delete");
+        }
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
+        projectDTO.setCategory("");
+        if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
+            throw new CommonException("error.project.update");
+        }
+
 
         ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
         ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
@@ -197,6 +225,20 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
             // fill the saga payload
+            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+            projectCategoryDTO.setCode("PROGRAM_PROJECT");
+            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+            if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+                throw new CommonException("error.projectMapCategory.insert");
+            }
+            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(relationshipDTO.getProjectId());
+            projectDTO.setCategory("PROGRAM_PROJECT");
+            if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
+                throw new CommonException("error.project.update");
+            }
             ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
             ProjectRelationshipInsertPayload.ProjectRelationship relationship
                     = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
