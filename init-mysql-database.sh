@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-MAVEN_LOCAL_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository | grep -v '\[INFO\]')
+MAVEN_LOCAL_REPO=$(cd / && mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout)
 TOOL_GROUP_ID=io.choerodon
 TOOL_ARTIFACT_ID=choerodon-tool-liquibase
 TOOL_VERSION=0.11.0.RELEASE

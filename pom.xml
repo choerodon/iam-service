@@ -13,7 +13,7 @@
     <version>0.17.0.RELEASE</version>
 
     <properties>
-        <choerodon.starters.version>0.11.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.11.1.RELEASE</choerodon.starters.version>
         <powermock.version>2.0.0-beta.5</powermock.version>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <choerodon.mainClass>io.choerodon.iam.IAMServiceApplication</choerodon.mainClass>
