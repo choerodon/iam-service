@@ -52,8 +52,8 @@
         SELECT DISTINCT
         p.CODE
         FROM
-        iam_role_permission rp
-        left JOIN iam_permission p ON rp.permission_id = p.id
+        iam_permission p
+        left JOIN iam_role_permission rp ON rp.permission_id = p.id
         left JOIN iam_role r ON r.id = rp.role_id
         left JOIN iam_member_role mu ON mu.role_id = r.id
         WHERE
