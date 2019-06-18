@@ -119,4 +119,10 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
         dropNotNullConstraint(columnDataType: 'VARCHAR(128)', columnName: 'PARENT_CODE', tableName: 'IAM_MENU_B')
         dropNotNullConstraint(columnDataType: 'VARCHAR(128)', columnName: 'NAME', tableName: 'IAM_MENU_B')
     }
+
+    changeSet(author: 'superlee', id: '2019-06-18-rename-sequence') {
+        if (helper.dbType().isSupportSequence()) {
+            sql("rename IAM_MENU_S TO IAM_MENU_B_S")
+        }
+    }
 }
