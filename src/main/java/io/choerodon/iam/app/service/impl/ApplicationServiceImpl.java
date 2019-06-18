@@ -254,6 +254,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public ApplicationDTO getApplicationByToken(String applicationToken) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setApplicationToken(applicationToken);
+        return applicationMapper.selectOne(applicationDTO);
+    }
+
+    @Override
     public void check(ApplicationDTO applicationDTO) {
         if (!StringUtils.isEmpty(applicationDTO.getName())) {
             //name是组织下唯一

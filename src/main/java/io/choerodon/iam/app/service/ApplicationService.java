@@ -132,4 +132,6 @@ public interface ApplicationService {
     String getToken(Long id);
 
     String createToken(Long id);
+
+    ApplicationDTO getApplicationByToken(String applicationToken);
 }

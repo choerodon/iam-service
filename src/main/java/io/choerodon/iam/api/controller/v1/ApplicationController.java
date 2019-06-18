@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 import java.util.List;
 
 /**
@@ -114,6 +115,14 @@ public class ApplicationController {
     @PostMapping(value = "/{id}/token")
     public ResponseEntity<String> createToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.createToken(id), HttpStatus.OK);
+
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据token查询应用接口")
+    @GetMapping(value = "/token")
+    public ResponseEntity<ApplicationDTO> getApplicationByToken(@PathVariable("organization_id") Long organizationId, @PathParam("applicationToken") String applicationToken) {
+        return new ResponseEntity<>(applicationService.getApplicationByToken(applicationToken), HttpStatus.OK);
 
     }
 
