@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Form, Table, Tooltip, Icon } from 'choerodon-ui';
+import { Button, Form, Table, Tooltip, Icon, Modal, Spin, Input } from 'choerodon-ui';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Header, Page } from '@choerodon/boot';
+import { Action, Content, Header, Page, axios } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './Application.scss';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
@@ -18,7 +18,22 @@ const intlPrefix = 'organization.application';
 @inject('AppState')
 @observer
 export default class Application extends Component {
+  state = {
+    curToken: '',
+    createToken: false,
+    hasToken: false,
+    interfaceName: '',
+    showTokenModal: false,
+  };
+
   componentDidMount() {
+    this.setState({
+      curToken: '',
+      hasToken: false,
+      createToken: false,
+      interfaceName: '',
+      showTokenModal: false,
+    });
     this.refresh();
   }
 
@@ -72,7 +87,30 @@ export default class Application extends Component {
     history.push(`/iam/application/manage/${record.id}?type=organization&id=${id}&name=${encodeURIComponent(name)}`);
   }
 
+  handleToken = (record, hasToken) => {
+    this.setState({ showTokenModal: true, interfaceName: record.name, hasToken });
+    const { organizationId, id } = record;
+    if (!hasToken) {
+      axios.post(`/iam/v1/organizations/${organizationId}/applications/${id}/token`).then(res => {
+        console.log('get token: ', res);
+        this.setState({
+          hasToken: true,
+          curToken: res,
+          createToken: true,
+        })
+      })
+    } else {
+      this.setState({
+        hasToken: true,
+        createToken: false,
+        curToken: record.applicationToken,
+      })
+    }
+  };
+
+
   render() {
+    const { showTokenModal, interfaceName, hasToken, curToken, createToken } = this.state;
     const { ApplicationStore: { filters, pagination, params }, AppState, intl, ApplicationStore, ApplicationStore: { applicationData } } = this.props;
     const unHandleData = ApplicationStore.applicationData.slice();
     const hasChild = unHandleData.some(v => v.applicationCategory === 'combination-application' && v.descendants && v.descendants.length);
@@ -205,51 +243,55 @@ export default class Application extends Component {
         key: 'action',
         width: '10%',
         align: 'right',
-        render: (text, record) => (
-          !record.isFirst ? null
-            : (
-              <div>
-                <Tooltip
-                  title={<FormattedMessage id="modify" />}
-                  placement="bottom"
-                >
-                  <Button
-                    shape="circle"
-                    size="small"
-                    onClick={e => this.handleopenTab(record, 'edit')}
-                    icon="mode_edit"
-                  />
-                </Tooltip>
-                {
-                  record.applicationCategory === 'combination-application' && (
-                    <Tooltip
-                      title={<FormattedMessage id="edit" />}
-                      placement="bottom"
-                    >
-                      <Button
-                        shape="circle"
-                        size="small"
-                        onClick={e => this.handleManage(record)}
-                        icon="predefine"
-                      />
-                    </Tooltip>
-                  )
-                }
-                <Tooltip
-                  title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
-                  placement="bottom"
-                >
-                  <Button
-                    shape="circle"
-                    size="small"
-                    onClick={e => this.handleEnable(record)}
-                    icon={record.enabled ? 'remove_circle_outline' : 'finished'}
-                  />
-                </Tooltip>
-              </div>
-            )
-        ),
-      },
+        render: (text, record) => {
+          if (!record.isFirst) {
+            return null
+          }
+          const curRecordhasToken = record.applicationToken !== null;
+          const actionDatas = [{
+            icon: '',
+            type: 'site',
+            text: intl.formatMessage({id: 'modify'}),
+            action: () => this.handleopenTab(record, 'edit'),
+          }];
+          if (record.applicationCategory === 'combination-application') {
+            actionDatas.push({
+              icon: '',
+              type: 'site',
+              text: intl.formatMessage({id: 'edit'}),
+              action: () => this.handleManage(record),
+            })
+          }
+          if (record.enabled) {
+            actionDatas.push({
+              icon: '',
+              type: 'site',
+              text: intl.formatMessage({id: 'disable'}),
+              action: () => this.handleEnable(record),
+            });
+          } else {
+            actionDatas.push({
+              icon: '',
+              type: 'site',
+              text: intl.formatMessage({id: 'enable'}),
+              action: () => this.handleEnable(record),
+            });
+          }
+          actionDatas.push({
+            icon: '',
+            type: 'site',
+            text: intl.formatMessage(
+              {
+                id: curRecordhasToken
+                  ? `${intlPrefix}.view.token`
+                  : `${intlPrefix}.create.and.view.token`
+              }
+            ),
+            action: () => this.handleToken(record, curRecordhasToken),
+          });
+          return <Action data={actionDatas} />;
+        }
+      }
     ];
 
     
@@ -288,6 +330,29 @@ export default class Application extends Component {
             childrenColumnName="descendants"
             scroll={{ x: true }}
           />
+          <Modal
+            className='c7n-iam-application-token-modal'
+            title={intl.formatMessage({ id: `${intlPrefix}.view.interface.token` }, {interfaceName})}
+            visible={showTokenModal}
+            okText={intl.formatMessage({ id: 'close' })}
+            okCancel={false}
+            onOk={() => {
+              this.setState({ showTokenModal: false });
+              if (createToken) {
+                this.refresh();
+              }
+            }}
+            center
+          >
+            <Spin spinning={!hasToken}>
+              <Input
+                copy
+                readOnly={true}
+                value={curToken}
+                label="AccessToken"
+              />
+            </Spin>
+          </Modal>
         </Content>
         {
           ApplicationStore.sidebarVisible ? (

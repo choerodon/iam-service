@@ -207,3 +207,9 @@
     }
   }
 }
+
+.c7n-iam-application-token-modal {
+  .c7n-btn.c7n-btn-flat:first-child {
+    display: none;
+  }
+}
