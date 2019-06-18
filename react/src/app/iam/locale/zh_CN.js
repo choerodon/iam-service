@@ -266,6 +266,7 @@ const pageDetail = {
   'organization.project.redirect.disable': '此项目已禁用',
   'organization.project.redirect.no-permission': '您在此项目下无权限',
   'organization.project.type.category': '项目类别',
+  'organization.project.type.category.notfound':'没有符合条件的结果',
   'organization.project.agile.project': '敏捷项目',
   'organization.project.program.project': '普通项目群',
   'organization.project.analytical.project': '分析型项目群',

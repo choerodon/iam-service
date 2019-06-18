@@ -7,20 +7,15 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.ProjectCreateDTO;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -43,15 +38,17 @@ public class OrganizationProjectController extends BaseController {
     /**
      * 添加项目
      *
-     * @param project 项目信息
+     * @param projectCreateDTO 项目信息
      * @return 项目信息
      */
     @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "")
+    @ApiOperation(value = "创建项目")
     @PostMapping
     public ResponseEntity<ProjectDTO> create(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectDTO project,
-                                             @RequestParam(required = false) List<Long> categoryIds) {
+                                             @RequestBody @Valid ProjectCreateDTO projectCreateDTO) {
+        List<Long> categoryIds = projectCreateDTO.getCategoryIds();
+        ProjectDTO project = new ProjectDTO();
+        BeanUtils.copyProperties(projectCreateDTO, project);
         project.setId(null);
         project.setOrganizationId(organizationId);
         return new ResponseEntity<>(organizationProjectService.createProject(project, categoryIds), HttpStatus.OK);
