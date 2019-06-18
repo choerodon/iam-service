@@ -29,6 +29,21 @@ class TreeData {
   });
 }
 
+function combineRouteLink(list, link) {
+  list.__uuid__ = `${link} - ${list.id}`;
+  if (list.descendants) {
+    list.descendants.forEach((v) => {
+      combineRouteLink(v, list.__uuid__);
+    });
+  }
+}
+
+function addRouteLink(list) {
+  list.forEach((v) => {
+    combineRouteLink(v, v.parentId || 0);
+  });
+}
+
 @store('ApplicationStore')
 class ApplicationStore {
   /**
@@ -261,6 +276,7 @@ class ApplicationStore {
             // eslint-disable-next-line no-return-assign
             list.forEach(v => v.isFirst = true);
           }
+          addRouteLink(list);
           this.applicationData = list;
           this.pagination = {
             ...pagination,

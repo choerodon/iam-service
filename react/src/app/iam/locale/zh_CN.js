@@ -1701,6 +1701,7 @@ const zh_CN = {
   'memberrole.user.require.msg': '必须至少选择一个用户',
   'memberrole.client.require.msg': '必须至少选择一个客户端',
   'memberrole.role.require.msg': '必须至少选择一个角色',
+  'memberrole.noFilter.msg': '过滤条件为空',
   'memberrole.notfound.msg': '没有符合条件的结果',
   'memberrole.role.label': '请选择一个角色',
   'memberrole.remove.select.all.content': '确认移除当前选中的成员下的所有角色?',

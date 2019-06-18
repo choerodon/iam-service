@@ -73,6 +73,7 @@ export default class Project extends Component {
       submitting: false,
       isShowAvatar: false,
       imgUrl: null,
+      expandedRowKeys: [],
     };
     this.editFocusInput = React.createRef();
     this.createFocusInput = React.createRef();
@@ -173,21 +174,23 @@ export default class Project extends Component {
     }
 
     ProjectStore.loadProject(organizationId, pagination, sort, filters)
-        .then((data) => {
-          ProjectStore.changeLoading(false);
-          ProjectStore.setProjectData(data.list || []);
-          this.setState({
-            sort,
-            pagination: {
-              current: data.pageNum,
-              pageSize: data.pageSize,
-              total: data.total,
-            },
-          });
-        })
-        .catch(error =>
-            Choerodon.handleResponseError(error),
-        );
+      .then((data) => {
+        ProjectStore.changeLoading(false);
+        ProjectStore.setProjectData(data.list || []);
+        const expandedRowKeys = this.state.expandedRowKeys.filter(v => data.list.find(l => l.id === v).projects.length);
+        this.setState({
+          sort,
+          pagination: {
+            current: data.pageNum,
+            pageSize: data.pageSize,
+            total: data.total,
+            expandedRowKeys,
+          },
+        });
+      })
+      .catch(error =>
+        Choerodon.handleResponseError(error),
+      );
   };
 
   handleopenTab = (data, operation) => {
@@ -332,8 +335,8 @@ export default class Project extends Component {
       const {validateFields} = this.props.form;
       validateFields((err, rawData) => {
         if (!err) {
-          this.setState({submitting: true, buttonClicked: true});
-          ProjectStore.axiosDeleteProjectsFromGroup();
+          this.setState({ submitting: true, buttonClicked: true });
+          ProjectStore.axiosDeleteProjectsFromGroup(this.loadProjects);
           ProjectStore.saveProjectGroup(rawData).then((savedData) => {
             if (savedData.empty) {
               this.setState({submitting: false, buttonClicked: false, sidebar: false});
@@ -844,6 +847,18 @@ export default class Project extends Component {
     this.setState({
       imgUrl: res,
       isShowAvatar: false,
+    });
+  }
+
+  handleExpand = (expanded, record) => {
+    const { expandedRowKeys } = this.state;
+    if (expanded) {
+      expandedRowKeys.push(record.id);
+    } else {
+      expandedRowKeys.splice(expandedRowKeys.findIndex(v => v === record.id), 1);
+    }
+    this.setState({
+      expandedRowKeys,
     });
   }
 

@@ -12,6 +12,7 @@ import './MemberRole.scss';
 import '../../../common/ConfirmModal.scss';
 
 let timer;
+let selectFilterEmpty = true;
 const { Sidebar } = Modal;
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -473,7 +474,7 @@ export default class MemberRole extends Component {
               filter
               getPopupContainer={() => (overflow ? this.sidebarBody : document.body)}
               onFilterChange={this.handleSelectFilter}
-              notFoundContent={intl.formatMessage({ id: 'memberrole.notfound.msg' })}
+              notFoundContent={selectFilterEmpty ? intl.formatMessage({ id: 'memberrole.noFilter.msg' }) : intl.formatMessage({ id: 'memberrole.notfound.msg' })}
               loading={this.state.selectLoading}
             >
               {this.getUserOption()}
@@ -503,7 +504,7 @@ export default class MemberRole extends Component {
               filter
               getPopupContainer={() => (overflow ? this.sidebarBody : document.body)}
               onFilterChange={this.handleSelectFilter}
-              notFoundContent={intl.formatMessage({ id: 'memberrole.notfound.msg' })}
+              notFoundContent={selectFilterEmpty ? intl.formatMessage({ id: 'memberrole.noFilter.msg' }) : intl.formatMessage({ id: 'memberrole.notfound.msg' })}
               loading={this.state.selectLoading}
             >
               {this.getClientOption()}
@@ -587,6 +588,7 @@ export default class MemberRole extends Component {
   }
 
   handleSelectFilter = (value) => {
+    selectFilterEmpty = !value;
     this.setState({
       selectLoading: true,
     });
@@ -636,15 +638,17 @@ export default class MemberRole extends Component {
     return usersData && usersData.length > 0 ? (
       usersData.map(({ id, imageUrl, loginName, realName }) => (
         <Option key={id} value={id} label={`${loginName}${realName}`}>
-          <div className="c7n-iam-memberrole-user-option">
-            <div className="c7n-iam-memberrole-user-option-avatar">
-              {
-                imageUrl ? <img src={imageUrl} alt="userAvatar" style={{ width: '100%' }} /> :
-                <span className="c7n-iam-memberrole-user-option-avatar-noavatar">{realName && realName.split('')[0]}</span>
-              }
+          <Tooltip title={`${loginName}${realName}`} placement="topLeft">
+            <div className="c7n-iam-memberrole-user-option">
+              <div className="c7n-iam-memberrole-user-option-avatar">
+                {
+                  imageUrl ? <img src={imageUrl} alt="userAvatar" style={{ width: '100%' }} /> :
+                  <span className="c7n-iam-memberrole-user-option-avatar-noavatar">{realName && realName.split('')[0]}</span>
+                }
+              </div>
+              <span>{realName}</span>
             </div>
-            <span>{loginName}{realName}</span>
-          </div>
+          </Tooltip>
         </Option>
       ))
     ) : null;

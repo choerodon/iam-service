@@ -280,7 +280,7 @@ export default class Application extends Component {
             pagination={pagination}
             columns={columns}
             dataSource={unHandleData}
-            rowKey={record => `${record.parentId || 0} - ${record.id}`}
+            rowKey={record => record.__uuid__}
             filters={params.slice()}
             onChange={this.handlePageChange}
             loading={ApplicationStore.loading}
