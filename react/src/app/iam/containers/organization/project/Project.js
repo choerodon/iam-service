@@ -1,35 +1,36 @@
-import React, { Component } from 'react';
-import { Button, Form, Input, Modal, Table, Tooltip, Select, Icon, Radio, Checkbox, DatePicker } from 'choerodon-ui';
+import React, {Component} from 'react';
+import {Button, Checkbox, Form, Icon, Input, Modal, Radio, Select, Table, Tooltip} from 'choerodon-ui';
 import moment from 'moment';
-import { inject, observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import {inject, observer} from 'mobx-react';
+import {withRouter} from 'react-router-dom';
+import {axios, Content, Header, Page, Permission, stores} from '@choerodon/boot';
+import {FormattedMessage, injectIntl} from 'react-intl';
 import classnames from 'classnames';
-import { PREFIX_CLS } from '@choerodon/boot/lib/containers/common/constants';
+import {PREFIX_CLS} from '@choerodon/boot/lib/containers/common/constants';
 import './Project.less';
 import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import StatusTag from '../../../components/statusTag';
-import { handleFiltersParams } from '../../../common/util';
+import {handleFiltersParams} from '../../../common/util';
 import AvatarUploader from '../../../components/avatarUploader';
 
+let timer;
 const prefixCls = `${PREFIX_CLS}`;
-const { HeaderStore } = stores;
+const {HeaderStore} = stores;
 const FormItem = Form.Item;
 const ORGANIZATION_TYPE = 'organization';
 const PROJECT_TYPE = 'project';
-const { Sidebar } = Modal;
-const { Option } = Select;
+const {Sidebar} = Modal;
+const {Option} = Select;
 const RadioGroup = Radio.Group;
 const intlPrefix = 'organization.project';
 const formItemLayout = {
   labelCol: {
-    xs: { span: 24 },
-    sm: { span: 8 },
+    xs: {span: 24},
+    sm: {span: 8},
   },
   wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 16 },
+    xs: {span: 24},
+    sm: {span: 16},
   },
 };
 const isNum = /^\d+$/;
@@ -43,6 +44,9 @@ export default class Project extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      overflow: false,
+      categoryEnabled: false,
+      selectLoading: true,
       sidebar: false,
       page: 1,
       id: '',
@@ -79,20 +83,49 @@ export default class Project extends Component {
     this.setState({
       isLoading: true,
     });
+    this.loadEnableCategory();
   }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    clearTimeout(timer);
+  }
+
+  loadEnableCategory = () => {
+    axios.get(`/iam/v1/system/setting/enable_category`)
+        .then((response) => {
+          this.setState({
+            categoryEnabled: response,
+          });
+        });
+  };
 
   componentDidMount() {
     this.loadProjects();
     this.loadProjectTypes();
+    this.updateSelectContainer();
+  }
+
+  updateSelectContainer() {
+    const body = this.sidebarBody;
+    if (body) {
+      const {overflow} = this.state;
+      const bodyOverflow = body.clientHeight < body.scrollHeight;
+      if (bodyOverflow !== overflow) {
+        this.setState({
+          overflow: bodyOverflow,
+        });
+      }
+    }
   }
 
   linkToChange = (url) => {
-    const { history } = this.props;
+    const {history} = this.props;
     history.push(url);
   };
 
   loadProjectTypes = () => {
-    const { ProjectStore } = this.props;
+    const {ProjectStore} = this.props;
     ProjectStore.loadProjectTypes().then((data) => {
       if (data.failed) {
         Choerodon.prompt(data.message);
@@ -113,12 +146,12 @@ export default class Project extends Component {
     const pagination = paginationIn || paginationState;
     const sort = sortIn || sortState;
     const filters = filtersIn || filtersState;
-    const { AppState, ProjectStore } = this.props;
+    const {AppState, ProjectStore} = this.props;
     const menuType = AppState.currentMenuType;
     const organizationId = menuType.id;
     ProjectStore.changeLoading(true);
     // 防止标签闪烁
-    this.setState({ filters });
+    this.setState({filters});
     // 若params或filters含特殊字符表格数据置空
     const currentParams = filters.params;
     const currentFilters = {
@@ -140,32 +173,32 @@ export default class Project extends Component {
     }
 
     ProjectStore.loadProject(organizationId, pagination, sort, filters)
-      .then((data) => {
-        ProjectStore.changeLoading(false);
-        ProjectStore.setProjectData(data.list || []);
-        this.setState({
-          sort,
-          pagination: {
-            current: data.pageNum,
-            pageSize: data.pageSize,
-            total: data.total,
-          },
-        });
-      })
-      .catch(error =>
-        Choerodon.handleResponseError(error),
-      );
+        .then((data) => {
+          ProjectStore.changeLoading(false);
+          ProjectStore.setProjectData(data.list || []);
+          this.setState({
+            sort,
+            pagination: {
+              current: data.pageNum,
+              pageSize: data.pageSize,
+              total: data.total,
+            },
+          });
+        })
+        .catch(error =>
+            Choerodon.handleResponseError(error),
+        );
   };
 
   handleopenTab = (data, operation) => {
-    const { form, ProjectStore, AppState } = this.props;
+    const {form, ProjectStore, AppState} = this.props;
     const menuType = AppState.currentMenuType;
     const organizationId = menuType.id;
     form.resetFields();
     this.setState({
       errorMeg: '',
       successMeg: '',
-      projectDatas: data || { name: null },
+      projectDatas: data || {name: null},
       operation,
       imgUrl: operation === 'edit' ? data.imageUrl : null,
       sidebar: true,
@@ -216,56 +249,56 @@ export default class Project extends Component {
     this.props.ProjectStore.setCurrentGroup(null);
     this.props.ProjectStore.clearProjectRelationNeedRemove();
   };
-  
+
   handleSubmit = (e) => {
     e.preventDefault();
-    const { AppState, ProjectStore } = this.props;
-    const { projectDatas, imgUrl } = this.state;
+    const {AppState, ProjectStore} = this.props;
+    const {projectDatas, imgUrl} = this.state;
     const menuType = AppState.currentMenuType;
     const organizationId = menuType.id;
     let data;
     if (this.state.operation === 'create') {
-      const { validateFields } = this.props.form;
-      validateFields((err, { code, name, type, category }) => {
+      const {validateFields} = this.props.form;
+      validateFields((err, {code, name, type, category}) => {
         if (!err) {
           data = {
             code,
             name: name.trim(),
             organizationId,
-            category,
+            categoryIds: category,
             type: type === 'no' || undefined ? null : type,
             imageUrl: imgUrl || null,
           };
 
-          this.setState({ submitting: true });
+          this.setState({submitting: true});
           ProjectStore.createProject(organizationId, data)
-            .then((value) => {
-              this.setState({ submitting: false });
-              if (value) {
-                Choerodon.prompt(this.props.intl.formatMessage({ id: 'create.success' }));
-                this.handleTabClose();
-                this.loadProjects();
-                const targetType = (ProjectStore.getProjectTypes.find(item => item.code === value.type));
-                value.typeName = targetType ? targetType.name : null;
-                value.type = 'project';
-                HeaderStore.addProject(value);
-              }
-            }).catch((error) => {
-              Choerodon.handleResponseError(error);
-              this.setState({
-                submitting: false,
-                visibleCreate: false,
-              });
+              .then((value) => {
+                this.setState({submitting: false});
+                if (value) {
+                  Choerodon.prompt(this.props.intl.formatMessage({id: 'create.success'}));
+                  this.handleTabClose();
+                  this.loadProjects();
+                  const targetType = (ProjectStore.getProjectTypes.find(item => item.code === value.type));
+                  value.typeName = targetType ? targetType.name : null;
+                  value.type = 'project';
+                  HeaderStore.addProject(value);
+                }
+              }).catch((error) => {
+            Choerodon.handleResponseError(error);
+            this.setState({
+              submitting: false,
+              visibleCreate: false,
             });
+          });
         }
       });
     } else if (this.state.operation === 'edit') {
-      const { validateFields } = this.props.form;
-      validateFields((err, { name, type }, modify) => {
+      const {validateFields} = this.props.form;
+      validateFields((err, {name, type}, modify) => {
         if (!err) {
           if (projectDatas.imageUrl !== imgUrl) modify = true;
           if (!modify) {
-            Choerodon.prompt(this.props.intl.formatMessage({ id: 'modify.success' }));
+            Choerodon.prompt(this.props.intl.formatMessage({id: 'modify.success'}));
             this.handleTabClose();
             return;
           }
@@ -274,17 +307,17 @@ export default class Project extends Component {
             type: type === 'no' || undefined ? null : type,
             imageUrl: imgUrl || null,
           };
-          this.setState({ submitting: true, buttonClicked: true });
+          this.setState({submitting: true, buttonClicked: true});
           ProjectStore.updateProject(organizationId,
-            {
-              ...data,
-              objectVersionNumber: projectDatas.objectVersionNumber,
-              code: projectDatas.code,
-            },
-            this.state.projectDatas.id).then((value) => {
-            this.setState({ submitting: false, buttonClicked: false });
+              {
+                ...data,
+                objectVersionNumber: projectDatas.objectVersionNumber,
+                code: projectDatas.code,
+              },
+              this.state.projectDatas.id).then((value) => {
+            this.setState({submitting: false, buttonClicked: false});
             if (value) {
-              Choerodon.prompt(this.props.intl.formatMessage({ id: 'modify.success' }));
+              Choerodon.prompt(this.props.intl.formatMessage({id: 'modify.success'}));
               this.handleTabClose();
               this.loadProjects();
               value.type = 'project';
@@ -296,29 +329,29 @@ export default class Project extends Component {
         }
       });
     } else {
-      const { validateFields } = this.props.form;
+      const {validateFields} = this.props.form;
       validateFields((err, rawData) => {
         if (!err) {
-          this.setState({ submitting: true, buttonClicked: true });
+          this.setState({submitting: true, buttonClicked: true});
           ProjectStore.axiosDeleteProjectsFromGroup();
           ProjectStore.saveProjectGroup(rawData).then((savedData) => {
             if (savedData.empty) {
-              this.setState({ submitting: false, buttonClicked: false, sidebar: false });
+              this.setState({submitting: false, buttonClicked: false, sidebar: false});
               this.loadProjects();
             }
             if (savedData.failed) {
-              Choerodon.prompt(this.props.intl.formatMessage({ id: savedData.message }));
-              this.setState({ submitting: false, buttonClicked: false, sidebar: true });
+              Choerodon.prompt(this.props.intl.formatMessage({id: savedData.message}));
+              this.setState({submitting: false, buttonClicked: false, sidebar: true});
             } else {
-              Choerodon.prompt(this.props.intl.formatMessage({ id: 'save.success' }));
-              this.setState({ submitting: false, buttonClicked: false, sidebar: false });
+              Choerodon.prompt(this.props.intl.formatMessage({id: 'save.success'}));
+              this.setState({submitting: false, buttonClicked: false, sidebar: false});
               this.loadProjects();
             }
           }).catch((error) => {
-            Choerodon.prompt(this.props.intl.formatMessage({ id: 'save.error' }));
+            Choerodon.prompt(this.props.intl.formatMessage({id: 'save.error'}));
             Choerodon.handleResponseError(error);
           }).finally(() => {
-            this.setState({ submitting: false });
+            this.setState({submitting: false});
           });
         }
       });
@@ -341,7 +374,7 @@ export default class Project extends Component {
    * @returns {boolean}
    */
   disabledStartDate = (startValue, index) => {
-    const { ProjectStore: { disabledTime, currentGroup }, form } = this.props;
+    const {ProjectStore: {disabledTime, currentGroup}, form} = this.props;
     const projectId = form.getFieldValue(index);
     const endDate = form.getFieldValue(`endDate-${index}`);
     if (!startValue) return false;
@@ -349,7 +382,7 @@ export default class Project extends Component {
     if (!startValue) return false;
     // 结束时间没有选的时候
     if (!endDate) {
-      return disabledTime[projectId] && disabledTime[projectId].some(({ start, end }) => {
+      return disabledTime[projectId] && disabledTime[projectId].some(({start, end}) => {
         if (end === null) {
           end = '2199-12-31';
         }
@@ -375,14 +408,14 @@ export default class Project extends Component {
    * @param index
    */
   disabledEndDate = (endValue, index) => {
-    const { ProjectStore: { disabledTime, currentGroup }, form } = this.props;
+    const {ProjectStore: {disabledTime, currentGroup}, form} = this.props;
     const projectId = form.getFieldValue(index);
     const startDate = form.getFieldValue(`startDate-${index}`);
     if (!endValue) return false;
 
     // 开始时间没有选的时候
     if (!startDate) {
-      return disabledTime[projectId] && disabledTime[projectId].some(({ start, end }) => {
+      return disabledTime[projectId] && disabledTime[projectId].some(({start, end}) => {
         if (end === null) {
           end = '2199-12-31';
         }
@@ -406,12 +439,12 @@ export default class Project extends Component {
 
   /* 停用启用 */
   handleEnable = (record) => {
-    const { ProjectStore, AppState, intl } = this.props;
+    const {ProjectStore, AppState, intl} = this.props;
     const userId = AppState.getUserId;
     const menuType = AppState.currentMenuType;
     const orgId = menuType.id;
     ProjectStore.enableProject(orgId, record.id, record.enabled).then((value) => {
-      Choerodon.prompt(intl.formatMessage({ id: record.enabled ? 'disable.success' : 'enable.success' }));
+      Choerodon.prompt(intl.formatMessage({id: record.enabled ? 'disable.success' : 'enable.success'}));
       this.loadProjects();
       HeaderStore.axiosGetOrgAndPro(sessionStorage.userId || userId).then((org) => {
         org[0].forEach((item) => {
@@ -425,7 +458,7 @@ export default class Project extends Component {
         this.forceUpdate();
       });
     }).catch((error) => {
-      Choerodon.prompt(intl.formatMessage({ id: 'operation.error' }));
+      Choerodon.prompt(intl.formatMessage({id: 'operation.error'}));
     });
   };
 
@@ -436,9 +469,9 @@ export default class Project extends Component {
   }
 
   async handleDatePickerOpen(index) {
-    const { form } = this.props;
+    const {form} = this.props;
     if (form.getFieldValue(`${index}`)) {
-      form.validateFields([`${index}`], { force: true });
+      form.validateFields([`${index}`], {force: true});
     }
     this.forceUpdate();
   }
@@ -449,31 +482,34 @@ export default class Project extends Component {
    * @param callback 回调函数
    */
   checkCode = (rule, value, callback) => {
-    const { AppState, ProjectStore, intl } = this.props;
+    const {AppState, ProjectStore, intl} = this.props;
     const menuType = AppState.currentMenuType;
     const organizationId = menuType.id;
-    const params = { code: value };
+    const params = {code: value};
     ProjectStore.checkProjectCode(organizationId, params)
-      .then((mes) => {
-        if (mes.failed) {
-          callback(intl.formatMessage({ id: `${intlPrefix}.code.exist.msg` }));
-        } else {
-          callback();
-        }
-      });
+        .then((mes) => {
+          if (mes.failed) {
+            callback(intl.formatMessage({id: `${intlPrefix}.code.exist.msg`}));
+          } else {
+            callback();
+          }
+        });
   };
 
 
   renderSideTitle() {
     switch (this.state.operation) {
-      case 'create': return <FormattedMessage id={`${intlPrefix}.create`} />;
-      case 'edit': return <FormattedMessage id={`${intlPrefix}.modify`} />;
-      default: return <FormattedMessage id={`${intlPrefix}.config-sub-project`} />;
+      case 'create':
+        return <FormattedMessage id={`${intlPrefix}.create`}/>;
+      case 'edit':
+        return <FormattedMessage id={`${intlPrefix}.modify`}/>;
+      default:
+        return <FormattedMessage id={`${intlPrefix}.config-sub-project`}/>;
     }
   }
 
   getSidebarContentInfo(operation) {
-    const { AppState } = this.props;
+    const {AppState} = this.props;
     const menuType = AppState.currentMenuType;
     const orgname = menuType.name;
     switch (operation) {
@@ -503,26 +539,26 @@ export default class Project extends Component {
   }
 
   getOption = (current) => {
-    const { ProjectStore: { optionAgileData, groupProjects }, form } = this.props;
+    const {ProjectStore: {optionAgileData, groupProjects}, form} = this.props;
     if (groupProjects[current].id) {
-      const { projectId, projName, code } = groupProjects[current];
+      const {projectId, projName, code} = groupProjects[current];
       const options = [];
       options.push(<Option value={projectId} key={projectId} title={projName}>
-        <Tooltip title={code} placement="right" align={{ offset: [20, 0] }}>
-          <span style={{ display: 'inline-block', width: '100%' }}>{projName}</span>
+        <Tooltip title={code} placement="right" align={{offset: [20, 0]}}>
+          <span style={{display: 'inline-block', width: '100%'}}>{projName}</span>
         </Tooltip>
       </Option>);
       return options;
     }
     return optionAgileData.filter(value => this.getSelectedProject().every(existProject =>
-      existProject !== value.id || existProject === form.getFieldValue(current),
-    )).filter(v => v.code).reduce((options, { id, name, enabled, code }) => {
+        existProject !== value.id || existProject === form.getFieldValue(current),
+    )).filter(v => v.code).reduce((options, {id, name, enabled, code}) => {
       options.push(
-        <Option value={id} key={id} title={name}>
-          <Tooltip title={code} placement="right" align={{ offset: [20, 0] }}>
-            <span style={{ display: 'inline-block', width: '100%' }}>{name}</span>
-          </Tooltip>
-        </Option>,
+          <Option value={id} key={id} title={name}>
+            <Tooltip title={code} placement="right" align={{offset: [20, 0]}}>
+              <span style={{display: 'inline-block', width: '100%'}}>{name}</span>
+            </Tooltip>
+          </Option>,
       );
       return options;
     }, []);
@@ -530,18 +566,23 @@ export default class Project extends Component {
 
 
   handleSelectProject = (projectId, index) => {
-    const { ProjectStore: { groupProjects }, ProjectStore } = this.props;
-    ProjectStore.setGroupProjectByIndex(index, { projectId, startDate: groupProjects[index].startDate, endDate: groupProjects[index].endDate, enabled: groupProjects[index].enabled });
+    const {ProjectStore: {groupProjects}, ProjectStore} = this.props;
+    ProjectStore.setGroupProjectByIndex(index, {
+      projectId,
+      startDate: groupProjects[index].startDate,
+      endDate: groupProjects[index].endDate,
+      enabled: groupProjects[index].enabled
+    });
   };
 
   handleCheckboxChange = (value, index) => {
-    const { form, ProjectStore, ProjectStore: { groupProjects, currentGroup } } = this.props;
+    const {form, ProjectStore, ProjectStore: {groupProjects, currentGroup}} = this.props;
     if (currentGroup.category === 'ANALYTICAL') return;
     if (value && groupProjects[index].id) {
       const newValue = {};
       newValue[`enabled-${index}`] = value.target.checked;
       form.setFieldsValue(newValue);
-      ProjectStore.setGroupProjectByIndex(index, { ...groupProjects[index], enabled: value.target.checked });
+      ProjectStore.setGroupProjectByIndex(index, {...groupProjects[index], enabled: value.target.checked});
       form.resetFields(`enabled-${index}`);
     }
   };
@@ -570,65 +611,66 @@ export default class Project extends Component {
   };
 
   getAddGroupProjectContent = (operation) => {
-    const { intl, ProjectStore: { groupProjects }, form } = this.props;
-    const { getFieldDecorator } = form;
+    const {intl, ProjectStore: {groupProjects}, form} = this.props;
+    const {getFieldDecorator} = form;
     if (operation !== 'add') return;
-    const formItems = groupProjects.map(({ projectId, enabled, id }, index) => {
+    const formItems = groupProjects.map(({projectId, enabled, id}, index) => {
       const key = !projectId ? `project-index-${index}` : String(projectId);
       return (
-        <React.Fragment>
-          <FormItem
-            {...formItemLayout}
-            key={key}
-            className="c7n-iam-project-inline-formitem"
-          >
-            {getFieldDecorator(`${index}`, {
-              initialValue: projectId,
-              rules: [{
-                required: true,
-                message: '请选择项目',
-              }, {
-                validator: (rule, value, callback) => this.validateDate(value, index, callback),
-              }],
-            })(
-              <Select
-                className="member-role-select"
-                style={{ width: 200, marginTop: -2 }}
-                label={<FormattedMessage id="organization.project.name" />}
-                disabled={!!id}
-                onChange={e => this.handleSelectProject(e, index)}
-                filterOption={(input, option) => {
-                  const childNode = option.props.children;
-                  if (childNode && React.isValidElement(childNode)) {
-                    return childNode.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-                  }
-                  return false;
-                }}
-                filter
-              >
-                {this.getOption(index)}
-              </Select>,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-            className="c7n-iam-project-inline-formitem c7n-iam-project-inline-formitem-checkbox"
-          >
-            {getFieldDecorator(`enabled-${index}`, {
-              initialValue: enabled,
-            })(
-              <Checkbox onChange={value => this.handleCheckboxChange(value, index)} checked={form.getFieldValue(`enabled-${index}`)}>是否启用</Checkbox>,
-            )}
-          </FormItem>
-          <Button
-            size="small"
-            icon="delete"
-            shape="circle"
-            onClick={() => this.removeProjectFromGroup(index)}
-            // disabled={roleIds.length === 1 && selectType === 'create'}
-            className="c7n-iam-project-inline-formitem-button"
-          />
-        </React.Fragment>
+          <React.Fragment>
+            <FormItem
+                {...formItemLayout}
+                key={key}
+                className="c7n-iam-project-inline-formitem"
+            >
+              {getFieldDecorator(`${index}`, {
+                initialValue: projectId,
+                rules: [{
+                  required: true,
+                  message: '请选择项目',
+                }, {
+                  validator: (rule, value, callback) => this.validateDate(value, index, callback),
+                }],
+              })(
+                  <Select
+                      className="member-role-select"
+                      style={{width: 200, marginTop: -2}}
+                      label={<FormattedMessage id="organization.project.name"/>}
+                      disabled={!!id}
+                      onChange={e => this.handleSelectProject(e, index)}
+                      filterOption={(input, option) => {
+                        const childNode = option.props.children;
+                        if (childNode && React.isValidElement(childNode)) {
+                          return childNode.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+                        }
+                        return false;
+                      }}
+                      filter
+                  >
+                    {this.getOption(index)}
+                  </Select>,
+              )}
+            </FormItem>
+            <FormItem
+                {...formItemLayout}
+                className="c7n-iam-project-inline-formitem c7n-iam-project-inline-formitem-checkbox"
+            >
+              {getFieldDecorator(`enabled-${index}`, {
+                initialValue: enabled,
+              })(
+                  <Checkbox onChange={value => this.handleCheckboxChange(value, index)}
+                            checked={form.getFieldValue(`enabled-${index}`)}>是否启用</Checkbox>,
+              )}
+            </FormItem>
+            <Button
+                size="small"
+                icon="delete"
+                shape="circle"
+                onClick={() => this.removeProjectFromGroup(index)}
+                // disabled={roleIds.length === 1 && selectType === 'create'}
+                className="c7n-iam-project-inline-formitem-button"
+            />
+          </React.Fragment>
       );
     });
     return formItems;
@@ -640,146 +682,142 @@ export default class Project extends Component {
   };
 
   renderSidebarContent() {
-    const { intl, ProjectStore, form } = this.props;
-    const { getFieldDecorator } = form;
-    const { operation, projectDatas } = this.state;
+    const {intl, ProjectStore, form} = this.props;
+    const {getFieldDecorator} = form;
+    const {operation, projectDatas, categoryEnabled, overflow} = this.state;
     const types = ProjectStore.getProjectTypes;
     const inputWidth = 512;
     const contentInfo = this.getSidebarContentInfo(operation);
 
     return (
-      <Content
-        {...contentInfo}
-        className="sidebar-content"
-      >
-        <Form layout="vertical" className="rightForm" style={{ width: operation === 'add' ? 512 : 800 }}>
-          {operation === 'create' && operation !== 'add' && (
-            <FormItem
-              {...formItemLayout}
+        <Content
+            {...contentInfo}
+            className="sidebar-content"
+        >
+          <Form layout="vertical" className="rightForm" style={{width: operation === 'add' ? 512 : 800}}>
+            {operation === 'create' && operation !== 'add' && (<FormItem
+                {...formItemLayout}
             >
-              {getFieldDecorator('category', {
-                initialValue: 'AGILE',
-              })(
-                <Select label={<FormattedMessage id={`${intlPrefix}.type.category`} />} style={{ width: 512 }}>
-                  {
-                    ['AGILE', 'PROGRAM'].map(value => <Option value={value} key={value}>{intl.formatMessage({ id: `${intlPrefix}.${value.toLowerCase()}.project` })}</Option>)
-                  }
-                </Select>,
-              )}
-            </FormItem>
-          )}
-          {operation === 'create' && operation !== 'add' && (<FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('code', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.code.require.msg` }),
-              }, {
-                max: 14,
-                message: intl.formatMessage({ id: `${intlPrefix}.code.length.msg` }),
-              }, {
-                pattern: /^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$/,
-                message: intl.formatMessage({ id: `${intlPrefix}.code.pattern.msg` }),
-              }, {
-                validator: this.checkCode,
-              }],
-              validateTrigger: 'onBlur',
-              validateFirst: true,
-            })(
-              <Input
-                autoComplete="off"
-                label={<FormattedMessage id={`${intlPrefix}.code`} />}
-                style={{ width: inputWidth }}
-                ref={(e) => { this.createFocusInput = e; }}
-                maxLength={14}
-                showLengthInfo={false}
-              />,
-            )}
-          </FormItem>)}
-          {operation !== 'add' && (
-            <FormItem
-              {...formItemLayout}
-            >
-              {getFieldDecorator('name', {
+              {getFieldDecorator('code', {
                 rules: [{
                   required: true,
                   whitespace: true,
-                  message: intl.formatMessage({ id: `${intlPrefix}.name.require.msg` }),
+                  message: intl.formatMessage({id: `${intlPrefix}.code.require.msg`}),
                 }, {
-                  /* eslint-disable-next-line */
-                  pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
-                  message: intl.formatMessage({ id: `${intlPrefix}.name.pattern.msg` }),
+                  max: 14,
+                  message: intl.formatMessage({id: `${intlPrefix}.code.length.msg`}),
+                }, {
+                  pattern: /^[a-z](([a-z0-9]|-(?!-))*[a-z0-9])*$/,
+                  message: intl.formatMessage({id: `${intlPrefix}.code.pattern.msg`}),
+                }, {
+                  validator: this.checkCode,
                 }],
-                initialValue: operation === 'create' ? undefined : projectDatas.name,
+                validateTrigger: 'onBlur',
+                validateFirst: true,
               })(
-                <Input
-                  autoComplete="off"
-                  label={<FormattedMessage id={`${intlPrefix}.name`} />}
-                  style={{ width: inputWidth }}
-                  ref={(e) => { this.editFocusInput = e; }}
-                  maxLength={32}
-                  showLengthInfo={false}
-                />,
+                  <Input
+                      autoComplete="off"
+                      label={<FormattedMessage id={`${intlPrefix}.code`}/>}
+                      style={{width: inputWidth}}
+                      ref={(e) => {
+                        this.createFocusInput = e;
+                      }}
+                      maxLength={14}
+                      showLengthInfo={false}
+                  />,
               )}
-            </FormItem>
-          )}
-          {operation !== 'add' && (
-            <FormItem>
-              {getFieldDecorator('type', {
-                initialValue: operation === 'create' ? undefined : projectDatas.type ? projectDatas.type : undefined,
-              })(
-                <Select
-                  style={{ width: '300px' }}
-                  label={<FormattedMessage id={`${intlPrefix}.type`} />}
-                  getPopupContainer={() => document.getElementsByClassName('sidebar-content')[0].parentNode}
-                  filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  filter
+            </FormItem>)}
+            {operation !== 'add' && (
+                <FormItem
+                    {...formItemLayout}
                 >
-                  {
-                    types && types.length ? [<Option key="no" value="no">{intl.formatMessage({ id: `${intlPrefix}.empty` })}</Option>].concat(
-                      types.map(({ name, code }) => (
-                        <Option key={code} value={code}>{name}</Option>
-                      )),
-                    ) : <Option key="empty">{intl.formatMessage({ id: `${intlPrefix}.type.empty` })}</Option>
-                  }
-                </Select>,
-              )}
-            </FormItem>
-          )}
-          {operation !== 'add' && (
-            <div>
-              <span style={{ color: 'rgba(0,0,0,.6)' }}>{intl.formatMessage({ id: `${intlPrefix}.avatar` })}</span>
-              {this.getAvatar()}
-            </div>
-          )}
-          {this.getAddGroupProjectContent(operation)}
-        </Form>
-      </Content>
+                  {getFieldDecorator('name', {
+                    rules: [{
+                      required: true,
+                      whitespace: true,
+                      message: intl.formatMessage({id: `${intlPrefix}.name.require.msg`}),
+                    }, {
+                      /* eslint-disable-next-line */
+                      pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
+                      message: intl.formatMessage({id: `${intlPrefix}.name.pattern.msg`}),
+                    }],
+                    initialValue: operation === 'create' ? undefined : projectDatas.name,
+                  })(
+                      <Input
+                          autoComplete="off"
+                          label={<FormattedMessage id={`${intlPrefix}.name`}/>}
+                          style={{width: inputWidth}}
+                          ref={(e) => {
+                            this.editFocusInput = e;
+                          }}
+                          maxLength={32}
+                          showLengthInfo={false}
+                      />,
+                  )}
+                </FormItem>
+            )}
+            {operation === 'create' && operation !== 'add' && categoryEnabled && (
+                <FormItem
+                    {...formItemLayout}
+                >
+                  {getFieldDecorator('category', {
+                    initialValue: ``,
+                  })(
+                      <Select
+                          label={<FormattedMessage id={`${intlPrefix}.type.category`}/>}
+                          optionLabelProp="label"
+                          allowClear
+                          style={{width: 512}}
+                          mode="multiple"
+                          optionFilterProp="children"
+                          filterOption={false}
+                          filter
+                          getPopupContainer={() => (overflow ? this.sidebarBody : document.body)}
+                          onFilterChange={this.handleCategorySelectFilter}
+                          notFoundContent={intl.formatMessage({id: 'organization.project.type.category.notfound'})}
+                          loading={this.state.selectLoading}
+                      >
+                        {this.getCategoriesOption()}
+                      </Select>,
+                  )}
+                </FormItem>
+            )}
+            {operation !== 'add' && (
+                <div>
+                  <span style={{color: 'rgba(0,0,0,.6)'}}>{intl.formatMessage({id: `${intlPrefix}.avatar`})}</span>
+                  {this.getAvatar()}
+                </div>
+            )}
+            {this.getAddGroupProjectContent(operation)}
+          </Form>
+        </Content>
     );
   }
 
   getAvatar() {
-    const { isShowAvatar, imgUrl, projectDatas } = this.state;
+    const {isShowAvatar, imgUrl, projectDatas} = this.state;
     return (
-      <div className="c7n-iam-project-avatar">
-        <div
-          className="c7n-iam-project-avatar-wrap"
-          style={{
-            backgroundColor: projectDatas.name ? ' #c5cbe8' : '#ccc',
-            backgroundImage: imgUrl ? `url(${Choerodon.fileServer(imgUrl)})` : '',
-          }}
-        >
-          {!imgUrl && projectDatas && projectDatas.name && projectDatas.name.charAt(0)}
-          <Button className={classnames('c7n-iam-project-avatar-button', { 'c7n-iam-project-avatar-button-create': !projectDatas.name, 'c7n-iam-project-avatar-button-edit': projectDatas.name })} onClick={this.openAvatarUploader}>
-            <div className="c7n-iam-project-avatar-button-icon">
-              <Icon type="photo_camera" />
-            </div>
-          </Button>
-          <AvatarUploader visible={isShowAvatar} intlPrefix="organization.project.avatar.edit" onVisibleChange={this.closeAvatarUploader} onUploadOk={this.handleUploadOk} />
+        <div className="c7n-iam-project-avatar">
+          <div
+              className="c7n-iam-project-avatar-wrap"
+              style={{
+                backgroundColor: projectDatas.name ? ' #c5cbe8' : '#ccc',
+                backgroundImage: imgUrl ? `url(${Choerodon.fileServer(imgUrl)})` : '',
+              }}
+          >
+            {!imgUrl && projectDatas && projectDatas.name && projectDatas.name.charAt(0)}
+            <Button className={classnames('c7n-iam-project-avatar-button', {
+              'c7n-iam-project-avatar-button-create': !projectDatas.name,
+              'c7n-iam-project-avatar-button-edit': projectDatas.name
+            })} onClick={this.openAvatarUploader}>
+              <div className="c7n-iam-project-avatar-button-icon">
+                <Icon type="photo_camera"/>
+              </div>
+            </Button>
+            <AvatarUploader visible={isShowAvatar} intlPrefix="organization.project.avatar.edit"
+                            onVisibleChange={this.closeAvatarUploader} onUploadOk={this.handleUploadOk}/>
+          </div>
         </div>
-      </div>
     );
   }
 
@@ -815,278 +853,352 @@ export default class Project extends Component {
     }
   };
 
+  handleCategorySelectFilter = (value) => {
+    this.setState({
+      selectLoading: true,
+    });
+
+    const queryObj = {
+      param: value,
+    };
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    if (value) {
+      timer = setTimeout(() => this.loadProjectCategories(queryObj), 300);
+    } else {
+      return this.loadProjectCategories(queryObj);
+    }
+  }
+
+
+  // 加载全部项目类别
+  loadProjectCategories = (queryObj) => {
+    const { ProjectStore } = this.props;
+    ProjectStore.loadProjectCategories(queryObj).then((data) => {
+      ProjectStore.setProjectCategories((data.list || []).slice());
+      this.setState({
+        selectLoading: false,
+      });
+    });
+  }
+  /**
+   * 获取项目类型下拉选项
+   * @returns {any[]}
+   */
+  // getCategoriesOption() {
+  //   const {ProjectStore} = this.props;
+  //   const projectCategories = ProjectStore.getProjectCategories;
+  //   return projectCategories && projectCategories.length > 0 ? (
+  //       projectCategories.map(({code, name}) => (
+  //           <Option key={code} value={code}>{name}</Option>
+  //       ))
+  //   ) : null;
+  // }
+
+  getCategoriesOption = () => {
+    const { ProjectStore } = this.props;
+    const projectCategories = ProjectStore.getProjectCategories;
+    return projectCategories && projectCategories.length > 0 ? (
+        projectCategories.map(({ id, name}) => (
+            <Option key={id} value={id} label={`${name}`}>
+                <span>{name}</span>
+            </Option>
+        ))
+    ) : null;
+  }
+
   canGotoProject = record => HeaderStore.proData.some(v => v.id === record.id);
 
   getGotoTips = (record) => {
     if (this.canGotoProject(record)) {
-      return (<FormattedMessage id={`${intlPrefix}.redirect`} values={{ name: record.name }} />);
+      return (<FormattedMessage id={`${intlPrefix}.redirect`} values={{name: record.name}}/>);
     } else if (!record.enabled) {
-      return (<FormattedMessage id={`${intlPrefix}.redirect.disable`} />);
+      return (<FormattedMessage id={`${intlPrefix}.redirect.disable`}/>);
     } else {
-      return (<FormattedMessage id={`${intlPrefix}.redirect.no-permission`} />);
+      return (<FormattedMessage id={`${intlPrefix}.redirect.no-permission`}/>);
     }
   };
 
   getAddOtherBtn = () => (
-    <Button type="primary" className="add-other-project" icon="add" onClick={this.addProjectList}>
-      <FormattedMessage id="organization.project.add.project" />
-    </Button>
+      <Button type="primary" className="add-other-project" icon="add" onClick={this.addProjectList}>
+        <FormattedMessage id="organization.project.add.project"/>
+      </Button>
   );
 
   addProjectList = () => {
-    const { ProjectStore, AppState, intl } = this.props;
+    const {ProjectStore, AppState, intl} = this.props;
     ProjectStore.addNewProjectToGroup();
   };
 
 
   getCategoryIcon = (category) => {
     switch (category) {
-      case 'AGILE': return 'project_line';
-      case 'PROGRAM': return 'project_group';
-      case 'ANALYTICAL': return 'project_group_analyze';
-      default: return 'project_line';
+      case 'AGILE':
+        return 'project_line';
+      case 'PROGRAM':
+        return 'project_group';
+      case 'ANALYTICAL':
+        return 'project_group_analyze';
+      default:
+        return 'project_line';
     }
   };
 
   renderExpandRowRender(source) {
-    const { intl } = this.props;
+    const {intl} = this.props;
     if (!source.category === 'PROGRAM') {
       return null;
     }
     const columns = [{
-      title: <FormattedMessage id="name" />,
+      title: <FormattedMessage id="name"/>,
       dataIndex: 'name',
       key: 'name',
       // width: '25%',
       width: '270px',
       render: (text, record) => (
-        <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)} style={{ paddingLeft: 26 }}>
-          <MouseOverWrapper text={text} width={0.2}>
-            <StatusTag mode="icon" name={text} colorCode={record.enabled ? 'COMPLETED' : 'DISABLE'} />
-            {/* {text} */}
-          </MouseOverWrapper>
-        </div>
+          <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)} style={{paddingLeft: 26}}>
+            <MouseOverWrapper text={text} width={0.2}>
+              <StatusTag mode="icon" name={text} colorCode={record.enabled ? 'COMPLETED' : 'DISABLE'}/>
+              {/* {text} */}
+            </MouseOverWrapper>
+          </div>
       ),
     }, {
-      title: <FormattedMessage id="code" />,
+      title: <FormattedMessage id="code"/>,
       dataIndex: 'code',
     }];
     return (
-      <Table
-        pagination={false}
-        filterBar={false}
-        showHeader={false}
-        bordered={false}
-        columns={columns}
-        dataSource={source.projects || []}
-        rowKey={record => record.id}
-      />
+        <Table
+            pagination={false}
+            filterBar={false}
+            showHeader={false}
+            bordered={false}
+            columns={columns}
+            dataSource={source.projects || []}
+            rowKey={record => record.id}
+        />
     );
   }
 
   render() {
-    const { ProjectStore, AppState, intl } = this.props;
+    const {ProjectStore, AppState, intl} = this.props;
     const projectData = ProjectStore.getProjectData;
     const projectTypes = ProjectStore.getProjectTypes;
     const menuType = AppState.currentMenuType;
     const orgId = menuType.id;
     const orgname = menuType.name;
-    const { filters, operation } = this.state;
-    const { type } = menuType;
-    const filtersType = projectTypes && projectTypes.map(({ name }) => ({
+    const {filters, operation, categoryEnabled} = this.state;
+    const {type} = menuType;
+    const filtersType = projectTypes && projectTypes.map(({name}) => ({
       value: name,
       text: name,
     }));
-    const columns = [{
-      title: <FormattedMessage id="name" />,
+    const preColumn = [{
+      title: <FormattedMessage id="name"/>,
       dataIndex: 'name',
       key: 'name',
       filters: [],
       filteredValue: filters.name || [],
-      // width: '25%',
-      width: '270px',
+      width: categoryEnabled ? '20%' : '30%',
+      // width: '270px',
       render: (text, record) => (
-        <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
-          <MouseOverWrapper text={text} width={0.2}>
-            <Icon type={record.category === 'PROGRAM' ? 'project_group' : 'project_line'} style={{ marginRight: 8 }} />{text}
-          </MouseOverWrapper>
-        </div>
+          <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
+            <MouseOverWrapper text={text} width={0.2}>
+              <Icon type={record.category === 'PROGRAM' ? 'project_group' : 'project_line'}
+                    style={{marginRight: 8}}/>{text}
+            </MouseOverWrapper>
+          </div>
       ),
     }, {
-      title: <FormattedMessage id="code" />,
+      title: <FormattedMessage id="code"/>,
       dataIndex: 'code',
       filters: [],
       filteredValue: filters.code || [],
       key: 'code',
-      width: '20%',
+      width: categoryEnabled ? '20%' : '30%',
       render: text => (
-        <MouseOverWrapper text={text} width={0.2}>
-          {text}
-        </MouseOverWrapper>
+          <MouseOverWrapper text={text} width={0.2}>
+            {text}
+          </MouseOverWrapper>
       ),
     }, {
-      title: <FormattedMessage id={`${intlPrefix}.type`} />,
-      dataIndex: 'typeName',
-      key: 'typeName',
-      width: '15%',
-      filters: filtersType,
-      filteredValue: filters.typeName || [],
-    }, {
-      title: <FormattedMessage id="status" />,
+      title: <FormattedMessage id="status"/>,
       dataIndex: 'enabled',
       filters: [{
-        text: intl.formatMessage({ id: 'enable' }),
+        text: intl.formatMessage({id: 'enable'}),
         value: 'true',
       }, {
-        text: intl.formatMessage({ id: 'disable' }),
+        text: intl.formatMessage({id: 'disable'}),
         value: 'false',
       }],
       filteredValue: filters.enabled || [],
       key: 'enabled',
       render: (enabled, record) => (
-        <span style={{ marginRight: 8, fontSize: '12px', lineHeight: '18px', padding: '2px 6px', background: record.enabled ? 'rgba(0, 191, 165, 0.1)' : 'rgba(244, 67, 54, 0.1)', color: record.enabled ? '#009688' : '#D50000', borderRadius: '2px', border: '1px solid', borderColor: record.enabled ? '#009688' : '#D50000' }}>
+          <span style={{
+            marginRight: 8,
+            fontSize: '12px',
+            lineHeight: '18px',
+            padding: '2px 6px',
+            background: record.enabled ? 'rgba(0, 191, 165, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+            color: record.enabled ? '#009688' : '#D50000',
+            borderRadius: '2px',
+            border: '1px solid',
+            borderColor: record.enabled ? '#009688' : '#D50000'
+          }}>
           {record.enabled ? '启用' : '停用'}
         </span>
       ),
-    }, {
-      title: <FormattedMessage id={`${intlPrefix}.type.category`} />,
-      dataIndex: 'category',
-      key: 'category',
-      width: '15%',
-      render: category => (<StatusTag mode="icon" name={intl.formatMessage({ id: `${intlPrefix}.${category.toLowerCase()}.project` })} iconType={this.getCategoryIcon(category)} />),
-      // filters: filtersType,
-      // filteredValue: filters.typeName || [],
-    }, {
+    }];
+    const nextColumn= [{
       title: '',
       key: 'action',
       width: '120px',
       align: 'right',
       render: (text, record) => (
-        <div>
-          <Permission service={['iam-service.organization-project.update']} type={type} organizationId={orgId}>
-            <Tooltip
-              title={<FormattedMessage id="modify" />}
-              placement="bottom"
+          <div>
+            <Permission service={['iam-service.organization-project.update']} type={type} organizationId={orgId}>
+              <Tooltip
+                  title={<FormattedMessage id="modify"/>}
+                  placement="bottom"
+              >
+                <Button
+                    shape="circle"
+                    size="small"
+                    onClick={this.handleopenTab.bind(this, record, 'edit')}
+                    icon="mode_edit"
+                />
+              </Tooltip>
+            </Permission>
+            {record.category !== 'AGILE' && record.enabled && (
+                <Tooltip
+                    title={<FormattedMessage id={`${intlPrefix}.config`}/>}
+                    placement="bottom"
+                >
+                  <Button
+                      shape="circle"
+                      size="small"
+                      onClick={this.handleopenTab.bind(this, record, 'add')}
+                      icon="predefine"
+                  />
+                </Tooltip>
+            )}
+            <Permission
+                service={['iam-service.organization-project.disableProject', 'iam-service.organization-project.enableProject']}
+                type={type}
+                organizationId={orgId}
             >
-              <Button
-                shape="circle"
-                size="small"
-                onClick={this.handleopenTab.bind(this, record, 'edit')}
-                icon="mode_edit"
-              />
-            </Tooltip>
-          </Permission>
-          {record.category !== 'AGILE' && record.enabled && (
-            <Tooltip
-              title={<FormattedMessage id={`${intlPrefix}.config`} />}
-              placement="bottom"
-            >
-              <Button
-                shape="circle"
-                size="small"
-                onClick={this.handleopenTab.bind(this, record, 'add')}
-                icon="predefine"
-              />
-            </Tooltip>
-          )}
-          <Permission
-            service={['iam-service.organization-project.disableProject', 'iam-service.organization-project.enableProject']}
-            type={type}
-            organizationId={orgId}
-          >
-            <Tooltip
-              title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'} />}
-              placement="bottom"
-            >
-              <Button
-                shape="circle"
-                size="small"
-                onClick={this.handleEnable.bind(this, record)}
-                icon={record.enabled ? 'remove_circle_outline' : 'finished'}
-              />
-            </Tooltip>
-          </Permission>
-        </div>
+              <Tooltip
+                  title={<FormattedMessage id={record.enabled ? 'disable' : 'enable'}/>}
+                  placement="bottom"
+              >
+                <Button
+                    shape="circle"
+                    size="small"
+                    onClick={this.handleEnable.bind(this, record)}
+                    icon={record.enabled ? 'remove_circle_outline' : 'finished'}
+                />
+              </Tooltip>
+            </Permission>
+          </div>
       ),
     }];
+    const middleColumn = categoryEnabled ? [{
+      title: <FormattedMessage id={`${intlPrefix}.type.category`}/>,
+      dataIndex: 'category',
+      key: 'category',
+      width: '25%',
+      render: category => (
+          <StatusTag mode="icon" name={intl.formatMessage({id: `${intlPrefix}.${category.toLowerCase()}.project`})}
+                     iconType={this.getCategoryIcon(category)}/>),
+      // filters: filtersType,
+      filteredValue: filters.typeName || [],
+    }] : [];
+    const columns = [
+        ...preColumn,
+        ...middleColumn,
+        ...nextColumn,
+    ];
 
 
     return (
-      <Page
-        className={`${prefixCls}-iam-project`}
-        service={[
-          'iam-service.organization-project.list',
-          'iam-service.organization-project.create',
-          'iam-service.organization-project.check',
-          'iam-service.organization-project.update',
-          'iam-service.organization-project.disableProject',
-          'iam-service.organization-project.enableProject',
-        ]}
-      >
-        <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
-          <Permission service={['iam-service.organization-project.create']} type={type} organizationId={orgId}>
-            <Button
-              onClick={this.handleopenTab.bind(this, null, 'create')}
-              icon="playlist_add"
-            >
-              <FormattedMessage id={`${intlPrefix}.create`} />
-            </Button>
-          </Permission>
-          <Button
-            icon="refresh"
-            onClick={() => {
-              ProjectStore.changeLoading(true);
-              this.setState({
-                filters: {
-                  params: [],
-                },
-                pagination: {
-                  current: 1,
-                  pageSize: 10,
-                  total: '',
-                },
-                sort: {
-                  columnKey: null,
-                  order: null,
-                },
-              }, () => {
-                this.loadProjects();
-              });
-            }}
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header>
-        <Content
-          code={intlPrefix}
+        <Page
+            className={`${prefixCls}-iam-project`}
+            service={[
+              'iam-service.organization-project.list',
+              'iam-service.organization-project.create',
+              'iam-service.organization-project.check',
+              'iam-service.organization-project.update',
+              'iam-service.organization-project.disableProject',
+              'iam-service.organization-project.enableProject',
+            ]}
         >
-          <Table
-            pagination={this.state.pagination}
-            columns={columns}
-            dataSource={projectData}
-            rowKey={record => record.id}
-            filters={this.state.filters.params}
-            onChange={this.handlePageChange.bind(this)}
-            loading={ProjectStore.isLoading}
-            expandedRowRender={record => this.renderExpandRowRender(record)}
-            filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
-            rowClassName={(record, index) => `${record.category === 'PROGRAM' && record.projects && record.projects.length ? '' : 'hidden-expand'}`}
-          />
-          <Sidebar
-            title={this.renderSideTitle()}
-            visible={this.state.sidebar}
-            onCancel={this.handleTabClose.bind(this)}
-            onOk={this.handleSubmit.bind(this)}
-            okText={<FormattedMessage id={operation === 'create' ? 'create' : 'save'} />}
-            cancelText={<FormattedMessage id="cancel" />}
-            confirmLoading={this.state.submitting}
-            className="c7n-iam-project-sidebar"
+          <Header title={<FormattedMessage id={`${intlPrefix}.header.title`}/>}>
+            <Permission service={['iam-service.organization-project.create']} type={type} organizationId={orgId}>
+              <Button
+                  onClick={this.handleopenTab.bind(this, null, 'create')}
+                  icon="playlist_add"
+              >
+                <FormattedMessage id={`${intlPrefix}.create`}/>
+              </Button>
+            </Permission>
+            <Button
+                icon="refresh"
+                onClick={() => {
+                  ProjectStore.changeLoading(true);
+                  this.setState({
+                    filters: {
+                      params: [],
+                    },
+                    pagination: {
+                      current: 1,
+                      pageSize: 10,
+                      total: '',
+                    },
+                    sort: {
+                      columnKey: null,
+                      order: null,
+                    },
+                  }, () => {
+                    this.loadProjects();
+                  });
+                }}
+            >
+              <FormattedMessage id="refresh"/>
+            </Button>
+          </Header>
+          <Content
+              code={intlPrefix}
           >
-            {operation && this.renderSidebarContent()}
-            {operation === 'add' && this.getAddOtherBtn()}
-          </Sidebar>
-        </Content>
-      </Page>
+            <Table
+                pagination={this.state.pagination}
+                columns={columns}
+                dataSource={projectData}
+                rowKey={record => record.id}
+                filters={this.state.filters.params}
+                onChange={this.handlePageChange.bind(this)}
+                loading={ProjectStore.isLoading}
+                expandedRowRender={record => this.renderExpandRowRender(record)}
+                filterBarPlaceholder={intl.formatMessage({id: 'filtertable'})}
+                rowClassName={(record, index) => `${record.category === 'PROGRAM' && record.projects && record.projects.length ? '' : 'hidden-expand'}`}
+            />
+            <Sidebar
+                title={this.renderSideTitle()}
+                visible={this.state.sidebar}
+                onCancel={this.handleTabClose.bind(this)}
+                onOk={this.handleSubmit.bind(this)}
+                okText={<FormattedMessage id={operation === 'create' ? 'create' : 'save'}/>}
+                cancelText={<FormattedMessage id="cancel"/>}
+                confirmLoading={this.state.submitting}
+                className="c7n-iam-project-sidebar"
+            >
+              {operation && this.renderSidebarContent()}
+              {operation === 'add' && this.getAddOtherBtn()}
+            </Sidebar>
+          </Content>
+        </Page>
     );
   }
 }

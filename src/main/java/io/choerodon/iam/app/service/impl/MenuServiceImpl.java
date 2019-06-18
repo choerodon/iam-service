@@ -125,14 +125,19 @@ public class MenuServiceImpl implements MenuService {
             } else {
                 menus = new HashSet<>(
                         menuMapper.selectMenusAfterCheckPermission(userId, level, sourceId, getProjectCategory(level, sourceId), "user"));
-                //查类型为menu的菜单
-                MenuDTO dto = new MenuDTO();
-                dto.setType(MenuType.MENU.value());
-                dto.setResourceLevel(level);
-                menus.addAll(menuMapper.select(dto));
+
             }
         }
-
+        //查类型为menu的菜单
+        MenuDTO dto = new MenuDTO();
+        dto.setType(MenuType.MENU.value());
+        dto.setResourceLevel(level);
+        List<MenuDTO> allMenus = menuMapper.select(dto);
+        //筛除重复menu
+        Set<Long> menuIds = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+        Set<MenuDTO> menuCollect = allMenus.stream().filter(m -> !menuIds.contains(m.getId())).collect(Collectors.toSet());
+        //添加类型为menu的菜单
+        menus.addAll(menuCollect);
         toTreeMenu(topMenu, menus, false);
         return topMenu;
     }
@@ -140,6 +145,7 @@ public class MenuServiceImpl implements MenuService {
 
     /**
      * menus 项目/组织  开启类别控制
+     *
      * @param isAdmin
      * @param userId
      * @param level
@@ -159,12 +165,6 @@ public class MenuServiceImpl implements MenuService {
         } else {
             menus = new HashSet<>(
                     menuMapper.selectMenusAfterPassingThePermissionCheck(userId, level, sourceId, getCategories(level, sourceId), "user"));
-
-            //查类型为menu的菜单
-            MenuDTO dto = new MenuDTO();
-            dto.setType(MenuType.MENU.value());
-            dto.setResourceLevel(level);
-            menus.addAll(menuMapper.select(dto));
         }
         return menus;
     }

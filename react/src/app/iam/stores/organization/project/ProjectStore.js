@@ -4,7 +4,7 @@
 
 import { action, computed, observable } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
-import querystring from 'query-string';
+import queryString from 'query-string';
 
 const { AppState } = stores;
 const isNum = /^\d+$/;
@@ -21,6 +21,8 @@ class ProjectStore {
   @observable currentGroup = null;
   @observable optionAgileData = [];
   @observable disabledTime = {};
+  @observable projectCategories = [];
+
   projectRelationNeedRemove = [];
 
   @observable originPros = [];
@@ -80,6 +82,14 @@ class ProjectStore {
   @action
   addNewProjectToGroup() {
     this.groupProjects = [...this.groupProjects, { projectId: null, enabled: true }];
+  }
+
+  @action setProjectCategories(data) {
+    this.projectCategories = data;
+  }
+
+  @computed get getProjectCategories() {
+    return this.projectCategories;
   }
 
   @action
@@ -166,7 +176,7 @@ class ProjectStore {
       }
       queryObj.sort = sorter.join(',');
     }
-    return axios.get(`/iam/v1/organizations/${organizationId}/projects?${querystring.stringify(queryObj)}`);
+    return axios.get(`/iam/v1/organizations/${organizationId}/projects?${queryString.stringify(queryObj)}`);
   };
 
   enableProject(orgId, projectId, data) {
@@ -232,6 +242,8 @@ class ProjectStore {
   };
 
   loadProjectTypes = () => axios.get('/iam/v1/projects/types');
+
+  loadProjectCategories = (queryObj) => axios.get(`/org/v1/categories/pro?${queryString.stringify(queryObj)}`);
 
   loadMyData = (organizationId, userId) => {
     this.getRolesById(organizationId, userId).then(action((roles) => {
