@@ -260,12 +260,13 @@ export default class Project extends Component {
     if (this.state.operation === 'create') {
       const {validateFields} = this.props.form;
       validateFields((err, {code, name, type, category}) => {
+        if (category === '敏捷项目') category = undefined;
         if (!err) {
           data = {
             code,
             name: name.trim(),
             organizationId,
-            categoryIds: category,
+            categoryIds: category === undefined ? undefined : [category],
             type: type === 'no' || undefined ? null : type,
             imageUrl: imgUrl || null,
           };
@@ -741,6 +742,8 @@ export default class Project extends Component {
                       pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
                       message: intl.formatMessage({id: `${intlPrefix}.name.pattern.msg`}),
                     }],
+                    validateTrigger: 'onBlur',
+                    validateFirst: true,
                     initialValue: operation === 'create' ? undefined : projectDatas.name,
                   })(
                       <Input
@@ -761,21 +764,23 @@ export default class Project extends Component {
                     {...formItemLayout}
                 >
                   {getFieldDecorator('category', {
-                    initialValue: ``,
+                    rules: [{
+                      required: true,
+                      whitespace: true,
+                      message: intl.formatMessage({id: `${intlPrefix}.category.require.msg`}),
+                    }],
+                    initialValue: '敏捷项目',
                   })(
                       <Select
-                          label={<FormattedMessage id={`${intlPrefix}.type.category`}/>}
-                          optionLabelProp="label"
-                          allowClear
                           style={{width: 512}}
-                          mode="multiple"
-                          optionFilterProp="children"
-                          filterOption={false}
-                          filter
-                          getPopupContainer={() => (overflow ? this.sidebarBody : document.body)}
+                          label={<FormattedMessage id={`${intlPrefix}.category`}/>}
+                          notFoundContent={intl.formatMessage({id: 'organization.project.category.notfound'})}
                           onFilterChange={this.handleCategorySelectFilter}
-                          notFoundContent={intl.formatMessage({id: 'organization.project.type.category.notfound'})}
+                          getPopupContainer={() => document.getElementsByClassName('sidebar-content')[0].parentNode}
+                          filterOption={false}
+                          optionFilterProp="children"
                           loading={this.state.selectLoading}
+                          filter
                       >
                         {this.getCategoriesOption()}
                       </Select>,
@@ -888,24 +893,13 @@ export default class Project extends Component {
    * 获取项目类型下拉选项
    * @returns {any[]}
    */
-  // getCategoriesOption() {
-  //   const {ProjectStore} = this.props;
-  //   const projectCategories = ProjectStore.getProjectCategories;
-  //   return projectCategories && projectCategories.length > 0 ? (
-  //       projectCategories.map(({code, name}) => (
-  //           <Option key={code} value={code}>{name}</Option>
-  //       ))
-  //   ) : null;
-  // }
 
   getCategoriesOption = () => {
     const { ProjectStore } = this.props;
     const projectCategories = ProjectStore.getProjectCategories;
     return projectCategories && projectCategories.length > 0 ? (
         projectCategories.map(({ id, name}) => (
-            <Option key={id} value={id} label={`${name}`}>
-                <span>{name}</span>
-            </Option>
+            <Option key={id} value={`${id}`}>{name}</Option>
         ))
     ) : null;
   }
