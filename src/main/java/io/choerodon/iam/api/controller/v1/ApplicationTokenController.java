@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2019/6/18
  */
 @RestController
-@RequestMapping(value = "/v1/applications")
 public class ApplicationTokenController {
     private ApplicationService applicationService;
 
@@ -27,23 +26,25 @@ public class ApplicationTokenController {
         this.applicationService = applicationService;
     }
 
-
+    @RequestMapping(value = "/v1/organizations/{organization_id}/applications")
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "获取application的token")
     @GetMapping(value = "/{id}/token")
-    public ResponseEntity<String> getToken(@PathVariable("id") Long id) {
+    public ResponseEntity<String> getToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.getToken(id), HttpStatus.OK);
 
     }
 
+    @RequestMapping(value = "/v1/organizations/{organization_id}/applications")
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建application的token")
     @PostMapping(value = "/{id}/token")
-    public ResponseEntity<String> createToken(@PathVariable("id") Long id) {
+    public ResponseEntity<String> createToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.createToken(id), HttpStatus.OK);
 
     }
 
+    @RequestMapping(value = "/v1/applications")
     @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "根据token查询应用接口")
     @GetMapping(value = "/token")
