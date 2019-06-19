@@ -1,7 +1,7 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.17.1",
+  "version": "0.18.3",
   "description": "",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
@@ -29,6 +29,8 @@
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
+    "prepublish": "choerodon-front-boot prepublish",
+    "postpublish": "choerodon-front-boot postpublish",
     "compile": "gulp compile"
   },
   "author": "",

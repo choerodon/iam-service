@@ -1312,6 +1312,7 @@ const zh_CN = {
   'global.system-setting.systemName': '平台简称',
   'global.system-setting.registerEnabled': '是否启用注册',
   'global.system-setting.registerUrl': '注册页面链接',
+  'global.system-setting.resetGitlabPasswordUrl': '重置gitlab密码页面链接',
   'global.system-setting.registerUrl.error': '当启用注册时必须填写注册页面链接',
   'global.system-setting.systemName.error': '请填写您的平台简称',
   'global.system-setting.systemLogo': '平台导航栏图形标',

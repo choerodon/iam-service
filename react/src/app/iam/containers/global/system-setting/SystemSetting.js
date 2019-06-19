@@ -301,7 +301,7 @@ export default class SystemSetting extends Component {
     const { SystemSettingStore, intl, AppState } = this.props;
     const { getFieldDecorator } = this.props.form;
     const { logoLoadingStatus, submitting, uploadLogoVisible } = this.state;
-    const { defaultLanguage = 'zh_CN', defaultPassword = 'abcd1234', systemName = 'Choerodon', systemTitle, maxPasswordLength, minPasswordLength, registerEnabled = false, registerUrl } = SystemSettingStore.getUserSetting;
+    const { defaultLanguage = 'zh_CN', defaultPassword = 'abcd1234', systemName = 'Choerodon', systemTitle, maxPasswordLength, minPasswordLength, registerEnabled = false, registerUrl, resetGitlabPasswordUrl } = SystemSettingStore.getUserSetting;
     const systemLogo = SystemSettingStore.getLogo;
     const formItemLayout = {
       labelCol: {
@@ -462,6 +462,20 @@ export default class SystemSetting extends Component {
           </Select>,
           )}
         </FormItem>
+        <FormItem
+            {...formItemLayout}
+          >
+            {getFieldDecorator('resetGitlabPasswordUrl', {
+              initialValue: resetGitlabPasswordUrl,
+            })(
+              <TextArea
+                autoComplete="new-password"
+                label={<FormattedMessage id={`${intlPrefix}.resetGitlabPasswordUrl`} />}
+                ref={(e) => { this.editFocusInput = e; }}
+                autosize={{ minRows: 2, maxRows: 6 }}
+              />,
+            )}
+          </FormItem>
         <FormItem
           {...formItemLayout}
         >
