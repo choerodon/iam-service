@@ -10,29 +10,17 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.domain.repository.LabelRepository;
-import io.choerodon.iam.domain.repository.MemberRoleRepository;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.repository.*;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dto.LabelDTO;
-import io.choerodon.iam.infra.dto.MemberRoleDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
-import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
-import io.choerodon.iam.infra.dto.ProjectTypeDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -42,18 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_ENABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 
 /**
  * @author flyleft
@@ -64,6 +44,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDA
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String PROJECT_NOT_EXIST_EXCEPTION = "error.project.not.exist";
+    private static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
     public static final String PROJECT = "project";
 
     @Value("${choerodon.devops.message:false}")
@@ -98,6 +79,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     private ProjectRelationshipRepository projectRelationshipRepository;
+
+    private ProjectCategoryMapper projectCategoryMapper;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
@@ -111,7 +95,8 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                                           AsgardFeignClient asgardFeignClient,
                                           ProjectTypeService projectTypeService,
                                           ProjectRelationshipRepository projectRelationshipRepository,
-                                          ProjectMapCategoryMapper projectMapCategoryMapper) {
+                                          ProjectMapCategoryMapper projectMapCategoryMapper,
+                                          ProjectCategoryMapper projectCategoryMapper) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
@@ -124,6 +109,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         this.projectTypeService = projectTypeService;
         this.projectRelationshipRepository = projectRelationshipRepository;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
     }
 
     @Transactional
@@ -142,6 +128,16 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             initMemberRole(dto);
         }
         if (categoryEnable) {
+            //添加默认类型Agile
+            if (CollectionUtils.isEmpty(categoryIds)) {
+                categoryIds = new ArrayList<>();
+                ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+                projectCategoryDTO.setCode(PROJECT_DEFAULT_CATEGORY);
+                projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+                if (projectCategoryDTO != null) {
+                    categoryIds.add(projectCategoryDTO.getId());
+                }
+            }
             if (categoryIds != null) {
                 for (Long categoryId : categoryIds) {
                     ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
