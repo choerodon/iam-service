@@ -9,4 +9,13 @@
         LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
         WHERE pmc.project_id = #{projectId}
     </select>
+
+    <select id="selectProjectCategoryNames" resultType="java.lang.String">
+        SELECT
+            pc. NAME
+        FROM
+            FD_PROJECT_MAP_CATEGORY pmc
+        LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        WHERE pmc.project_id = #{projectId}
+    </select>
 </mapper>

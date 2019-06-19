@@ -52,8 +52,11 @@ public class ProjectDTO extends BaseDTO {
 
     @ApiModelProperty(value = "项目类型code/非必填")
     private String type;
-    @ApiModelProperty(value = "项目类别：AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)")
+    @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)")
     private String category;
+
+    @ApiModelProperty(value = "项目类型(非开源，一对多)")
+    private List<String> categories;
 
     @Transient
     private List<RoleDTO> roles;
@@ -161,5 +164,13 @@ public class ProjectDTO extends BaseDTO {
 
     public void setProjects(List<ProjectDTO> projects) {
         this.projects = projects;
+    }
+
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
     }
 }
