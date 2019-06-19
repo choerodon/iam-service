@@ -10,10 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.websocket.server.PathParam;
 
 /**
  * @author jiameng.cao
@@ -48,8 +47,8 @@ public class ApplicationTokenController {
     @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "根据token查询应用接口")
     @GetMapping(value = "/token")
-    public ResponseEntity<ApplicationDTO> getApplicationByToken(@PathParam("applicationToken") String applicationToken) {
-        return new ResponseEntity<>(applicationService.getApplicationByToken(applicationToken), HttpStatus.OK);
+    public ResponseEntity<ApplicationDTO> getApplicationByToken(@RequestBody ApplicationDTO applicationDTO) {
+        return new ResponseEntity<>(applicationService.getApplicationByToken(applicationDTO.getApplicationToken()), HttpStatus.OK);
 
     }
 }
