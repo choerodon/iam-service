@@ -45,6 +45,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     private OrganizationProjectService organizationProjectService;
 
+    @Value("${choerodon.category.enabled:false}")
+    private boolean enableCategory;
+
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
 
@@ -69,7 +72,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDTO queryProjectById(Long projectId) {
-        return projectRepository.selectByPrimaryKey(projectId);
+        if (enableCategory) {
+            return projectRepository.selectByPrimaryKeyWithCategory(projectId);
+        } else {
+            return projectRepository.selectByPrimaryKey(projectId);
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ public interface ProjectMapCategoryMapper extends Mapper<ProjectMapCategoryDTO> 
 
     List<String> selectProjectCategories(@Param("projectId") Long projectId);
 
+    List<String> selectProjectCategoryNames(@Param("projectId") Long projectId);
     /**
      * 批量插入
      *

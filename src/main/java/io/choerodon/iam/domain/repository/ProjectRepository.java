@@ -79,4 +79,16 @@ public interface ProjectRepository {
     ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId);
 
     ProjectDTO selectCategoryByPrimaryKey(Long parentId);
+
+    /**
+     * 根据id查询项目及项目的项目类别
+     *
+     * @param projectId
+     * @return
+     */
+    ProjectDTO selectByPrimaryKeyWithCategory(Long projectId);
+
+    List<ProjectDTO> selectAllWithCategory();
+
+    List<ProjectDTO> selectProjectsFromMemberRoleByOptionsWithCategory(Long userId, ProjectDTO projectDTO);
 }
