@@ -1,10 +1,10 @@
 package io.choerodon.iam.domain.repository;
 
-import java.util.List;
-import java.util.Set;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -17,7 +17,7 @@ public interface ProjectRepository {
 
     List<ProjectDTO> query(ProjectDTO projectDTO);
 
-    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param, Boolean categoryEnable);
 
     PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param);
 
@@ -77,4 +77,6 @@ public interface ProjectRepository {
      * @return 普通项目群信息
      */
     ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId);
+
+    ProjectDTO selectCategoryByPrimaryKey(Long parentId);
 }

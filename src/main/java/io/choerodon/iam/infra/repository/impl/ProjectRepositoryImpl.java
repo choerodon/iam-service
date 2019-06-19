@@ -1,23 +1,23 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-import java.util.Set;
-
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
-import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author flyleft
@@ -80,17 +80,27 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
+    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param, Boolean categoryEnable) {
         Page<ProjectDTO> result = new Page<>(page, size);
         if (size == 0) {
-            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, null, null);
+            List<ProjectDTO> projectList = new ArrayList<>();
+            if (!categoryEnable) {
+                projectList = projectMapper.fulltextSearch(projectDTO, param, null, null);
+            } else {
+                projectList = projectMapper.fulltextSearchCategory(projectDTO, param, null, null);
+            }
             result.setTotal(projectList.size());
             result.addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
             int count = projectMapper.fulltextSearchCount(projectDTO, param);
             result.setTotal(count);
-            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, start, size);
+            List<ProjectDTO> projectList = new ArrayList<>();
+            if (!categoryEnable) {
+                projectList = projectMapper.fulltextSearch(projectDTO, param, start, size);
+            } else {
+                projectList = projectMapper.fulltextSearchCategory(projectDTO, param, start, size);
+            }
             result.addAll(projectList);
         }
         return result.toPageInfo();
@@ -217,5 +227,14 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId) {
         return projectMapper.selectGroupInfoByEnableProject(orgId, projectId);
+    }
+
+    @Override
+    public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectCategoryByPrimaryKey(projectId);
+        if (projectDTO == null) {
+            throw new CommonException("error.project.not.exist");
+        }
+        return projectDTO;
     }
 }
