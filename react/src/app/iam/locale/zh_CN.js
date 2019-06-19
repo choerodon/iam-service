@@ -455,6 +455,9 @@ const pageDetail = {
   'organization.application.header.title': '应用',
   'organization.application.title': '组织"{name}"的应用',
   'organization.application.description': '应用是够供给市场，被人们使用和消费，并能满足人们某种需求的任何东西，包括有形的物品、无形的服务、组织、观念或它们的组合。您可以在这里创建普通应用或者组合应用、维护应用信息、启停用应用。',
+  'organization.application.view.token': '查看token',
+  'organization.application.create.and.view.token': '创建并查看token',
+  'organization.application.view.interface.token': '查看接口“{interfaceName}”的token',
   // 'organization.application.link': `${docServer}/user-guide/microservice-development/job/execution-record/`,
 
   'organization.application.create': '创建应用',
