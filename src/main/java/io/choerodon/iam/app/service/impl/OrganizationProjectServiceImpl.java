@@ -222,7 +222,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
-        return projectRepository.pagingQuery(projectDTO, page, size, param);
+        return projectRepository.pagingQuery(projectDTO, page, size, param, categoryEnable);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -467,7 +467,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {

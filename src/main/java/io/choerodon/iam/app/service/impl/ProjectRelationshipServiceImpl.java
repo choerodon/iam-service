@@ -217,7 +217,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         //批量插入
         insertNewList.forEach(relationshipDTO -> {
             checkGroupIsLegal(relationshipDTO);
-            if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+            if (projectRepository.selectCategoryByPrimaryKey(relationshipDTO.getParentId()).getCategory()
                     .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                 relationshipDTO.setProgramId(relationshipDTO.getParentId());
             }
@@ -253,7 +253,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             if (projectRelationshipRepository.selectByPrimaryKey(relationshipDTO.getId()) == null) {
                 logger.warn("Batch update project relationship exists Nonexistent relationship,id is{}:{}", relationshipDTO.getId(), relationshipDTO);
             } else {
-                if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                if (projectRepository.selectCategoryByPrimaryKey(relationshipDTO.getParentId()).getCategory()
                         .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
                     relationshipDTO.setProgramId(relationshipDTO.getParentId());
                 }
@@ -375,7 +375,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
      * @param projectRelationshipDTO
      */
     private void checkGroupIsLegal(ProjectRelationshipDTO projectRelationshipDTO) {
-        ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
+        ProjectDTO parent = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getParentId());
         if (parent == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
@@ -384,7 +384,7 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
 
-        ProjectDTO son = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
+        ProjectDTO son = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getProjectId());
         if (son == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (!son.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
