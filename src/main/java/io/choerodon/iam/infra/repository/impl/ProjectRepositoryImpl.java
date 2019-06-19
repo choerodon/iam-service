@@ -266,7 +266,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             return projectDTOS;
         }
         List<ProjectDTO> resultList = new ArrayList<>();
-        projectDTOS.parallelStream().collect(Collectors.groupingBy(p -> (p.getCode()), Collectors.toList())).forEach((id, transfer) -> {
+        projectDTOS.parallelStream().collect(Collectors.groupingBy(p -> (p.getId()), Collectors.toList())).forEach((id, transfer) -> {
             transfer.stream().reduce((a, b) -> {
                 ProjectDTO projectDTO = new ProjectDTO();
                 BeanUtils.copyProperties(a, projectDTO);
