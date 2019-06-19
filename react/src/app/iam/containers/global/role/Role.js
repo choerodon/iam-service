@@ -338,7 +338,7 @@ export default class Role extends Component {
             action: this.handleEnable.bind(this, record),
           });
         }
-        return <Action data={actionDatas} getPopupContainer={() => document.getElementsByClassName('page-content')[0]} />;
+        return <Action data={actionDatas} />;
       },
     }];
     const rowSelection = {

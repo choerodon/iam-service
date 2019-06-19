@@ -234,11 +234,26 @@ class ProjectStore {
 
   getProjectsByGroupId = parentId => axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations/${parentId}`);
 
-  axiosDeleteProjectsFromGroup = () => {
-    this.projectRelationNeedRemove.forEach((id) => {
-      axios.delete(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations/${id}`);
+  axiosDeleteProjectsFromGroup = (cb) => {
+    const resArr = new Array(this.projectRelationNeedRemove.length).fill(false);
+    this.projectRelationNeedRemove.forEach((id, i) => {
+      axios.delete(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/project_relations/${id}`)
+        .then((res) => {
+          resArr[i] = true;
+          if (resArr.every(v => v)) {
+            cb();
+            this.projectRelationNeedRemove = [];
+          }
+        })
+        .catch((res) => {
+          if (resArr.some(v => v)) {
+            cb();
+            this.projectRelationNeedRemove = [];
+            Choerodon.prompt('部分删除失败！');
+          }
+        });
     });
-    this.projectRelationNeedRemove = [];
+    // this.projectRelationNeedRemove = [];
   };
 
   loadProjectTypes = () => axios.get('/iam/v1/projects/types');
