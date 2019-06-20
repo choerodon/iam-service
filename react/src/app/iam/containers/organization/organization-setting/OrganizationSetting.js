@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Form, Input, Modal, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
+import {axios, Content, Header, Page, Permission, stores} from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
@@ -27,16 +27,28 @@ export default class OrganizationSetting extends Component {
   state = {
     submitting: false,
     isShowAvatar: false,
+    categoryEnabled: false,
   };
 
   componentDidMount() {
     this.loadOrganization();
+    this.loadEnableCategory();
+    OrganizationSettingStore.loadOrganizationCategories({});
   }
 
   componentWillUnmount() {
     OrganizationSettingStore.setOrganizationInfo({});
     OrganizationSettingStore.setImageUrl(null);
   }
+
+  loadEnableCategory = () => {
+    axios.get(`/iam/v1/system/setting/enable_category`)
+        .then((response) => {
+          this.setState({
+            categoryEnabled: response,
+          });
+        });
+  };
 
   loadOrganization = () => {
     const { AppState } = this.props;
@@ -141,10 +153,12 @@ export default class OrganizationSetting extends Component {
   }
 
   render() {
-    const { submitting } = this.state;
+    const { submitting,categoryEnabled } = this.state;
     const { intl } = this.props;
     const { getFieldDecorator } = this.props.form;
-    const { enabled, name, code, address, ownerRealName, homePage } = OrganizationSettingStore.getOrganizationInfo;
+    const { enabled, name, code, address, ownerRealName, homePage,category} = OrganizationSettingStore.getOrganizationInfo;
+    const categories = OrganizationSettingStore.getOrgCategories;
+    let find = categories && categories.find(item => item.code === category);
     return (
       <Page
         service={[
@@ -202,6 +216,13 @@ export default class OrganizationSetting extends Component {
                   <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.owner`} />} disabled style={{ width: 512 }} />,
                 )}
               </FormItem>
+              {categoryEnabled && (<FormItem>
+                {getFieldDecorator('category', {
+                  initialValue: find && find.name ,
+               })(
+                    <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.category`} />} disabled style={{ width: 512 }} />,
+                )}
+              </FormItem>)}
               <FormItem>
                 {getFieldDecorator('homePage', {
                   initialValue: homePage,
