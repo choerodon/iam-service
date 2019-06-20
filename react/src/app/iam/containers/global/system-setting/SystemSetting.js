@@ -540,16 +540,16 @@ export default class SystemSetting extends Component {
       >
         <Header title={<FormattedMessage id={`${intlPrefix}.header`} />}>
           <Button
-            onClick={this.init}
-            icon="refresh"
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-          <Button
             onClick={this.showDeleteConfirm}
             icon="swap_horiz"
           >
             <FormattedMessage id="reset" />
+          </Button>
+          <Button
+            onClick={this.init}
+            icon="refresh"
+          >
+            <FormattedMessage id="refresh" />
           </Button>
         </Header>
         <Content code={intlPrefix}>
