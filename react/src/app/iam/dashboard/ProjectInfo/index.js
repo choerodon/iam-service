@@ -28,7 +28,7 @@ export default class ProjectInfo extends Component {
     const { id: projectId, organizationId, type } = AppState.currentMenuType;
     const projectData = HeaderStore.getProData || [];
     const orgData = HeaderStore.getOrgData || [];
-    const { name, code, typeName } = projectData.find(({ id }) => String(id) === String(projectId)) || {};
+    const { name, code, categories } = projectData.find(({ id }) => String(id) === String(projectId)) || {};
     const { name: organizeName } = orgData.find(({ id }) => String(id) === String(organizationId)) || {};
     return (
       <div className="c7n-iam-dashboard-project">
@@ -38,7 +38,7 @@ export default class ProjectInfo extends Component {
           <dt><FormattedMessage id={`${intlPrefix}.code`} /></dt>
           <dd>{code}</dd>
           <dt><FormattedMessage id={`${intlPrefix}.type`} /></dt>
-          <dd>{typeName || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
+          <dd>{categories && categories.map(value => value + " ") || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
           <dt><FormattedMessage id={`${intlPrefix}.organization`} /></dt>
           <dd>{organizeName}</dd>
           <dt><FormattedMessage id={`${intlPrefix}.role`} /></dt>
