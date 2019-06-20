@@ -87,8 +87,4 @@ public interface ProjectRepository {
      * @return
      */
     ProjectDTO selectByPrimaryKeyWithCategory(Long projectId);
-
-    List<ProjectDTO> selectAllWithCategory();
-
-    List<ProjectDTO> selectProjectsFromMemberRoleByOptionsWithCategory(Long userId, ProjectDTO projectDTO);
 }
