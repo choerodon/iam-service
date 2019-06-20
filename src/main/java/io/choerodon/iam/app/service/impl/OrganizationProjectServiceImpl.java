@@ -120,6 +120,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
+        if (!CollectionUtils.isEmpty(categoryIds)) {
+            ProjectCategoryDTO projectCategoryDTO = projectCategoryMapper.selectByPrimaryKey(categoryIds.get(0));
+            if (projectCategoryDTO != null) {
+                projectDTO.setCategory(projectCategoryDTO.getCode());
+            }
+        }
         ProjectDTO dto;
         if (devopsMessage) {
             dto = createProjectBySaga(projectDTO);

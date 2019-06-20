@@ -98,5 +98,5 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
                                             @Param("start") Integer start,
                                             @Param("size") Integer size);
 
-    ProjectDTO selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
+    List<ProjectDTO> selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
 }

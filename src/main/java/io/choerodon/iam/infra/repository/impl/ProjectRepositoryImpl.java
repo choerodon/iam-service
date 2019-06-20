@@ -4,17 +4,23 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.mapper.*;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author flyleft
@@ -232,10 +238,35 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
-        ProjectDTO projectDTO = projectMapper.selectCategoryByPrimaryKey(projectId);
+        List<ProjectDTO> projectDTOS = projectMapper.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO = mergeCategories(projectDTOS);
         if (projectDTO == null) {
             throw new CommonException("error.project.not.exist");
         }
+        return projectDTO;
+    }
+
+    private ProjectDTO mergeCategories(List<ProjectDTO> projectDTOS) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return null;
+        }
+        ProjectDTO projectDTO = new ProjectDTO();
+        BeanUtils.copyProperties(projectDTOS.get(0), projectDTO);
+        List<String> categories = new ArrayList<>();
+        String category = null;
+        for (int i = 0; i< projectDTOS.size(); i++) {
+            ProjectDTO p = projectDTOS.get(i);
+            categories.add(p.getCategory());
+            if (category == null && ProjectCategory.PROGRAM.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.PROGRAM.value();
+            } else if (category == null && ProjectCategory.AGILE.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.AGILE.value();
+            } else if (category == null) {
+                category = p.getCategory();
+            }
+        }
+        projectDTO.setCategory(category);
+        projectDTO.setCategories(categories);
         return projectDTO;
     }
 
