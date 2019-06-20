@@ -1576,6 +1576,7 @@ const zh_CN = {
   'organization.info.description': '您可以在此修改组织名称等。',
   'organization.info.name': '组织名称',
   'organization.info.code': '组织编码',
+  'organization.info.category': '组织类型',
   'organization.info.avatar': '组织图标',
   'organization.info.address': '组织所在地',
   'organization.info.owner': '组织所有者',

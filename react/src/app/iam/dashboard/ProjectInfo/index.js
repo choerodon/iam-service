@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { inject, observer } from 'mobx-react';
-import { DashBoardNavBar } from '@choerodon/boot';
+import {axios, DashBoardNavBar} from '@choerodon/boot';
 import { Spin } from 'choerodon-ui';
 import ProjectStore from '../../stores/organization/project/ProjectStore';
 import './index.scss';
@@ -13,9 +13,26 @@ const intlPrefix = 'dashboard.projectinfo';
 @inject('AppState', 'HeaderStore')
 @observer
 export default class ProjectInfo extends Component {
+  state = {
+    categoryEnabled: false,
+  };
+
   componentWillMount() {
     this.loadProjectInfo();
   }
+
+  componentDidMount() {
+    this.loadEnableCategory();
+  }
+
+  loadEnableCategory = () => {
+    axios.get(`/iam/v1/system/setting/enable_category`)
+        .then((response) => {
+          this.setState({
+            categoryEnabled: response,
+          });
+        });
+  };
 
   loadProjectInfo = () => {
     const { AppState: { currentMenuType: { id }, getUserInfo: { id: userId } } } = this.props;
@@ -23,6 +40,7 @@ export default class ProjectInfo extends Component {
   };
 
   render() {
+    const { categoryEnabled } = this.state;
     const { HeaderStore, AppState, intl } = this.props;
     const { myRoles } = ProjectStore;
     const { id: projectId, organizationId, type } = AppState.currentMenuType;
@@ -37,8 +55,14 @@ export default class ProjectInfo extends Component {
           <dd>{name}</dd>
           <dt><FormattedMessage id={`${intlPrefix}.code`} /></dt>
           <dd>{code}</dd>
-          <dt><FormattedMessage id={`${intlPrefix}.type`} /></dt>
-          <dd>{categories && categories.map(value => value + " ") || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
+          {
+            categoryEnabled && (
+                <div>
+                  <dt><FormattedMessage id={`${intlPrefix}.type`} /></dt>
+                  <dd>{categories && categories.map(value => value + " ") || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
+                </div>
+            )
+          }
           <dt><FormattedMessage id={`${intlPrefix}.organization`} /></dt>
           <dd>{organizeName}</dd>
           <dt><FormattedMessage id={`${intlPrefix}.role`} /></dt>

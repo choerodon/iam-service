@@ -23,6 +23,7 @@ const zh_CN = {
   'dashboard.organizationinfo.name': '组织名称',
   'dashboard.organizationinfo.code': '组织编码',
   'dashboard.organizationinfo.role': '我的角色',
+  'dashboard.organizationinfo.category': '组织类型',
   'dashboard.organizationinfo.projects': '我参与项目数（包括停用）',
 
   // MyProject
