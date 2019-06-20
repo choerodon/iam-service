@@ -1,13 +1,13 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.18.7",
+  "version": "0.18.1",
   "description": "",
   "main": "./react/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
-  "peerdependencies": {
+  "peerDependencies": {
     "@choerodon/boot": "0.18.x",
     "@choerodon/master": "0.18.x"
   },
@@ -49,6 +49,5 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  },
-  "peerDependencies": {}
+  }
 }
