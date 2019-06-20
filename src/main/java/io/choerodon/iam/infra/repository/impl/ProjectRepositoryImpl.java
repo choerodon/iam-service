@@ -9,15 +9,12 @@ import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.iam.infra.mapper.*;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author flyleft
@@ -249,41 +246,4 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return projectDTO;
     }
 
-    @Override
-    public List<ProjectDTO> selectAllWithCategory() {
-        List<ProjectDTO> projectDTOS = projectMapper.selectAllWithCategory();
-        return mergeCategories(projectDTOS);
-    }
-
-    @Override
-    public List<ProjectDTO> selectProjectsFromMemberRoleByOptionsWithCategory(Long userId, ProjectDTO projectDTO) {
-        List<ProjectDTO> projectDTOS = projectMapper.selectProjectsFromMemberRoleByOptionsWithCategory(userId, projectDTO);
-        return mergeCategories(projectDTOS);
-    }
-
-    private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
-        if (CollectionUtils.isEmpty(projectDTOS)) {
-            return projectDTOS;
-        }
-        List<ProjectDTO> resultList = new ArrayList<>();
-        projectDTOS.parallelStream().collect(Collectors.groupingBy(p -> (p.getId()), Collectors.toList())).forEach((id, transfer) -> {
-            transfer.stream().reduce((a, b) -> {
-                ProjectDTO projectDTO = new ProjectDTO();
-                BeanUtils.copyProperties(a, projectDTO);
-                List<String> categories = new ArrayList<>();
-                categories.add(a.getCategory());
-                categories.add(b.getCategory());
-                projectDTO.setCategories(categories);
-                return projectDTO;
-            }).ifPresent(resultList::add);
-        });
-        resultList.forEach(p -> {
-            if (p.getCategories() == null) {
-                List<String> categories = new ArrayList<>();
-                categories.add(p.getCategory());
-                p.setCategories(categories);
-            }
-        });
-        return resultList;
-    }
 }

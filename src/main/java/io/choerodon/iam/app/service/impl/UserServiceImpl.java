@@ -23,6 +23,7 @@ import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
@@ -77,6 +78,7 @@ public class UserServiceImpl implements UserService {
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -89,7 +91,8 @@ public class UserServiceImpl implements UserService {
                            UserPasswordValidator userPasswordValidator,
                            PasswordPolicyManager passwordPolicyManager,
                            RoleRepository roleRepository,
-                           MemberRoleMapper memberRoleMapper) {
+                           MemberRoleMapper memberRoleMapper,
+                           ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -102,6 +105,7 @@ public class UserServiceImpl implements UserService {
         this.userPasswordValidator = userPasswordValidator;
         this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
     }
 
     @Override
@@ -152,27 +156,33 @@ public class UserServiceImpl implements UserService {
         if (customUserDetails.getAdmin() != null) {
             isAdmin = customUserDetails.getAdmin();
         }
+
+        List<ProjectDTO> projectDTOS = new ArrayList<>();
         //superAdmin例外处理
-        if(enableCategory){
-            if (isAdmin) {
-                return projectRepository.selectAllWithCategory();
-            } else {
-                ProjectDTO project = new ProjectDTO();
-                if (!includedDisabled) {
-                    project.setEnabled(true);
-                }
-                return projectRepository.selectProjectsFromMemberRoleByOptionsWithCategory(id, project);
-            }
-        }
         if (isAdmin) {
-            return projectRepository.selectAll();
+            projectDTOS = projectRepository.selectAll();
         } else {
             ProjectDTO project = new ProjectDTO();
             if (!includedDisabled) {
                 project.setEnabled(true);
             }
-            return projectRepository.selectProjectsFromMemberRoleByOptions(id, project);
+            projectDTOS = projectRepository.selectProjectsFromMemberRoleByOptions(id, project);
         }
+        if (enableCategory) {
+            projectDTOS = mergeCategories(projectDTOS);
+        }
+        return projectDTOS;
+    }
+
+    private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
+        List<ProjectMapCategorySimpleDTO> projectMapCategorySimpleDTOS = projectMapCategoryMapper.selectAllProjectMapCategories();
+        projectDTOS.forEach(p -> {
+            List<String> collect = projectMapCategorySimpleDTOS.stream().filter(c -> c.getProjectId().equals(p.getId())).map(c -> c.getCategory()).collect(Collectors.toList());
+            List<String> categories = new ArrayList<>();
+            categories.addAll(collect);
+            p.setCategories(categories);
+        });
+        return projectDTOS;
     }
 
     @Override

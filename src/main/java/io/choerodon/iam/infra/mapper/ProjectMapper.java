@@ -99,21 +99,4 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
                                             @Param("size") Integer size);
 
     ProjectDTO selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
-
-    /**
-     * 获取全部项目及项目类型
-     *
-     * @return 组织下不是项目群的项目列表
-     */
-    List<ProjectDTO> selectAllWithCategory();
-
-    /**
-     * 获取用户的全部项目及项目类型
-     *
-     * @param userId
-     * @param projectDTO
-     * @return
-     */
-    List<ProjectDTO> selectProjectsFromMemberRoleByOptionsWithCategory(@Param("userId") Long userId,
-                                                                       @Param("projectDTO") ProjectDTO projectDTO);
 }

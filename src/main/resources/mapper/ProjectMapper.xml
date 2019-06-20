@@ -459,69 +459,6 @@
         AND (1 = (CASE WHEN FPR.END_DATE IS NULL THEN 1 ELSE  (<![CDATA[  SELECT CURRENT_DATE < FPR.END_DATE ]]>) END))
     </select>
 
-    <select id="selectProjectsFromMemberRoleByOptionsWithCategory" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        SELECT DISTINCT
-        fp.id,
-        fp. NAME,
-        fp. CODE,
-        fp.organization_id,
-        fp.is_enabled,
-        fp.IMAGE_URL,
-        fp.object_version_number,
-        fp.created_by,
-        fp.creation_date,
-        fp.last_update_date,
-        fp.last_updated_by,
-        fp.TYPE,
-        fpt. NAME AS type_name,
-        fpc.`NAME` AS category
-        FROM
-        fd_project fp
-        INNER JOIN iam_member_role ON iam_member_role.source_id = fp.id
-        INNER JOIN iam_role ON iam_role.is_enabled = 1
-        AND iam_role.id = iam_member_role.role_id
-        AND iam_member_role.source_type = 'project'
-        LEFT JOIN fd_project_type fpt ON fp.type = fpt. CODE
-        LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-        LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
-        WHERE
-        iam_member_role.member_id = #{userId}
-        <if test="projectDTO != null">
-            <if test="projectDTO.organizationId != null">
-                AND fd_project.organization_id = #{projectDTO.organizationId}
-            </if>
-            <if test="projectDTO.name != null">
-                AND fd_project.name LIKE concat(concat('%',#{projectDTO.name}),'%')
-            </if>
-            <if test="projectDTO.enabled != null">
-                AND fd_project.is_enabled = #{projectDTO.enabled}
-            </if>
-        </if>
-    </select>
-
-    <select id="selectAllWithCategory" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        SELECT DISTINCT
-            fp.id,
-            fp. NAME,
-            fp. CODE,
-            fp.organization_id,
-            fp.is_enabled,
-            fp.IMAGE_URL,
-            fp.object_version_number,
-            fp.created_by,
-            fp.creation_date,
-            fp.last_update_date,
-            fp.last_updated_by,
-            fp.TYPE,
-            fpt. NAME AS type_name,
-            fpc.`NAME` AS category
-        FROM
-            fd_project fp
-        LEFT JOIN fd_project_type fpt ON fp.type = fpt.code
-        LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-        LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
-    </select>
-
     <select id="selectCategoryByPrimaryKey" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
         select fpc.code AS category,fp.*
         from fd_project fp
