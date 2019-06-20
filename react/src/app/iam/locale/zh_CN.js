@@ -1590,6 +1590,7 @@ const zh_CN = {
   'project.info.header.title': '项目信息',
   'project.info.name': '项目名称',
   'project.info.code': '项目编码',
+  'project.info.category': '项目类型',
   'project.info.namerequiredmsg': '请输入项目名称',
   'project.info.name.pattern.msg': '项目名称只能由汉字、字母、数字、"_"、"."、"-"、"——"和空格组成',
   'project.info.type': '项目类型',
