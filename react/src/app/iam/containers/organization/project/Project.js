@@ -972,7 +972,7 @@ export default class Project extends Component {
       dataIndex: 'name',
       key: 'name',
       // width: '25%',
-      width: '270px',
+      width: '320px',
       render: (text, record) => (
           <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)} style={{paddingLeft: 26}}>
             <MouseOverWrapper text={text} width={0.2}>
@@ -1018,8 +1018,8 @@ export default class Project extends Component {
       key: 'name',
       filters: [],
       filteredValue: filters.name || [],
-      width: categoryEnabled ? '20%' : '30%',
-      // width: '270px',
+      // width: categoryEnabled ? '20%' : '30%',
+      width: '320px',
       render: (text, record) => (
           <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
             <MouseOverWrapper text={text} width={0.2}>
@@ -1034,7 +1034,7 @@ export default class Project extends Component {
       filters: [],
       filteredValue: filters.code || [],
       key: 'code',
-      width: categoryEnabled ? '20%' : '30%',
+      // width: categoryEnabled ? '20%' : '30%',
       render: text => (
           <MouseOverWrapper text={text} width={0.2}>
             {text}
@@ -1042,6 +1042,7 @@ export default class Project extends Component {
       ),
     }, {
       title: <FormattedMessage id="status"/>,
+      width: '160px',
       dataIndex: 'enabled',
       filters: [{
         text: intl.formatMessage({id: 'enable'}),
@@ -1075,7 +1076,7 @@ export default class Project extends Component {
       align: 'right',
       render: (text, record) => (
           <div>
-            {record.category !== 'AGILE' && record.enabled && (
+            {record.category === 'PROGRAM' && record.enabled && (
                 <Tooltip
                     title={<FormattedMessage id={`${intlPrefix}.config`}/>}
                     placement="bottom"
@@ -1125,12 +1126,11 @@ export default class Project extends Component {
       title: <FormattedMessage id={`${intlPrefix}.type.category`}/>,
       dataIndex: 'category',
       key: 'category',
-      width: '25%',
+      width: '15%',
       render: category => {
         let find = categories && categories.find(item => item.code === category);
         return (
-            <StatusTag mode="icon" name={find && find.name}
-                       iconType={this.getCategoryIcon(category)}/>)
+          <span>{find ? find.name : ''}</span>)
       },
       // filters: filtersType,
       filteredValue: filters.typeName || [],
