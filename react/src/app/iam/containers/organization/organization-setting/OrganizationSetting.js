@@ -167,8 +167,8 @@ export default class OrganizationSetting extends Component {
       >
         <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />} />
         <Content
-          code={enabled ? intlPrefix : `${intlPrefix}.disabled`}
-          values={{ name: enabled ? name : code }}
+          code={intlPrefix}
+          values={{ name }}
         >
           <div className="c7n-iam-organizationsetting">
             <Form onSubmit={this.handleSave.bind(this)}>
