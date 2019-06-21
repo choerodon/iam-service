@@ -42,7 +42,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
 
     @Override
     public OrganizationDTO update(OrganizationDTO organizationDTO) {
-        int isUpdate = organizationMapper.updateByPrimaryKey(organizationDTO);
+        int isUpdate = organizationMapper.updateByPrimaryKeySelective(organizationDTO);
         if (isUpdate != 1) {
             throw new CommonException("error.organization.update");
         }

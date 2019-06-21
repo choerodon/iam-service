@@ -44,7 +44,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String PROJECT_NOT_EXIST_EXCEPTION = "error.project.not.exist";
-    private static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
+    public static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
     public static final String PROJECT = "project";
 
     @Value("${choerodon.devops.message:false}")

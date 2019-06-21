@@ -4,29 +4,34 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.mapper.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static io.choerodon.iam.app.service.impl.OrganizationProjectServiceImpl.PROJECT_DEFAULT_CATEGORY;
 
 /**
  * @author flyleft
  */
 @Repository
 public class ProjectRepositoryImpl implements ProjectRepository {
+    @Value("${choerodon.category.enabled:false}")
+    private Boolean categoryEnable;
 
     private ProjectMapper projectMapper;
 
@@ -38,16 +43,20 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
+    private ProjectCategoryMapper projectCategoryMapper;
+
     public ProjectRepositoryImpl(ProjectMapper projectMapper,
                                  OrganizationMapper organizationMapper,
                                  MemberRoleMapper memberRoleMapper,
                                  ProjectTypeMapper projectTypeMapper,
-                                 ProjectMapCategoryMapper projectMapCategoryMapper) {
+                                 ProjectMapCategoryMapper projectMapCategoryMapper,
+                                 ProjectCategoryMapper projectCategoryMapper) {
         this.projectMapper = projectMapper;
         this.organizationMapper = organizationMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.projectTypeMapper = projectTypeMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
     }
 
     @Override
@@ -254,7 +263,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         BeanUtils.copyProperties(projectDTOS.get(0), projectDTO);
         List<String> categories = new ArrayList<>();
         String category = null;
-        for (int i = 0; i< projectDTOS.size(); i++) {
+        for (int i = 0; i < projectDTOS.size(); i++) {
             ProjectDTO p = projectDTOS.get(i);
             categories.add(p.getCategory());
             if (category == null && ProjectCategory.PROGRAM.value().equalsIgnoreCase(p.getCategory())) {
@@ -277,4 +286,21 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return projectDTO;
     }
 
+    @Override
+    public ProjectMapCategoryDTO assignDefaultCategoriesToProjects(Long projectId) {
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode(PROJECT_DEFAULT_CATEGORY);
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+        if (projectCategoryDTO != null) {
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+        }
+        projectMapCategoryDTO.setProjectId(projectId);
+
+        if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.insert");
+        }
+        return projectMapCategoryDTO;
+    }
 }

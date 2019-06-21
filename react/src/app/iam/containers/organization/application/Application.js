@@ -335,7 +335,12 @@ export default class Application extends Component {
             title={intl.formatMessage({ id: `${intlPrefix}.view.interface.token` }, {interfaceName})}
             visible={showTokenModal}
             okText={intl.formatMessage({ id: 'close' })}
-            okCancel={false}
+            onCancel={() => {
+              this.setState({ showTokenModal: false });
+              if (createToken) {
+                this.refresh();
+              }
+            }}
             onOk={() => {
               this.setState({ showTokenModal: false });
               if (createToken) {
