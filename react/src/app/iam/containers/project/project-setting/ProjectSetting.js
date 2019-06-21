@@ -90,6 +90,9 @@ export default class ProjectSetting extends Component {
           ...value,
           imageUrl: ProjectSettingStore.getImageUrl,
         };
+        if (body.category) {
+          body.category = null;
+        }
         body.type = body.type === 'no' || undefined ? null : value.type;
         this.setState({ submitting: true });
         ProjectSettingStore.axiosSaveProjectInfo(body)
