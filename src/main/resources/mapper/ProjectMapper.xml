@@ -159,6 +159,7 @@
         left join fd_project_category fpc
         ON fpc.id = fpmc.CATEGORY_ID
         where fp.organization_id = #{project.organizationId}
+        AND fpc.code!='PROGRAM_PROJECT'
         <if test="project.name != null">
             and fp.name like concat(concat('%',#{project.name}),'%')
         </if>
@@ -192,6 +193,7 @@
         left join fd_project fp1
         on fpr.project_id = fp1.id
         WHERE t1.category!='PROGRAM_PROJECT'
+
     </select>
 
 
