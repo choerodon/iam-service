@@ -2,6 +2,7 @@ package io.choerodon.iam.domain.repository;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -87,4 +88,11 @@ public interface ProjectRepository {
      * @return
      */
     ProjectDTO selectByPrimaryKeyWithCategory(Long projectId);
+
+    /**
+     * 给项目分配默认项目类型（敏捷）
+     * @param projectId 项目Id
+     * @return
+     */
+    ProjectMapCategoryDTO assignDefaultCategoriesToProjects(Long projectId);
 }

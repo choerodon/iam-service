@@ -1,20 +1,6 @@
 package io.choerodon.iam.api.eventhandler;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
-
-import java.io.IOException;
-import java.util.Random;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.iam.infra.dto.LdapDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.ldap.DirectoryType;
@@ -25,6 +11,19 @@ import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.app.service.PasswordPolicyService;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.dto.LdapDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Random;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
 
 
 /**
@@ -51,6 +50,8 @@ public class OrganizationListener {
     private Integer maxCheckCaptcha;
     @Value("${max.errorTime:5}")
     private Integer maxErrorTime;
+    @Value("${choerodon.category.enabled:false}")
+    private Boolean categoryEnable;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
                                 OrganizationService organizationService, ProjectRepository projectRepository,
@@ -107,6 +108,9 @@ public class OrganizationListener {
         dto.setCode(randomProjCode());
         dto.setEnabled(true);
         dto = projectRepository.create(dto);
+        if (categoryEnable) {
+            projectRepository.assignDefaultCategoriesToProjects(dto.getId());
+        }
         organizationRegisterEventPayload.setProject(
                 new OrganizationRegisterEventPayload.Project(dto.getId(), dto.getCode(), dto.getName()));
         return organizationRegisterEventPayload;
