@@ -1291,7 +1291,8 @@ export default class MemberRole extends Component {
       onChange: (selectedRowkeys, selectedRecords) => {
         this.setState({
           selectMemberRoles: selectedRowkeys.reduce((data, key, index) => {
-            data[key] = selectedRecords[index].roles.map(({ id }) => id);
+            const currentRecord = selectedRecords.find(r => r.id === key) || { roles: [] };
+            data[key] = currentRecord.roles.map(({ id }) => id);
             return data;
           }, {}),
         });
@@ -1423,7 +1424,9 @@ export default class MemberRole extends Component {
       onChange: (selectedRowkeys, selectedRecords) => {
         this.setState({
           selectMemberRoles: selectedRowkeys.reduce((data, key, index) => {
-            data[key] = selectedRecords[index].roles.map(({ id }) => id);
+            // data[key] = selectedRecords[index].roles.map(({ id }) => id);
+            const currentRecord = selectedRecords.find(r => r.id === key) || { roles: [] };
+            data[key] = currentRecord.roles.map(({ id }) => id);
             return data;
           }, {}),
         });

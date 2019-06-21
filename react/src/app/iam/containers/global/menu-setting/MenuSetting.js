@@ -366,7 +366,7 @@ export default class MenuSetting extends Component {
   // 查看详情
   getDetailDom() {
     /* eslint-disable-next-line */
-    const { name, code, level, permissions, __parent_name__ } = this.state.selectMenuDetail;
+    const { name, code, resourceLevel: level, permissions, __parent_name__ } = this.state.selectMenuDetail;
     return (
       <div>
         <Form layout="vertical">

@@ -42,6 +42,9 @@ export default class CreateRole extends Component {
     this.roleId = queryObj.roleId || undefined;
     this.isEdit = !!this.roleId;
     this.tabLevel = queryObj.level;
+    this.state = {
+      submitLoading: false,
+    };
   }
 
   componentDidMount() {
@@ -223,6 +226,7 @@ export default class CreateRole extends Component {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err) => {
       if (!err) {
+        this.setState({ submitLoading: true });
         const labelValues = this.props.form.getFieldValue('label');
         const labelIds = labelValues && labelValues.map(labelId => ({ id: labelId }));
         const role = {
@@ -239,9 +243,11 @@ export default class CreateRole extends Component {
             .then((data) => {
               if (!data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
+                this.setState({ submitLoading: false });
                 this.linkToChange(`/iam/role?level=${this.level}`);
               } else {
                 Choerodon.prompt(data.message);
+                this.setState({ submitLoading: false });
               }
             });
         } else {
@@ -249,9 +255,11 @@ export default class CreateRole extends Component {
             .then((data) => {
               if (data && !data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'create.success' }));
+                this.setState({ submitLoading: false });
                 this.linkToChange(`/iam/role?level=${this.level}`);
               } else {
                 Choerodon.prompt(data.message);
+                this.setState({ submitLoading: false });
               }
             })
             .catch((errors) => {
@@ -468,7 +476,7 @@ export default class CreateRole extends Component {
         if (!subMenus || !subMenus.length) {
           return (
             <Tooltip
-              title={<FormattedMessage id="detail" />}
+              title="配置"
               placement="bottom"
             >
               <Button
@@ -508,6 +516,7 @@ export default class CreateRole extends Component {
           type="primary"
           onClick={this.handleCreate}
           style={{ marginRight: 12 }}
+          loading={this.state.submitLoading}
         >
           <FormattedMessage id={!this.isEdit ? 'create' : 'save'} />
         </Button>
