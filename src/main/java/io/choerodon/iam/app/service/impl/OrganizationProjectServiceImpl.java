@@ -497,4 +497,9 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             return projectRepository.selectGroupInfoByEnableProject(organizationId, projectId);
         }
     }
+
+    @Override
+    public List<ProjectDTO> getAgileProjects(Long organizationId, String param) {
+        return projectRepository.getAgileProjects(organizationId, param, categoryEnable);
+    }
 }
