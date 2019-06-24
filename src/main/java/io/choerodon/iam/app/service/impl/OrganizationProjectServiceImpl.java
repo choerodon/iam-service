@@ -495,7 +495,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO = new ProjectDTO();
+        if (categoryEnable) {
+            projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        } else {
+            projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        }
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
