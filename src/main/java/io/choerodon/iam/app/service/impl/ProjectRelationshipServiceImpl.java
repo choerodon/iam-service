@@ -30,13 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
@@ -106,22 +100,9 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         if (projectRelationshipDTO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
         }
-        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-        projectMapCategoryDTO.setProjectId(projectRelationshipDTO.getProjectId());
-        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-        projectCategoryDTO.setCode("PROGRAM_PROJECT");
-        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-        if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
-            throw new CommonException("error.projectMapCategory.delete");
+        if (categoryEnable && projectRelationshipDTO.getEnabled()) {
+            removeProgramProject(projectRelationshipDTO.getProjectId());
         }
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
-        projectDTO.setCategory("");
-        if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
-            throw new CommonException("error.project.update");
-        }
-
-
         ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
         ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
         sagaPayload.setCategory(parent.getCategory());
@@ -230,21 +211,10 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
+            if (categoryEnable && relationshipDTO.getEnabled()) {
+                addProgramProject(relationshipDTO.getProjectId());
+            }
             // fill the saga payload
-            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-            projectCategoryDTO.setCode("PROGRAM_PROJECT");
-            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
-            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-            if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
-                throw new CommonException("error.projectMapCategory.insert");
-            }
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(relationshipDTO.getProjectId());
-            projectDTO.setCategory("PROGRAM_PROJECT");
-            if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
-                throw new CommonException("error.project.update");
-            }
             ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
             ProjectRelationshipInsertPayload.ProjectRelationship relationship
                     = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
@@ -266,6 +236,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 projectRelationship = projectRelationshipRepository.update(projectRelationship);
                 BeanUtils.copyProperties(projectRelationship, relationshipDTO);
                 returnList.add(relationshipDTO);
+                if (categoryEnable) {
+                    if (relationshipDTO.getEnabled()) {
+                        addProgramProject(relationshipDTO.getProjectId());
+                    } else {
+                        removeProgramProject(relationshipDTO.getProjectId());
+                    }
+                }
                 // fill the saga payload
                 ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
                 ProjectRelationshipInsertPayload.ProjectRelationship relationship
@@ -289,6 +266,35 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                     return sagaPayload;
                 });
         return returnList;
+    }
+
+
+    private void addProgramProject(Long projectId) {
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode("PROGRAM_PROJECT");
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectId);
+        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+        if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.insert");
+        }
+    }
+
+    private void removeProgramProject(Long projectId) {
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode("PROGRAM_PROJECT");
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectId);
+        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+        if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.delete");
+        }
     }
 
     /**
