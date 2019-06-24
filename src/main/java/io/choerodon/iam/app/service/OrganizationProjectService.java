@@ -53,4 +53,6 @@ public interface OrganizationProjectService {
      * @return 普通项目群信息
      */
     ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId);
+
+    List<ProjectDTO> getAgileProjects(Long organizationId, String param);
 }

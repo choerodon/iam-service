@@ -340,9 +340,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!ApplicationCategory.isCombination(applicationAssertHelper.applicationNotExisted(id).getApplicationCategory())) {
             throw new CommonException("error.application.query.not.support");
         }
-        ApplicationDTO example = new ApplicationDTO();
-        example.setOrganizationId(organizationId);
-        List<ApplicationDTO> applications = applicationMapper.select(example);
+        List<ApplicationDTO> applications = applicationMapper.selectWithProject(organizationId);
         List<ApplicationExplorationDTO> ancestors = applicationExplorationMapper.selectAncestorByApplicationId(id);
         Set<Long> ancestorIds = ancestors.stream().map(ApplicationExplorationDTO::getApplicationId).collect(Collectors.toSet());
         if (ancestorIds.isEmpty()) {
