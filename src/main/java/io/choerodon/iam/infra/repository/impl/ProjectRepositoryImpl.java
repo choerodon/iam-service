@@ -11,8 +11,12 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
-import io.choerodon.iam.infra.mapper.*;
-
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -302,5 +306,13 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             throw new CommonException("error.project.map.category.insert");
         }
         return projectMapCategoryDTO;
+    }
+
+    @Override
+    public List<ProjectDTO> selectByOrgIdAndCategory(Long organizationId, String agile) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        projectDTO.setCategory(agile);
+        return projectMapper.select(projectDTO);
     }
 }
