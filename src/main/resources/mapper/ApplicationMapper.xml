@@ -68,6 +68,6 @@
         fp.image_url
         from iam_application ia
         left join fd_project fp on ia.project_id = fp.id
-        where organization_id = #{organizationId}
+        where ia.organization_id = #{organizationId}
     </select>
 </mapper>
