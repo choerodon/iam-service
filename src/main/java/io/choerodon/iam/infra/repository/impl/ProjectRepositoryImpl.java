@@ -127,6 +127,17 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public List<ProjectDTO> getAgileProjects(Long organizationId, String param, Boolean categoryEnable) {
+        List<ProjectDTO> projectDTOS = new ArrayList<>();
+        if (categoryEnable) {
+            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, "AGILE", param);
+        } else {
+            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, "AGILE", param);
+        }
+        return projectDTOS;
+    }
+
+    @Override
     public PageInfo<ProjectDTO> pagingQueryByUserId(Long userId, ProjectDTO projectDTO, int page, int size, String param) {
         return PageHelper.startPage(page, size).doSelectPageInfo(() -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDTO, param));
     }

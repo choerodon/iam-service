@@ -99,4 +99,6 @@ public interface ProjectRepository {
 
 
     List<ProjectDTO> selectByOrgIdAndCategory(Long organizationId, String agile);
+
+    List<ProjectDTO> getAgileProjects(Long organizationId, String param, Boolean categoryEnable);
 }

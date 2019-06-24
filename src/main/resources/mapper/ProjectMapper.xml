@@ -490,4 +490,33 @@
         on fpc.id = fpmc.CATEGORY_ID
         Where fp.id=#{projectId}
     </select>
+
+
+    <select id="selectByOrgIdAndCategory" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        WHERE fp.organization_id=#{organizationId}
+        AND fp.CATEGORY = #{agile}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectByOrgIdAndCategoryEnable" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+        left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
+        WHERE fp.organization_id=#{organizationId}
+        AND fpc.CODE = #{agile}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
 </mapper>
