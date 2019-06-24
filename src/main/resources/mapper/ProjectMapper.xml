@@ -134,7 +134,10 @@
         ) t1
         left join fd_project_relationship fpr
         on
+        (
         t1.id = fpr.program_id
+        and t1.category = 'PROGRAM'
+        )
         left join fd_project fp1
         on fpr.project_id = fp1.id
     </select>

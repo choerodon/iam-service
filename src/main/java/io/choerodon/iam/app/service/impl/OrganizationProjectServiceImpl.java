@@ -14,9 +14,23 @@ import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.domain.repository.LabelRepository;
+import io.choerodon.iam.domain.repository.MemberRoleRepository;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRelationshipRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.LabelDTO;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
+import io.choerodon.iam.infra.dto.ProjectRelationshipDTO;
+import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
@@ -30,10 +44,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_CREATE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_DISABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_ENABLE;
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
 
 /**
  * @author flyleft
@@ -473,14 +495,25 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO = new ProjectDTO();
+        if (categoryEnable) {
+            projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        } else {
+            projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        }
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
             throw new CommonException("error.agile.projects.cannot.configure.subprojects");
         } else {
-            //组织下全部敏捷项目
-            List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
+            List<ProjectDTO> projectDTOS = new ArrayList<>();
+            if (categoryEnable) {
+                //非开源组织下全部敏捷项目
+                projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
+            } else {
+                //开源获取组织下全部敏捷项目
+                projectDTOS = projectRepository.selectByOrgIdAndCategory(organizationId, "AGILE");
+            }
             //去除已与该项目群建立关系的敏捷项目
             Set<Long> associatedProjectIds = projectRelationshipRepository.selectProjectsByParentId(projectId, false).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
             return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());

@@ -91,8 +91,12 @@ public interface ProjectRepository {
 
     /**
      * 给项目分配默认项目类型（敏捷）
+     *
      * @param projectId 项目Id
      * @return
      */
     ProjectMapCategoryDTO assignDefaultCategoriesToProjects(Long projectId);
+
+
+    List<ProjectDTO> selectByOrgIdAndCategory(Long organizationId, String agile);
 }
