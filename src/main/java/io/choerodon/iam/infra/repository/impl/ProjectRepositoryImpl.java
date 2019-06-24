@@ -235,8 +235,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public List<ProjectDTO> selectProjsNotGroup(Long orgId) {
-        return projectMapper.selectProjsNotGroup(orgId);
+    public List<ProjectDTO> selectProjsNotGroup(Long orgId,Long projectId) {
+        return projectMapper.selectProjsNotGroup(orgId,projectId);
     }
 
     @Override

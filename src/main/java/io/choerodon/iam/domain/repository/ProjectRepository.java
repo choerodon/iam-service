@@ -60,7 +60,7 @@ public interface ProjectRepository {
      * @param orgId 组织Id
      * @return 组织下不是项目群的项目列表
      */
-    List<ProjectDTO> selectProjsNotGroup(Long orgId);
+    List<ProjectDTO> selectProjsNotGroup(Long orgId,Long projectId);
 
     /**
      * 获取组织下不是项目群的且无所属的项目

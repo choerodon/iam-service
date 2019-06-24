@@ -74,7 +74,7 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
      * @param orgId 组织Id
      * @return 组织下不是项目群的项目列表
      */
-    List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId);
+    List<ProjectDTO> selectProjsNotGroup(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
 
     /**
      * 获取组织下不是项目群的且无所属的项目
