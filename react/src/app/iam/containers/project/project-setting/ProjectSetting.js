@@ -1,10 +1,9 @@
-
-import React, { Component } from 'react';
-import { inject, observer } from 'mobx-react';
-import { Button, Form, Input, Modal, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { withRouter } from 'react-router-dom';
+import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
+import {Button, Form, Icon, Input, Modal, Select} from 'choerodon-ui';
+import {axios, Content, Header, Page, Permission, stores} from '@choerodon/boot';
+import {FormattedMessage, injectIntl} from 'react-intl';
+import {withRouter} from 'react-router-dom';
 import classnames from 'classnames';
 import './ProjectSetting.scss';
 import ProjectSettingStore from '../../../stores/project/project-setting/ProjectSettingStore';
@@ -26,11 +25,13 @@ const PROJECT_TYPE = 'project';
 export default class ProjectSetting extends Component {
   state = {
     stopping: false,
+    categoryEnabled: false,
     submitting: false,
     isShowAvatar: false,
   };
 
   componentDidMount() {
+    this.loadEnableCategory();
     this.loadProject();
     this.loadProjectTypes();
   }
@@ -40,8 +41,17 @@ export default class ProjectSetting extends Component {
     ProjectSettingStore.setImageUrl(null);
   }
 
+  loadEnableCategory = () => {
+    axios.get(`/iam/v1/system/setting/enable_category`)
+        .then((response) => {
+          this.setState({
+            categoryEnabled: response,
+          });
+        });
+  };
+
   loadProject = () => {
-    const { AppState } = this.props;
+    const {AppState} = this.props;
     const id = AppState.currentMenuType.id;
     ProjectSettingStore.axiosGetProjectInfo(id).then((data) => {
       ProjectSettingStore.setImageUrl(data.imageUrl);
@@ -80,6 +90,9 @@ export default class ProjectSetting extends Component {
           ...value,
           imageUrl: ProjectSettingStore.getImageUrl,
         };
+        if (body.category) {
+          body.category = null;
+        }
         body.type = body.type === 'no' || undefined ? null : value.type;
         this.setState({ submitting: true });
         ProjectSettingStore.axiosSaveProjectInfo(body)
@@ -196,118 +209,115 @@ export default class ProjectSetting extends Component {
   }
 
   render() {
-    const { submitting } = this.state;
-    const { intl } = this.props;
-    const { getFieldDecorator } = this.props.form;
-    const { enabled, name, code, type } = ProjectSettingStore.getProjectInfo;
+    const {submitting, categoryEnabled} = this.state;
+    const {intl} = this.props;
+    const {getFieldDecorator} = this.props.form;
+    const {enabled, name, code, categories} = ProjectSettingStore.getProjectInfo;
     const types = ProjectSettingStore.getProjectTypes;
     return (
-      <Page
-        service={[
-          'iam-service.project.query',
-          'iam-service.project.update',
-          'iam-service.project.disableProject',
-          'iam-service.project.list',
-        ]}
-      >
-        <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />}>
-          <Permission service={['iam-service.project.disableProject']}>
-            <div>
-              <Button
-                icon="remove_circle_outline"
-                onClick={this.handleEnabled.bind(this, name)}
-                disabled={!enabled}
-              >
-                <FormattedMessage id="disable" />
-              </Button>
-            </div>
-          </Permission>
-        </Header>
-        <Content
-          code={enabled ? intlPrefix : `${intlPrefix}.disabled`}
-          values={{ name: enabled ? name : code }}
+        <Page
+            service={[
+              'iam-service.project.query',
+              'iam-service.project.update',
+              'iam-service.project.disableProject',
+              'iam-service.project.list',
+            ]}
         >
-          <div className="c7n-iam-projectsetting">
-            <Form onSubmit={this.handleSave.bind(this)}>
-              <FormItem>
-                {getFieldDecorator('name', {
-                  rules: [{
-                    required: true,
-                    whitespace: true,
-                    message: intl.formatMessage({ id: `${intlPrefix}.namerequiredmsg` }),
-                  }, {
-                    /* eslint-disable-next-line */
-                    pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
-                    message: intl.formatMessage({ id: `${intlPrefix}.name.pattern.msg` }),
-                  }],
-                  initialValue: name,
-                })(
-                  <Input
-                    style={{ width: 512 }}
-                    autoComplete="off"
-                    label={<FormattedMessage id={`${intlPrefix}.name`} />}
-                    disabled={!enabled}
-                    maxLength={32}
-                    showLengthInfo={false}
-                  />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('code', {
-                  initialValue: code,
-                })(
-                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.code`} />} disabled style={{ width: 512 }} />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('type', {
-                  initialValue: type || undefined,
-                })(
-                  <Select
-                    disabled={!enabled}
-                    style={{ width: '300px' }}
-                    label={<FormattedMessage id={`${intlPrefix}.type`} />}
-                    getPopupContainer={() => document.getElementsByClassName('page-content')[0].parentNode}
-                    filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                    filter
-                  >
-                    {
-                      types && types.length ? [<Option key="no" value="no">{intl.formatMessage({ id: `${intlPrefix}.empty` })}</Option>].concat(
-                        types.map(({ name: projectName, code: projectCode }) => (
-                          <Option key={projectCode} value={projectCode}>{projectName}</Option>
-                        )),
-                      ) : <Option key="empty">{intl.formatMessage({ id: `${intlPrefix}.type.empty` })}</Option>
-                    }
-                  </Select>,
-                )}
-              </FormItem>
+          <Header title={<FormattedMessage id={`${intlPrefix}.header.title`}/>}>
+            <Permission service={['iam-service.project.disableProject']}>
               <div>
-                <span style={{ color: 'rgba(0,0,0,.6)' }}>{intl.formatMessage({ id: `${intlPrefix}.avatar` })}</span>
-                {this.getAvatar()}
+                <Button
+                    icon="remove_circle_outline"
+                    onClick={this.handleEnabled.bind(this, name)}
+                    disabled={!enabled}
+                >
+                  <FormattedMessage id="disable"/>
+                </Button>
               </div>
-              <div className="divider" />
-              <Permission service={['iam-service.project.update']}>
-                <div className="btnGroup">
-                  <Button
-                    funcType="raised"
-                    htmlType="submit"
-                    type="primary"
-                    loading={submitting}
-                    disabled={!enabled}
-                  ><FormattedMessage id="save" /></Button>
-                  <Button
-                    funcType="raised"
-                    onClick={this.cancelValue}
-                    disabled={!enabled}
-                  >
-                    <FormattedMessage id="cancel" />
-                  </Button>
+            </Permission>
+          </Header>
+          <Content
+              code={enabled ? intlPrefix : `${intlPrefix}.disabled`}
+              values={{name: enabled ? name : code}}
+          >
+            <div className="c7n-iam-projectsetting">
+              <Form onSubmit={this.handleSave.bind(this)}>
+                <FormItem>
+                  {getFieldDecorator('name', {
+                    rules: [{
+                      required: true,
+                      whitespace: true,
+                      message: intl.formatMessage({id: `${intlPrefix}.namerequiredmsg`}),
+                    }, {
+                      /* eslint-disable-next-line */
+                      pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
+                      message: intl.formatMessage({id: `${intlPrefix}.name.pattern.msg`}),
+                    }],
+                    initialValue: name,
+                  })(
+                      <Input
+                          style={{width: 512}}
+                          autoComplete="off"
+                          label={<FormattedMessage id={`${intlPrefix}.name`}/>}
+                          disabled={!enabled}
+                          maxLength={32}
+                          showLengthInfo={false}
+                      />,
+                  )}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator('code', {
+                    initialValue: code,
+                  })(
+                      <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.code`}/>} disabled
+                             style={{width: 512}}/>,
+                  )}
+                </FormItem>
+                {categoryEnabled && (
+                    <FormItem>
+                      {getFieldDecorator('category', {
+                        initialValue: categories && categories.map(value => value),
+                      })(<Select
+                              mode="multiple"
+                              showArrow = {false}
+                              label={<FormattedMessage id={`${intlPrefix}.category`}/>}
+                              allowClear
+                              disabled
+                              style={{width: 512}}
+                              loading={this.state.selectLoading}
+                          >
+                            {}
+                          </Select>
+                      )}
+                    </FormItem>
+                )}
+                <div>
+                  <span style={{color: 'rgba(0,0,0,.6)'}}>{intl.formatMessage({id: `${intlPrefix}.avatar`})}</span>
+                  {this.getAvatar()}
                 </div>
-              </Permission>
-            </Form>
-          </div>
-        </Content>
-      </Page>
+                <div className="divider"/>
+                <Permission service={['iam-service.project.update']}>
+                  <div className="btnGroup">
+                    <Button
+                        funcType="raised"
+                        htmlType="submit"
+                        type="primary"
+                        loading={submitting}
+                        disabled={!enabled}
+                    ><FormattedMessage id="save"/></Button>
+                    <Button
+                        funcType="raised"
+                        onClick={this.cancelValue}
+                        disabled={!enabled}
+                    >
+                      <FormattedMessage id="cancel"/>
+                    </Button>
+                  </div>
+                </Permission>
+              </Form>
+            </div>
+          </Content>
+        </Page>
     );
   }
 }

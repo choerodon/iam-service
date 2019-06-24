@@ -1,11 +1,11 @@
 package io.choerodon.iam.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -13,19 +13,19 @@ import org.apache.ibatis.annotations.Param;
 public interface ProjectMapper extends Mapper<ProjectDTO> {
 
     List<ProjectDTO> fulltextSearch(@Param("project") ProjectDTO projectDTO,
-                                   @Param("param") String param,
+                                    @Param("param") String param,
                                     @Param("start") Integer start,
                                     @Param("size") Integer size);
 
     int fulltextSearchCount(@Param("project") ProjectDTO projectDTO,
-                                    @Param("param") String param);
+                            @Param("param") String param);
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
-                                           @Param("projectDTO") ProjectDTO projectDTO);
+                                            @Param("projectDTO") ProjectDTO projectDTO);
 
     List<ProjectDTO> selectProjectsByUserIdWithParam(@Param("userId") Long userId,
-                                         @Param("projectDTO") ProjectDTO projectDTO,
-                                         @Param("param") String param);
+                                                     @Param("projectDTO") ProjectDTO projectDTO,
+                                                     @Param("param") String param);
 
     List<ProjectDTO> selectProjectsWithRoles(
             @Param("id") Long id,
@@ -34,8 +34,8 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
             @Param("params") String params);
 
     List<ProjectDTO> selectUserProjectsUnderOrg(@Param("userId") Long userId,
-                                               @Param("orgId") Long orgId,
-                                               @Param("isEnabled") Boolean isEnabled);
+                                                @Param("orgId") Long orgId,
+                                                @Param("isEnabled") Boolean isEnabled);
 
 
     List<Long> listUserIds(@Param("projectId") Long projectId);
@@ -92,4 +92,11 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
      * @return 普通项目群信息
      */
     ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
+
+    List<ProjectDTO> fulltextSearchCategory(@Param("project") ProjectDTO projectDTO,
+                                            @Param("param") String param,
+                                            @Param("start") Integer start,
+                                            @Param("size") Integer size);
+
+    List<ProjectDTO> selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
 }

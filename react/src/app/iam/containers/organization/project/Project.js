@@ -85,6 +85,7 @@ export default class Project extends Component {
       isLoading: true,
     });
     this.loadEnableCategory();
+    this.loadProjectCategories({});
   }
 
   componentWillUnmount() {
@@ -263,13 +264,18 @@ export default class Project extends Component {
     if (this.state.operation === 'create') {
       const {validateFields} = this.props.form;
       validateFields((err, {code, name, type, category}) => {
-        if (category === '敏捷项目') category = undefined;
-        if (!err) {
+        let find = ProjectStore.getProjectCategories.find(item => item.code === category);
+        if (find) {
+          category = find.id;
+        } else {
+          category = undefined;
+        }
+        {
           data = {
             code,
             name: name.trim(),
             organizationId,
-            categoryIds: category === undefined ? undefined : [category],
+            categoryIds: [category],
             type: type === 'no' || undefined ? null : type,
             imageUrl: imgUrl || null,
           };
@@ -772,7 +778,7 @@ export default class Project extends Component {
                       whitespace: true,
                       message: intl.formatMessage({id: `${intlPrefix}.category.require.msg`}),
                     }],
-                    initialValue: '敏捷项目',
+                    initialValue: 'AGILE',
                   })(
                       <Select
                           style={{width: 512}}
@@ -913,8 +919,8 @@ export default class Project extends Component {
     const { ProjectStore } = this.props;
     const projectCategories = ProjectStore.getProjectCategories;
     return projectCategories && projectCategories.length > 0 ? (
-        projectCategories.map(({ id, name}) => (
-            <Option key={id} value={`${id}`}>{name}</Option>
+        projectCategories.map(({code, name}) => (
+            <Option key={code} value={`${code}`}>{name}</Option>
         ))
     ) : null;
   }
@@ -966,7 +972,7 @@ export default class Project extends Component {
       dataIndex: 'name',
       key: 'name',
       // width: '25%',
-      width: '270px',
+      width: '320px',
       render: (text, record) => (
           <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)} style={{paddingLeft: 26}}>
             <MouseOverWrapper text={text} width={0.2}>
@@ -996,6 +1002,7 @@ export default class Project extends Component {
     const {ProjectStore, AppState, intl} = this.props;
     const projectData = ProjectStore.getProjectData;
     const projectTypes = ProjectStore.getProjectTypes;
+    const categories = ProjectStore.getProjectCategories;
     const menuType = AppState.currentMenuType;
     const orgId = menuType.id;
     const orgname = menuType.name;
@@ -1011,8 +1018,8 @@ export default class Project extends Component {
       key: 'name',
       filters: [],
       filteredValue: filters.name || [],
-      width: categoryEnabled ? '20%' : '30%',
-      // width: '270px',
+      // width: categoryEnabled ? '20%' : '30%',
+      width: '320px',
       render: (text, record) => (
           <div className="c7n-iam-project-name-link" onClick={() => this.goToProject(record)}>
             <MouseOverWrapper text={text} width={0.2}>
@@ -1027,7 +1034,7 @@ export default class Project extends Component {
       filters: [],
       filteredValue: filters.code || [],
       key: 'code',
-      width: categoryEnabled ? '20%' : '30%',
+      // width: categoryEnabled ? '20%' : '30%',
       render: text => (
           <MouseOverWrapper text={text} width={0.2}>
             {text}
@@ -1035,6 +1042,7 @@ export default class Project extends Component {
       ),
     }, {
       title: <FormattedMessage id="status"/>,
+      width: '160px',
       dataIndex: 'enabled',
       filters: [{
         text: intl.formatMessage({id: 'enable'}),
@@ -1061,27 +1069,14 @@ export default class Project extends Component {
         </span>
       ),
     }];
-    const nextColumn= [{
+    const nextColumn = [{
       title: '',
       key: 'action',
       width: '120px',
       align: 'right',
       render: (text, record) => (
           <div>
-            <Permission service={['iam-service.organization-project.update']} type={type} organizationId={orgId}>
-              <Tooltip
-                  title={<FormattedMessage id="modify"/>}
-                  placement="bottom"
-              >
-                <Button
-                    shape="circle"
-                    size="small"
-                    onClick={this.handleopenTab.bind(this, record, 'edit')}
-                    icon="mode_edit"
-                />
-              </Tooltip>
-            </Permission>
-            {record.category !== 'AGILE' && record.enabled && (
+            {record.category === 'PROGRAM' && record.enabled && (
                 <Tooltip
                     title={<FormattedMessage id={`${intlPrefix}.config`}/>}
                     placement="bottom"
@@ -1094,6 +1089,19 @@ export default class Project extends Component {
                   />
                 </Tooltip>
             )}
+            <Permission service={['iam-service.organization-project.update']} type={type} organizationId={orgId}>
+            <Tooltip
+                title={<FormattedMessage id="modify"/>}
+                placement="bottom"
+            >
+              <Button
+                  shape="circle"
+                  size="small"
+                  onClick={this.handleopenTab.bind(this, record, 'edit')}
+                  icon="mode_edit"
+              />
+            </Tooltip>
+            </Permission>
             <Permission
                 service={['iam-service.organization-project.disableProject', 'iam-service.organization-project.enableProject']}
                 type={type}
@@ -1118,10 +1126,12 @@ export default class Project extends Component {
       title: <FormattedMessage id={`${intlPrefix}.type.category`}/>,
       dataIndex: 'category',
       key: 'category',
-      width: '25%',
-      render: category => (
-          <StatusTag mode="icon" name={intl.formatMessage({id: `${intlPrefix}.${category.toLowerCase()}.project`})}
-                     iconType={this.getCategoryIcon(category)}/>),
+      width: '15%',
+      render: category => {
+        let find = categories && categories.find(item => item.code === category);
+        return (
+          <span>{find ? find.name : ''}</span>)
+      },
       // filters: filtersType,
       filteredValue: filters.typeName || [],
     }] : [];

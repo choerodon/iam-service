@@ -146,98 +146,98 @@ export default class OrganizationSetting extends Component {
     const { getFieldDecorator } = this.props.form;
     const { enabled, name, code, address, ownerRealName, homePage } = OrganizationSettingStore.getOrganizationInfo;
     return (
-      <Page
-        service={[
-          'iam-service.organization.queryOrgLevel',
-        ]}
-      >
-        <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />} />
-        <Content
-          code={enabled ? intlPrefix : `${intlPrefix}.disabled`}
-          values={{ name: enabled ? name : code }}
+        <Page
+            service={[
+              'iam-service.organization.queryOrgLevel',
+            ]}
         >
-          <div className="c7n-iam-organizationsetting">
-            <Form onSubmit={this.handleSave.bind(this)}>
-              <FormItem>
-                {getFieldDecorator('name', {
-                  rules: [{
-                    required: true,
-                    whitespace: true,
-                    message: intl.formatMessage({ id: `${intlPrefix}.namerequiredmsg` }),
-                  }, {
-                    /* eslint-disable-next-line */
-                    pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
-                    message: intl.formatMessage({ id: `${intlPrefix}.name.pattern.msg` }),
-                  }],
-                  initialValue: name,
-                })(
-                  <Input
-                    style={{ width: 512 }}
-                    autoComplete="off"
-                    label={<FormattedMessage id={`${intlPrefix}.name`} />}
-                    disabled={!enabled}
-                    maxLength={32}
-                    showLengthInfo={false}
-                  />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('code', {
-                  initialValue: code,
-                })(
-                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.code`} />} disabled style={{ width: 512 }} />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('address', {
-                  initialValue: address,
-                })(
-                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.address`} />} style={{ width: 512 }} />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('ownerRealName', {
-                  initialValue: ownerRealName,
-                })(
-                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.owner`} />} disabled style={{ width: 512 }} />,
-                )}
-              </FormItem>
-              <FormItem>
-                {getFieldDecorator('homePage', {
-                  initialValue: homePage,
-                })(
-                  <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.homePage`} />} style={{ width: 512 }} />,
-                )}
-              </FormItem>
-              <div>
-                <span style={{ color: 'rgba(0,0,0,.6)' }}>{intl.formatMessage({ id: `${intlPrefix}.avatar` })}</span>
-                {this.getAvatar()}
-              </div>
-              <div className="divider" />
-              <Permission service={['iam-service.organization.updateOnOrganizationLevel']}>
-                <div className="btnGroup">
-                  <Button
-                    funcType="raised"
-                    htmlType="submit"
-                    type="primary"
-                    loading={submitting}
-                    disabled={!enabled}
-                  >
-                    <FormattedMessage id="save" />
-                  </Button>
-                  <Button
-                    funcType="raised"
-                    onClick={this.cancelValue}
-                    disabled={!enabled}
-                  >
-                    <FormattedMessage id="cancel" />
-                  </Button>
+          <Header title={<FormattedMessage id={`${intlPrefix}.header.title`} />} />
+          <Content
+              code={intlPrefix}
+              values={{ name: enabled ? name : code }}
+          >
+            <div className="c7n-iam-organizationsetting">
+              <Form onSubmit={this.handleSave.bind(this)}>
+                <FormItem>
+                  {getFieldDecorator('name', {
+                    rules: [{
+                      required: true,
+                      whitespace: true,
+                      message: intl.formatMessage({ id: `${intlPrefix}.namerequiredmsg` }),
+                    }, {
+                      /* eslint-disable-next-line */
+                      pattern: /^[-—\.\w\s\u4e00-\u9fa5]{1,32}$/,
+                      message: intl.formatMessage({ id: `${intlPrefix}.name.pattern.msg` }),
+                    }],
+                    initialValue: name,
+                  })(
+                      <Input
+                          style={{ width: 512 }}
+                          autoComplete="off"
+                          label={<FormattedMessage id={`${intlPrefix}.name`} />}
+                          disabled={!enabled}
+                          maxLength={32}
+                          showLengthInfo={false}
+                      />,
+                  )}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator('code', {
+                    initialValue: code,
+                  })(
+                      <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.code`} />} disabled style={{ width: 512 }} />,
+                  )}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator('address', {
+                    initialValue: address,
+                  })(
+                      <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.address`} />} style={{ width: 512 }} />,
+                  )}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator('ownerRealName', {
+                    initialValue: ownerRealName,
+                  })(
+                      <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.owner`} />} disabled style={{ width: 512 }} />,
+                  )}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator('homePage', {
+                    initialValue: homePage,
+                  })(
+                      <Input autoComplete="off" label={<FormattedMessage id={`${intlPrefix}.homePage`} />} style={{ width: 512 }} />,
+                  )}
+                </FormItem>
+                <div>
+                  <span style={{ color: 'rgba(0,0,0,.6)' }}>{intl.formatMessage({ id: `${intlPrefix}.avatar` })}</span>
+                  {this.getAvatar()}
                 </div>
-              </Permission>
-            </Form>
-          </div>
-        </Content>
-      </Page>
+                <div className="divider" />
+                <Permission service={['iam-service.organization.updateOnOrganizationLevel']}>
+                  <div className="btnGroup">
+                    <Button
+                        funcType="raised"
+                        htmlType="submit"
+                        type="primary"
+                        loading={submitting}
+                        disabled={!enabled}
+                    >
+                      <FormattedMessage id="save" />
+                    </Button>
+                    <Button
+                        funcType="raised"
+                        onClick={this.cancelValue}
+                        disabled={!enabled}
+                    >
+                      <FormattedMessage id="cancel" />
+                    </Button>
+                  </div>
+                </Permission>
+              </Form>
+            </div>
+          </Content>
+        </Page>
     );
   }
 }

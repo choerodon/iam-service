@@ -9,4 +9,23 @@
         LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
         WHERE pmc.project_id = #{projectId}
     </select>
+
+    <select id="selectProjectCategoryNames" resultType="java.lang.String">
+        SELECT
+            pc. NAME
+        FROM
+            FD_PROJECT_MAP_CATEGORY pmc
+        LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id
+        WHERE pmc.project_id = #{projectId}
+    </select>
+
+    <select id="selectAllProjectMapCategories" resultType="io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO">
+        SELECT
+            fp.id as projectId,
+            fpc.`NAME` as category
+        FROM
+            fd_project fp
+        LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+        LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
+    </select>
 </mapper>

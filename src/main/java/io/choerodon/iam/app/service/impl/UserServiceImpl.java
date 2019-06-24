@@ -1,18 +1,34 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.payload.UserEventPayload;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -24,27 +40,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.payload.UserEventPayload;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import io.choerodon.iam.app.service.UserService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.common.utils.ImageUtils;
-import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.MemberRoleMapper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
 
 /**
  * @author superlee
@@ -59,6 +59,8 @@ public class UserServiceImpl implements UserService {
 
     private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
     private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
+    @Value("${choerodon.category.enabled:false}")
+    private boolean enableCategory;
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
@@ -76,6 +78,7 @@ public class UserServiceImpl implements UserService {
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            OrganizationRepository organizationRepository,
@@ -88,7 +91,8 @@ public class UserServiceImpl implements UserService {
                            UserPasswordValidator userPasswordValidator,
                            PasswordPolicyManager passwordPolicyManager,
                            RoleRepository roleRepository,
-                           MemberRoleMapper memberRoleMapper) {
+                           MemberRoleMapper memberRoleMapper,
+                           ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.projectRepository = projectRepository;
@@ -101,6 +105,7 @@ public class UserServiceImpl implements UserService {
         this.userPasswordValidator = userPasswordValidator;
         this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
     }
 
     @Override
@@ -151,16 +156,33 @@ public class UserServiceImpl implements UserService {
         if (customUserDetails.getAdmin() != null) {
             isAdmin = customUserDetails.getAdmin();
         }
+
+        List<ProjectDTO> projectDTOS = new ArrayList<>();
         //superAdmin例外处理
         if (isAdmin) {
-            return projectRepository.selectAll();
+            projectDTOS = projectRepository.selectAll();
         } else {
             ProjectDTO project = new ProjectDTO();
             if (!includedDisabled) {
                 project.setEnabled(true);
             }
-            return projectRepository.selectProjectsFromMemberRoleByOptions(id, project);
+            projectDTOS = projectRepository.selectProjectsFromMemberRoleByOptions(id, project);
         }
+        if (enableCategory) {
+            projectDTOS = mergeCategories(projectDTOS);
+        }
+        return projectDTOS;
+    }
+
+    private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
+        List<ProjectMapCategorySimpleDTO> projectMapCategorySimpleDTOS = projectMapCategoryMapper.selectAllProjectMapCategories();
+        projectDTOS.forEach(p -> {
+            List<String> collect = projectMapCategorySimpleDTOS.stream().filter(c -> c.getProjectId().equals(p.getId())).map(c -> c.getCategory()).collect(Collectors.toList());
+            List<String> categories = new ArrayList<>();
+            categories.addAll(collect);
+            p.setCategories(categories);
+        });
+        return projectDTOS;
     }
 
     @Override

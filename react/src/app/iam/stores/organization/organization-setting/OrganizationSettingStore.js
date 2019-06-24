@@ -14,7 +14,7 @@ class OrganizationSettingStore {
   @computed get getImageUrl() {
     return this.imageUrl;
   }
-  
+
   @action setOrganizationInfo(data) {
     this.projectInfo = data;
   }

@@ -103,46 +103,97 @@
         fp1.organization_id as project_organization_id
         from
         (
-            select fp.*, fpt.name as type_name
-            from fd_project fp
-            left join fd_project_type fpt
-            on fp.type = fpt.code
-            where fp.organization_id = #{project.organizationId}
-            <if test="project.name != null">
-                and fp.name like concat(concat('%',#{project.name}),'%')
-            </if>
-            <if test="project.code != null">
-                and fp.code like concat(concat('%',#{project.code}),'%')
-            </if>
-            <if test="project.enabled != null">
-                and fp.is_enabled = #{project.enabled}
-            </if>
-            <if test="project.category != null">
-                and fp.category = #{project.category}
-            </if>
-            <if test="project.typeName != null">
-                and fpt.name like concat(concat('%',#{project.typeName}),'%')
-            </if>
-            <if test="param != null">
-                and(
-                fp.name like concat(concat('%',#{param}),'%') or
-                fp.code like concat(concat('%',#{param}),'%') or
-                fpt.name like concat(concat('%',#{param}),'%')
-                )
-            </if>
-            order by fp.id desc
-            <if test="start != null and size != null">
-                limit #{start}, #{size}
-            </if>
+        select fp.*, fpt.name as type_name
+        from fd_project fp
+        left join fd_project_type fpt
+        on fp.type = fpt.code
+        where fp.organization_id = #{project.organizationId}
+        <if test="project.name != null">
+            and fp.name like concat(concat('%',#{project.name}),'%')
+        </if>
+        <if test="project.code != null">
+            and fp.code like concat(concat('%',#{project.code}),'%')
+        </if>
+        <if test="project.enabled != null">
+            and fp.is_enabled = #{project.enabled}
+        </if>
+        <if test="project.typeName != null">
+            and fpt.name like concat(concat('%',#{project.typeName}),'%')
+        </if>
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%') or
+            fp.code like concat(concat('%',#{param}),'%') or
+            fpt.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+        order by fp.id desc
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>
+        ) t1
+        left join fd_project_relationship fpr
+        on
+        t1.id = fpr.program_id
+        left join fd_project fp1
+        on fpr.project_id = fp1.id
+    </select>
+
+    <select id="fulltextSearchCategory" resultMap="projectDTO">
+        select
+        t1.*,
+        fp1.id as project_id,
+        fp1.name as project_name,
+        fp1.code as project_code,
+        fpr.is_enabled as project_enabled,
+        fp1.organization_id as project_organization_id
+        from
+        (
+        select fpc.code as category,fp.id,fp.name,fp.code,fp.organization_id,fp.is_enabled,fp.IMAGE_URL,fp.object_version_number, fpt.name as
+        type_name
+        from fd_project fp
+        left join fd_project_type fpt
+        on fp.type = fpt.code
+        left join fd_project_map_category fpmc
+        ON fpmc.PROJECT_ID=fp.id
+        left join fd_project_category fpc
+        ON fpc.id = fpmc.CATEGORY_ID
+        where fp.organization_id = #{project.organizationId}
+        AND fpc.code!='PROGRAM_PROJECT'
+        <if test="project.name != null">
+            and fp.name like concat(concat('%',#{project.name}),'%')
+        </if>
+        <if test="project.code != null">
+            and fp.code like concat(concat('%',#{project.code}),'%')
+        </if>
+        <if test="project.enabled != null">
+            and fp.is_enabled = #{project.enabled}
+        </if>
+        <if test="project.typeName != null">
+            and fpt.name like concat(concat('%',#{project.typeName}),'%')
+        </if>
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%') or
+            fp.code like concat(concat('%',#{param}),'%') or
+            fpt.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+        order by fp.id desc
+        <if test="start != null and size != null">
+            limit #{start}, #{size}
+        </if>
         ) t1
         left join fd_project_relationship fpr
         on
         (
-            t1.id = fpr.program_id
-            and t1.category = 'PROGRAM'
+        t1.id = fpr.program_id
+        and t1.category = 'PROGRAM'
         )
         left join fd_project fp1
         on fpr.project_id = fp1.id
+        WHERE t1.category!='PROGRAM_PROJECT'
+
     </select>
 
 
@@ -359,15 +410,15 @@
     </select>
 
     <select id="selectProjsNotGroup" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-        SELECT
-            id,
-            name,
-            code
-        FROM
-            fd_project
-        WHERE
-            CATEGORY = 'AGILE'
-        AND ORGANIZATION_ID = #{orgId};
+
+     SELECT fp.id as id, fp.NAME AS name,fp.CODE As code
+     FROM
+	 fd_project fp
+	 LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+	 LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
+     WHERE
+	 fpc.code = 'AGILE'
+    AND fp.ORGANIZATION_ID = #{orgId};
     </select>
 
     <select id="selectProjsNotInAnyGroup" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
@@ -410,4 +461,13 @@
         AND (1 = (CASE WHEN FPR.END_DATE IS NULL THEN 1 ELSE  (<![CDATA[  SELECT CURRENT_DATE < FPR.END_DATE ]]>) END))
     </select>
 
+    <select id="selectCategoryByPrimaryKey" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        select fpc.code AS category,fp.*
+        from fd_project fp
+        left join fd_project_map_category fpmc
+        on fp.id=fpmc.PROJECT_ID
+        left join fd_project_category fpc
+        on fpc.id = fpmc.CATEGORY_ID
+        Where fp.id=#{projectId}
+    </select>
 </mapper>

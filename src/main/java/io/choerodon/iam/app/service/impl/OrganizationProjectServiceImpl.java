@@ -44,7 +44,7 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
     private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String PROJECT_NOT_EXIST_EXCEPTION = "error.project.not.exist";
-    private static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
+    public static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
     public static final String PROJECT = "project";
 
     @Value("${choerodon.devops.message:false}")
@@ -119,6 +119,12 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
+        }
+        if (!CollectionUtils.isEmpty(categoryIds)) {
+            ProjectCategoryDTO projectCategoryDTO = projectCategoryMapper.selectByPrimaryKey(categoryIds.get(0));
+            if (projectCategoryDTO != null) {
+                projectDTO.setCategory(projectCategoryDTO.getCode());
+            }
         }
         ProjectDTO dto;
         if (devopsMessage) {
@@ -222,7 +228,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
-        return projectRepository.pagingQuery(projectDTO, page, size, param);
+        return projectRepository.pagingQuery(projectDTO, page, size, param, categoryEnable);
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -467,7 +473,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (organizationDTO == null) {
             throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
         }
-        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {

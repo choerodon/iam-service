@@ -301,7 +301,7 @@ export default class SystemSetting extends Component {
     const { SystemSettingStore, intl, AppState } = this.props;
     const { getFieldDecorator } = this.props.form;
     const { logoLoadingStatus, submitting, uploadLogoVisible } = this.state;
-    const { defaultLanguage = 'zh_CN', defaultPassword = 'abcd1234', systemName = 'Choerodon', systemTitle, maxPasswordLength, minPasswordLength, registerEnabled = false, registerUrl } = SystemSettingStore.getUserSetting;
+    const { defaultLanguage = 'zh_CN', defaultPassword = 'abcd1234', systemName = 'Choerodon', systemTitle, maxPasswordLength, minPasswordLength, registerEnabled = false, registerUrl, resetGitlabPasswordUrl } = SystemSettingStore.getUserSetting;
     const systemLogo = SystemSettingStore.getLogo;
     const formItemLayout = {
       labelCol: {
@@ -463,6 +463,20 @@ export default class SystemSetting extends Component {
           )}
         </FormItem>
         <FormItem
+            {...formItemLayout}
+          >
+            {getFieldDecorator('resetGitlabPasswordUrl', {
+              initialValue: resetGitlabPasswordUrl,
+            })(
+              <TextArea
+                autoComplete="new-password"
+                label={<FormattedMessage id={`${intlPrefix}.resetGitlabPasswordUrl`} />}
+                ref={(e) => { this.editFocusInput = e; }}
+                autosize={{ minRows: 2, maxRows: 6 }}
+              />,
+            )}
+          </FormItem>
+        <FormItem
           {...formItemLayout}
         >
           {getFieldDecorator('registerEnabled', {
@@ -526,16 +540,16 @@ export default class SystemSetting extends Component {
       >
         <Header title={<FormattedMessage id={`${intlPrefix}.header`} />}>
           <Button
-            onClick={this.init}
-            icon="refresh"
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-          <Button
             onClick={this.showDeleteConfirm}
             icon="swap_horiz"
           >
             <FormattedMessage id="reset" />
+          </Button>
+          <Button
+            onClick={this.init}
+            icon="refresh"
+          >
+            <FormattedMessage id="refresh" />
           </Button>
         </Header>
         <Content code={intlPrefix}>

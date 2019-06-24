@@ -1,16 +1,17 @@
 {
   "name": "@choerodon/iam",
   "routeName": "iam",
-  "version": "0.17.1",
+  "version": "0.18.0",
   "description": "",
-  "main": "./react/src/app/iam/containers/IAMIndex.js",
+  "main": "./lib/src/app/iam/containers/IAMIndex.js",
   "files": [
     "lib"
   ],
+  "peerDependencies": {
+    "@choerodon/boot": "0.18.x",
+    "@choerodon/master": "0.18.x"
+  },
   "dependencies": {
-    "@choerodon/boot": "0.17.x",
-    "@choerodon/master": "0.17.x",
-    "choerodon-ui-font": "^0.1.3",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
     "hjson": "^3.1.1",
@@ -19,6 +20,8 @@
     "react-quill": "^1.2.6"
   },
   "devDependencies": {
+    "@choerodon/boot": "0.18.x",
+    "@choerodon/master": "0.18.x",
     "babel-preset-env": "^1.7.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.1",
@@ -29,6 +32,8 @@
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
+    "prepublish": "choerodon-front-boot prepublish",
+    "postpublish": "choerodon-front-boot postpublish",
     "compile": "gulp compile"
   },
   "author": "",
@@ -43,6 +48,5 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  },
-  "peerDependencies": {}
+  }
 }

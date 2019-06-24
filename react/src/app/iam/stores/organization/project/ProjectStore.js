@@ -258,7 +258,7 @@ class ProjectStore {
 
   loadProjectTypes = () => axios.get('/iam/v1/projects/types');
 
-  loadProjectCategories = (queryObj) => axios.get(`/org/v1/categories/pro?${queryString.stringify(queryObj)}`);
+  loadProjectCategories = (queryObj) => axios.get(`/org/v1/organizations/${AppState.currentMenuType.organizationId}/categories/list?${queryString.stringify(queryObj)}`);
 
   loadMyData = (organizationId, userId) => {
     this.getRolesById(organizationId, userId).then(action((roles) => {

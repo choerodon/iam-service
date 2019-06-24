@@ -1,29 +1,37 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-import java.util.Set;
-
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
+import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.iam.infra.enums.ProjectCategory;
+import io.choerodon.iam.infra.mapper.*;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.infra.mapper.MemberRoleMapper;
-import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
-import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static io.choerodon.iam.app.service.impl.OrganizationProjectServiceImpl.PROJECT_DEFAULT_CATEGORY;
 
 /**
  * @author flyleft
  */
 @Repository
 public class ProjectRepositoryImpl implements ProjectRepository {
+    @Value("${choerodon.category.enabled:false}")
+    private Boolean categoryEnable;
 
     private ProjectMapper projectMapper;
 
@@ -33,14 +41,22 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     private ProjectTypeMapper projectTypeMapper;
 
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
+
+    private ProjectCategoryMapper projectCategoryMapper;
+
     public ProjectRepositoryImpl(ProjectMapper projectMapper,
                                  OrganizationMapper organizationMapper,
                                  MemberRoleMapper memberRoleMapper,
-                                 ProjectTypeMapper projectTypeMapper) {
+                                 ProjectTypeMapper projectTypeMapper,
+                                 ProjectMapCategoryMapper projectMapCategoryMapper,
+                                 ProjectCategoryMapper projectCategoryMapper) {
         this.projectMapper = projectMapper;
         this.organizationMapper = organizationMapper;
         this.memberRoleMapper = memberRoleMapper;
         this.projectTypeMapper = projectTypeMapper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
     }
 
     @Override
@@ -80,17 +96,27 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
+    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param, Boolean categoryEnable) {
         Page<ProjectDTO> result = new Page<>(page, size);
         if (size == 0) {
-            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, null, null);
+            List<ProjectDTO> projectList = new ArrayList<>();
+            if (!categoryEnable) {
+                projectList = projectMapper.fulltextSearch(projectDTO, param, null, null);
+            } else {
+                projectList = projectMapper.fulltextSearchCategory(projectDTO, param, null, null);
+            }
             result.setTotal(projectList.size());
             result.addAll(projectList);
         } else {
             int start = PageUtils.getBegin(page, size);
             int count = projectMapper.fulltextSearchCount(projectDTO, param);
             result.setTotal(count);
-            List<ProjectDTO> projectList = projectMapper.fulltextSearch(projectDTO, param, start, size);
+            List<ProjectDTO> projectList = new ArrayList<>();
+            if (!categoryEnable) {
+                projectList = projectMapper.fulltextSearch(projectDTO, param, start, size);
+            } else {
+                projectList = projectMapper.fulltextSearchCategory(projectDTO, param, start, size);
+            }
             result.addAll(projectList);
         }
         return result.toPageInfo();
@@ -217,5 +243,64 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public ProjectDTO selectGroupInfoByEnableProject(Long orgId, Long projectId) {
         return projectMapper.selectGroupInfoByEnableProject(orgId, projectId);
+    }
+
+    @Override
+    public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
+        List<ProjectDTO> projectDTOS = projectMapper.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO = mergeCategories(projectDTOS);
+        if (projectDTO == null) {
+            throw new CommonException("error.project.not.exist");
+        }
+        return projectDTO;
+    }
+
+    private ProjectDTO mergeCategories(List<ProjectDTO> projectDTOS) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return null;
+        }
+        ProjectDTO projectDTO = new ProjectDTO();
+        BeanUtils.copyProperties(projectDTOS.get(0), projectDTO);
+        List<String> categories = new ArrayList<>();
+        String category = null;
+        for (int i = 0; i < projectDTOS.size(); i++) {
+            ProjectDTO p = projectDTOS.get(i);
+            categories.add(p.getCategory());
+            if (category == null && ProjectCategory.PROGRAM.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.PROGRAM.value();
+            } else if (category == null && ProjectCategory.AGILE.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.AGILE.value();
+            } else if (category == null) {
+                category = p.getCategory();
+            }
+        }
+        projectDTO.setCategory(category);
+        projectDTO.setCategories(categories);
+        return projectDTO;
+    }
+
+    @Override
+    public ProjectDTO selectByPrimaryKeyWithCategory(Long projectId) {
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
+        projectDTO.setCategories(projectMapCategoryMapper.selectProjectCategoryNames(projectDTO.getId()));
+        return projectDTO;
+    }
+
+    @Override
+    public ProjectMapCategoryDTO assignDefaultCategoriesToProjects(Long projectId) {
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode(PROJECT_DEFAULT_CATEGORY);
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+        if (projectCategoryDTO != null) {
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+        }
+        projectMapCategoryDTO.setProjectId(projectId);
+
+        if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.insert");
+        }
+        return projectMapCategoryDTO;
     }
 }

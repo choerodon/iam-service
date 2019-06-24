@@ -240,8 +240,8 @@ export default class Role extends Component {
       key: 'code',
       width: '25%',
       filters: [],
-      sorter: true,
-      sortOrder: columnKey === 'code' && order,
+      // sorter: true,
+      // sortOrder: columnKey === 'code' && order,
       filteredValue: filters.code || [],
       render: text => (
         <MouseOverWrapper text={text} width={0.2}>
@@ -300,8 +300,8 @@ export default class Role extends Component {
         value: 'false',
       }],
       render: enabled => (<StatusTag mode="icon" name={intl.formatMessage({ id: enabled ? 'enable' : 'disable' })} colorCode={enabled ? 'COMPLETED' : 'DISABLE'} />),
-      sorter: true,
-      sortOrder: columnKey === 'enabled' && order,
+      // sorter: true,
+      // sortOrder: columnKey === 'enabled' && order,
       filteredValue: filters.enabled || [],
     }, {
       title: '',
