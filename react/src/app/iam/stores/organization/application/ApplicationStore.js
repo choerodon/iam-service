@@ -7,12 +7,15 @@ const { AppState } = stores;
 
 class TreeData {
   treeDatas = [];
+
   currentPath = '/';
+
   constructor(data) {
     if (data.length > 0) {
       this.treeDatas = this.dfsAdd(null, data);
     }
   }
+
   dfsAdd = (rootId, data) => data.filter(v => (v.parentId === rootId && v.path === `${this.currentPath}${v.applicationId}/`)).map((v) => {
     // 保存原路径
     const originPath = `${this.currentPath}`;
@@ -75,7 +78,9 @@ class ApplicationStore {
    * @type {Array}
    */
   @observable addListData = [];
+
   @observable selectedRowKeys = [];
+
   /**
    * 创建按钮是否正在加载中
    * @type {boolean}
@@ -83,29 +88,41 @@ class ApplicationStore {
   @observable loading = false;
 
   @observable addListLoading = false;
+
   @observable listLoading = false;
+
   @observable sidebarVisible = false;
+
   @observable pagination = {
     current: 1,
     pageSize: 10,
     total: 0,
   };
+
   @observable listPagination = {
     current: 1,
     pageSize: 10,
     total: 0,
   };
+
   @observable addListPagination = {
     current: 1,
     pageSize: 10,
     total: 0,
   };
+
   @observable filters = {};
+
   @observable sort = {};
+
   @observable params = [];
+
   @observable listParams = [];
+
   @observable editData = null;
+
   @observable operation;
+
   @observable submitting = false;
 
   refresh() {
@@ -178,9 +195,9 @@ class ApplicationStore {
 
   @action
   loadProject() {
-    axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/projects?page=-1`).then(action((data) => {
+    axios.get(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/projects/list?page=-1`).then(action((data) => {
       if (!data.failed) {
-        this.projectData = data.list;
+        this.projectData = data;
       }
     }));
   }
@@ -291,11 +308,9 @@ class ApplicationStore {
       }));
   }
 
-  createApplication = applicationData =>
-    axios.post(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications`, JSON.stringify(applicationData));
+  createApplication = applicationData => axios.post(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications`, JSON.stringify(applicationData));
 
-  updateApplication = (applicationData, id) =>
-    axios.post(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}`, JSON.stringify(applicationData));
+  updateApplication = (applicationData, id) => axios.post(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}`, JSON.stringify(applicationData));
 
   enableApplication = id => axios.put(`/iam/v1/organizations/${AppState.currentMenuType.organizationId}/applications/${id}/enable`);
 
