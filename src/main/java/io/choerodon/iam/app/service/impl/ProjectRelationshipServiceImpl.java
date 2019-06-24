@@ -83,7 +83,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     @Override
     public List<ProjectRelationshipDTO> getProjUnderGroup(Long projectId, Boolean onlySelectEnable) {
-        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO;
+        if (categoryEnable) {
+            projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        } else {
+            projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        }
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
