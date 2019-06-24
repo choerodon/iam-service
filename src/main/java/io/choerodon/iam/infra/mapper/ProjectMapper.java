@@ -100,7 +100,7 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
 
     List<ProjectDTO> selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
 
-    List<ProjectDTO> selectByOrgIdAndCategory(@Param("organizationId") Long organizationId, @Param("agile") String agile, @Param("param") String param);
+    List<ProjectDTO> selectByOrgIdAndCategory(@Param("organizationId") Long organizationId, @Param("param") String param);
 
     List<ProjectDTO> selectByOrgIdAndCategoryEnable(@Param("organizationId") Long organizationId, @Param("agile") String agile, @Param("param") String param);
 }

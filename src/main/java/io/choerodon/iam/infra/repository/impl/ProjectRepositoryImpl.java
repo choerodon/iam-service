@@ -132,7 +132,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         if (categoryEnable) {
             projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, "AGILE", param);
         } else {
-            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, "AGILE", param);
+            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId,  param);
         }
         return projectDTOS;
     }
