@@ -172,9 +172,13 @@ public class ApplicationListener {
             logger.warn("iam receiving no one application while devops create application failed!");
             return;
         }
-        ApplicationDTO updateApp = new ApplicationDTO();
-        updateApp.setAbnormal(true);
-        updateApp.setId(applicationDTO.getId());
-        applicationMapper.updateByPrimaryKey(updateApp);
+        long id = applicationDTO.getId();
+        ApplicationDTO application = applicationMapper.selectByPrimaryKey(id);
+        if (application == null) {
+            logger.warn("application does not exist which id = {}", id);
+            return;
+        }
+        application.setAbnormal(true);
+        applicationMapper.updateByPrimaryKey(application);
     }
 }

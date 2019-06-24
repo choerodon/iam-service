@@ -60,5 +60,14 @@
         </foreach>
     </select>
 
-
+    <select id="selectWithProject" resultMap="ApplicationDTO">
+        select
+        ia.*,
+        fp.name as project_name,
+        fp.code as project_code,
+        fp.image_url
+        from iam_application ia
+        left join fd_prpject fp on ia.project_id = fp.id
+        where organization_id = #{organizationId}
+    </select>
 </mapper>
