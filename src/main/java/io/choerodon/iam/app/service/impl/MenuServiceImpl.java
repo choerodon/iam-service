@@ -430,26 +430,37 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public void createApp(MenuDTO menu) {
-        PermissionDTO permission = new PermissionDTO();
-        permission.setCode("low-code-service.route." + menu.getModelCode());
-        permission.setPath("/lc/model/" + menu.getModelCode());
-        permission.setResourceLevel(ResourceType.ORGANIZATION.value());
-        permission.setDescription(menu.getName() + "路由");
-        permission.setPublicAccess(false);
-        permission.setLoginAccess(false);
-        permission.setWithin(false);
-        permission.setServiceCode("low-code-service");
-        permissionMapper.insertSelective(permission);
         menu.setCategory("MODEL");
         menu.setServiceCode("low-code-service");
         menu.setResourceLevel(ResourceType.ORGANIZATION.value());
         menu.setType(MenuType.MENU_ITEM.value());
-        menu.setPagePermissionCode(permission.getCode());
-        menuMapper.insertSelective(menu);
-        MenuPermissionDTO menuPermission = new MenuPermissionDTO();
-        menuPermission.setMenuCode(menu.getCode());
-        menuPermission.setPermissionCode(permission.getCode());
-        menuPermissionMapper.insert(menuPermission);
+        menu.setPagePermissionCode("low-code-service.route." + menu.getModelCode());
+
+        MenuDTO example = new MenuDTO();
+        example.setCode(menu.getCode());
+        example.setOrganizationId(menu.getOrganizationId());
+        MenuDTO result = menuMapper.selectOne(example);
+        if (result != null){
+            menu.setId(result.getId());
+            menu.setObjectVersionNumber(result.getObjectVersionNumber());
+            menuMapper.updateByPrimaryKeySelective(menu);
+        } else {
+            menuMapper.insertSelective(menu);
+            PermissionDTO permission = new PermissionDTO();
+            permission.setCode("low-code-service.route." + menu.getModelCode());
+            permission.setPath("/lc/model/" + menu.getModelCode());
+            permission.setResourceLevel(ResourceType.ORGANIZATION.value());
+            permission.setDescription(menu.getName() + "路由");
+            permission.setPublicAccess(false);
+            permission.setLoginAccess(false);
+            permission.setWithin(false);
+            permission.setServiceCode("low-code-service");
+            permissionMapper.insertSelective(permission);
+            MenuPermissionDTO menuPermission = new MenuPermissionDTO();
+            menuPermission.setMenuCode(menu.getCode());
+            menuPermission.setPermissionCode(permission.getCode());
+            menuPermissionMapper.insert(menuPermission);
+        }
     }
 
     private void checkCode(MenuDTO menu) {
