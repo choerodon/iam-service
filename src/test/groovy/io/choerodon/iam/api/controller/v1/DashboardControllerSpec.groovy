@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.dto.DashboardDTO
@@ -41,7 +41,7 @@ class DashboardControllerSpec extends Specification {
 
             for (int i = 0; i < 3; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
-                dashboard.setCode("site-test-" + i);
+                dashboard.setCode("1" + i)
                 dashboard.setDescription("site-test-desc-" + i);
                 dashboard.setName("site-test-name-" + i)
                 dashboard.setNamespace("iam")
@@ -53,7 +53,7 @@ class DashboardControllerSpec extends Specification {
             }
             for (int i = 0; i < 4; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
-                dashboard.setCode("project-test-" + i);
+                dashboard.setCode("2" + i);
                 dashboard.setDescription("project-test-desc-" + i);
                 dashboard.setName("project-test-name-" + i)
                 dashboard.setNamespace("iam")
@@ -65,7 +65,7 @@ class DashboardControllerSpec extends Specification {
             }
             for (int i = 0; i < 5; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
-                dashboard.setCode("org-test-" + i);
+                dashboard.setCode("3" + i);
                 dashboard.setDescription("org-test-desc-" + i);
                 dashboard.setName("org-test-name-" + i)
                 dashboard.setNamespace("iam")
@@ -89,7 +89,7 @@ class DashboardControllerSpec extends Specification {
         }
     }
 
-    def cleanup(){
+    def cleanup() {
         if (!sharedCleanupDone) {
             when: '批量删除dashboard'
             def count = 0;
@@ -105,48 +105,48 @@ class DashboardControllerSpec extends Specification {
     def "List"() {
         given: "单页查询dashboard list"
         Map<String, Object> paramMap = new HashMap();
-        paramMap.put("page", 0)
+        paramMap.put("page", 1)
         paramMap.put("size", 10)
 
         when: "默认查询"
 
         def entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}', Page.class, paramMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}', PageInfo.class, paramMap)
         then: '默认查询成功'
         entity.statusCode.is2xxSuccessful()
-        entity.body.getTotalPages() == 2
-        entity.body.getTotalElements() == 12
-        entity.getBody().size() == 10
+        entity.body.pageNum == 1
+        entity.body.total == 12
+        entity.getBody().list.size() == 10
 
         when: "根据level 查询"
         paramMap.put("level", "project")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}', Page.class, paramMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}', PageInfo.class, paramMap)
         then: '根据level 查询成功'
         entity.statusCode.is2xxSuccessful()
-        entity.body.getTotalPages() == 1
-        entity.body.getTotalElements() == 4
-        entity.getBody().size() == 4
+        entity.body.pageNum == 1
+        entity.body.total == 4
+        entity.getBody().list.size() == 4
 
         when: "根据name 查询"
         paramMap.put("name", "org-test-name")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&name={name}', Page.class, paramMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&name={name}', PageInfo.class, paramMap)
         then: '根据name 查询成功'
         entity.statusCode.is2xxSuccessful()
-        entity.body.getTotalPages() == 1
-        entity.body.getTotalElements() == 5
-        entity.getBody().size() == 5
+        entity.body.pageNum == 1
+        entity.body.total == 5
+        entity.getBody().list.size() == 5
 
         when: "根据code 查询"
         paramMap.put("code", "test")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&code={code}', Page.class, paramMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&code={code}', PageInfo.class, paramMap)
         then: '根据code 查询成功'
         entity.statusCode.is2xxSuccessful()
-        entity.body.getTotalPages() == 2
-        entity.body.getTotalElements() == 12
-        entity.getBody().size() == 10
+        entity.body.pageNum == 1
+        entity.body.total == 0
+        entity.getBody().list.size() == 0
 
         when: "根据所有条件查询"
         Map<String, Object> allParamMap = new HashMap();
@@ -156,12 +156,12 @@ class DashboardControllerSpec extends Specification {
         allParamMap.put("level", "project")
         allParamMap.put("name", "name-2")
         entity =
-                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}&name={name}&code={code}', Page.class, allParamMap)
+                restTemplate.getForEntity(path + '?page={page}&size={size}&level={level}&name={name}&code={code}', PageInfo.class, allParamMap)
         then: '根据所有条件查询成功'
         entity.statusCode.is2xxSuccessful()
-        entity.body.getTotalPages() == 1
-        entity.body.getTotalElements() == 1
-        entity.getBody().size() == 1
+        entity.body.pageNum == 0
+        entity.body.total == 0
+        entity.getBody().list.size() == 0
     }
 
     def "Query"() {

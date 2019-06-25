@@ -26,7 +26,6 @@ class PermissionRepositoryImplSpec extends Specification {
 
     def "UpdateSelective"() {
         given: "构造请求参数"
-//        PermissionE permissionE = new PermissionE("code", "path", "method", "site", "description", "action", "resource", true, true, true, "serviceName", 1L)
         PermissionDTO permission = new PermissionDTO()
         permission.setCode("code")
         permission.setPath("path")
@@ -53,6 +52,6 @@ class PermissionRepositoryImplSpec extends Specification {
 
         then: "校验结果"
         1 * permissionMapper.updateByPrimaryKeySelective(_) >> 1
-        2 * permissionMapper.selectByPrimaryKey(_) >> { new PermissionDTO() }
+        1 * permissionMapper.selectByPrimaryKey(_) >> { new PermissionDTO() }
     }
 }

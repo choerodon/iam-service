@@ -7,8 +7,6 @@
         <id column="ID" property="id"></id>
         <result column="FD_LEVEL" property="level" jdbcType="VARCHAR"/>
         <result column="IS_ENABLED" property="enabled" jdbcType="BOOLEAN"/>
-        <collection property="roleCodes" ofType="java.lang.String" select="selectRoleCodes"
-                    column="{dashboardCode=code, fdLevel=fd_level}"></collection>
     </resultMap>
 
     <select id="fulltextSearch" resultMap="Dashboard">
@@ -42,18 +40,23 @@
     </select>
 
     <select id="selectByLevel" resultMap="Dashboard">
-        SELECT * FROM IAM_DASHBOARD d
-        WHERE d.FD_LEVEL IN ('site', #{level})
+        select
+        d.*,
+        ir.code as role_codes
+        from iam_dashboard d
+        left join iam_dashboard_role idr
+        on d.code = idr.dashboard_code
+        left join iam_role ir
+        on (idr.role_code = ir.code and ir.resource_level = #{level})
+        where d.fd_level in ('site', #{level})
     </select>
 
-    <select id="selectRoleCodes" resultType="java.lang.String">
-        SELECT
-			dr.role_code
-		FROM
-			iam_dashboard_role dr
-			LEFT JOIN iam_role r ON dr.role_code = r.code
-		WHERE
-			dr.dashboard_code = #{dashboardCode} AND
-			r.resource_level = #{fdLevel}
+    <select id="selectRoleCodesByDashboard" resultType="java.lang.String">
+        select idr.role_code
+        from iam_dashboard_role idr
+        left join iam_role ir
+        on idr.role_code = ir.code
+        where idr.dashboard_code = #{code}
+        and ir.resource_level = #{level}
     </select>
 </mapper>

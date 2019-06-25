@@ -6,8 +6,8 @@ import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper
 import io.choerodon.iam.infra.mapper.ApplicationMapper
-import io.choerodon.liquibase.LiquibaseConfig
 import org.codehaus.jackson.map.ObjectMapper
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
@@ -19,14 +19,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author dengyouquan
  * */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@Import(LiquibaseConfig)
+@Import(IntegrationTestConfiguration)
 class ApplicationListenerSpec extends Specification {
-    private ApplicationMapper applicationMapper = Mock(ApplicationMapper)
+    @Autowired
+    private ApplicationMapper applicationMapper
     private ApplicationExplorationMapper applicationExplorationMapper = Mock(ApplicationExplorationMapper)
     private OrganizationAssertHelper organizationAssertHelper = Mock(OrganizationAssertHelper)
     private ProjectAssertHelper projectAssertHelper = Mock(ProjectAssertHelper)
-    private ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
-            applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
+
     private ObjectMapper objectMapper = new ObjectMapper()
 
     @Transactional
@@ -45,8 +45,11 @@ class ApplicationListenerSpec extends Specification {
         applicationDTO = applicationMapper.selectOne(applicationDTO)
         String message = objectMapper.writeValueAsString(applicationDTO)
 
+        ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
+                applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
+
         when: "调用方法"
-        applicationListener.applicationCreateFail(message)
+        applicationListener.updateApplicationAbnormal(message)
 
         then: "校验结果"
         ApplicationDTO applicationDTO1 = new ApplicationDTO();

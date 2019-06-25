@@ -15,7 +15,6 @@ import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,15 +35,16 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     private final ObjectMapper objectMapper;
     private static final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
 
-    @Value("${choerodon.category.enabled:false}")
-    private boolean enableCategory;
+    private final Boolean enableCategory;
 
-    @Autowired
-    public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository, SagaClient sagaClient) {
+    public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository,
+                                    SagaClient sagaClient,
+                                    @Value("${choerodon.category.enabled:false}") Boolean enableCategory) {
         this.fileFeignClient = fileFeignClient;
         this.systemSettingRepository = systemSettingRepository;
         this.sagaClient = sagaClient;
         this.objectMapper = new ObjectMapper();
+        this.enableCategory = enableCategory;
     }
 
     @Override

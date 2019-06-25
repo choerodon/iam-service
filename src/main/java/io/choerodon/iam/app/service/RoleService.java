@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;

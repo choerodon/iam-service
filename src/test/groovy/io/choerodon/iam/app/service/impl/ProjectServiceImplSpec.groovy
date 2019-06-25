@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
+import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.domain.repository.OrganizationRepository
 import io.choerodon.iam.domain.repository.ProjectRepository
@@ -12,6 +13,7 @@ import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import org.junit.runner.RunWith
+import org.mockito.Mock
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -22,8 +24,7 @@ import spock.lang.Specification
 import java.lang.reflect.Field
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
@@ -33,11 +34,12 @@ class ProjectServiceImplSpec extends Specification {
     private UserRepository userRepository = Mock(UserRepository)
     private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
     private SagaClient mockSagaClient = Mock(SagaClient)
+    private OrganizationProjectService organizationProjectService = Mock(OrganizationProjectService)
     private ProjectService projectService
 
     def setup() {
         projectService = new ProjectServiceImpl(projectRepository,
-                userRepository, organizationRepository, mockSagaClient)
+                userRepository, organizationRepository, organizationProjectService, mockSagaClient)
         //反射注入属性
         Field field = projectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
@@ -82,20 +84,15 @@ class ProjectServiceImplSpec extends Specification {
     def "DisableProject"() {
         given: "构造请求参数"
         Long projectId = 1L
-
-        and: "mock静态方法-ConvertHelper"
-        //ConvertHelper中用到了BeanFactory，必须mock
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(_, ProjectDTO)).thenReturn(new ProjectDTO())
+        and:
+        PowerMockito.mockStatic(DetailsHelper)
+        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
 
         when: "调用方法"
         projectService.disableProject(projectId)
 
         then: "校验结果"
         noExceptionThrown()
-        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * projectRepository.updateSelective(_ as ProjectDTO) >> { new ProjectDTO() }
-        1 * mockSagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
     def "ListUserIds"() {

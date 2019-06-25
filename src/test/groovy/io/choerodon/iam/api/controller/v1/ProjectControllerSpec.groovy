@@ -1,13 +1,10 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.domain.Page
-import io.choerodon.core.exception.ExceptionResponse
+import com.github.pagehelper.PageInfo
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.mapper.ProjectMapper
-import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -55,7 +52,13 @@ class ProjectControllerSpec extends Specification {
             }
 
             given: "插入数据"
-            def count = projectMapper.insertList(projectDOList)
+            def count =0
+
+            for (ProjectDTO dto : projectDOList) {
+                count++
+                projectMapper.insert(dto)
+
+            }
 
             then: "校验结果"
             count == 3
@@ -80,7 +83,7 @@ class ProjectControllerSpec extends Specification {
 
     def "Query"() {
         given: "构造请求参数"
-        def projectDTO = ConvertHelper.convert(projectDOList.get(0), ProjectDTO)
+        def projectDTO = projectDOList.get(0)
         def projectId = projectDTO.getId()
 
         when: "调用方法"
@@ -95,22 +98,22 @@ class ProjectControllerSpec extends Specification {
 
     def "List"() {
         given: "构造请求参数"
-        def projectDTO = ConvertHelper.convert(projectDOList.get(0), ProjectDTO)
+        def projectDTO = projectDOList.get(0)
         def projectId = projectDTO.getId()
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("project_id", projectId)
 
         when: "调用方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/{project_id}/users", Page, paramsMap)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/{project_id}/users", PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().totalPages == 1
+        entity.getBody().pages == 0
     }
 
     def "Update"() {
         given: "构造请求参数"
-        def projectDTO = ConvertHelper.convert(projectDOList.get(0), ProjectDTO)
+        def projectDTO = projectDOList.get(0)
         def projectId = projectDTO.getId()
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("project_id", projectId)
@@ -129,7 +132,7 @@ class ProjectControllerSpec extends Specification {
 
     def "DisableProject"() {
         given: "构造请求参数"
-        def projectDTO = ConvertHelper.convert(projectDOList.get(0), ProjectDTO)
+        def projectDTO = projectDOList.get(0)
         def projectId = projectDTO.getId()
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("project_id", projectId)
