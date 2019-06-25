@@ -11,8 +11,12 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.ProjectMapCategoryDTO;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
 import io.choerodon.iam.infra.enums.ProjectCategory;
-import io.choerodon.iam.infra.mapper.*;
-
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.ProjectTypeMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -120,6 +124,17 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             result.addAll(projectList);
         }
         return result.toPageInfo();
+    }
+
+    @Override
+    public List<ProjectDTO> getAgileProjects(Long organizationId, String param, Boolean categoryEnable) {
+        List<ProjectDTO> projectDTOS = new ArrayList<>();
+        if (categoryEnable) {
+            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, "AGILE", param);
+        } else {
+            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId,  param);
+        }
+        return projectDTOS;
     }
 
     @Override
@@ -231,8 +246,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public List<ProjectDTO> selectProjsNotGroup(Long orgId) {
-        return projectMapper.selectProjsNotGroup(orgId);
+    public List<ProjectDTO> selectProjsNotGroup(Long orgId,Long projectId) {
+        return projectMapper.selectProjsNotGroup(orgId,projectId);
     }
 
     @Override
@@ -302,5 +317,13 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             throw new CommonException("error.project.map.category.insert");
         }
         return projectMapCategoryDTO;
+    }
+
+    @Override
+    public List<ProjectDTO> selectByOrgIdAndCategory(Long organizationId, String agile) {
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setOrganizationId(organizationId);
+        projectDTO.setCategory(agile);
+        return projectMapper.select(projectDTO);
     }
 }

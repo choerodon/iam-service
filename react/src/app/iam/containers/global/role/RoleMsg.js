@@ -38,7 +38,7 @@ export default class CreateRole extends Component {
     super(props);
     const queryObj = querystring.parse(props.location.search);
     this.level = queryObj.level || undefined;
-    this.base = (queryObj.base || '').split(',');
+    this.base = queryObj.base ? queryObj.base.split(',') : [];
     this.roleId = queryObj.roleId || undefined;
     this.isEdit = !!this.roleId;
     this.tabLevel = queryObj.level;
@@ -48,8 +48,8 @@ export default class CreateRole extends Component {
   }
 
   componentDidMount() {
-    this.loadLabelsAndMenus();
     RoleStore.setSelectedPermissions([]);
+    this.loadLabelsAndMenus();
   }
 
   loadLabelsAndMenus = () => {
@@ -66,6 +66,7 @@ export default class CreateRole extends Component {
     if (this.isEdit) {
       RoleStore.getRoleById(this.roleId)
         .then((res) => {
+          this.props.form.resetFields();
           RoleStore.setRoleMsg(res);
           RoleStore.setSelectedPermissions(res.permissions.map(p => p.id));
         });

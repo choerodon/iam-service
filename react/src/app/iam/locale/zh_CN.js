@@ -266,7 +266,7 @@ const pageDetail = {
   'organization.project.redirect.disable': '此项目已禁用',
   'organization.project.redirect.no-permission': '您在此项目下无权限',
   'organization.project.category': '项目类型',
-  'organization.project.category.notfound':'没有符合条件的结果',
+  'organization.project.category.notfound': '没有符合条件的结果',
   'organization.project.agile.project': '敏捷项目',
   'organization.project.program.project': '普通项目群',
   'organization.project.analytical.project': '分析型项目群',
@@ -457,7 +457,7 @@ const pageDetail = {
   'organization.application.description': '应用是够供给市场，被人们使用和消费，并能满足人们某种需求的任何东西，包括有形的物品、无形的服务、组织、观念或它们的组合。您可以在这里创建普通应用或者组合应用、维护应用信息、启停用应用。',
   'organization.application.view.token': '查看token',
   'organization.application.create.and.view.token': '创建并查看token',
-  'organization.application.view.interface.token': '查看接口“{interfaceName}”的token',
+  'organization.application.view.interface.token': '查看应用“{interfaceName}”的token',
   // 'organization.application.link': `${docServer}/user-guide/microservice-development/job/execution-record/`,
 
   'organization.application.create': '创建应用',
@@ -938,10 +938,10 @@ const zh_CN = {
   'taskdetail.empty': '无',
   'taskdetail.number.pattern': '请输入数字',
   'taskdetail.execute-strategy': '超时策略',
-  'taskdetail.execute-strategy.tips': '超时策略：\n' +
-    '阻塞： 下次触发时间若上次触发任务未完成，则暂停定时任务，任务不再被执行\n' +
-    '串行： 下次触发时间若上次触发任务未完成，两次任务可按照触发时间依次被执行\n' +
-    '并行： 下次触发时间若上次触发任务未完成，两次任务可以同时被执行',
+  'taskdetail.execute-strategy.tips': '超时策略：\n'
+    + '阻塞： 下次触发时间若上次触发任务未完成，则暂停定时任务，任务不再被执行\n'
+    + '串行： 下次触发时间若上次触发任务未完成，两次任务可按照触发时间依次被执行\n'
+    + '并行： 下次触发时间若上次触发任务未完成，两次任务可以同时被执行',
   'taskdetail.execute-strategy.required': '请选择超时策略',
   'taskdetail.stop': '阻塞',
   'taskdetail.serial': '串行',

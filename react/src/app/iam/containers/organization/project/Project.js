@@ -291,6 +291,7 @@ export default class Project extends Component {
                   const targetType = (ProjectStore.getProjectTypes.find(item => item.code === value.type));
                   value.typeName = targetType ? targetType.name : null;
                   value.type = 'project';
+                  value.categories = [find && find.name];
                   HeaderStore.addProject(value);
                 }
               }).catch((error) => {

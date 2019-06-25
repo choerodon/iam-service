@@ -24,18 +24,13 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.ProjectRelationship.PROJECT_RELATIONSHIP_ADD;
@@ -64,6 +59,9 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private ProjectMapper projectMapper;
 
+    @Value("${choerodon.category.enabled:false}")
+    private Boolean categoryEnable;
+
     public ProjectRelationshipServiceImpl(ProjectRelationshipRepository projectRelationshipRepository, ProjectRepository projectRepository,
                                           TransactionalProducer producer, ProjectRelationshipMapper relationshipMapper,
                                           ProjectCategoryMapper projectCategoryMapper, ProjectMapCategoryMapper projectMapCategoryMapper,
@@ -79,7 +77,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
 
     @Override
     public List<ProjectRelationshipDTO> getProjUnderGroup(Long projectId, Boolean onlySelectEnable) {
-        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO projectDTO;
+        if (categoryEnable) {
+            projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        } else {
+            projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        }
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
@@ -97,22 +100,9 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         if (projectRelationshipDTO == null) {
             throw new CommonException(RELATIONSHIP_NOT_EXIST_EXCEPTION);
         }
-        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-        projectMapCategoryDTO.setProjectId(projectRelationshipDTO.getProjectId());
-        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-        projectCategoryDTO.setCode("PROGRAM_PROJECT");
-        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-        if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
-            throw new CommonException("error.projectMapCategory.delete");
+        if (categoryEnable && projectRelationshipDTO.getEnabled()) {
+            removeProgramProject(projectRelationshipDTO.getProjectId());
         }
-        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
-        projectDTO.setCategory("");
-        if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
-            throw new CommonException("error.project.update");
-        }
-
-
         ProjectRelationshipInsertPayload sagaPayload = new ProjectRelationshipInsertPayload();
         ProjectDTO parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
         sagaPayload.setCategory(parent.getCategory());
@@ -217,28 +207,14 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         //批量插入
         insertNewList.forEach(relationshipDTO -> {
             checkGroupIsLegal(relationshipDTO);
-            if (projectRepository.selectCategoryByPrimaryKey(relationshipDTO.getParentId()).getCategory()
-                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-                relationshipDTO.setProgramId(relationshipDTO.getParentId());
-            }
+            checkCategoryEnable(relationshipDTO);
             // insert
             BeanUtils.copyProperties(projectRelationshipRepository.addProjToGroup(relationshipDTO), relationshipDTO);
             returnList.add(relationshipDTO);
+            if (categoryEnable && relationshipDTO.getEnabled()) {
+                addProgramProject(relationshipDTO.getProjectId());
+            }
             // fill the saga payload
-            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-            projectCategoryDTO.setCode("PROGRAM_PROJECT");
-            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
-            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
-            if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
-                throw new CommonException("error.projectMapCategory.insert");
-            }
-            ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(relationshipDTO.getProjectId());
-            projectDTO.setCategory("PROGRAM_PROJECT");
-            if (projectMapper.updateByPrimaryKey(projectDTO) != 1) {
-                throw new CommonException("error.project.update");
-            }
             ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
             ProjectRelationshipInsertPayload.ProjectRelationship relationship
                     = new ProjectRelationshipInsertPayload.ProjectRelationship(project.getId(), project.getCode(),
@@ -253,16 +229,20 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
             if (projectRelationshipRepository.selectByPrimaryKey(relationshipDTO.getId()) == null) {
                 logger.warn("Batch update project relationship exists Nonexistent relationship,id is{}:{}", relationshipDTO.getId(), relationshipDTO);
             } else {
-                if (projectRepository.selectCategoryByPrimaryKey(relationshipDTO.getParentId()).getCategory()
-                        .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
-                    relationshipDTO.setProgramId(relationshipDTO.getParentId());
-                }
+                checkCategoryEnable(relationshipDTO);
                 ProjectRelationshipDTO projectRelationship = new ProjectRelationshipDTO();
                 BeanUtils.copyProperties(relationshipDTO, projectRelationship);
                 // update
                 projectRelationship = projectRelationshipRepository.update(projectRelationship);
                 BeanUtils.copyProperties(projectRelationship, relationshipDTO);
                 returnList.add(relationshipDTO);
+                if (categoryEnable) {
+                    if (relationshipDTO.getEnabled()) {
+                        addProgramProject(relationshipDTO.getProjectId());
+                    } else {
+                        removeProgramProject(relationshipDTO.getProjectId());
+                    }
+                }
                 // fill the saga payload
                 ProjectDTO project = projectRepository.selectByPrimaryKey(relationshipDTO.getProjectId());
                 ProjectRelationshipInsertPayload.ProjectRelationship relationship
@@ -288,6 +268,35 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
         return returnList;
     }
 
+
+    private void addProgramProject(Long projectId) {
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode("PROGRAM_PROJECT");
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectId);
+        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+        if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.insert");
+        }
+    }
+
+    private void removeProgramProject(Long projectId) {
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode("PROGRAM_PROJECT");
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+        projectMapCategoryDTO.setProjectId(projectId);
+        projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+        if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.delete");
+        }
+    }
+
     /**
      * 更新项目群关系的有效结束时间.
      *
@@ -304,6 +313,20 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 projectRelationshipDTO.setEndDate(simpleDateFormat.parse(simpleDateFormat.format(new Date())));
             } catch (ParseException e) {
                 logger.info("Relationship end time format failed");
+            }
+        }
+    }
+
+    private void checkCategoryEnable(ProjectRelationshipDTO relationshipDTO) {
+        if (categoryEnable) {
+            if (projectRepository.selectCategoryByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                relationshipDTO.setProgramId(relationshipDTO.getParentId());
+            }
+        } else {
+            if (projectRepository.selectByPrimaryKey(relationshipDTO.getParentId()).getCategory()
+                    .equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+                relationshipDTO.setProgramId(relationshipDTO.getParentId());
             }
         }
     }
@@ -349,10 +372,10 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 if (projectDTOS != null && projectDTOS.size() > 0) {
                     throw new CommonException("error.insert.project.relationships.exists.one.program", projectDTOS.get(0).getName());
                 }
-            } else {
+            } else if(r.getEnabled()){
                 // 一个项目只能被一个普通项目群更新
-                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), false);
-                if (projectDTOS != null && projectDTOS.size() > 1) {
+                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), true);
+                if (projectDTOS != null && projectDTOS.size() > 0) {
                     List<String> programs = new ArrayList<>();
                     for (ProjectDTO projectDTO : projectDTOS) {
                         programs.add(projectDTO.getName());
@@ -375,7 +398,12 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
      * @param projectRelationshipDTO
      */
     private void checkGroupIsLegal(ProjectRelationshipDTO projectRelationshipDTO) {
-        ProjectDTO parent = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getParentId());
+        ProjectDTO parent;
+        if (categoryEnable) {
+            parent = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getParentId());
+        } else {
+            parent = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getParentId());
+        }
         if (parent == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         }
@@ -383,8 +411,13 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 !parent.getCategory().equalsIgnoreCase(ProjectCategory.ANALYTICAL.value())) {
             throw new CommonException(AGILE_CANNOT_CONFIGURA_SUBPROJECTS);
         }
+        ProjectDTO son;
+        if (categoryEnable) {
+            son = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getProjectId());
+        } else {
+            son = projectRepository.selectByPrimaryKey(projectRelationshipDTO.getProjectId());
 
-        ProjectDTO son = projectRepository.selectCategoryByPrimaryKey(projectRelationshipDTO.getProjectId());
+        }
         if (son == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (!son.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {

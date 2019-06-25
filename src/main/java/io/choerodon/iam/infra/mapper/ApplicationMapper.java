@@ -28,4 +28,12 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
      * @return
      */
     List matchId(@Param("idSet") Set<Long> idSet);
+
+    /**
+     * 查应用附带项目信息
+     *
+     * @param organizationId
+     * @return
+     */
+    List<ApplicationDTO> selectWithProject(@Param("organizationId") Long organizationId);
 }
