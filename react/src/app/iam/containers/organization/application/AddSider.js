@@ -4,6 +4,7 @@ import { Content, axios } from '@choerodon/boot';
 import remove from 'lodash/remove';
 import { injectIntl } from 'react-intl';
 import { inject, observer } from 'mobx-react';
+import MouseOverWrapper from '../../../components/mouseOverWrapper';
 
 const { Sidebar } = Modal;
 const intlPrefix = 'organization.application';
@@ -83,16 +84,26 @@ export default class Application extends Component {
         title: '应用名称',
         dataIndex: 'name',
         width: '20%',
+        render: text => (
+          <MouseOverWrapper text={text} width={0.2}>
+            {text}
+          </MouseOverWrapper>
+        ),
       },
       {
         title: '应用编码',
         dataIndex: 'code',
-        width: '15%',
+        width: '20%',
+        render: text => (
+          <MouseOverWrapper text={text} width={0.2}>
+            {text}
+          </MouseOverWrapper>
+        ),
       },
       {
         title: '应用分类',
         dataIndex: 'applicationType',
-        width: '20%',
+        width: '15%',
         render: text => (
           <span>
             {text ? intl.formatMessage({ id: `${intlPrefix}.type.${text}` }) : ''}
@@ -102,6 +113,26 @@ export default class Application extends Component {
       {
         title: '开发项目',
         dataIndex: 'projectName',
+        render: (text, record) => (
+          <div>
+            {
+              text && (
+                <div className="c7n-iam-application-name-avatar">
+                  {
+                    record.imageUrl ? (
+                      <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
+                    ) : (
+                      <React.Fragment>{text.split('')[0]}</React.Fragment>
+                    )
+                  }
+                </div>
+              )
+            }
+            <MouseOverWrapper text={text} width={0.2}>
+              {text}
+            </MouseOverWrapper>
+          </div>
+        ),
       },
     ];
     const rowSelection = {
@@ -120,6 +151,7 @@ export default class Application extends Component {
         rowKey={record => record.id}
         rowSelection={rowSelection}
         filterBarPlaceholder={intl.formatMessage({ id: 'filtertable' })}
+        scroll={{ x: true }}
       />
     );
   }

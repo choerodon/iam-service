@@ -120,7 +120,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         if (projectDTO.getEnabled() == null) {
             projectDTO.setEnabled(true);
         }
-        if (!CollectionUtils.isEmpty(categoryIds)) {
+        if (categoryEnable && !CollectionUtils.isEmpty(categoryIds)) {
             ProjectCategoryDTO projectCategoryDTO = projectCategoryMapper.selectByPrimaryKey(categoryIds.get(0));
             if (projectCategoryDTO != null) {
                 projectDTO.setCategory(projectCategoryDTO.getCode());
@@ -335,6 +335,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 // 项目禁用时，禁用项目关联的项目群关系
                 ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
                 relationshipDTO.setProjectId(projectId);
+                relationshipDTO.setEnabled(true);
                 relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
                 programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
             } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
@@ -365,6 +366,19 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         relationshipDTO.setEnabled(enabled);
         projectRelationshipRepository.update(relationshipDTO);
+        if(categoryEnable){
+            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+            projectCategoryDTO.setCode("PROGRAM_PROJECT");
+            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+            if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
+                throw new CommonException("error.project.map.category.delete");
+            }
+        }
         return relationshipDTO.getProgramId();
     }
 
@@ -476,14 +490,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
-        } else if (projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.AGILE.value())) {
-            throw new CommonException("error.agile.projects.cannot.configure.subprojects");
+        } else if (!projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
+            throw new CommonException("error.only.programs.can.configure.subprojects");
         } else {
             //组织下全部敏捷项目
-            List<ProjectDTO> projectDTOS = projectRepository.selectProjsNotGroup(organizationId);
-            //去除已与该项目群建立关系的敏捷项目
-            Set<Long> associatedProjectIds = projectRelationshipRepository.selectProjectsByParentId(projectId, false).stream().map(ProjectRelationshipDTO::getProjectId).collect(Collectors.toSet());
-            return projectDTOS.stream().filter(p -> !associatedProjectIds.contains(p.getId())).collect(Collectors.toList());
+            return projectRepository.selectProjsNotGroup(organizationId, projectId);
         }
     }
 
@@ -499,5 +510,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         } else {
             return projectRepository.selectGroupInfoByEnableProject(organizationId, projectId);
         }
+    }
+
+    @Override
+    public List<ProjectDTO> getAgileProjects(Long organizationId, String param) {
+        return projectRepository.getAgileProjects(organizationId, param, categoryEnable);
     }
 }

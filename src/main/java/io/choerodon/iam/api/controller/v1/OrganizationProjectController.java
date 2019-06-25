@@ -15,7 +15,14 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -79,6 +86,20 @@ public class OrganizationProjectController extends BaseController {
         project.setTypeName(typeName);
         project.setCategory(category);
         return new ResponseEntity<>(organizationProjectService.pagingQuery(project, page, size, ParamUtils.arrToStr(params)),
+                HttpStatus.OK);
+    }
+
+    /**
+     * 查询分配开发的项目
+     *
+     * @return 查询结果
+     */
+    @Permission(type = ResourceType.ORGANIZATION)
+    @GetMapping("/list")
+    @ApiOperation(value = "查询分配开发的项目")
+    public ResponseEntity<List<ProjectDTO>> getAgileProjects(@PathVariable(name = "organization_id") Long organizationId,
+                                                             @RequestParam(required = false) String[] param) {
+        return new ResponseEntity<>(organizationProjectService.getAgileProjects(organizationId, ParamUtils.arrToStr(param)),
                 HttpStatus.OK);
     }
 

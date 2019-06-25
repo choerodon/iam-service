@@ -410,15 +410,32 @@
     </select>
 
     <select id="selectProjsNotGroup" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
-
-     SELECT fp.id as id, fp.NAME AS name,fp.CODE As code
-     FROM
-	 fd_project fp
-	 LEFT JOIN fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
-	 LEFT JOIN fd_project_category fpc ON fpc.id = fpmc.CATEGORY_ID
-     WHERE
-	 fpc.code = 'AGILE'
-    AND fp.ORGANIZATION_ID = #{orgId};
+        SELECT
+            fp.id AS id,
+            fp. NAME AS NAME,
+            fp. CODE AS CODE
+        FROM
+            fd_project fp
+        WHERE
+            fp.organization_id = #{orgId}
+        AND fp.is_enabled = 1
+        AND fp.id IN (
+            SELECT
+                fpmc.project_id
+            FROM
+                fd_project_map_category fpmc
+            LEFT JOIN fd_project_category fpc ON fpmc.category_id = fpc.id
+            WHERE
+                fpc. CODE = 'AGILE'
+            AND fpmc.project_id NOT IN (
+                SELECT
+                    project_id
+                FROM
+                    fd_project_relationship
+                WHERE is_enabled = 1
+                OR parent_id = #{projectId}
+            )
+        )
     </select>
 
     <select id="selectProjsNotInAnyGroup" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
@@ -469,5 +486,33 @@
         left join fd_project_category fpc
         on fpc.id = fpmc.CATEGORY_ID
         Where fp.id=#{projectId}
+    </select>
+
+
+    <select id="selectByOrgIdAndCategory" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        WHERE fp.organization_id=#{organizationId}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
+    <select id="selectByOrgIdAndCategoryEnable" resultType="io.choerodon.iam.infra.dto.ProjectDTO">
+        select * from
+        fd_project fp
+        left join fd_project_map_category fpmc ON fpmc.PROJECT_ID = fp.id
+        left join fd_project_category fpc ON fpc.id =fpmc.CATEGORY_ID
+        WHERE fp.organization_id=#{organizationId}
+        AND fpc.CODE = #{agile}
+        AND fp.is_enabled=1
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
     </select>
 </mapper>
