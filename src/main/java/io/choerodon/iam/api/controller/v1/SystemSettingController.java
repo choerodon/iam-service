@@ -115,7 +115,7 @@ public class SystemSettingController extends BaseController {
 
     @GetMapping(value = "/enable_resetPassword")
     @ApiOperation(value = "是否允许修改仓库密码")
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionLogin = true)
     public ResponseEntity<ResetPasswordDTO> enableResetPassword() {
         SystemSettingDTO systemSettingDTO = systemSettingService.getSetting();
         Boolean result;
