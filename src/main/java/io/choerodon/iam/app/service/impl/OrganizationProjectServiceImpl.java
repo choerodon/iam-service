@@ -335,6 +335,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 // 项目禁用时，禁用项目关联的项目群关系
                 ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
                 relationshipDTO.setProjectId(projectId);
+                relationshipDTO.setEnabled(true);
                 relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
                 programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
             } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
@@ -365,6 +366,19 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         }
         relationshipDTO.setEnabled(enabled);
         projectRelationshipRepository.update(relationshipDTO);
+        if(categoryEnable){
+            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+            projectCategoryDTO.setCode("PROGRAM_PROJECT");
+            projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+
+            ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+            projectMapCategoryDTO.setProjectId(relationshipDTO.getProjectId());
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+
+            if (projectMapCategoryMapper.delete(projectMapCategoryDTO) != 1) {
+                throw new CommonException("error.project.map.category.delete");
+            }
+        }
         return relationshipDTO.getProgramId();
     }
 
