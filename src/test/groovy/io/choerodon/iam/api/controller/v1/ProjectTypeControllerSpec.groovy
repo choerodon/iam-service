@@ -48,14 +48,13 @@ class ProjectTypeControllerSpec extends Specification {
     def "pagingQuery"() {
         given:
         ProjectTypeController controller = new ProjectTypeController(service)
-//        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
         def result = controller.pagingQuery(1,10, null, null, null)
 
         then:
         result.statusCode.is2xxSuccessful()
-        !result.body.isEmpty()
+        !result.body.list.isEmpty()
     }
 
     @Transactional

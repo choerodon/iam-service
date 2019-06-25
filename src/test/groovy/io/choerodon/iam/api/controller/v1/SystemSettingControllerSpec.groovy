@@ -1,14 +1,20 @@
 package io.choerodon.iam.api.controller.v1
 
+import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
+import io.choerodon.iam.app.service.SystemSettingService
+import io.choerodon.iam.app.service.impl.SystemSettingServiceImpl
+import io.choerodon.iam.domain.repository.SystemSettingRepository
 import io.choerodon.iam.infra.dto.SystemSettingDTO
+import io.choerodon.iam.infra.feign.FileFeignClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.validation.BindingResult
 import spock.lang.Specification
 import spock.lang.Stepwise
 
@@ -16,8 +22,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 /**
  *
- * @author zmf
- *
+ * @author zmf*
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
@@ -26,6 +31,15 @@ class SystemSettingControllerSpec extends Specification {
     private static final String BASE_PATH = "/v1/system/setting"
     @Autowired
     private TestRestTemplate restTemplate
+
+    @Autowired
+    private SystemSettingRepository systemSettingRepository
+
+    FileFeignClient fileFeignClient = Mock(FileFeignClient)
+    SagaClient sagaClient = Mock(SagaClient)
+
+    SystemSettingServiceImpl service
+    SystemSettingController controller
 
     private SystemSettingDTO settingDTO
 
@@ -37,6 +51,10 @@ class SystemSettingControllerSpec extends Specification {
         settingDTO.setSystemName("choerodon")
         settingDTO.setSystemTitle("Choerodon Platform")
         settingDTO.setSystemLogo("http://minio.staging.saas.hand-china.com/iam-service/file_2913c259dc524231909f5e6083e4c2bf_test.png")
+
+        service = new SystemSettingServiceImpl(fileFeignClient, systemSettingRepository, sagaClient, false)
+        controller = new SystemSettingController(service)
+
     }
 
     def "AddSetting"() {
@@ -49,7 +67,6 @@ class SystemSettingControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode() == "error.system.setting.update.send.event"
-//        entity.getBody().getCode().equals("error.user.objectVersionNumber.null")
     }
 
     def "Add setting with invalid system name"() {
@@ -119,35 +136,39 @@ class SystemSettingControllerSpec extends Specification {
 
     def "UpdateSetting"() {
         given: "准备场景"
-        restTemplate.delete(BASE_PATH)
-        def httpEntity = new HttpEntity<Object>(settingDTO)
-        def versionNumber = restTemplate.exchange(BASE_PATH, HttpMethod.POST, httpEntity, SystemSettingDTO).getBody().getObjectVersionNumber()
+        controller.resetSetting()
+        BindingResult bindingResult = Mock(BindingResult)
+        bindingResult.hasErrors() >> false
+        def entity = controller.addSetting(settingDTO, bindingResult)
+        def objectVersionNumber = entity.getBody().getObjectVersionNumber()
+
         settingDTO.setSystemName("choerodon-test")
-        settingDTO.setObjectVersionNumber(versionNumber)
-        httpEntity = new HttpEntity<Object>(settingDTO)
+        settingDTO.setObjectVersionNumber(objectVersionNumber)
 
         when: "调用方法"
-        def entity = restTemplate.exchange(BASE_PATH, HttpMethod.PUT, httpEntity, ExceptionResponse)
+        def result = controller.updateSetting(settingDTO, bindingResult)
 
         then: "校验结果"
-        entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode() == "error.system.setting.update.send.event"
+        result.statusCode.is2xxSuccessful()
+        1 * sagaClient.startSaga(_, _)
     }
 
     def "UpdateSetting with invalid input"() {
         given: "准备场景"
-        restTemplate.delete(BASE_PATH)
-        def httpEntity = new HttpEntity<Object>(settingDTO)
-        def versionNumber = restTemplate.exchange(BASE_PATH, HttpMethod.POST, httpEntity, SystemSettingDTO).getBody().getObjectVersionNumber()
+        controller.resetSetting()
+        BindingResult bindingResult = Mock(BindingResult)
+        bindingResult.hasErrors() >> false
+        def entity = controller.addSetting(settingDTO, bindingResult)
+        def objectVersionNumber = entity.getBody().getObjectVersionNumber()
         settingDTO.setSystemName("a")
-        settingDTO.setObjectVersionNumber(versionNumber)
-        httpEntity = new HttpEntity<Object>(settingDTO)
+        settingDTO.setObjectVersionNumber(objectVersionNumber)
 
         when: "调用方法"
-        def entity = restTemplate.exchange(BASE_PATH, HttpMethod.PUT, httpEntity, SystemSettingDTO)
+        def result = controller.updateSetting(settingDTO, bindingResult)
 
         then: "校验结果"
-        entity.statusCode.is2xxSuccessful()
+        result.statusCode.is2xxSuccessful()
+        1 * sagaClient.startSaga(_, _)
     }
 
     def "UpdateSetting when the db is empty"() {

@@ -2,10 +2,12 @@ package io.choerodon.iam
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.appinfo.InstanceInfo
+import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.domain.service.impl.ILdapServiceImpl
+import io.choerodon.iam.infra.dto.LdapDTO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import org.mockito.Mockito
@@ -60,7 +62,7 @@ class IntegrationTestConfiguration {
         Map<String, Object> map = new HashMap<>(2)
         map.put(ILdapServiceImpl.LDAP_CONNECTION_DTO, dto)
         map.put(ILdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
-        Mockito.doReturn(map).when(iLdapService).testConnect(Mockito.any(LdapDO.class))
+        Mockito.doReturn(map).when(iLdapService).testConnect(Mockito.any(LdapDTO.class))
         return iLdapService
     }
 

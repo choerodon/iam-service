@@ -401,7 +401,7 @@ class LdapControllerSpec extends Specification {
 
         then:
         entity.statusCode.is2xxSuccessful()
-        entity.body.totalElements == 1L
+        entity.body.total == 1
 
     }
 
@@ -422,6 +422,6 @@ class LdapControllerSpec extends Specification {
 
         then:
         entity.statusCode.is2xxSuccessful()
-        entity.body.totalElements == 1L
+        entity.body.total == 1
     }
 }

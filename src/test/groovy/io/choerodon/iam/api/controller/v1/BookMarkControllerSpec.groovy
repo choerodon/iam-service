@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.dto.BookMarkDTO
 import io.choerodon.iam.infra.mapper.BookMarkMapper
@@ -53,8 +52,11 @@ class BookMarkControllerSpec extends Specification {
             }
 
             when: "插入数据"
-            def result = bookMarkMapper.insertList(bookMarkList)
-
+            def result = 0
+            for(BookMarkDTO dto :bookMarkList ){
+                bookMarkMapper.insert(dto)
+                result++
+            }
             then: "校验参数"
             result == count
         }
@@ -102,7 +104,7 @@ class BookMarkControllerSpec extends Specification {
     def "Update"() {
         given: "构造请求参数"
         List<BookMarkDTO> bookMarkDTOList = new ArrayList<>()
-        BookMarkDTO bookMarkDTO = ConvertHelper.convert(bookMarkList.get(0), BookMarkDTO)
+        BookMarkDTO bookMarkDTO = bookMarkList.get(0)
         bookMarkDTO.setObjectVersionNumber(1L)
         bookMarkDTOList.add(bookMarkDTO)
         HttpEntity<Object> httpEntity = new HttpEntity<>(bookMarkDTOList)

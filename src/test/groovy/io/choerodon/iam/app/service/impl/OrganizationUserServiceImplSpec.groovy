@@ -73,6 +73,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         user.setPassword("password")
         user.setId(1)
         user.setLoginName("kangkang")
+        user.setEmail("kangkang@qq.com")
         UserDTO userDO = new UserDTO()
         BeanUtils.copyProperties(user, userDO)
 //        PowerMockito.mockStatic(ConvertHelper)
@@ -86,6 +87,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
         1 * userRepository.selectByLoginName(_) >> null
         1 * userRepository.insertSelective(_) >> userDO
+        1* userRepository.selectByPrimaryKey(_)>>userDO
         1 * passwordRecord.updatePassword(_, _)
     }
 

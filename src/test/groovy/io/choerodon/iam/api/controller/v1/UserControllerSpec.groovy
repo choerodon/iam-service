@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
@@ -230,12 +231,11 @@ class UserControllerSpec extends Specification {
 
     def "PagingQueryAdminUsers"() {
         when: "调用方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/admin", Page)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/admin", PageInfo)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().totalPages == 1
-        entity.getBody().totalElements == 1
+        entity.getBody().total == 1
     }
 
     def "DeleteDefaultUser"() {
@@ -291,16 +291,16 @@ class UserControllerSpec extends Specification {
 
     def "PagingQueryOrganizationAndRolesById"() {
         when: "调用方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/organization_roles", Page, 1L)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/organization_roles", PageInfo, 1L)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() == 1
+        entity.getBody().list.size() == 1
     }
 
     def "PagingQueryProjectAndRolesById"() {
         when: "调用方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/project_roles", Page, 1L)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/{id}/project_roles", PageInfo, 1L)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
