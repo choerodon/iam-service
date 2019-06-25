@@ -10,13 +10,18 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.iam.infra.dto.MenuDTO;
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -40,16 +45,20 @@ public class MenuServiceImpl implements MenuService {
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private MenuAssertHelper menuAssertHelper;
+    private PermissionMapper permissionMapper;
+    private MenuPermissionMapper menuPermissionMapper;
 
 
     public MenuServiceImpl(ProjectRepository projectRepository, OrganizationMapper organizationMapper,
                            MenuMapper menuMapper, MenuAssertHelper menuAssertHelper,
-                           ProjectMapCategoryMapper projectMapCategoryMapper) {
+                           ProjectMapCategoryMapper projectMapCategoryMapper, PermissionMapper permissionMapper, MenuPermissionMapper menuPermissionMapper) {
         this.projectRepository = projectRepository;
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.menuAssertHelper = menuAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.permissionMapper = permissionMapper;
+        this.menuPermissionMapper = menuPermissionMapper;
     }
 
     @Override
@@ -417,6 +426,30 @@ public class MenuServiceImpl implements MenuService {
             throw new CommonException("error.menu.code.empty");
         }
         checkCode(menu);
+    }
+
+    @Override
+    public void createApp(MenuDTO menu) {
+        PermissionDTO permission = new PermissionDTO();
+        permission.setCode("low-code-service.route." + menu.getModelCode());
+        permission.setPath("/lc/model/" + menu.getModelCode());
+        permission.setResourceLevel(ResourceType.ORGANIZATION.value());
+        permission.setDescription(menu.getName() + "路由");
+        permission.setPublicAccess(false);
+        permission.setLoginAccess(false);
+        permission.setWithin(false);
+        permission.setServiceCode("low-code-service");
+        permissionMapper.insertSelective(permission);
+        menu.setCategory("MODEL");
+        menu.setServiceCode("low-code-service");
+        menu.setResourceLevel(ResourceType.ORGANIZATION.value());
+        menu.setType(MenuType.MENU_ITEM.value());
+        menu.setPagePermissionCode(permission.getCode());
+        menuMapper.insertSelective(menu);
+        MenuPermissionDTO menuPermission = new MenuPermissionDTO();
+        menuPermission.setMenuCode(menu.getCode());
+        menuPermission.setPermissionCode(permission.getCode());
+        menuPermissionMapper.insert(menuPermission);
     }
 
     private void checkCode(MenuDTO menu) {

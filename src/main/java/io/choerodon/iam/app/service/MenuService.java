@@ -77,4 +77,10 @@ public interface MenuService {
      * @return
      */
     List<MenuDTO> list();
+
+    /**
+     * 创建 Low Code 应用对应菜单
+     * @param menu 应用对应菜单数据
+     */
+    void createApp(MenuDTO menu);
 }

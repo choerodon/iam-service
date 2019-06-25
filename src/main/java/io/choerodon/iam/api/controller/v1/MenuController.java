@@ -63,6 +63,13 @@ public class MenuController {
         return new ResponseEntity<>(menuService.create(menuDTO), HttpStatus.OK);
     }
 
+    @PostMapping("/createApp")
+    @ApiOperation("创建 Low Code 菜单和权限，仅限内部调用")
+    public ResponseEntity createApp(@RequestBody MenuDTO menuDTO) {
+        menuService.createApp(menuDTO);
+        return ResponseEntity.ok().build();
+    }
+
     @Permission(type = ResourceType.SITE)
     @ApiOperation("更新目录")
     @PutMapping("/{id}")
