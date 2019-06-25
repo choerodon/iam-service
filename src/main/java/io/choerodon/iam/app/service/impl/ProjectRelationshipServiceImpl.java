@@ -372,9 +372,9 @@ public class ProjectRelationshipServiceImpl implements ProjectRelationshipServic
                 if (projectDTOS != null && projectDTOS.size() > 0) {
                     throw new CommonException("error.insert.project.relationships.exists.one.program", projectDTOS.get(0).getName());
                 }
-            } else {
+            } else if(r.getEnabled()){
                 // 一个项目只能被一个普通项目群更新
-                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), false);
+                List<ProjectDTO> projectDTOS = relationshipMapper.selectProgramsByProjectId(r.getProjectId(), true);
                 if (projectDTOS != null && projectDTOS.size() > 1) {
                     List<String> programs = new ArrayList<>();
                     for (ProjectDTO projectDTO : projectDTOS) {
