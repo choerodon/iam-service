@@ -32,10 +32,11 @@ export default class PermissionInfo extends Component {
   }
 
   renderRoleColumn = text => text.map(({ name, enabled }, index) => {
-    let item =
+    let item = (
       <span className={classnames('role-wrapper', { 'role-wrapper-enabled': enabled, 'role-wrapper-disabled': !enabled })} key={index}>
-        {index > 0 ? name.substring(1) : name}
-      </span>;
+        {name}
+      </span>
+    );
     if (enabled === false) {
       item = (
         <Tooltip title={<FormattedMessage id={`${intlPrefix}.role.disabled.tip`} />}>
@@ -68,26 +69,25 @@ export default class PermissionInfo extends Component {
       dataIndex: 'name',
       key: 'name',
       className: 'c7n-permission-info-name',
-      render: (text, record) =>
-        (
-          <Link to={this.getRedirectURL(record)}>
-            {
+      render: (text, record) => (
+        <Link to={this.getRedirectURL(record)}>
+          {
                 record.level !== 'site' ? (
                   <div className="c7n-permission-info-name-avatar">
                     {
-                      record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} /> :
-                      <React.Fragment>{record.projName ? record.projName.split('')[0] : text.split('')[0]}</React.Fragment>
+                      record.imageUrl ? <img src={record.imageUrl} alt="avatar" style={{ width: '100%' }} />
+                        : <React.Fragment>{record.projName ? record.projName.split('')[0] : text.split('')[0]}</React.Fragment>
                     }
                   </div>
                 ) : (
                   <div className="c7n-permission-info-name-avatar-default" style={siteInfo.favicon ? { backgroundImage: `url(${siteInfo.favicon})` } : {}} />
                 )
               }
-            <MouseOverWrapper width={0.18} text={text}>
-              {text}
-            </MouseOverWrapper>
-          </Link>
-        ),
+          <MouseOverWrapper width={0.18} text={text}>
+            {text}
+          </MouseOverWrapper>
+        </Link>
+      ),
     }, {
       title: <FormattedMessage id={`${intlPrefix}.table.code`} />,
       width: '10%',

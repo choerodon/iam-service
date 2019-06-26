@@ -7,6 +7,9 @@ public class RoleNameAndEnabledDTO {
     @ApiModelProperty(value = "角色名")
     private String name;
 
+    @ApiModelProperty(value = "角色代码")
+    private String code;
+
     @ApiModelProperty(value = "角色是否启用")
     private boolean enabled;
 
@@ -27,7 +30,16 @@ public class RoleNameAndEnabledDTO {
         this.enabled = enabled;
     }
 
-    public RoleNameAndEnabledDTO(String name, boolean enabled) {
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public RoleNameAndEnabledDTO(String code, String name, boolean enabled) {
+        this.code = code;
         this.name = name;
         this.enabled = enabled;
     }
