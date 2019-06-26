@@ -41,6 +41,9 @@ public class RoleDTO extends BaseDTO {
     @JsonProperty(value = "level")
     private String resourceLevel;
 
+    @ApiModelProperty(value = "组织ID/非必填")
+    private Long organizationId;
+
     @ApiModelProperty(value = "是否启用/非必填")
     @Column(name = "is_enabled")
     private Boolean enabled;
@@ -205,5 +208,14 @@ public class RoleDTO extends BaseDTO {
 
     public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
+    }
+
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

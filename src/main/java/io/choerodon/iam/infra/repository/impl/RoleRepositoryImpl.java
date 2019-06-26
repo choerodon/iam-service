@@ -1,6 +1,5 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
@@ -27,6 +26,11 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public PageInfo<RoleDTO> pagingQuery(int page, int size, RoleQuery roleQuery) {
         return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(roleQuery));
+    }
+
+    @Override
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.pagingQueryOrgRoles(orgId, roleQuery));
     }
 
     @Override

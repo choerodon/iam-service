@@ -16,11 +16,15 @@ public interface RoleService {
 
     PageInfo<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery);
 
+    PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery);
+
     RoleDTO create(RoleDTO roleDTO);
 
     RoleDTO createBaseOnRoles(RoleDTO roleDTO);
 
     RoleDTO update(RoleDTO roleDTO);
+
+    RoleDTO orgUpdate(RoleDTO roleDTO,Long orgId);
 
     void delete(Long id);
 
@@ -29,6 +33,10 @@ public interface RoleService {
     RoleDTO enableRole(Long id);
 
     RoleDTO disableRole(Long id);
+
+    RoleDTO orgEnableRole(Long roleId,Long orgId);
+
+    RoleDTO orgDisableRole(Long roleId,Long orgId);
 
     RoleDTO queryWithPermissionsAndLabels(Long id);
 
