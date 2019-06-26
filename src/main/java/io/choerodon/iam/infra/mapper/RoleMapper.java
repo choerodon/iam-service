@@ -21,7 +21,7 @@ public interface RoleMapper extends Mapper<RoleDTO> {
                                       @Param("sourceId") Long sourceId,
                                       @Param("userId") Long userId);
 
-    List<RoleDTO> fulltextSearch(@Param("roleQuery") RoleQuery roleQuery);
+    List<RoleDTO> fulltextSearch(@Param("roleQuery") RoleQuery roleQuery, @Param("param") String param);
 
     RoleDTO selectRoleWithPermissionsAndLabels(Long id);
 

@@ -41,32 +41,31 @@
     </resultMap>
 
 
-
     <select id="fulltextSearch" resultMap="RoleDTO">
-        select  * from iam_role r
-        WHERE 1=1
-        <if test="roleQuery.name != null">
-            AND r.name LIKE concat(concat('%',#{roleQuery.name}), '%')
-        </if>
-        <if test="roleQuery.code != null">
-            AND r.code LIKE concat(concat('%',#{roleQuery.code}), '%')
-        </if>
-        <if test="roleQuery.level != null">
-            AND r.resource_level LIKE concat(concat('%',#{roleQuery.level}), '%')
-        </if>
-        <if test="roleQuery.enabled != null">
-            AND r.is_enabled = #{roleQuery.enabled}
-        </if>
-        <if test="roleQuery.builtIn != null">
-            AND r.is_built_in = #{roleQuery.builtIn}
-        </if>
-        <if test="roleQuery.param != null">
-            AND (
-            r.name LIKE concat(concat('%',#{roleQuery.param}), '%') OR
-            r.code LIKE concat(concat('%',#{roleQuery.param}), '%') OR
-            r.resource_level LIKE concat(concat('%',#{roleQuery.param}), '%')
-            )
-        </if>
+        select * from iam_role r
+        <where>
+            <if test="roleQuery.name != null">
+                AND r.name LIKE concat(concat('%',#{roleQuery.name}), '%')
+            </if>
+            <if test="roleQuery.code != null">
+                AND r.code LIKE concat(concat('%',#{roleQuery.code}), '%')
+            </if>
+            <if test="roleQuery.level != null">
+                AND r.resource_level LIKE concat(concat('%',#{roleQuery.level}), '%')
+            </if>
+            <if test="roleQuery.enabled != null">
+                AND r.is_enabled = #{roleQuery.enabled}
+            </if>
+            <if test="roleQuery.builtIn != null">
+                AND r.is_built_in = #{roleQuery.builtIn}
+            </if>
+            <if test="param != null">
+                AND (
+                r.name LIKE concat(concat('%',#{param}), '%') OR
+                r.code LIKE concat(concat('%',#{param}), '%')
+                )
+            </if>
+        </where>
     </select>
 
 
@@ -148,25 +147,25 @@
     </select>
 
     <!--<select id="matchCode" resultType="java.lang.String">-->
-        <!--SELECT code-->
-        <!--FROM iam_role-->
-        <!--WHERE code-->
-        <!--IN-->
-        <!--<foreach item="item" index="index" collection="codeSet"-->
-                 <!--open="(" separator="," close=")">-->
-            <!--#{item}-->
-        <!--</foreach>-->
+    <!--SELECT code-->
+    <!--FROM iam_role-->
+    <!--WHERE code-->
+    <!--IN-->
+    <!--<foreach item="item" index="index" collection="codeSet"-->
+    <!--open="(" separator="," close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
     <!--</select>-->
 
     <!--<select id="queryRoleByOrgId" resultMap="RoleDTO">-->
-        <!--SELECT ir.*-->
-        <!--FROM iam_role ir-->
-        <!--WHERE 1=1-->
-        <!--AND EXISTS-->
-        <!--(SELECT 'X' FROM iam_member_role imr-->
-        <!--WHERE imr.source_id = #{orgId}-->
-        <!--AND imr.source_type ='organization'-->
-        <!--AND ir.id=imr.role_id)-->
+    <!--SELECT ir.*-->
+    <!--FROM iam_role ir-->
+    <!--WHERE 1=1-->
+    <!--AND EXISTS-->
+    <!--(SELECT 'X' FROM iam_member_role imr-->
+    <!--WHERE imr.source_id = #{orgId}-->
+    <!--AND imr.source_type ='organization'-->
+    <!--AND ir.id=imr.role_id)-->
     <!--</select>-->
 
     <select id="fuzzySearchRolesByName" resultMap="RoleDTO">
