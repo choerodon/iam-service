@@ -538,7 +538,7 @@ export default class MenuSetting extends Component {
     const { dragData } = this.state;
     return dragData && (
       /* eslint-disable-next-line */
-      record.__level__ === 0 ? dragData.type !== 'menu' :
+      record.__level__ === 0 ? dragData.type !== 'menu_item' :
         (dragData.type !== 'root' && !hasDirChild(dragData))
     );
   }
@@ -629,7 +629,6 @@ export default class MenuSetting extends Component {
         dragData: null,
       });
     }
-    console.log(adjustSort(menuGroup[type]));
   }
 
   handleRow = (record) => {
