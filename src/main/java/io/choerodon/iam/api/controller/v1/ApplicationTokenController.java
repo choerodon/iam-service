@@ -7,7 +7,7 @@ import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +28,7 @@ public class ApplicationTokenController {
 
     @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "根据token查询应用接口")
-    @GetMapping(value = "/token")
+    @PostMapping(value = "/token")
     public ResponseEntity<ApplicationDTO> getApplicationByToken(@RequestBody ApplicationDTO applicationDTO) {
         return new ResponseEntity<>(applicationService.getApplicationByToken(applicationDTO.getApplicationToken()), HttpStatus.OK);
 
