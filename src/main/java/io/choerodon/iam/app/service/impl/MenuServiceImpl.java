@@ -21,7 +21,6 @@ import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -129,7 +128,7 @@ public class MenuServiceImpl implements MenuService {
                     menus = new LinkedHashSet<>(
                             menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
                 } else {
-                    menus = menuMapper.selectByLevelWithPermissionType(level);
+                    menus = menuMapper.selectByLevelWithPermissionType(level, sourceId);
                 }
             } else {
                 menus = new HashSet<>(
@@ -223,10 +222,10 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuDTO menuConfig(String code) {
+    public MenuDTO menuConfig(String code, Long sourceId) {
         MenuDTO menu = getTopMenuByCode(code);
         String level = menu.getResourceLevel();
-        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
+        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level, sourceId));
         toTreeMenu(menu, menus, true);
         return menu;
     }
@@ -438,7 +437,7 @@ public class MenuServiceImpl implements MenuService {
 
         MenuDTO example = new MenuDTO();
         example.setCode(menu.getCode());
-        example.setOrganizationId(menu.getOrganizationId());
+        example.setSourceId(menu.getSourceId());
         MenuDTO result = menuMapper.selectOne(example);
         if (result != null){
             menu.setId(result.getId());

@@ -129,7 +129,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
     changeSet(author: 'xausky', id: '2019-06-25-add-organization-model') {
         addColumn(tableName: 'IAM_MENU_B') {
             column(name: 'MODEL_CODE', type: 'VARCHAR(128)', remarks: '模型代码')
-            column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织ID')
+            column(name: 'SOURCE_ID', type: 'BIGINT UNSIGNED', remarks: '来源ID')
         }
     }
 }

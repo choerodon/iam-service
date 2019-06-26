@@ -57,12 +57,13 @@ public interface MenuService {
     MenuDTO menus(String code, Long sourceId);
 
     /**
-     * menuConfig界面根据层级查询树形菜单，菜单下包含权限信息
+     * 菜单配置界面根据层级查询树形菜单，菜单下包含权限信息
      *
      * @param code
+     * @param sourceId
      * @return
      */
-    MenuDTO menuConfig(String code);
+    MenuDTO menuConfig(String code, Long sourceId);
 
     /**
      * 根据前端传入的树形菜单，更新后端的树形结构
