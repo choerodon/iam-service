@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.infra.dto.MenuDTO;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/menus")
 public class MenuController {
+
+    public static String ORG_TOP_MENU_CODE = "choerodon.code.top.organization";
+    public static String PROJ_TOP_MENU_CODE = "choerodon.code.top.project";
 
     private MenuService menuService;
 
@@ -47,6 +51,17 @@ public class MenuController {
     public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
         return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation("查询组织层菜单")
+    @GetMapping("/org/menu_config")
+    public ResponseEntity<MenuDTO> orgMenuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
+        if (!(PROJ_TOP_MENU_CODE.equalsIgnoreCase(code) || ORG_TOP_MENU_CODE.equalsIgnoreCase(code))) {
+            throw new CommonException("error.menu.code.cannot.query");
+        }
+        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置保存")

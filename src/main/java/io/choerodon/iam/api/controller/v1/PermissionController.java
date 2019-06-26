@@ -54,6 +54,14 @@ public class PermissionController {
         return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation("组织层通过角色查询权限列表")
+    @PostMapping("/through_roles_at_org")
+    public ResponseEntity<Set<PermissionDTO>> queryByRoleIdsAtOrg(@RequestBody List<Long> roleIds) {
+        return new ResponseEntity<>(permissionService.queryByRoleIds(roleIds), HttpStatus.OK);
+    }
+
+
     @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级，服务名，code查询Permission列表")
     @GetMapping("/permissionList")
