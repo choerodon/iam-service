@@ -13,7 +13,7 @@ public class RoleQuery {
     private String level;
     private Boolean builtIn;
     private Boolean enabled;
-    private String param;
+    private String[] params;
 
     private Boolean isWithUser;
     private Long userId;
@@ -60,12 +60,12 @@ public class RoleQuery {
         this.enabled = enabled;
     }
 
-    public String getParam() {
-        return param;
+    public String[] getParams() {
+        return params;
     }
 
-    public void setParam(String param) {
-        this.param = param;
+    public void setParams(String[] params) {
+        this.params = params;
     }
 
     public Boolean getWithUser() {
