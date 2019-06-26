@@ -44,7 +44,7 @@ class UserDashboardControllerSpec extends Specification {
             for (int i = 0; i < 3; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
                 dashboard.setId(1000 + i);
-                dashboard.setCode("site-test-" + i);
+                dashboard.setCode("0" + i);
                 dashboard.setDescription("site-test-desc-" + i);
                 dashboard.setName("site-test-name-" + i)
                 dashboard.setNamespace("iam")
@@ -56,7 +56,7 @@ class UserDashboardControllerSpec extends Specification {
             }
             for (int i = 0; i < 4; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
-                dashboard.setCode("project-test-" + i);
+                dashboard.setCode("1" + i);
                 dashboard.setDescription("project-test-desc-" + i);
                 dashboard.setName("project-test-name-" + i)
                 dashboard.setNamespace("iam")
@@ -68,7 +68,7 @@ class UserDashboardControllerSpec extends Specification {
             }
             for (int i = 0; i < 5; i++) {
                 DashboardDTO dashboard = new DashboardDTO();
-                dashboard.setCode("org-test-" + i);
+                dashboard.setCode("2" + i);
                 dashboard.setDescription("org-test-desc-" + i);
                 dashboard.setName("org-test-name-" + i)
                 dashboard.setNamespace("iam")

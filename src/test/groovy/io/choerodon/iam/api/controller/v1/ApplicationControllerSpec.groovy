@@ -6,6 +6,9 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ApplicationSearchDTO
 import io.choerodon.iam.app.service.ApplicationService
 import io.choerodon.iam.app.service.impl.ApplicationServiceImpl
+import io.choerodon.iam.infra.asserts.ApplicationAssertHelper
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
 import io.choerodon.iam.infra.enums.ApplicationCategory
 import io.choerodon.iam.infra.enums.ApplicationType
@@ -15,6 +18,7 @@ import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 
@@ -30,31 +34,43 @@ class ApplicationControllerSpec extends Specification {
     @Autowired
     ApplicationExplorationMapper applicationExplorationMapper
 
+    @Autowired
+    OrganizationAssertHelper organizationAssertHelper
+
+    @Autowired
+    ProjectAssertHelper projectAssertHelper
+    @Autowired
+    ApplicationAssertHelper applicationAssertHelper
+
     ModelMapper modelMapper = new ModelMapper()
 
     ApplicationController controller
     TransactionalProducer producer
 
+
+    @Shared
+    Long id
+
     def "setup"() {
         producer = Mock(TransactionalProducer)
-        ApplicationService service = new ApplicationServiceImpl(applicationMapper, producer, applicationExplorationMapper)
+        ApplicationService service = new ApplicationServiceImpl(applicationMapper, producer, applicationExplorationMapper,
+                organizationAssertHelper, projectAssertHelper, applicationAssertHelper)
         controller = new ApplicationController(service)
     }
 
     def "Create"() {
         given:
-        ApplicationDTO dto =
-                new ApplicationDTO()
-                        .setCode("code")
-                        .setName("name")
-                        .setApplicationCategory("application")
-                        .setApplicationType("test")
-                        .setOrganizationId(1L)
-                        .setEnabled(true)
+        ApplicationDTO dto = new ApplicationDTO()
+        dto.setCode("code")
+        dto.setName("name")
+        dto.setApplicationCategory("application")
+        dto.setApplicationType("test")
+        dto.setOrganizationId(1L)
+        dto.setEnabled(true)
 
         when:
         def result = controller.create(1, dto)
-
+        id = result.getBody().getId()
         then:
         result.statusCode.is2xxSuccessful()
         result.body.code == 'code'
@@ -62,7 +78,7 @@ class ApplicationControllerSpec extends Specification {
 
     def "Update"() {
         given:
-        ApplicationDTO app = assertHelper.applicationNotExisted(1)
+        ApplicationDTO app = applicationAssertHelper.applicationNotExisted(id)
 
         when:
         def result = controller.update(1, 1, modelMapper.map(app, ApplicationDTO.class))
@@ -76,22 +92,22 @@ class ApplicationControllerSpec extends Specification {
 //        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(1L, 0,10, new ApplicationSearchDTO())
+        def result = controller.pagingQuery(1L, 0, 10,false, new ApplicationSearchDTO())
         then:
         result.statusCode.is2xxSuccessful()
-        result.body.size() > 0
+        result.body.list.size() > 0
     }
 
     def "Enabled"() {
         when:
-        controller.disable(1)
+        controller.disable(id)
         then:
         noExceptionThrown()
     }
 
     def "Disable"() {
         when:
-        controller.enabled(1)
+        controller.enabled(id)
         then:
         noExceptionThrown()
     }
@@ -107,7 +123,8 @@ class ApplicationControllerSpec extends Specification {
     def "Check"() {
         given:
         ApplicationDTO dto = new ApplicationDTO()
-        dto.setName("nnn").setOrganizationId(1L)
+        dto.setName("nnn")
+        dto.setOrganizationId(1L)
 
         when: "插入校验name"
         controller.check(1L, dto)
@@ -197,7 +214,7 @@ class ApplicationControllerSpec extends Specification {
 //        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.queryApplicationList(0,10, 1L, 100L, null, null)
+        def result = controller.queryApplicationList(0, 10, 1L, 100L, null, null)
 
         then:
         result.statusCode.is2xxSuccessful()
@@ -205,7 +222,7 @@ class ApplicationControllerSpec extends Specification {
 
     def "query"() {
         when:
-        def result = controller.query(1,100)
+        def result = controller.query(1, 100, false)
 
         then:
         result.statusCode.is2xxSuccessful()

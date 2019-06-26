@@ -31,6 +31,11 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.pagingQueryOrgRoles(orgId, roleQuery));
+    }
+
+    @Override
     public RoleDTO selectByCode(String code) {
         RoleDTO roleDTO = new RoleDTO();
         roleDTO.setCode(code);

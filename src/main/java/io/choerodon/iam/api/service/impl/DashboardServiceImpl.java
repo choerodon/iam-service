@@ -84,7 +84,13 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public PageInfo<DashboardDTO> list(DashboardDTO dashboardDTO, int page, int size, String param) {
-        return PageHelper.startPage(page, size).doSelectPageInfo(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
+        PageInfo<DashboardDTO> pageInfo =
+                PageHelper.startPage(page, size).doSelectPageInfo(() -> dashboardMapper.fulltextSearch(dashboardDTO, param));
+        pageInfo.getList().forEach(dashboard -> {
+            List<String> roleCodes = dashboardMapper.selectRoleCodesByDashboard(dashboard.getCode(), dashboard.getLevel());
+            dashboard.setRoleCodes(roleCodes);
+        });
+        return pageInfo;
     }
 
     @Override

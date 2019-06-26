@@ -1,8 +1,10 @@
 package io.choerodon.iam.app.service.impl
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.RoleSearchDTO
+import io.choerodon.iam.api.query.RoleQuery
 import io.choerodon.iam.app.service.RoleService
 import io.choerodon.iam.infra.dto.RoleDTO
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,28 +31,32 @@ class RoleServiceImplSpec extends Specification {
         RoleSearchDTO role = new RoleSearchDTO()
 
         when: "调用方法[site层]"
-        Page<RoleDTO> page = roleService.pagingSearch(1,20, needUsers, sourceId, sourceType, role)
+        RoleQuery roleQuery = new RoleQuery()
+        roleQuery.setSourceId(sourceId)
+        roleQuery.setWithUser(needUsers)
+        roleQuery.setSourceType(sourceType)
+        PageInfo<RoleDTO> page = roleService.pagingSearch(1,20, roleQuery)
 
         then: "校验参数"
-        page.totalPages != 0
-        page.totalElements != 0
+        page.pages != 0
+        page.total != 0
 
         when: "调用方法[organization层]"
         sourceId = 1L
         sourceType = "organization"
-        page = roleService.pagingSearch(pageRequest, needUsers, sourceId, sourceType, role)
+        page = roleService.pagingSearch(1,20, roleQuery)
 
         then: "校验参数"
-        page.totalPages != 0
-        page.totalElements != 0
+        page.pages != 0
+        page.total != 0
 
         when: "调用方法[project层]"
         sourceId = 0L
         sourceType = "project"
-        page = roleService.pagingSearch(pageRequest, needUsers, sourceId, sourceType, role)
+        page = roleService.pagingSearch(1,20, roleQuery)
 
         then: "校验参数"
-        page.totalPages != 0
-        page.totalElements != 0
+        page.pages != 0
+        page.total != 0
     }
 }

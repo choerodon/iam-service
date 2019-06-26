@@ -87,4 +87,11 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
         }
     }
 
+    changeSet(author: 'longhe1996@icloud.com', id: '2019-06-26-role-add-column') {
+        addColumn(tableName: 'IAM_ROLE') {
+            column(name: 'ORGANIZATION_ID', type: 'BIGINT UNSIGNED', remarks: '组织ID（在组织层创建的角色，组织ID为对应组织ID；平台层创建的角色，组织ID为空）', afterColumn: 'RESOURCE_LEVEL')
+        }
+    }
+
+
 }

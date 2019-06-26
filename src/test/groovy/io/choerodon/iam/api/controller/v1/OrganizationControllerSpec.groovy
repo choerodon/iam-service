@@ -1,6 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.OrganizationService
@@ -19,8 +19,7 @@ import spock.lang.Specification
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class OrganizationControllerSpec extends Specification {
@@ -50,7 +49,11 @@ class OrganizationControllerSpec extends Specification {
 
             when: "调用方法"
             needInit = false
-            def count = organizationMapper.insertList(organizationDOList)
+            int count = 0
+            for (OrganizationDTO dto : organizationDOList) {
+                organizationMapper.insert(dto)
+                count++
+            }
 
             then: "校验结果"
             count == 3
@@ -141,20 +144,19 @@ class OrganizationControllerSpec extends Specification {
         def code = "hand"
 
         when: "调用对应方法[全查询]"
-        def entity = restTemplate.getForEntity(BASE_PATH, Page)
+        def entity = restTemplate.getForEntity(BASE_PATH, PageInfo)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getTotalPages() == 1
-        !entity.getBody().isEmpty()
+//        entity.getBody().total == 4
+        !entity.getBody().list.isEmpty()
 
         when: "调用对应方法"
-        entity = restTemplate.getForEntity(BASE_PATH + "?code={code}&name={name}", Page, code, name)
+        entity = restTemplate.getForEntity(BASE_PATH + "?code={code}&name={name}", PageInfo, code, name)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getTotalPages() == 1
-        entity.getBody().getTotalElements() == 3
+        entity.getBody().total == 3
     }
 
     def "EnableOrganization"() {
@@ -199,7 +201,7 @@ class OrganizationControllerSpec extends Specification {
 
     def "Check"() {
         given: "构造请求参数"
-        def organizationDTO = ConvertHelper.convert(organizationDOList.get(1), OrganizationDTO)
+        def organizationDTO = organizationDOList.get(1)
 
         when: "调用对应方法[异常-组织code为空]"
         def organizationDTO1 = new OrganizationDTO()

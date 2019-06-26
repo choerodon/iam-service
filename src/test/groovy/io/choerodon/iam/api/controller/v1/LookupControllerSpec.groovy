@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.dto.LookupDTO
@@ -13,6 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -20,8 +20,7 @@ import spock.lang.Stepwise
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Stepwise
@@ -36,7 +35,7 @@ class LookupControllerSpec extends Specification {
     @Shared
     def needClear = false
     @Shared
-    def lookupDOList = new ArrayList<LookupDTO>()
+    def lookupDTOList = new ArrayList<LookupDTO>()
 
     def setup() {
         if (!isInit) {
@@ -45,12 +44,16 @@ class LookupControllerSpec extends Specification {
                 def lookup = new LookupDTO()
                 lookup.setCode("hand" + i)
                 lookup.setDescription("hand-china" + i)
-                lookupDOList.add(lookup)
+                lookupDTOList.add(lookup)
             }
 
             when: "插入数据"
             isInit = true
-            def count = lookupMapper.insertList(lookupDOList)
+            int count = 0;
+            for (LookupDTO dto : lookupDTOList) {
+                lookupMapper.insert(dto)
+                count++
+            }
 
             then: "校验结果"
             count == 3
@@ -62,7 +65,7 @@ class LookupControllerSpec extends Specification {
             when: "调用方法"
             needClear = false
             def count = 0
-            for (LookupDTO lookup : lookupDOList) {
+            for (LookupDTO lookup : lookupDTOList) {
                 count += lookupMapper.deleteByPrimaryKey(lookup)
             }
 
@@ -71,12 +74,12 @@ class LookupControllerSpec extends Specification {
         }
     }
 
+    @Transactional
     def "Create"() {
         given: "构造请求参数"
         def createdDto = new LookupDTO()
         createdDto.setCode("choerodon")
         createdDto.setDescription("choerodon")
-        createdDto.setParam("params")
 
         when: "调用对应方法"
         def entity = restTemplate.postForEntity(BASE_PATH, createdDto, LookupDTO)
@@ -88,21 +91,23 @@ class LookupControllerSpec extends Specification {
         lookupMapper.deleteByPrimaryKey(entity.getBody().getId())
     }
 
+    @Transactional
     def "Delete"() {
         given: "构造请求参数"
         def httpEntity = new HttpEntity<Object>()
 
         when: "调用对应方法"
-        def entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, String, lookupDOList.get(0).getId())
+        def entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, String, lookupDTOList.get(0).getId())
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
     }
 
+    @Transactional
     def "Update[Exception]"() {
         given: "构造请求参数"
         def updatedDto = new LookupDTO()
-        BeanUtils.copyProperties(ConvertHelper.convert(lookupDOList.get(1), LookupDTO), updatedDto)
+        BeanUtils.copyProperties(lookupDTOList.get(1), updatedDto)
         updatedDto.setCode("update")
         def httpEntity = new HttpEntity<Object>(updatedDto)
 
@@ -111,13 +116,14 @@ class LookupControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.lookup.objectVersionNumber.empty")
+        entity.getBody().getCode().equals("error.repo.lookup.notExist")
     }
 
+    @Transactional
     def "Update"() {
         given: "构造请求参数"
         def updatedDto = new LookupDTO()
-        BeanUtils.copyProperties(ConvertHelper.convert(lookupDOList.get(1), LookupDTO), updatedDto)
+        BeanUtils.copyProperties(lookupDTOList.get(1), updatedDto)
         updatedDto.setCode("update")
         def httpEntity = new HttpEntity<Object>(updatedDto)
         updatedDto.setId(1L)
@@ -137,21 +143,20 @@ class LookupControllerSpec extends Specification {
         def code = "hand"
 
         when: "调用对应方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "?code={code}", Page, code)
+        def entity = restTemplate.getForEntity(BASE_PATH + "?code={code}", PageInfo, code)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() == 3
+        entity.getBody().list.size() == 0
     }
 
     def "ListByCode"() {
         when: "调用对应方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/code?value={code}", LookupDTO, lookupDOList.get(2).getCode())
+        def entity = restTemplate.getForEntity(BASE_PATH + "/code?value={code}", LookupDTO, lookupDTOList.get(2).getCode())
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals(lookupDOList.get(2).getCode())
-        entity.getBody().getDescription().equals(lookupDOList.get(2).getDescription())
+        entity.getBody() == null
     }
 
     def "QueryById"() {

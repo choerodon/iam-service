@@ -34,4 +34,12 @@ public class LabelController extends BaseController {
         return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "通过类型查询组织层label")
+    @GetMapping(value = "/org")
+    public ResponseEntity<List<LabelDTO>> listByTypeAtOrg(LabelDTO label) {
+        label.setLevel(ResourceType.ORGANIZATION.value());
+        return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
+    }
+
 }

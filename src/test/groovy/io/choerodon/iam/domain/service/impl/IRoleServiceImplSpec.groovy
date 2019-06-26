@@ -107,7 +107,6 @@ class IRoleServiceImplSpec extends Specification {
     def "Update"() {
         given: "构造请求参数"
         List<PermissionDTO> permissions = new ArrayList<>()
-//        PermissionDTO permissionE = new PermissionE("code", "path", "method", "site", "description", "action", "resource", true, true, true, "serviceName", 1L)
         PermissionDTO permission = new PermissionDTO()
         permission.setCode("code")
         permission.setPath("path")
@@ -162,7 +161,7 @@ class IRoleServiceImplSpec extends Specification {
         1 * roleRepository.updateSelective(_) >> { role }
         1 * roleLabelRepository.select(_) >> { roleLabels }
         1 * rolePermissionRepository.select(_) >> { existingRolePermissions }
-        2 * permissionRepository.selectByPrimaryKey(_) >> { permissionE }
+        2 * permissionRepository.selectByPrimaryKey(_) >> { permission }
         1 * userRepository.listUsersByRoleId(_, _, _) >> { users }
         labelRepository.selectByUserId(_) >> { new ArrayList<LabelDTO>() }
         labelRepository.selectByPrimaryKey(_) >> { new LabelDTO() }

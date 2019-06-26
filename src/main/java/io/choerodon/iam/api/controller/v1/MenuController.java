@@ -2,6 +2,7 @@ package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.MenuService;
 import io.choerodon.iam.infra.dto.MenuDTO;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/menus")
 public class MenuController {
+
+    public static String ORG_TOP_MENU_CODE = "choerodon.code.top.organization";
+    public static String PROJ_TOP_MENU_CODE = "choerodon.code.top.project";
 
     private MenuService menuService;
 
@@ -44,9 +48,20 @@ public class MenuController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置界面根据层级查菜单")
     @GetMapping("/menu_config")
-    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code) {
-        return new ResponseEntity<>(menuService.menuConfig(code), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
+        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation("查询组织层菜单")
+    @GetMapping("/org/menu_config")
+    public ResponseEntity<MenuDTO> orgMenuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
+        if (!(PROJ_TOP_MENU_CODE.equalsIgnoreCase(code) || ORG_TOP_MENU_CODE.equalsIgnoreCase(code))) {
+            throw new CommonException("error.menu.code.cannot.query");
+        }
+        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
+    }
+
 
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置保存")
@@ -61,6 +76,13 @@ public class MenuController {
     @PostMapping
     public ResponseEntity<MenuDTO> create(@RequestBody @Valid MenuDTO menuDTO) {
         return new ResponseEntity<>(menuService.create(menuDTO), HttpStatus.OK);
+    }
+
+    @PostMapping("/createApp")
+    @ApiOperation("创建 Low Code 菜单和权限，仅限内部调用")
+    public ResponseEntity createApp(@RequestBody MenuDTO menuDTO) {
+        menuService.createApp(menuDTO);
+        return ResponseEntity.ok().build();
     }
 
     @Permission(type = ResourceType.SITE)

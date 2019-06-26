@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+
 //import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
@@ -22,6 +23,7 @@ import io.choerodon.iam.infra.dto.RoleDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
@@ -44,8 +46,7 @@ import spock.lang.Specification
 import java.lang.reflect.Field
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
@@ -62,6 +63,7 @@ class UserServiceImplSpec extends Specification {
     private SagaClient sagaClient = Mock(SagaClient)
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
     private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
+    private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
     private UserService userService
     private Long userId
 
@@ -70,7 +72,7 @@ class UserServiceImplSpec extends Specification {
         userService = new UserServiceImpl(userRepository, organizationRepository,
                 projectRepository, iUserService, passwordRecord, fileFeignClient,
                 sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager, roleRepository,
-                memberRoleMapper)
+                memberRoleMapper, projectMapCategoryMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(userService, true)
@@ -96,7 +98,7 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> { user }
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
+//        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
     }
 
     def "QueryOrganizations"() {
@@ -290,7 +292,7 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            
+
             Field field = userE.getClass().getDeclaredField("admin")
             field.setAccessible(true)
             field.set(userE, false)
@@ -335,10 +337,10 @@ class UserServiceImplSpec extends Specification {
         userWithRoles.setRoleCode(roleCodes)
 
         and: "mock静态方法-ConvertHelper"
-        PowerMockito.mockStatic(ConvertHelper)
+//        PowerMockito.mockStatic(ConvertHelper)
         UserDTO userDTO = new UserDTO()
         userDTO.setPassword("123456")
-        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO).thenReturn(new UserDTO())
+//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO).thenReturn(new UserDTO())
 
         when: "调用方法"
         userService.createUserAndAssignRoles(userWithRoles)
