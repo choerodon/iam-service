@@ -10,10 +10,14 @@ import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.iam.infra.dto.MenuDTO;
+import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
+import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,16 +44,20 @@ public class MenuServiceImpl implements MenuService {
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private MenuAssertHelper menuAssertHelper;
+    private PermissionMapper permissionMapper;
+    private MenuPermissionMapper menuPermissionMapper;
 
 
     public MenuServiceImpl(ProjectRepository projectRepository, OrganizationMapper organizationMapper,
                            MenuMapper menuMapper, MenuAssertHelper menuAssertHelper,
-                           ProjectMapCategoryMapper projectMapCategoryMapper) {
+                           ProjectMapCategoryMapper projectMapCategoryMapper, PermissionMapper permissionMapper, MenuPermissionMapper menuPermissionMapper) {
         this.projectRepository = projectRepository;
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.menuAssertHelper = menuAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.permissionMapper = permissionMapper;
+        this.menuPermissionMapper = menuPermissionMapper;
     }
 
     @Override
@@ -120,7 +128,7 @@ public class MenuServiceImpl implements MenuService {
                     menus = new LinkedHashSet<>(
                             menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
                 } else {
-                    menus = menuMapper.selectByLevelWithPermissionType(level);
+                    menus = menuMapper.selectByLevelWithPermissionType(level, sourceId);
                 }
             } else {
                 menus = new HashSet<>(
@@ -214,10 +222,10 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuDTO menuConfig(String code) {
+    public MenuDTO menuConfig(String code, Long sourceId) {
         MenuDTO menu = getTopMenuByCode(code);
         String level = menu.getResourceLevel();
-        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
+        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level, sourceId));
         toTreeMenu(menu, menus, true);
         return menu;
     }
@@ -417,6 +425,41 @@ public class MenuServiceImpl implements MenuService {
             throw new CommonException("error.menu.code.empty");
         }
         checkCode(menu);
+    }
+
+    @Override
+    public void createApp(MenuDTO menu) {
+        menu.setCategory("MODEL");
+        menu.setServiceCode("low-code-service");
+        menu.setResourceLevel(ResourceType.ORGANIZATION.value());
+        menu.setType(MenuType.MENU_ITEM.value());
+        menu.setPagePermissionCode("low-code-service.route." + menu.getModelCode());
+
+        MenuDTO example = new MenuDTO();
+        example.setCode(menu.getCode());
+        example.setSourceId(menu.getSourceId());
+        MenuDTO result = menuMapper.selectOne(example);
+        if (result != null){
+            menu.setId(result.getId());
+            menu.setObjectVersionNumber(result.getObjectVersionNumber());
+            menuMapper.updateByPrimaryKeySelective(menu);
+        } else {
+            menuMapper.insertSelective(menu);
+            PermissionDTO permission = new PermissionDTO();
+            permission.setCode("low-code-service.route." + menu.getModelCode());
+            permission.setPath("/lc/model/" + menu.getModelCode());
+            permission.setResourceLevel(ResourceType.ORGANIZATION.value());
+            permission.setDescription(menu.getName() + "路由");
+            permission.setPublicAccess(false);
+            permission.setLoginAccess(false);
+            permission.setWithin(false);
+            permission.setServiceCode("low-code-service");
+            permissionMapper.insertSelective(permission);
+            MenuPermissionDTO menuPermission = new MenuPermissionDTO();
+            menuPermission.setMenuCode(menu.getCode());
+            menuPermission.setPermissionCode(permission.getCode());
+            menuPermissionMapper.insert(menuPermission);
+        }
     }
 
     private void checkCode(MenuDTO menu) {

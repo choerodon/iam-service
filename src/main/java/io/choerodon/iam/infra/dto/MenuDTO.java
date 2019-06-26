@@ -3,7 +3,6 @@ package io.choerodon.iam.infra.dto;
 import io.choerodon.mybatis.annotation.MultiLanguage;
 import io.choerodon.mybatis.annotation.MultiLanguageField;
 import io.choerodon.mybatis.entity.BaseDTO;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -44,6 +43,8 @@ public class MenuDTO extends BaseDTO {
     @NotEmpty(message = "error.menu.icon.empty")
     private String icon;
     private String category;
+    private String modelCode;
+    private Long sourceId;
     private String searchCondition;
     @Transient
     private String route;
@@ -191,6 +192,22 @@ public class MenuDTO extends BaseDTO {
         this.pagePermissionType = pagePermissionType;
     }
 
+    public String getModelCode() {
+        return modelCode;
+    }
+
+    public void setModelCode(String modelCode) {
+        this.modelCode = modelCode;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
     @Override
     public String toString() {
         return "MenuDTO{" +
@@ -206,6 +223,8 @@ public class MenuDTO extends BaseDTO {
                 ", isDefault=" + isDefault +
                 ", icon='" + icon + '\'' +
                 ", category='" + category + '\'' +
+                ", modelCode='" + modelCode + '\'' +
+                ", sourceId=" + sourceId +
                 ", searchCondition='" + searchCondition + '\'' +
                 ", route='" + route + '\'' +
                 ", pagePermissionType='" + pagePermissionType + '\'' +
@@ -213,6 +232,7 @@ public class MenuDTO extends BaseDTO {
                 ", subMenus=" + subMenus +
                 '}';
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -231,6 +251,8 @@ public class MenuDTO extends BaseDTO {
                 Objects.equals(isDefault, menuDTO.isDefault) &&
                 Objects.equals(icon, menuDTO.icon) &&
                 Objects.equals(category, menuDTO.category) &&
+                Objects.equals(modelCode, menuDTO.modelCode) &&
+                Objects.equals(sourceId, menuDTO.sourceId) &&
                 Objects.equals(searchCondition, menuDTO.searchCondition) &&
                 Objects.equals(route, menuDTO.route) &&
                 Objects.equals(pagePermissionType, menuDTO.pagePermissionType) &&
@@ -240,6 +262,6 @@ public class MenuDTO extends BaseDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, route, pagePermissionType, permissions, subMenus);
+        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, modelCode, sourceId, searchCondition, route, pagePermissionType, permissions, subMenus);
     }
 }

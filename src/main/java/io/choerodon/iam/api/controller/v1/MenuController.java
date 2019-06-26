@@ -44,8 +44,8 @@ public class MenuController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置界面根据层级查菜单")
     @GetMapping("/menu_config")
-    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code) {
-        return new ResponseEntity<>(menuService.menuConfig(code), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
+        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
@@ -61,6 +61,13 @@ public class MenuController {
     @PostMapping
     public ResponseEntity<MenuDTO> create(@RequestBody @Valid MenuDTO menuDTO) {
         return new ResponseEntity<>(menuService.create(menuDTO), HttpStatus.OK);
+    }
+
+    @PostMapping("/createApp")
+    @ApiOperation("创建 Low Code 菜单和权限，仅限内部调用")
+    public ResponseEntity createApp(@RequestBody MenuDTO menuDTO) {
+        menuService.createApp(menuDTO);
+        return ResponseEntity.ok().build();
     }
 
     @Permission(type = ResourceType.SITE)
