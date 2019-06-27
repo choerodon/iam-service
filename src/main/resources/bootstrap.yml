@@ -23,3 +23,5 @@ management:
     web:
       exposure:
         include: '*'
+    health:
+      show-details: "ALWAYS"

@@ -2,49 +2,76 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# pod运行数量
 replicaCount: 1
 
 image:
+  # 镜像库地址
   repository: registry.choerodon.com.cn/choerodon/iam-service
+  # 镜像拉取策略
   pullPolicy: IfNotPresent
 
 preJob:
+  # job超时时间
   timeout: 300
+  # job镜像库地址
   image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.4
   preConfig:
+    # 是否初始化manager_service数据库
     enabled: true
+    # 初始化到配置中心文件名
     configFile: application.yml
+    # 初始化到配置中心存储方式
     configType: k8s
+    # 注册中心地址
     registerHost: http://register-server:8000
     datasource:
-      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      # manager_service数据库连接地址
+      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
+      # manager_service数据库用户名
       username: username
+      # manager_service数据库密码
       password: password
   preInitDB:
+    # 是否初始化iam_service数据库
     enabled: true
     datasource:
-      url: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      # iam_service数据库连接地址
+      url: jdbc:mysql://localhost:3306/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
+      # iam_service数据库用户名
       username: username
+      # iam_service数据库密码
       password: password
+      # 初始化数据库更新数据的时候忽略的表或列
       exclusion: iam_user.hash_password,oauth_client.web_server_redirect_uri,oauth_ldap.server_address,oauth_ldap.object_class,iam_role.is_enabled,fd_organization.name
 
 metrics:
+  # 收集应用的指标数据路径
   path: /actuator/prometheus
+  # 性能指标应用分组
   group: spring-boot
 
 logs:
+  # 日志收集格式
   parser: spring-boot
 
 deployment:
+  # 服务管理端口
   managementPort: 8031
 
 env:
   open:
+    # 是否启用配置中心
     SPRING_CLOUD_CONFIG_ENABLED: true
+    # 配置中心地址
     SPRING_CLOUD_CONFIG_URI: http://register-server:8000
-    SPRING_DATASOURCE_URL: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    # 数据库连接地址
+    SPRING_DATASOURCE_URL: jdbc:mysql://localhost/iam_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true
+    # 数据库用户名
     SPRING_DATASOURCE_USERNAME: username
+    #  数据库密码
     SPRING_DATASOURCE_PASSWORD: password
+    # 注册服务地址
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.io-choerodon:8000/eureka/
     # 清理permission表中的旧接口和role_permission表中角色和权限层级不匹配的脏数据
     CHOERODON_CLEANPERMISSION: false
@@ -56,19 +83,21 @@ env:
 #      -Dskywalking.collector.backend_service=oap.skywalking:11800
 
 service:
+  # 是否创建k8s service
   enabled: false
+  # service类型
   type: ClusterIP
+  # service端口
   port: 8030
+  # service名称
   name: iam-service
 
 resources:
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources,such as Minikube. If you do want to specify resources,uncomment the following
-  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  # k8s中容器能使用资源的资源最大值
   limits:
     # cpu: 100m
     memory: 3Gi
+  # k8s中容器使用的最小资源需求
   requests:
     # cpu: 100m
     memory: 2Gi
