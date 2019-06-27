@@ -196,10 +196,15 @@ public class UserServiceImpl implements UserService {
     private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
         List<ProjectMapCategorySimpleDTO> projectMapCategorySimpleDTOS = projectMapCategoryMapper.selectAllProjectMapCategories();
         projectDTOS.forEach(p -> {
-
+            List<ProjectCategoryDTO> collectCategories = new ArrayList<>();
             List<String> collect = projectMapCategorySimpleDTOS.stream().filter(c -> c.getProjectId().equals(p.getId())).map(c -> c.getCategory()).collect(Collectors.toList());
+            for (String collectOne : collect) {
+                ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+                projectCategoryDTO.setName(collectOne);
+                collectCategories.add(projectCategoryDTO);
+            }
             List<ProjectCategoryDTO> categories = new ArrayList<>();
-            categories.addAll(collect);
+            categories.addAll(collectCategories);
             p.setCategories(categories);
         });
         return projectDTOS;
