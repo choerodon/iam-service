@@ -49,6 +49,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -534,7 +535,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
-        if (ids.length == 0) {
+        if (ObjectUtils.isEmpty(ids)) {
             return new ArrayList<>();
         } else {
             return userRepository.listUsersByIds(ids, onlyEnabled);
@@ -543,10 +544,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> listUsersByEmails(String[] emails) {
-        if (emails.length == 0) {
+        if (ObjectUtils.isEmpty(emails)) {
             return new ArrayList<>();
         } else {
             return userRepository.listUsersByEmails(emails);
+        }
+    }
+
+    @Override
+    public List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled) {
+        if (ObjectUtils.isEmpty(loginNames)) {
+            return new ArrayList<>();
+        } else {
+            return userRepository.listUsersByLoginNames(loginNames, onlyEnabled);
         }
     }
 
