@@ -345,8 +345,9 @@ public class UserController extends BaseController {
     public ResponseEntity<PageInfo<UserRoleDTO>> pagingQueryRole(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                              @PathVariable("id") Long id,
+                                                             @RequestParam(required = false) Long organizationId,
                                                              @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.pagingQueryRole(page, size, params, id), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryRole(page, size, params, id, organizationId), HttpStatus.OK);
     }
 
 }

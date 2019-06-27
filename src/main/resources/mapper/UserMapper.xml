@@ -593,7 +593,7 @@
         'Choerodon' AS code,
         1 AS is_enabled,
         imr.source_type,
-        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled), '\n') AS roles,
+        GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
         'site' as image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -604,6 +604,9 @@
             'Choerodon' LIKE concat(concat('%', #{params}), '%')
             )
         </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = 0
+        </if>
         GROUP BY imr.source_type
         UNION
         SELECT
@@ -612,7 +615,7 @@
         fo.code,
         fo.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') AS roles,
+        GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
         fo.image_url,
         null AS proj_name
         FROM iam_member_role imr
@@ -626,6 +629,9 @@
             fo.code LIKE concat(concat('%', #{params}), '%')
             )
         </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = fo.id
+        </if>
         group by fo.id
         UNION
         SELECT
@@ -634,7 +640,7 @@
         fp.code,
         fp.is_enabled,
         imr.source_type,
-        GROUP_CONCAT(concat(concat(ir.name, ',enabled='), ir.is_enabled) , '\n') AS roles,
+        GROUP_CONCAT(concat(concat(concat(concat(ir.code, '|'), ir.name), '|'), ir.is_enabled)) AS roles,
         fp.image_url,
         fp.name AS proj_name
         FROM iam_member_role imr
@@ -648,6 +654,9 @@
             fp.name LIKE concat(concat('%', #{params}), '%') OR
             fp.code LIKE concat(concat('%', #{params}), '%')
             )
+        </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = fp.id
         </if>
         group by fp.id
     </select>
