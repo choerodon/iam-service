@@ -116,7 +116,7 @@ public interface UserRepository {
     /**
      * 分页获取用户下所有角色列表
      */
-    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
+    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId);
 
     List<UserDTO> select(UserDTO example);
 }

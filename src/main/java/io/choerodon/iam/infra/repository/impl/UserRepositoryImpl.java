@@ -311,8 +311,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId) {
-        PageInfo<UserRoleDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectRoles(userId, param));
+    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId) {
+        PageInfo<UserRoleDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectRoles(userId, param, organizationId));
         result.getList().forEach(i -> {
             String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledDTO> list = new ArrayList<>(roles.length);

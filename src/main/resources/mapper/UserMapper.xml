@@ -604,6 +604,9 @@
             'Choerodon' LIKE concat(concat('%', #{params}), '%')
             )
         </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = 0
+        </if>
         GROUP BY imr.source_type
         UNION
         SELECT
@@ -625,6 +628,9 @@
             fo.name LIKE concat(concat('%', #{params}), '%') OR
             fo.code LIKE concat(concat('%', #{params}), '%')
             )
+        </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = fo.id
         </if>
         group by fo.id
         UNION
@@ -648,6 +654,9 @@
             fp.name LIKE concat(concat('%', #{params}), '%') OR
             fp.code LIKE concat(concat('%', #{params}), '%')
             )
+        </if>
+        <if test="organizationId != null">
+            AND #{organizationId} = fp.id
         </if>
         group by fp.id
     </select>
