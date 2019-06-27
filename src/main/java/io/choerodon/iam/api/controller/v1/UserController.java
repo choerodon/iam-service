@@ -260,6 +260,7 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "根据id批量查询用户信息列表")
     @PostMapping(value = "/ids")
     public ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids,
@@ -272,6 +273,14 @@ public class UserController extends BaseController {
     @PostMapping(value = "/emails")
     public ResponseEntity<List<UserDTO>> listUsersByEmails(@RequestBody String[] emails) {
         return new ResponseEntity<>(userService.listUsersByEmails(emails), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据email批量查询用户信息列表")
+    @PostMapping(value = "/login_names")
+    public ResponseEntity<List<UserDTO>> listUsersByLoginNames(@RequestBody String[] loginNames,
+                                                               @RequestParam(value = "only_enabled", defaultValue = "true", required = false) Boolean onlyEnabled) {
+        return new ResponseEntity<>(userService.listUsersByLoginNames(loginNames, onlyEnabled), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)

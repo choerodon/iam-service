@@ -118,4 +118,11 @@ public interface UserService {
 
     PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
 
+    /**
+     * 根据loginName集合查询所有用户
+     * @param loginNames
+     * @param onlyEnabled
+     * @return
+     */
+    List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled);
 }
