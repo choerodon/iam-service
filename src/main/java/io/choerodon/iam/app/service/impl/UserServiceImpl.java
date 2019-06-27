@@ -9,7 +9,15 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.CreateUserWithRolesDTO;
+import io.choerodon.iam.api.dto.OrganizationProjectDTO;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
+import io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO;
+import io.choerodon.iam.api.dto.RegistrantInfoDTO;
+import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.dto.SimplifiedUserDTO;
+import io.choerodon.iam.api.dto.UserPasswordDTO;
+import io.choerodon.iam.api.dto.UserRoleDTO;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
@@ -20,7 +28,11 @@ import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
-import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
@@ -40,7 +52,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -177,8 +195,9 @@ public class UserServiceImpl implements UserService {
     private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
         List<ProjectMapCategorySimpleDTO> projectMapCategorySimpleDTOS = projectMapCategoryMapper.selectAllProjectMapCategories();
         projectDTOS.forEach(p -> {
+
             List<String> collect = projectMapCategorySimpleDTOS.stream().filter(c -> c.getProjectId().equals(p.getId())).map(c -> c.getCategory()).collect(Collectors.toList());
-            List<String> categories = new ArrayList<>();
+            List<ProjectCategoryDTO> categories = new ArrayList<>();
             categories.addAll(collect);
             p.setCategories(categories);
         });

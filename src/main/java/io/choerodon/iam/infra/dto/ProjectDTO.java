@@ -1,10 +1,16 @@
 package io.choerodon.iam.infra.dto;
 
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -56,7 +62,7 @@ public class ProjectDTO extends BaseDTO {
     private String category;
 
     @ApiModelProperty(value = "项目类型(非开源，一对多)")
-    private List<String> categories;
+    private List<ProjectCategoryDTO> categories;
 
     @Transient
     private List<RoleDTO> roles;
@@ -166,11 +172,12 @@ public class ProjectDTO extends BaseDTO {
         this.projects = projects;
     }
 
-    public List<String> getCategories() {
+
+    public List<ProjectCategoryDTO> getCategories() {
         return categories;
     }
 
-    public void setCategories(List<String> categories) {
+    public void setCategories(List<ProjectCategoryDTO> categories) {
         this.categories = categories;
     }
 }
