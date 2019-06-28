@@ -50,7 +50,7 @@
         </if>
         ORDER BY
         ia.IS_ENABLED DESC,
-        ia.APPLICATION_TYPE ASC,
+        ia.APPLICATION_CATEGORY DESC,
         ia.id DESC
     </select>
 
