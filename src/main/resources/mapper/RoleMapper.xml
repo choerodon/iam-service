@@ -89,6 +89,9 @@
         <if test="roleQuery.enabled != null">
             AND IS_ENABLED = #{roleQuery.enabled}
         </if>
+        <if test="roleQuery.builtIn != null">
+            AND IS_BUILT_IN = #{roleQuery.builtIn}
+        </if>
         <if test="param != null">
             AND (
             NAME LIKE concat(concat('%',#{param}), '%') OR
