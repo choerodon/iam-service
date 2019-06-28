@@ -54,8 +54,9 @@ public class MenuController {
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation("查询组织层菜单")
-    @GetMapping("/org/menu_config")
-    public ResponseEntity<MenuDTO> orgMenuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
+    @GetMapping("/org/{organization_id}/menu_config")
+    public ResponseEntity<MenuDTO> orgMenuConfig(@PathVariable(name = "organization_id") Long organizationId,
+                                                 @RequestParam String code, @RequestParam(required = false) Long sourceId) {
         if (!(PROJ_TOP_MENU_CODE.equalsIgnoreCase(code) || ORG_TOP_MENU_CODE.equalsIgnoreCase(code))) {
             throw new CommonException("error.menu.code.cannot.query");
         }
