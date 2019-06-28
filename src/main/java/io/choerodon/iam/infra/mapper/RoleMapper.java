@@ -23,7 +23,8 @@ public interface RoleMapper extends Mapper<RoleDTO> {
     List<RoleDTO> fulltextSearch(@Param("roleQuery") RoleQuery roleQuery, @Param("param") String param);
 
     List<RoleDTO> pagingQueryOrgRoles(@Param("orgId") Long orgId,
-                                      @Param("roleQuery") RoleQuery roleQuery);
+                                      @Param("roleQuery") RoleQuery roleQuery,
+                                      @Param("param") String param);
 
     RoleDTO selectRoleWithPermissionsAndLabels(Long id);
 
