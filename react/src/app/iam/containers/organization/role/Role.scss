@@ -1,0 +1,135 @@
+.c7n-role {
+  &-permission-table {
+    table {
+      table-layout: fixed;
+    }
+  }
+}
+
+.c7n-role-popover {
+  width: 80px;
+  top: 90px !important;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, .2), 0 8px 10px 1px rgba(0, 0, 0, .14), 0 3px 14px 2px rgba(0, 0, 0, .12)
+}
+
+.choerodon-role {
+  .c7n-dropdown-link {
+    text-decoration-line: none;
+    height: 24px;
+    line-height: 24px;
+    font-weight: 500;
+  }
+
+  .choerodon-loading {
+    display: inherit;
+    margin: 200px auto;
+    text-align: center;
+  }
+
+  .choerodon-pagination {
+    margin-top: 15px;
+    float: right;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .show {
+    display: block;
+  }
+
+  &-code {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+    width: 60%;
+    overflow: hidden;
+  }
+  &-description {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 40%;
+    width: 40%;
+    overflow: hidden;
+  }
+}
+
+.tableName:hover {
+  text-decoration: underline;
+  color: blue;
+  cursor: pointer;
+}
+
+.alreadyDes {
+  font-size: 18px;
+  color: #000;
+  line-height: 24px;
+}
+
+.choerodon-roleCreate {
+  .choerodon-pagination {
+    margin-top: 10px;
+    float: right;
+  }
+
+  .choerodon-link-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .choerodon-error {
+    position: relative;
+    left: 5rem;
+    color: red;
+    font-size: 12px;
+  }
+
+  .choerodon-btn-create {
+    float: left;
+    margin-right: 10px;
+  }
+
+  .flex-vCenter {
+    display: flex;
+    align-items: center;
+  }
+
+  .flex-right {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .mt-sm {
+    margin-top: 1rem;
+  }
+
+  .mt-xs {
+    margin-top: 0.5rem;
+  }
+
+  .pull-right {
+    float: right;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .show {
+    display: block;
+  }
+}
+
+.addPermission {
+  color: #3f51b5;
+}
+
+.c7n-roleMsg {
+  .c7n-checkbox-indeterminate {
+    .c7n-checkbox-inner::after {
+      transform: rotate(0) scale(1) !important;
+    }
+  }
+}
