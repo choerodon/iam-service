@@ -169,7 +169,7 @@ export default class CreateRole extends Component {
     if (isEdit) {
       callback();
     }
-    const validValue = `role/${level}/custom/${value}`;
+    const validValue = `role/${level}/${orgId}/${value}`;
     const params = { code: validValue };
     axios.post(`/iam/v1/organizations/${orgId}/roles/check`, JSON.stringify(params)).then((mes) => {
       if (mes.failed) {
@@ -232,7 +232,7 @@ export default class CreateRole extends Component {
     const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
     const codePrefix = isDefault
       ? `role/${level}/default/`
-      : `role/${level}/custom/`;
+      : `role/${level}/${id}/`;
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err) => {
       if (!err) {
@@ -352,11 +352,12 @@ export default class CreateRole extends Component {
   };
 
   renderForm = () => {
-    const { level, props: { intl, form: { getFieldDecorator } }, isEdit } = this;
+    const { level, props: { intl, form: { getFieldDecorator }, AppState }, isEdit } = this;
+    const { id } = AppState.currentMenuType;
     const isDefault = isEdit && (RoleStore.roleMsg.code || '').startsWith(`role/${level}/default/`);
     const codePrefix = isDefault
       ? `role/${level}/default/`
-      : `role/${level}/custom/`;
+      : `role/${level}/${id}/`;
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -588,7 +589,6 @@ export default class CreateRole extends Component {
     const { AppState } = this.props;
     const menu = AppState.currentMenuType;
     const { type, id, name } = menu;
-    debugger;
     return (
       <Page className="c7n-roleMsg">
         <Header

@@ -61,9 +61,9 @@ export default class CreateRole extends Component {
   }
 
   checkCode = (rule, value, callback) => {
-    const validValue = `role/${RoleStore.getChosenLevel}/custom/${value}`;
     const { AppState } = this.props;
     const { id } = AppState.currentMenuType;
+    const validValue = `role/${RoleStore.getChosenLevel}/${id}/${value}`;
     const params = { code: validValue };
     axios.post(`/iam/v1/organizations/${id}/roles/check`, JSON.stringify(params)).then((mes) => {
       if (mes.failed) {
@@ -149,7 +149,7 @@ export default class CreateRole extends Component {
             name: this.props.form.getFieldValue('name').trim(),
             modified: this.props.form.getFieldValue('modified'),
             enabled: this.props.form.getFieldValue('enabled'),
-            code: `role/organization/custom/${this.props.form.getFieldValue('code').trim()}`,
+            code: `role/organization/${id}/${this.props.form.getFieldValue('code').trim()}`,
             level: RoleStore.getChosenLevel,
             permissions: rolePermissionss,
             labels: labelIds,
@@ -272,7 +272,7 @@ export default class CreateRole extends Component {
     const selectedPermission = RoleStore.getSelectedRolesPermission || [];
     const changePermission = RoleStore.getInitSelectedPermission || [];
     const level = RoleStore.getChosenLevel;
-    const codePrefix = `role/${level || 'level'}/custom/`;
+    const codePrefix = `role/${level || 'level'}/${id}/`;
     return (
       <Page className="choerodon-roleCreate">
         <Header
