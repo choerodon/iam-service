@@ -70,14 +70,20 @@ export default class Role extends Component {
   }
 
   showModal = (ids) => {
-    this.props.history.push(`org-role/create?level=${this.state.level}&roleId=${ids}`);
+    const { AppState } = this.props;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
+    this.props.history.push(`org-role/create?level=${this.state.level}&roleId=${ids}&type=${type}&id=${id}&name=${name}&organizationId=${id}`);
   }
 
   goCreate = () => {
+    const { AppState } = this.props;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
     RoleStore.setChosenLevel('');
     RoleStore.setLabel([]);
     RoleStore.setSelectedRolesPermission([]);
-    this.props.history.push(`org-role/create?level=${this.state.level}`);
+    this.props.history.push(`org-role/create?level=${this.state.level}&type=${type}&id=${id}&name=${name}&organizationId=${id}`);
   };
 
   loadRole(paginationIn, sortIn, filtersIn, paramsIn) {
@@ -95,7 +101,7 @@ export default class Role extends Component {
     const { AppState } = this.props;
     const { id } = AppState.currentMenuType;
     this.setState({ filters });
-    RoleStore.loadRole(level,id, pagination, sort, filters, params)
+    RoleStore.loadRole(level, id, pagination, sort, filters, params)
       .then((data) => {
         RoleStore.setIsLoading(false);
         RoleStore.setRoles(data.list || []);
@@ -116,7 +122,10 @@ export default class Role extends Component {
   }
 
   linkToChange = (url) => {
-    this.props.history.push(`${url}`);
+    const { AppState } = this.props;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
+    this.props.history.push(`${url}&type=${type}&id=${id}&name=${name}&organizationId=${id}`);
   };
 
   handleRefresh = () => {
@@ -127,15 +136,15 @@ export default class Role extends Component {
   };
 
   handleEnable = (record) => {
-    const { intl,AppState } = this.props;
+    const { intl, AppState } = this.props;
     const { id } = AppState.currentMenuType;
     if (record.enabled) {
-      RoleStore.disableRole(id,record.id).then(() => {
+      RoleStore.disableRole(id, record.id).then(() => {
         Choerodon.prompt(intl.formatMessage({ id: 'disable.success' }));
         this.loadRole();
       });
     } else {
-      RoleStore.enableRole(id,record.id).then(() => {
+      RoleStore.enableRole(id, record.id).then(() => {
         Choerodon.prompt(intl.formatMessage({ id: 'enable.success' }));
         this.loadRole();
       });
@@ -215,7 +224,7 @@ export default class Role extends Component {
   // }
 
   render() {
-    const { intl,AppState: { currentMenuType }} = this.props;
+    const { intl, AppState: { currentMenuType } } = this.props;
     const { sort: { columnKey, order }, pagination, filters, params } = this.state;
     const { id: organizationId, name: organizationName } = currentMenuType;
     const selectedRowKeys = this.getSelectedRowKeys();
@@ -253,7 +262,7 @@ export default class Role extends Component {
         </MouseOverWrapper>
       ),
     },
-      {
+    {
       title: <FormattedMessage id="level" />,
       dataIndex: 'level',
       key: 'level',
@@ -273,7 +282,7 @@ export default class Role extends Component {
       sortOrder: columnKey === 'level' && order,
       filteredValue: filters.level || [],
     },
-      {
+    {
       title: <FormattedMessage id="source" />,
       dataIndex: 'builtIn',
       key: 'builtIn',
@@ -320,29 +329,32 @@ export default class Role extends Component {
           icon: '',
           text: intl.formatMessage({ id: `${intlPrefix}.create.byone` }),
           action: this.createByThis.bind(this, record),
-        }, {
-          service: ['iam-service.role.update'],
-          icon: '',
-          type: 'organization',
-          text: intl.formatMessage({ id: 'modify' }),
-          action: this.showModal.bind(this, record.id),
         }];
-        if (record.enabled) {
+        if (record.organizationId) {
           actionDatas.push({
-            service: ['iam-service.role.disableRole'],
+            service: ['iam-service.role.update'],
             icon: '',
             type: 'organization',
-            text: intl.formatMessage({ id: 'disable' }),
-            action: this.handleEnable.bind(this, record),
+            text: intl.formatMessage({ id: 'modify' }),
+            action: this.showModal.bind(this, record.id),
           });
-        } else {
-          actionDatas.push({
-            service: ['iam-service.role.enableRole'],
-            icon: '',
-            type: 'organization',
-            text: intl.formatMessage({ id: 'enable' }),
-            action: this.handleEnable.bind(this, record),
-          });
+          if (record.enabled) {
+            actionDatas.push({
+              service: ['iam-service.role.disableRole'],
+              icon: '',
+              type: 'organization',
+              text: intl.formatMessage({ id: 'disable' }),
+              action: this.handleEnable.bind(this, record),
+            });
+          } else {
+            actionDatas.push({
+              service: ['iam-service.role.enableRole'],
+              icon: '',
+              type: 'organization',
+              text: intl.formatMessage({ id: 'enable' }),
+              action: this.handleEnable.bind(this, record),
+            });
+          }
         }
         return <Action data={actionDatas} />;
       },
@@ -387,7 +399,7 @@ export default class Role extends Component {
         <Header
           title={<FormattedMessage id={`${intlPrefix}.header.title`} />}
         >
-          {/*{this.renderLevelSelect()}*/}
+          {/* {this.renderLevelSelect()} */}
           <Permission
             service={['iam-service.organization-role.create']}
           >

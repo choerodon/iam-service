@@ -6,18 +6,27 @@ import _ from 'lodash';
 @store('RoleStore')
 class RoleStore {
   @observable roles = [];
+
   @observable isLoading = true;
+
   @observable totalPage;
+
   @observable totalSize;
+
   @observable canChosePermission = {
     site: [],
     organization: [],
     project: [],
   };
+
   @observable wholeServerAndType = [];
+
   @observable selectedRolesPermission = [];
+
   @observable allRoleLabel = [];
+
   @observable chosenLevel = '';
+
   @observable permissionPage = {
     site: {
       current: 1,
@@ -329,7 +338,7 @@ class RoleStore {
     });
   }
 
-  loadRole(level,orgId, { current = 1, pageSize },
+  loadRole(level, orgId, { current = 1, pageSize },
     { columnKey, order },
     { name, code, enabled, builtIn }, params = []) {
     const body = {
@@ -366,19 +375,21 @@ class RoleStore {
   //   }
   // };
 
-  getSelectedRolePermissions = (orgId,ids) => axios.post(`/iam/v1/permissions/through_roles_at_org/${orgId}`, ids);
+  getSelectedRolePermissions = (orgId, ids) => axios.post(`/iam/v1/permissions/through_roles_at_org/${orgId}`, ids);
 
-  createRole = (orgId,role) => axios.post(`/iam/v1/organizations/${orgId}/roles`, role);
+  createRole = (orgId, role) => axios.post(`/iam/v1/organizations/${orgId}/roles`, role);
 
-  getRoleById = (orgId,id) => axios.get(`/iam/v1/organizations/${orgId}/roles/${id}`);
+  getRoleById = (orgId, id) => axios.get(`/iam/v1/organizations/${orgId}/roles/${id}`);
 
   // updateRoleById = (id, role) => axios.put(`/iam/v1/roles/${id}`, JSON.stringify(role));
   //
   // deleteRoleById = id => axios.delete(`/iam/v1/roles/${id}`);
 
-  editRoleByid = (orgId,id, data) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}`, data);
-  enableRole = (orgId,id) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}/enable`);
-  disableRole = (orgId,id) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}/disable`);
+  editRoleByid = (orgId, id, data) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}`, data);
+
+  enableRole = (orgId, id) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}/enable`);
+
+  disableRole = (orgId, id) => axios.put(`/iam/v1/organizations/${orgId}/roles/${id}/disable`);
 
   // queryDatas([page, size], value) {
   //   let url = '';
@@ -400,7 +411,7 @@ class RoleStore {
   //   });
   // }
 
-  loadMenu = (orgId,level) => axios.get(`/iam/v1/menus/org/${orgId}/menu_config?code=choerodon.code.top.${level}`);
+  loadMenu = (orgId, level) => axios.get(`/iam/v1/menus/org/${orgId}/menu_config?code=choerodon.code.top.${level}`);
 }
 
 const roleStore = new RoleStore();

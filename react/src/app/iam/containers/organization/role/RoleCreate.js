@@ -27,17 +27,7 @@ export default class CreateRole extends Component {
     const level = RoleStore.getChosenLevel !== '';
     this.state = {
       visible: false,
-      selectedLevel: 'organization',
-      code: '',
-      description: '',
-      page: 1,
-      pageSize: 10,
-      alreadyPage: 1,
-      errorName: '',
-      errorDescription: '',
       submitting: false,
-      selectedRowKeys: [],
-      selectedSideBar: [],
       currentPermission: [],
       firstLoad: true,
       initLevel: level,
@@ -129,7 +119,6 @@ export default class CreateRole extends Component {
     this.setState({
       currentPermission: selectedIds,
       visible: false,
-      alreadyPage: 1,
     });
   };
 
@@ -152,8 +141,7 @@ export default class CreateRole extends Component {
         const { AppState } = this.props;
         const { id } = AppState.currentMenuType;
         const rolePermissionss = [];
-        currentPermission.forEach(id =>
-          rolePermissionss.push({ id }));
+        currentPermission.forEach(pid => rolePermissionss.push({ id: pid }));
         if (rolePermissionss.length > 0) {
           const labelValues = this.props.form.getFieldValue('label');
           const labelIds = labelValues && labelValues.map(labelId => ({ id: labelId }));
@@ -167,7 +155,7 @@ export default class CreateRole extends Component {
             labels: labelIds,
           };
           this.setState({ submitting: true });
-          RoleStore.createRole(id,role)
+          RoleStore.createRole(id, role)
             .then((data) => {
               this.setState({ submitting: false });
               if (data && !data.failed) {
@@ -195,7 +183,7 @@ export default class CreateRole extends Component {
   };
 
   handleModal = (value) => {
-    const { form, intl,AppState } = this.props;
+    const { form, intl, AppState } = this.props;
     const that = this;
     const { getFieldValue, setFieldsValue } = form;
     const { currentPermission } = this.state;
@@ -259,14 +247,15 @@ export default class CreateRole extends Component {
 
   renderRoleLabel = () => {
     const labels = RoleStore.getLabel;
-    return labels.map(item =>
-      <Option key={item.id} value={`${item.id}`}>{item.name}</Option>);
+    return labels.map(item => <Option key={item.id} value={`${item.id}`}>{item.name}</Option>);
   };
 
   render() {
     const { currentPermission, firstLoad, submitting, initLevel } = this.state;
     const { intl, AppState } = this.props;
     const { getFieldDecorator } = this.props.form;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -288,7 +277,7 @@ export default class CreateRole extends Component {
       <Page className="choerodon-roleCreate">
         <Header
           title={<FormattedMessage id={`${intlPrefix}.create`} />}
-          backPath="/iam/org-role"
+          backPath={`/iam/org-role?type=${type}&id=${id}&name=${name}&organizationId=${id}`}
         />
         <Content
           code={`${intlPrefix}.create`}

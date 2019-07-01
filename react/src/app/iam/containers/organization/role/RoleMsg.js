@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import querystring from 'query-string';
+import { set, get } from 'mobx';
 import remove from 'lodash/remove';
 import { Observable } from 'rxjs';
 import _ from 'lodash';
@@ -14,7 +15,6 @@ import MouseOverWrapper from '../../../components/mouseOverWrapper';
 import { handleFiltersParams } from '../../../common/util';
 import './Role.scss';
 import Sider from './Sider';
-import { set, get } from 'mobx';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -57,16 +57,16 @@ export default class CreateRole extends Component {
     const { AppState } = this.props;
     const { id } = AppState.currentMenuType;
     RoleStore.setTabLevel(tabLevel);
-    this.loadMenu(id,RoleStore.tabLevel || tabLevel);
+    this.loadMenu(id, RoleStore.tabLevel || tabLevel);
     RoleStore.loadRoleLabel(id);
     if (base.length) {
-      RoleStore.getSelectedRolePermissions(id,base)
+      RoleStore.getSelectedRolePermissions(id, base)
         .then((res) => {
           RoleStore.setSelectedPermissions(res.map(p => p.id));
         });
     }
     if (this.isEdit) {
-      RoleStore.getRoleById(id,this.roleId)
+      RoleStore.getRoleById(id, this.roleId)
         .then((res) => {
           this.props.form.resetFields();
           RoleStore.setRoleMsg(res);
@@ -75,8 +75,8 @@ export default class CreateRole extends Component {
     }
   }
 
-  loadMenu = (orgId,tabLevel) => {
-    RoleStore.loadMenu(orgId,tabLevel)
+  loadMenu = (orgId, tabLevel) => {
+    RoleStore.loadMenu(orgId, tabLevel)
       .then((menus) => {
         set(RoleStore.menus, tabLevel, menus.subMenus);
         set(RoleStore.expandedRowKeys, tabLevel, this.getAllIdByLevel(tabLevel));
@@ -165,7 +165,7 @@ export default class CreateRole extends Component {
   checkCode = (rule, value, callback) => {
     const { isEdit, level } = this;
     const { AppState } = this.props;
-    const { id:orgId } = AppState.currentMenuType;
+    const { id: orgId } = AppState.currentMenuType;
     if (isEdit) {
       callback();
     }
@@ -183,7 +183,10 @@ export default class CreateRole extends Component {
 
   linkToChange = (url) => {
     const { history } = this.props;
-    history.push(url);
+    const { AppState } = this.props;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
+    history.push(`${url}&type=${type}&id=${id}&name=${name}&organizationId=${id}`);
   };
 
   handleExpand = (expanded, record) => {
@@ -246,7 +249,7 @@ export default class CreateRole extends Component {
         };
         const { intl } = this.props;
         if (this.isEdit) {
-          RoleStore.editRoleByid(id,this.roleId, role)
+          RoleStore.editRoleByid(id, this.roleId, role)
             .then((data) => {
               if (!data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'modify.success' }));
@@ -258,7 +261,7 @@ export default class CreateRole extends Component {
               }
             });
         } else {
-          RoleStore.createRole(id,role)
+          RoleStore.createRole(id, role)
             .then((data) => {
               if (data && !data.failed) {
                 Choerodon.prompt(intl.formatMessage({ id: 'create.success' }));
@@ -285,10 +288,10 @@ export default class CreateRole extends Component {
     this.linkToChange(`/iam/org-role?level=${this.level}`);
   };
 
-  handleChangeTabLevel = (orgId,key) => {
+  handleChangeTabLevel = (orgId, key) => {
     RoleStore.setTabLevel(key);
     if (!get(RoleStore.menus, key)) {
-      this.loadMenu(orgId,key);
+      this.loadMenu(orgId, key);
     }
   }
 
@@ -515,28 +518,26 @@ export default class CreateRole extends Component {
     );
   }
 
-  renderBtns = () => {
-    return (
-      <div style={{ marginTop: 32 }}>
-        <Button
-          funcType="raised"
-          type="primary"
-          onClick={this.handleCreate}
-          style={{ marginRight: 12 }}
-          loading={this.state.submitLoading}
-        >
-          <FormattedMessage id={!this.isEdit ? 'create' : 'save'} />
-        </Button>
-        <Button
-          funcType="raised"
-          onClick={this.handleReset}
-          style={{ color: '#3F51B5' }}
-        >
-          <FormattedMessage id="cancel" />
-        </Button>
-      </div>
-    );
-  }
+  renderBtns = () => (
+    <div style={{ marginTop: 32 }}>
+      <Button
+        funcType="raised"
+        type="primary"
+        onClick={this.handleCreate}
+        style={{ marginRight: 12 }}
+        loading={this.state.submitLoading}
+      >
+        <FormattedMessage id={!this.isEdit ? 'create' : 'save'} />
+      </Button>
+      <Button
+        funcType="raised"
+        onClick={this.handleReset}
+        style={{ color: '#3F51B5' }}
+      >
+        <FormattedMessage id="cancel" />
+      </Button>
+    </div>
+  )
 
   renderSider = () => {
     const { siderVisible, currentMenu, selectedPermissions } = RoleStore;
@@ -559,9 +560,6 @@ export default class CreateRole extends Component {
   renderTab = () => {
     const tabLevel = RoleStore.tabLevel || this.tabLevel;
     const expand = get(RoleStore.expand, tabLevel);
-    const { AppState } = this.props;
-    const { id: organizationId } = AppState.currentMenuType;
-    console.log(organizationId);
     return (
       <React.Fragment>
         <div>
@@ -587,11 +585,15 @@ export default class CreateRole extends Component {
   }
 
   render() {
+    const { AppState } = this.props;
+    const menu = AppState.currentMenuType;
+    const { type, id, name } = menu;
+    debugger;
     return (
       <Page className="c7n-roleMsg">
         <Header
           title={`${!this.isEdit ? '创建' : '修改'}${LEVEL_NAME[this.level]}角色`}
-          backPath={`/org-iam/role?level=${this.level}`}
+          backPath={`/iam/org-role?type=${type}&id=${id}&name=${name}&organizationId=${id}`}
         />
         <Content>
           {this.renderForm()}

@@ -1594,6 +1594,12 @@ const zh_CN = {
   'organization.role.create.byselect': '基于所选角色创建',
   'organization.role.description': '角色是您可分配给成员的一组权限。您可以创建角色并为其添加权限，也可以复制现有角色并调整其权限。',
   'organization.role.code.exist.msg': '角色编码已存在，请输入其他角色编码',
+  'organization.role.code': '角色编码',
+  'organization.role.name': '角色名称',
+  'organization.role.label': '角色标签',
+  'organization.role.code.require.msg': '请输入角色编码',
+  'organization.role.name.require.msg': '请输入角色名称',
+  'organization.role.code.pattern.msg': '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
 
   // 项目层
   // 项目信息

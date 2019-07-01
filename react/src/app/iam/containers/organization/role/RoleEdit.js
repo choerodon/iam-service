@@ -25,11 +25,9 @@ export default class EditRole extends Component {
     this.state = {
       roleData: {},
       visible: false,
-      selectedLevel: 'site',
       submitting: false,
       id: this.props.match.params.id,
       currentPermission: [],
-      selectPermission: [],
       permissionParams: [],
     };
   }
@@ -37,7 +35,7 @@ export default class EditRole extends Component {
   componentWillMount() {
     const { AppState } = this.props;
     const { id } = AppState.currentMenuType;
-    RoleStore.getRoleById(id,this.state.id).then((data) => {
+    RoleStore.getRoleById(id, this.state.id).then((data) => {
       this.setState({
         roleData: data,
         currentPermission: data.permissions.map(item => item.id),
@@ -129,7 +127,7 @@ export default class EditRole extends Component {
   };
 
   handleEdit = () => {
-    const { intl ,AppState } = this.props;
+    const { intl, AppState } = this.props;
     const { id } = AppState.currentMenuType;
     this.props.form.validateFieldsAndScroll((err, values, modify) => {
       if (!err) {
@@ -140,8 +138,7 @@ export default class EditRole extends Component {
         }
         const { currentPermission } = this.state;
         const rolePermissionss = [];
-        currentPermission.forEach(id =>
-          rolePermissionss.push({ id }));
+        currentPermission.forEach(pid => rolePermissionss.push({ id: pid }));
         if (rolePermissionss.length) {
           const labelValues = this.props.form.getFieldValue('label');
           const labelIds = labelValues && labelValues.map(labelId => ({ id: labelId }));
@@ -156,7 +153,7 @@ export default class EditRole extends Component {
             objectVersionNumber: this.state.roleData.objectVersionNumber,
           };
           this.setState({ submitting: true });
-          RoleStore.editRoleByid(id,this.state.id, role)
+          RoleStore.editRoleByid(id, this.state.id, role)
             .then((data) => {
               this.setState({ submitting: false });
               if (data) {
@@ -205,8 +202,7 @@ export default class EditRole extends Component {
 
   renderRoleLabel = () => {
     const labels = RoleStore.getLabel;
-    const result = labels.map(item =>
-      <Option key={item.id} value={`${item.id}`}>{item.name}</Option>);
+    const result = labels.map(item => <Option key={item.id} value={`${item.id}`}>{item.name}</Option>);
     return result;
   };
 
@@ -231,6 +227,8 @@ export default class EditRole extends Component {
     } = this.state;
     const { intl, AppState } = this.props;
     const { level, name, code, labels, builtIn } = roleData;
+    const menu = AppState.currentMenuType;
+    const { type, id } = menu;
     const origin = RoleStore.getCanChosePermission;
     const data = level ? origin[level].slice() : [];
     const { getFieldDecorator } = this.props.form;
@@ -252,7 +250,7 @@ export default class EditRole extends Component {
         <Page>
           <Header
             title={<FormattedMessage id={`${intlPrefix}.modify`} />}
-            backPath="/iam/org-role"
+            backPath={`/iam/org-role?type=${type}&id=${id}&name=${name}&organizationId=${id}`}
           />
           <Content
             code={`${intlPrefix}.modify`}
