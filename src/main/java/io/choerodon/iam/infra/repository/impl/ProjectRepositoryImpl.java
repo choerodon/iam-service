@@ -132,7 +132,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         if (categoryEnable) {
             projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, "AGILE", param);
         } else {
-            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId,  param);
+            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
         }
         return projectDTOS;
     }
@@ -246,8 +246,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public List<ProjectDTO> selectProjsNotGroup(Long orgId,Long projectId) {
-        return projectMapper.selectProjsNotGroup(orgId,projectId);
+    public List<ProjectDTO> selectProjsNotGroup(Long orgId, Long projectId) {
+        return projectMapper.selectProjsNotGroup(orgId, projectId);
     }
 
     @Override
@@ -276,11 +276,13 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         }
         ProjectDTO projectDTO = new ProjectDTO();
         BeanUtils.copyProperties(projectDTOS.get(0), projectDTO);
-        List<String> categories = new ArrayList<>();
+        List<ProjectCategoryDTO> categories = new ArrayList<>();
         String category = null;
         for (int i = 0; i < projectDTOS.size(); i++) {
             ProjectDTO p = projectDTOS.get(i);
-            categories.add(p.getCategory());
+            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+            projectCategoryDTO.setCode(p.getCategory());
+            categories.add(projectCategoryDTO);
             if (category == null && ProjectCategory.PROGRAM.value().equalsIgnoreCase(p.getCategory())) {
                 category = ProjectCategory.PROGRAM.value();
             } else if (category == null && ProjectCategory.AGILE.value().equalsIgnoreCase(p.getCategory())) {

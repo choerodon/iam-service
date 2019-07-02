@@ -280,6 +280,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled) {
+        return mapper.listUsersByLoginNames(loginNames, onlyEnabled);
+    }
+
+    @Override
     public int selectCount(UserDTO user) {
         return mapper.selectCount(user);
     }

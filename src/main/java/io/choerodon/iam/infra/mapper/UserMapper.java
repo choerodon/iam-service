@@ -19,7 +19,7 @@ import io.choerodon.iam.api.dto.UserRoleDTO;
 public interface UserMapper extends Mapper<UserDTO> {
 
     List<UserDTO> fulltextSearch(@Param("userSearchDTO") UserSearchDTO userSearchDTO,
-                                @Param("param") String param);
+                                 @Param("param") String param);
 
     List<UserDTO> selectUserWithRolesByOption(
             @Param("roleAssignmentSearchDTO") RoleAssignmentSearchDTO roleAssignmentSearchDTO,
@@ -36,10 +36,10 @@ public interface UserMapper extends Mapper<UserDTO> {
                          @Param("param") String param);
 
     List<UserDTO> selectUsersByLevelAndOptions(@Param("sourceType") String sourceType,
-                                              @Param("sourceId") Long sourceId,
-                                              @Param("userId") Long userId,
-                                              @Param("email") String email,
-                                              @Param("param") String param);
+                                               @Param("sourceId") Long sourceId,
+                                               @Param("userId") Long userId,
+                                               @Param("email") String email,
+                                               @Param("param") String param);
 
     Integer selectUserCountFromMemberRoleByOptions(@Param("roleId") Long roleId,
                                                    @Param("memberType") String memberType,
@@ -50,12 +50,12 @@ public interface UserMapper extends Mapper<UserDTO> {
                                                    @Param("param") String param);
 
     List<UserDTO> selectUsersFromMemberRoleByOptions(@Param("roleId") Long roleId,
-                                            @Param("memberType") String memberType,
-                                            @Param("sourceId") Long sourceId,
-                                            @Param("sourceType") String sourceType,
-                                            @Param("roleAssignmentSearchDTO")
-                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                            @Param("param") String param);
+                                                     @Param("memberType") String memberType,
+                                                     @Param("sourceId") Long sourceId,
+                                                     @Param("sourceType") String sourceType,
+                                                     @Param("roleAssignmentSearchDTO")
+                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                     @Param("param") String param);
 
 
     List<UserDTO> listUsersByIds(@Param("ids") Long[] ids, @Param("onlyEnabled") Boolean onlyEnabled);
@@ -80,6 +80,7 @@ public interface UserMapper extends Mapper<UserDTO> {
 
     /**
      * 选择性查询用户，如果用户在组织下，则模糊查询，如果用户不在组织下精确匹配
+     *
      * @param param
      * @param organizationId
      * @return
@@ -102,4 +103,14 @@ public interface UserMapper extends Mapper<UserDTO> {
                            @Param("end") String end);
 
     List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params") String params, @Param("organizationId") Long organizationId);
+
+    /**
+     * 根据用户登录名集合查所有用户
+     *
+     * @param loginNames
+     * @param onlyEnabled
+     * @return
+     */
+    List<UserDTO> listUsersByLoginNames(@Param("loginNames") String[] loginNames,
+                                        @Param("onlyEnabled") Boolean onlyEnabled);
 }

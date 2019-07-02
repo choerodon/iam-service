@@ -83,6 +83,14 @@ public interface UserRepository {
      */
     List<UserDTO> listUsersByEmails(String[] emails);
 
+    /**
+     * 根据登录名集合查所有用户
+     * @param loginNames
+     * @param onlyEnabled
+     * @return
+     */
+    List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled);
+
     PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
 
     List<UserDTO> insertList(List<UserDTO> insertUsers);

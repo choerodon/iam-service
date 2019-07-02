@@ -7,7 +7,6 @@ import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.swagger.PermissionData;
-import io.choerodon.iam.app.task.FixDataHelper;
 import io.choerodon.iam.domain.service.ParsePermissionService;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import org.slf4j.Logger;
@@ -30,19 +29,16 @@ public class ActuatorSagaHandler {
     private static final String ACTUATOR_REFRESH_SAGA_CODE = "mgmt-actuator-refresh";
     private static final String PERMISSION_REFRESH_TASK_SAGA_CODE = "iam-permission-task-refresh";
     private static final String INIT_DATA_REFRESH_TASK_SAGA_CODE = "iam-init-data-task-refresh";
-    private static final String FIX_DATA_REFRESH_TASK_SAGA_CODE = "iam-fix-data-task-refresh";
 
     private ParsePermissionService parsePermissionService;
 
     private DataSource dataSource;
 
-    private FixDataHelper fixDataHelper;
 
-    public ActuatorSagaHandler(ParsePermissionService parsePermissionService, DataSource dataSource,
-                               FixDataHelper fixDataHelper) {
+    public ActuatorSagaHandler(ParsePermissionService parsePermissionService,
+                               DataSource dataSource) {
         this.parsePermissionService = parsePermissionService;
         this.dataSource = dataSource;
-        this.fixDataHelper = fixDataHelper;
     }
 
     @SagaTask(code = PERMISSION_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 1, description = "刷新权限表数据")
@@ -75,13 +71,6 @@ public class ActuatorSagaHandler {
             MicroServiceInitData.processInitData(data, connection, new HashSet<>(Arrays.asList("IAM_PERMISSION", "IAM_MENU_B", "IAM_MENU_PERMISSION", "IAM_DASHBOARD", "IAM_DASHBOARD_ROLE")));
             connection.commit();
         }
-        return actuatorJson;
-    }
-
-    @SagaTask(code = FIX_DATA_REFRESH_TASK_SAGA_CODE, sagaCode = ACTUATOR_REFRESH_SAGA_CODE, seq = 2, description = "0.16.0升级0.17.0菜单修数据")
-    public String fixData(String actuatorJson) {
-        LOGGER.info("start to fix menu and dashboard data");
-        fixDataHelper.fix();
         return actuatorJson;
     }
 

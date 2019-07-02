@@ -59,7 +59,7 @@ export default class ProjectInfo extends Component {
             categoryEnabled && (
                 <div>
                   <dt><FormattedMessage id={`${intlPrefix}.type`} /></dt>
-                  <dd>{categories && categories.map(value => value + " ") || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
+                  <dd>{categories && categories.map(value => value.name + " ") || intl.formatMessage({ id: 'dashboard.empty' })}</dd>
                 </div>
             )
           }

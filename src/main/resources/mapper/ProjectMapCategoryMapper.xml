@@ -10,9 +10,9 @@
         WHERE pmc.project_id = #{projectId}
     </select>
 
-    <select id="selectProjectCategoryNames" resultType="java.lang.String">
-        SELECT
-            pc. NAME
+    <select id="selectProjectCategoryNames" resultType="io.choerodon.iam.api.dto.ProjectCategoryDTO">
+        SELECT pc.code AS code,
+            pc. NAME AS name
         FROM
             FD_PROJECT_MAP_CATEGORY pmc
         LEFT JOIN FD_PROJECT_CATEGORY pc ON pmc.CATEGORY_ID = pc.id

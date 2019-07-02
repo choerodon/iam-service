@@ -59,6 +59,18 @@
         </if>
     </select>
 
+    <select id="listUsersByLoginNames" resultMap="userDTO">
+        SELECT * FROM iam_user
+        WHERE login_name IN
+        <foreach item="loginName" index="index" collection="loginNames"
+                 open="(" separator="," close=")">
+            #{loginName}
+        </foreach>
+        <if test="onlyEnabled == true">
+            AND is_enabled = 1
+        </if>
+    </select>
+
     <select id="listUsersByEmails" resultMap="userDTO">
         SELECT * FROM iam_user
         WHERE email IN
