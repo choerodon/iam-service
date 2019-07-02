@@ -23,4 +23,15 @@ public interface DashboardMapper extends Mapper<DashboardDTO> {
             @Param("param") String param);
 
     List<DashboardDTO> selectByLevel(@Param("level") String level);
+
+    /**
+     * 根据dashboard code查询角色code
+     *
+     * @param code
+     * @param level
+     * @return
+     */
+    List<String> selectRoleCodesByDashboard(@Param("code") String code, @Param("level") String level);
+
+
 }

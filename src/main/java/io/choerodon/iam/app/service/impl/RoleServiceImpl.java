@@ -9,7 +9,10 @@ import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.RoleService;
-import io.choerodon.iam.domain.repository.*;
+import io.choerodon.iam.domain.repository.ClientRepository;
+import io.choerodon.iam.domain.repository.RolePermissionRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IRoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.PermissionDTO;
@@ -74,6 +77,10 @@ public class RoleServiceImpl implements RoleService {
         return roles;
     }
 
+    @Override
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
+        return roleRepository.pagingQueryOrgRoles(orgId, page, size, roleQuery);
+    }
 
     @Override
     public RoleDTO create(RoleDTO roleDTO) {
@@ -139,6 +146,12 @@ public class RoleServiceImpl implements RoleService {
         return iRoleService.update(roleDTO);
     }
 
+    @Override
+    public RoleDTO orgUpdate(RoleDTO roleDTO, Long orgId) {
+        checkRoleCanBeModified(roleDTO.getId(), orgId);
+        return update(roleDTO);
+    }
+
     private void updateCheck(RoleDTO roleDTO) {
         if (StringUtils.isEmpty(roleDTO.getName())) {
             throw new CommonException("error.role.name.empty");
@@ -176,6 +189,18 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO disableRole(Long id) {
         return iRoleService.updateRoleDisabled(id);
+    }
+
+    @Override
+    public RoleDTO orgEnableRole(Long roleId, Long orgId) {
+        checkRoleCanBeModified(roleId, orgId);
+        return enableRole(roleId);
+    }
+
+    @Override
+    public RoleDTO orgDisableRole(Long roleId, Long orgId) {
+        checkRoleCanBeModified(roleId, orgId);
+        return disableRole(roleId);
     }
 
     @Override
@@ -300,5 +325,24 @@ public class RoleServiceImpl implements RoleService {
         RoleDTO roleDTO = new RoleDTO();
         roleDTO.setCode(code);
         return roleRepository.selectOne(roleDTO);
+    }
+
+
+    /**
+     * 校验是否可修改该角色
+     * 时机：组织层修改/启停用角色时校验
+     * 内容：1.角色必须存在，2.不可修改平台层创建的组织层角色，3.不可修改其他组织创建的角色
+     *
+     * @param roleId
+     * @param orgId
+     */
+    private void checkRoleCanBeModified(Long roleId, Long orgId) {
+        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(roleId);
+        if (roleDTO == null) {
+            throw new CommonException("error.role.not.exist");
+        }
+        if (roleDTO.getOrganizationId() == null || roleDTO.getOrganizationId() != orgId) {
+            throw new CommonException("error.role.modify.check");
+        }
     }
 }

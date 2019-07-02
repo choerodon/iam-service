@@ -116,7 +116,7 @@ public interface UserService {
 
     Map<String, Object> queryAllAndNewUsers();
 
-    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId);
+    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId);
 
     /**
      * 根据loginName集合查询所有用户

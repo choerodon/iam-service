@@ -52,7 +52,7 @@
     "max-len": "off",
     "no-console": "error",
     "no-control-regex": "off",
-    "no-debugger": "off",
+    "no-debugger": "error",
     "no-else-return": "off",
     "no-nested-ternary": "off",
     "no-param-reassign": "off",

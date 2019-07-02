@@ -316,18 +316,18 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId) {
-        PageInfo<UserRoleDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectRoles(userId, param));
+    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId) {
+        PageInfo<UserRoleDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.selectRoles(userId, param, organizationId));
         result.getList().forEach(i -> {
-            String[] roles = i.getRoleNames().split("\n");
+            String[] roles = i.getRoleNames().split(",");
             List<RoleNameAndEnabledDTO> list = new ArrayList<>(roles.length);
             for (int j = 0; j < roles.length; j++) {
-                String[] nameAndEnabled = roles[j].split(",enabled=");
+                String[] nameAndEnabled = roles[j].split("\\|");
                 boolean roleEnabled = true;
-                if (nameAndEnabled[1].equals("0")) {
+                if (nameAndEnabled[2].equals("0")) {
                     roleEnabled = false;
                 }
-                list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], roleEnabled));
+                list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], nameAndEnabled[1], roleEnabled));
             }
             i.setRoles(list);
             if (ResourceLevel.PROJECT.value().equals(i.getLevel())) {

@@ -37,15 +37,16 @@ public interface MenuMapper extends Mapper<MenuDTO> {
      * @param level
      * @return
      */
-    List<MenuDTO> selectMenusWithPermission(String level);
+    List<MenuDTO> selectMenusWithPermission(String level, Long sourceId);
 
     /**
      * 根据层级查询该层级菜单，关联permission表查path作为route字段值
      *
      * @param level
+     * @param sourceId
      * @return
      */
-    Set<MenuDTO> selectByLevelWithPermissionType(String level);
+    Set<MenuDTO> selectByLevelWithPermissionType(String level, Long sourceId);
 
 
     /**

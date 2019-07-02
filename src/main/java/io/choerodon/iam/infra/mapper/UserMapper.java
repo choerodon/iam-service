@@ -102,7 +102,7 @@ public interface UserMapper extends Mapper<UserDTO> {
     Integer newUsersByDate(@Param("begin") String begin,
                            @Param("end") String end);
 
-    List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params") String params);
+    List<UserRoleDTO> selectRoles(@Param("userId") long id, @Param("params") String params, @Param("organizationId") Long organizationId);
 
     /**
      * 根据用户登录名集合查所有用户

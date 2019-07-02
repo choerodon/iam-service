@@ -31,6 +31,8 @@ eureka:
 choerodon:
   devops:
     message: false
+  category:
+    enabled: false
   saga:
     consumer:
       enabled: false # 启动消费端

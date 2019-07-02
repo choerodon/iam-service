@@ -1,17 +1,16 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.mapper.RoleMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author superlee
@@ -28,6 +27,11 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public PageInfo<RoleDTO> pagingQuery(int page, int size, RoleQuery roleQuery) {
         return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.fulltextSearch(roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
+    }
+
+    @Override
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
+        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.pagingQueryOrgRoles(orgId, roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
     }
 
     @Override

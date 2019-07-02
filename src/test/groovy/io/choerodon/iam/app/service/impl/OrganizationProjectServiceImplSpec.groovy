@@ -13,6 +13,8 @@ import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.dto.RoleDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.AsgardFeignClient
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
@@ -24,8 +26,7 @@ import spock.lang.Specification
 import java.lang.reflect.Field
 
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
@@ -42,13 +43,15 @@ class OrganizationProjectServiceImplSpec extends Specification {
     private ProjectTypeService projectTypeService = Mock(ProjectTypeService)
     private OrganizationProjectService organizationProjectService
     private ProjectRelationshipRepository projectRelationshipRepository
+    private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
+    private ProjectCategoryMapper projectCategoryMapper = Mock(ProjectCategoryMapper)
 
     def setup() {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, roleRepository,
                 memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient,
-                projectTypeService, projectRelationshipRepository)
+                projectTypeService, projectRelationshipRepository, projectMapCategoryMapper, projectCategoryMapper)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)
@@ -64,9 +67,11 @@ class OrganizationProjectServiceImplSpec extends Specification {
 
         and: "mock静态方法-ConvertHelper"
         //ConvertHelper中用到了BeanFactory，必须mock
-
+        Field field = organizationProjectService.class.getDeclaredField("categoryEnable")
+        field.setAccessible(true)
+        field.setBoolean(organizationProjectService, false)
         when: "调用方法"
-        organizationProjectService.createProject(projectDTO)
+        organizationProjectService.createProject(projectDTO, null)
 
         then: "校验结果"
         noExceptionThrown()
@@ -94,6 +99,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
         given: "mock"
         ProjectDTO projectDTO = new ProjectDTO()
         projectDTO.setObjectVersionNumber(1)
+        projectDTO.setName("name")
         UserDTO user = new UserDTO()
         user.setPassword("password")
 

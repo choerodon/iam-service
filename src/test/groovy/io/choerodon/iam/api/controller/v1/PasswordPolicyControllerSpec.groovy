@@ -1,6 +1,5 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
@@ -48,7 +47,7 @@ class PasswordPolicyControllerSpec extends Specification {
         given: "构造请求参数"
         def organizationId = 1L
         def passwordPolicyId = 1L
-        def passwordPolicyDTO = ConvertHelper.convert(policyMapper.selectByPrimaryKey(passwordPolicyId), PasswordPolicyDTO)
+        def passwordPolicyDTO = policyMapper.selectByPrimaryKey(passwordPolicyId)
         passwordPolicyDTO.setDigitsCount(1)
         passwordPolicyDTO.setLowercaseCount(1)
         passwordPolicyDTO.setUppercaseCount(1)
@@ -57,18 +56,14 @@ class PasswordPolicyControllerSpec extends Specification {
         passwordPolicyDTO.setMaxLength(10)
 
         when: "调用方法[异常-密码策略不存在]"
-        def passwordPolicyDTO1 = new PasswordPolicyDTO()
-        BeanUtils.copyProperties(passwordPolicyDTO, passwordPolicyDTO1)
-        def entity = restTemplate.postForEntity(BASE_PATH + "/{id}", passwordPolicyDTO1, ExceptionResponse, organizationId, 1000L)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/{id}", passwordPolicyDTO, ExceptionResponse, organizationId, 1000L)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.passwordPolicy.not.exist")
 
         when: "调用方法[异常-组织id不存在]"
-        def passwordPolicyDTO2 = new PasswordPolicyDTO()
-        BeanUtils.copyProperties(passwordPolicyDTO, passwordPolicyDTO2)
-        entity = restTemplate.postForEntity(BASE_PATH + "/{id}", passwordPolicyDTO2, ExceptionResponse, 1000L, passwordPolicyId)
+        entity = restTemplate.postForEntity(BASE_PATH + "/{id}", passwordPolicyDTO, ExceptionResponse, 1000L, passwordPolicyId)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()

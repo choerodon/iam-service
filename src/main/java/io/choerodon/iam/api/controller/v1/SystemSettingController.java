@@ -36,7 +36,6 @@ import javax.validation.Valid;
 public class SystemSettingController extends BaseController {
     private final SystemSettingService systemSettingService;
 
-    @Autowired
     public SystemSettingController(SystemSettingService systemSettingService) {
         this.systemSettingService = systemSettingService;
     }

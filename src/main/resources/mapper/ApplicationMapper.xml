@@ -48,6 +48,10 @@
                 )
             </if>
         </if>
+        ORDER BY
+        ia.IS_ENABLED DESC,
+        ia.APPLICATION_CATEGORY DESC,
+        ia.id DESC
     </select>
 
     <select id="matchId" resultMap="ApplicationDTO">

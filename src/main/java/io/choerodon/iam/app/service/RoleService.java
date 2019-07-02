@@ -1,6 +1,5 @@
 package io.choerodon.iam.app.service;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
@@ -17,11 +16,15 @@ public interface RoleService {
 
     PageInfo<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery);
 
+    PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery);
+
     RoleDTO create(RoleDTO roleDTO);
 
     RoleDTO createBaseOnRoles(RoleDTO roleDTO);
 
     RoleDTO update(RoleDTO roleDTO);
+
+    RoleDTO orgUpdate(RoleDTO roleDTO,Long orgId);
 
     void delete(Long id);
 
@@ -30,6 +33,10 @@ public interface RoleService {
     RoleDTO enableRole(Long id);
 
     RoleDTO disableRole(Long id);
+
+    RoleDTO orgEnableRole(Long roleId,Long orgId);
+
+    RoleDTO orgDisableRole(Long roleId,Long orgId);
 
     RoleDTO queryWithPermissionsAndLabels(Long id);
 

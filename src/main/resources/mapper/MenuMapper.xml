@@ -120,6 +120,9 @@
         on imb.page_permission_code = ip2.code
         where imb.type != 'top'
         and imb.resource_level = #{level}
+        <if test="sourceId != null">
+            and ( imb.source_id is null or imb.source_id = #{sourceId} )
+        </if>
     </select>
 
     <select id="queryProjectMenusWithCategoryByRootUser" resultMap="Menu">
@@ -191,6 +194,7 @@
         left join iam_permission ip
         on imb.page_permission_code = ip.code
         where imb.resource_level = #{level}
+        and (imb.source_id is null or imb.source_id = #{sourceId})
     </select>
 
 

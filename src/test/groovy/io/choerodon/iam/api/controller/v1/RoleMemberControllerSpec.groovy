@@ -1,6 +1,7 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
+import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ClientRoleSearchDTO
@@ -95,7 +96,10 @@ class RoleMemberControllerSpec extends Specification {
                 user.setOrganizationId(1L)
                 userDOList.add(user)
             }
-            count += userMapper.insertList(userDOList)
+            for (UserDTO dto : userDOList){
+                count ++
+                userMapper.insert(dto)
+            }
             for (int i = 0; i < 3; i++) {
                 MemberRoleDTO memberRoleDO = new MemberRoleDTO()
                 memberRoleDO.setMemberType("user")
@@ -105,7 +109,11 @@ class RoleMemberControllerSpec extends Specification {
                 memberRoleDO.setMemberId()
                 memberRoleDOList.add(memberRoleDO)
             }
-            count += memberRoleMapper.insertList(memberRoleDOList)
+            for (MemberRoleDTO dto : memberRoleDOList) {
+                count++
+                memberRoleMapper.insert(dto)
+
+            }
             clientDOList = initClient()
 
             then: "校验结果"
@@ -250,11 +258,12 @@ class RoleMemberControllerSpec extends Specification {
         def memberIds1 = new Long[1]
         memberIds1[0] = 1L
         paramsMap.put("member_ids", memberIds1)
-        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
+        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, ExceptionResponse, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        !entity.getBody().isEmpty()
+        entity.getBody().getCode().equals("error.roles.in.same.level")
+//        !entity.getBody().isEmpty()
 
         when: "调用方法"
         def memberIds2 = new Long[1]
@@ -269,11 +278,10 @@ class RoleMemberControllerSpec extends Specification {
         memberRoleDO1.setSourceId(1L)
         memberRoleDO1.setSourceType("organization")
         memberRoleDOList1.add(memberRoleDO1)
-        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", memberRoleDOList1, List, paramsMap)
+        entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members?is_edit={is_edit}&member_ids={member_ids}", ExceptionResponse, ExceptionResponse, paramsMap)
 
         then: "校验结果"
-        entity.statusCode.is2xxSuccessful()
-        !entity.getBody().isEmpty()
+        noExceptionThrown()
     }
 
 
@@ -312,11 +320,11 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() != 0
+        entity.getBody().list.size() != 0
     }
 
     def "PagingQueryClientsByRoleIdOnSiteLevel"() {
@@ -327,7 +335,7 @@ class RoleMemberControllerSpec extends Specification {
         def clientRoleSearchDTO = new ClientRoleSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -343,11 +351,11 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().isEmpty()
+        entity.getBody().list.isEmpty()
     }
 
     def "PagingQueryClientsByRoleIdOnOrganizationLevel"() {
@@ -359,11 +367,11 @@ class RoleMemberControllerSpec extends Specification {
         def clientRoleSearchDTO = new ClientRoleSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().isEmpty()
+        entity.getBody().list.isEmpty()
     }
 
     def "PagingQueryUsersByRoleIdOnProjectLevel"() {
@@ -375,12 +383,12 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/users?role_id={role_id}", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         //只有site用户
-        entity.getBody().isEmpty()
+        entity.getBody().list.isEmpty()
     }
 
     def "PagingQueryClientsByRoleIdOnProjectLevel"() {
@@ -392,12 +400,12 @@ class RoleMemberControllerSpec extends Specification {
         def clientRoleSearchDTO = new ClientRoleSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         //只有site用户
-        entity.getBody().isEmpty()
+        entity.getBody().list.isEmpty()
     }
 
     def "DeleteOnSiteLevel"() {
@@ -562,11 +570,11 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/users/roles", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/users/roles", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() != 0
+        entity.getBody().list.size() != 0
     }
 
     def "PagingQueryClientsWithSiteLevelRoles"() {
@@ -575,7 +583,7 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients/roles", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients/roles", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -589,12 +597,12 @@ class RoleMemberControllerSpec extends Specification {
         def roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/users/roles", roleAssignmentSearchDTO, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/users/roles", roleAssignmentSearchDTO, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         //自己插入的userDO
-        entity.getBody().size() != 0
+        entity.getBody().list.size() != 0
     }
 
     def "pagingQueryClientsWithOrganizationLevelRoles"() {
@@ -606,11 +614,11 @@ class RoleMemberControllerSpec extends Specification {
         clientSearch.setRoleName("管理")
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients/roles", clientSearch, Page, paramsMap)
+        def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients/roles", clientSearch, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().size() != 0
+        entity.getBody().list.size() == 0
     }
 
     def "PagingQueryUsersWithProjectLevelRoles"() {
@@ -789,7 +797,7 @@ class RoleMemberControllerSpec extends Specification {
 
         when: "调用方法"
         needClean = true
-        def entity = restTemplate.getForEntity(BASE_PATH + "/all/clients", Page, paramsMap)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/all/clients", PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
@@ -798,7 +806,6 @@ class RoleMemberControllerSpec extends Specification {
     def "queryAllUsers"() {
         given: "构造请求参数"
         RoleMemberController controller = new RoleMemberController(null, userService, null, null, null)
-//        PageRequest pageRequest = new PageRequest(0,20)
 
         when: "调用方法"
         def result = controller.queryAllUsers(0,20,0L,"param")

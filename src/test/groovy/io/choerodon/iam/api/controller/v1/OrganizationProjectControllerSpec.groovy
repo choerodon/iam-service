@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.dto.ProjectDTO
@@ -18,9 +17,9 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan
- * */
+ * @author dengyouquan* */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Stepwise
@@ -51,7 +50,11 @@ class OrganizationProjectControllerSpec extends Specification {
             }
 
             given: "插入数据"
-            def count = projectMapper.insertList(projectDOList)
+            def count = 0
+            for (ProjectDTO dto : projectDOList) {
+                projectMapper.insert(dto)
+                count++
+            }
 
             then: "校验结果"
             count == 3
@@ -98,29 +101,29 @@ class OrganizationProjectControllerSpec extends Specification {
         paramsMap.put("organization_id", organizationId)
 
         when: "调用方法[全查询]"
-        def entity = restTemplate.getForEntity(BASE_PATH, Page, paramsMap)
+        def entity = restTemplate.getForEntity(BASE_PATH, PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getTotalPages() != 0
-        !entity.getBody().isEmpty()
+        entity.getBody().pages != 0
+        !entity.getBody().list.isEmpty()
 
         when: "调用方法[全查询]"
         paramsMap.put("code", "hand")
         paramsMap.put("name", "汉得")
-        entity = restTemplate.getForEntity(BASE_PATH + "?code={code}&name={name}", Page, paramsMap)
+        entity = restTemplate.getForEntity(BASE_PATH + "?code={code}&name={name}", PageInfo, paramsMap)
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getTotalPages() != 0
-        entity.getBody().getTotalElements() != 0
+        entity.getBody().pages != 0
+        entity.getBody().total != 0
     }
 
     def "Update"() {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("organization_id", organizationId)
-        def projectDTO = ConvertHelper.convert(projectDOList.get(0), ProjectDTO)
+        def projectDTO = projectDOList.get(0)
 
         when: "调用方法[异常-版本号不存在]"
         def projectDTO1 = new ProjectDTO()
@@ -131,7 +134,7 @@ class OrganizationProjectControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.objectVersionNumber.null")
+        entity.getBody().getCode().equals("hand0")
 
         when: "调用方法[异常-组织不存在]"
         paramsMap.put("organization_id", 1000L)
@@ -212,7 +215,7 @@ class OrganizationProjectControllerSpec extends Specification {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("organization_id", organizationId)
-        def projectDTO = ConvertHelper.convert(projectDOList.get(1), ProjectDTO)
+        def projectDTO = projectDOList.get(1)
 
         when: "调用对应方法[异常-项目code为空]"
         def projectDTO1 = new ProjectDTO()

@@ -10,10 +10,10 @@ import LoadingBar from '../../../components/loadingBar/index';
 import './LDAP.scss';
 import '../../../common/ConfirmModal.scss';
 
-const Sidebar = Modal.Sidebar;
+const { Sidebar } = Modal;
 const RadioGroup = Radio.Group;
 const FormItem = Form.Item;
-const Option = Select.Option;
+const { Option } = Select;
 const intlPrefix = 'organization.ldap';
 const formItemLayout = {
   labelCol: {
@@ -120,9 +120,9 @@ export default class LDAP extends Component {
     const { organizationId } = this.state;
     LDAPStore.loadLDAP(organizationId).catch((error) => {
       LDAPStore.cleanData();
-      const response = error.response;
+      const { response } = error;
       if (response) {
-        const status = response.status;
+        const { status } = response;
         const mess = response.data.message;
         switch (status) {
           case 400:
@@ -341,7 +341,7 @@ export default class LDAP extends Component {
     const organizationName = menuType.name;
     const ldapData = LDAPStore.getLDAPData;
     const { getFieldDecorator } = form;
-    const inputWidth = 512;
+    const inputWidth = 488;
     const tips = {
       hostname: intl.formatMessage({ id: `${intlPrefix}.hostname.tip` }),
       ssl: intl.formatMessage({ id: `${intlPrefix}.ssl.tip` }),
@@ -352,289 +352,272 @@ export default class LDAP extends Component {
       objectclass: intl.formatMessage({ id: `${intlPrefix}.objectclass.tip` }),
       uuid: intl.formatMessage({ id: `${intlPrefix}.uuid.tip` }),
     };
-    const mainContent = LDAPStore.getIsLoading ? <LoadingBar /> : (<div>
-      <div className="serverContainer">
-        <Button
-          shape="circle"
-          funcType="raised"
-          icon={this.state.showServer ? 'expand_more' : 'expand_less'}
-          size="small"
-          style={{ float: 'left' }}
-          onClick={this.isShowServerSetting}
-        />
-        <FormattedMessage id={`${intlPrefix}.server.setting`} />
-      </div>
-      <Form onSubmit={this.handleSubmit} layout="vertical" className="ldapForm">
-        <div style={{ display: this.state.showServer ? 'block' : 'none' }}>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('directoryType', {
-              rules: [{
-                required: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.directorytype.require.msg` }),
-              }],
-              initialValue: ldapData.directoryType ? ldapData.directoryType : undefined,
-            })(
-              <Select
-                getPopupContainer={() => document.getElementsByClassName('page-content')[0]}
-                label={intl.formatMessage({ id: `${intlPrefix}.directorytype` })}
-                style={{ width: inputWidth }}
-              >
-                <Option value="Microsoft Active Directory">
-                  <Tooltip
-                    placement="right"
-                    title={intl.formatMessage({ id: `${intlPrefix}.directorytype.mad.tip` })}
-                    overlayStyle={{ maxWidth: '300px' }}
-                  >
-                    <span style={{ display: 'inline-block', width: '100%' }}>Microsoft Active Directory</span>
-                  </Tooltip>
-                </Option>
-                <Option value="OpenLDAP">
-                  <Tooltip
-                    placement="right"
-                    title={intl.formatMessage({ id: `${intlPrefix}.directorytype.openldap.tip` })}
-                    overlayStyle={{ maxWidth: '300px' }}
-                  >
-                    <span style={{ display: 'inline-block', width: '100%' }}>OpenLDAP</span>
-                  </Tooltip>
-                </Option>
-              </Select>,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('serverAddress', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.serveraddress.require.msg` }),
-              }],
-              initialValue: ldapData.serverAddress || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.serveraddress` })} style={{ width: inputWidth }} suffix={this.getSuffix(tips.hostname)} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('useSSL', {
-              initialValue: ldapData.useSSL ? 'Y' : 'N',
-            })(
-              <RadioGroup
-                className="ldapRadioGroup"
-                label={this.labelSuffix(intl.formatMessage({ id: `${intlPrefix}.usessl.suffix` }), tips.ssl)}
-                onChange={this.changeSsl.bind(this)}
-              >
-                <Radio value={'Y'}><FormattedMessage id="yes" /></Radio>
-                <Radio value={'N'}><FormattedMessage id="no" /></Radio>
-              </RadioGroup>,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('sagaBatchSize', {
-              rules: [{
-                pattern: /^[1-9]\d*$/,
-                required: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.saga-batch-size.msg` }),
-              }],
-              initialValue: ldapData.sagaBatchSize || '500',
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.saga-batch-size` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('connectionTimeout', {
-              rules: [{
-                pattern: /^[1-9]\d*$/,
-                required: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.connection-timeout.msg` }),
-              }],
-              initialValue: ldapData.connectionTimeout || '10',
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.connection-timeout` })} style={{ width: inputWidth }} autoComplete="off" suffix={intl.formatMessage({ id: 'second' })} />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('port', {
-              rules: [{
-                pattern: /^[1-9]\d*$/,
-                message: intl.formatMessage({ id: `${intlPrefix}.port.pattern.msg` }),
-              }],
-              initialValue: ldapData.port || (ldapData.useSSL ? '636' : '389'),
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.port` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('baseDn', {
-              initialValue: ldapData.baseDn || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.basedn` })} suffix={this.getSuffix(tips.basedn)} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('account', {
-              rules: [{
-                required: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.admin.loginname.msg` }),
-              }],
-              initialValue: ldapData.account || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.admin.loginname` })} suffix={this.getSuffix(tips.loginname)} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('password', {
-              rules: [{
-                required: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.admin.password.msg` }),
-              }],
-              initialValue: ldapData.password || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.admin.password` })} type="password" style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-        </div>
-        <div className="serverContainer">
-          <Button
-            shape="circle"
-            funcType="raised"
-            icon={this.state.showUser ? 'expand_more' : 'expand_less'}
-            size="small"
-            style={{ float: 'left' }}
-            onClick={this.isShowUserSetting}
-          />
-          <FormattedMessage id={`${intlPrefix}.user.setting`} />
-        </div>
-        <div style={{ display: this.state.showUser ? 'block' : 'none' }}>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('objectClass', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.objectclass.require.msg` }),
-              }],
-              initialValue: ldapData.objectClass || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.objectclass` })} suffix={this.getSuffix(tips.objectclass)} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('loginNameField', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.loginname.require.msg` }),
-              }],
-              initialValue: ldapData.loginNameField || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.loginname` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('emailField', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.email.require.msg` }),
-              }],
-              initialValue: ldapData.emailField || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.email` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('realNameField', {
-              initialValue: ldapData.realNameField || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.realname` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('phoneField', {
-              initialValue: ldapData.phoneField || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.phone` })} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('uuidField', {
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: intl.formatMessage({ id: `${intlPrefix}.uuid.required.msg` }),
-              }],
-              initialValue: ldapData.uuidField || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.uuid` })} suffix={this.getSuffix(tips.uuid)} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('customFilter', {
-              rules: [{
-                pattern: /^\(.*\)$/,
-                message: intl.formatMessage({ id: `${intlPrefix}.custom-filter.msg` }),
-              }],
-              initialValue: ldapData.customFilter || undefined,
-            })(
-              <Input label={intl.formatMessage({ id: `${intlPrefix}.custom-filter` })} suffix={this.getSuffix(tips.customFilter)} style={{ width: inputWidth }} autoComplete="off" />,
-            )}
-          </FormItem>
-        </div>
-        <div className="divider" />
-        <Permission service={['iam-service.ldap.update']}>
-          <div className="btnGroup">
-            <Button
-              funcType="raised"
-              type="primary"
-              htmlType="submit"
-              loading={saving}
+    const mainContent = LDAPStore.getIsLoading ? <LoadingBar /> : (
+      <div>
+        <Form onSubmit={this.handleSubmit} layout="vertical" className="ldapForm">
+          <h3 className="c7n-smssetting-container-title">服务器设置</h3>
+          <div className="c7n-ldapsetting-container-wrap" style={{ display: this.state.showServer ? 'block' : 'none' }}>
+            <FormItem
+              {...formItemLayout}
             >
-              <FormattedMessage id={ldapData.enabled ? `${intlPrefix}.saveandtest` : 'save'} />
-            </Button>
-            <Button
-              funcType="raised"
-              onClick={() => {
-                const { resetFields } = this.props.form;
-                resetFields();
-              }}
-              style={{ color: '#3F51B5' }}
-              disabled={saving}
+              {getFieldDecorator('directoryType', {
+                rules: [{
+                  required: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.directorytype.require.msg` }),
+                }],
+                initialValue: ldapData.directoryType ? ldapData.directoryType : undefined,
+              })(
+                <Select
+                  getPopupContainer={() => document.getElementsByClassName('page-content')[0]}
+                  label={intl.formatMessage({ id: `${intlPrefix}.directorytype` })}
+                  style={{ width: inputWidth }}
+                >
+                  <Option value="Microsoft Active Directory">
+                    <Tooltip
+                      placement="right"
+                      title={intl.formatMessage({ id: `${intlPrefix}.directorytype.mad.tip` })}
+                      overlayStyle={{ maxWidth: '300px' }}
+                    >
+                      <span style={{ display: 'inline-block', width: '100%' }}>Microsoft Active Directory</span>
+                    </Tooltip>
+                  </Option>
+                  <Option value="OpenLDAP">
+                    <Tooltip
+                      placement="right"
+                      title={intl.formatMessage({ id: `${intlPrefix}.directorytype.openldap.tip` })}
+                      overlayStyle={{ maxWidth: '300px' }}
+                    >
+                      <span style={{ display: 'inline-block', width: '100%' }}>OpenLDAP</span>
+                    </Tooltip>
+                  </Option>
+                </Select>,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
             >
-              <FormattedMessage id="cancel" />
-            </Button>
+              {getFieldDecorator('serverAddress', {
+                rules: [{
+                  required: true,
+                  whitespace: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.serveraddress.require.msg` }),
+                }],
+                initialValue: ldapData.serverAddress || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.serveraddress` })} style={{ width: inputWidth }} suffix={this.getSuffix(tips.hostname)} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('useSSL', {
+                initialValue: ldapData.useSSL ? 'Y' : 'N',
+              })(
+                <RadioGroup
+                  className="ldapRadioGroup"
+                  label={this.labelSuffix(intl.formatMessage({ id: `${intlPrefix}.usessl.suffix` }), tips.ssl)}
+                  onChange={this.changeSsl.bind(this)}
+                >
+                  <Radio value="Y"><FormattedMessage id="yes" /></Radio>
+                  <Radio value="N"><FormattedMessage id="no" /></Radio>
+                </RadioGroup>,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('sagaBatchSize', {
+                rules: [{
+                  pattern: /^[1-9]\d*$/,
+                  required: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.saga-batch-size.msg` }),
+                }],
+                initialValue: ldapData.sagaBatchSize || '500',
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.saga-batch-size` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('connectionTimeout', {
+                rules: [{
+                  pattern: /^[1-9]\d*$/,
+                  required: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.connection-timeout.msg` }),
+                }],
+                initialValue: ldapData.connectionTimeout || '10',
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.connection-timeout` })} style={{ width: inputWidth }} autoComplete="off" suffix={intl.formatMessage({ id: 'second' })} />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('port', {
+                rules: [{
+                  pattern: /^[1-9]\d*$/,
+                  message: intl.formatMessage({ id: `${intlPrefix}.port.pattern.msg` }),
+                }],
+                initialValue: ldapData.port || (ldapData.useSSL ? '636' : '389'),
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.port` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('baseDn', {
+                initialValue: ldapData.baseDn || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.basedn` })} suffix={this.getSuffix(tips.basedn)} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('account', {
+                rules: [{
+                  required: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.admin.loginname.msg` }),
+                }],
+                initialValue: ldapData.account || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.admin.loginname` })} suffix={this.getSuffix(tips.loginname)} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('password', {
+                rules: [{
+                  required: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.admin.password.msg` }),
+                }],
+                initialValue: ldapData.password || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.admin.password` })} type="password" style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
           </div>
-        </Permission>
-      </Form>
-    </div>);
+
+          <h3 className="c7n-smssetting-container-title">用户属性设置</h3>
+          <div className="c7n-ldapsetting-container-wrap" style={{ display: this.state.showUser ? 'block' : 'none' }}>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('objectClass', {
+                rules: [{
+                  required: true,
+                  whitespace: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.objectclass.require.msg` }),
+                }],
+                initialValue: ldapData.objectClass || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.objectclass` })} suffix={this.getSuffix(tips.objectclass)} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('loginNameField', {
+                rules: [{
+                  required: true,
+                  whitespace: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.loginname.require.msg` }),
+                }],
+                initialValue: ldapData.loginNameField || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.loginname` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('emailField', {
+                rules: [{
+                  required: true,
+                  whitespace: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.email.require.msg` }),
+                }],
+                initialValue: ldapData.emailField || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.email` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('realNameField', {
+                initialValue: ldapData.realNameField || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.realname` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('phoneField', {
+                initialValue: ldapData.phoneField || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.phone` })} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('uuidField', {
+                rules: [{
+                  required: true,
+                  whitespace: true,
+                  message: intl.formatMessage({ id: `${intlPrefix}.uuid.required.msg` }),
+                }],
+                initialValue: ldapData.uuidField || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.uuid` })} suffix={this.getSuffix(tips.uuid)} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+            <FormItem
+              {...formItemLayout}
+            >
+              {getFieldDecorator('customFilter', {
+                rules: [{
+                  pattern: /^\(.*\)$/,
+                  message: intl.formatMessage({ id: `${intlPrefix}.custom-filter.msg` }),
+                }],
+                initialValue: ldapData.customFilter || undefined,
+              })(
+                <Input label={intl.formatMessage({ id: `${intlPrefix}.custom-filter` })} suffix={this.getSuffix(tips.customFilter)} style={{ width: inputWidth }} autoComplete="off" />,
+              )}
+            </FormItem>
+          </div>
+          <div className="divider" />
+          <Permission service={['iam-service.ldap.update']}>
+            <div className="btnGroup">
+              <Button
+                funcType="raised"
+                type="primary"
+                htmlType="submit"
+                loading={saving}
+              >
+                <FormattedMessage id={ldapData.enabled ? `${intlPrefix}.saveandtest` : 'save'} />
+              </Button>
+              <Button
+                funcType="raised"
+                onClick={() => {
+                  const { resetFields } = this.props.form;
+                  resetFields();
+                }}
+                style={{ color: '#3F51B5' }}
+                disabled={saving}
+              >
+                <FormattedMessage id="cancel" />
+              </Button>
+            </div>
+          </Permission>
+        </Form>
+      </div>
+    );
 
     return (
       <Page

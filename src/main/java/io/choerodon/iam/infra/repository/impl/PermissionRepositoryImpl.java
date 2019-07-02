@@ -90,8 +90,8 @@ public class PermissionRepositoryImpl implements PermissionRepository {
         Example example = new Example(PermissionDTO.class);
         example.setOrderByClause("code asc");
         example.createCriteria()
-                .andEqualTo("resource_level", level)
-                .andEqualTo("service_code", serviceName)
+                .andEqualTo("resourceLevel", level)
+                .andEqualTo("serviceCode", serviceName)
                 .andEqualTo("code", code);
         return permissionMapper.selectByExample(example);
     }

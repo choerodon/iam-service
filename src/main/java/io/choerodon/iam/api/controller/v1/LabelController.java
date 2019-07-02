@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +32,15 @@ public class LabelController extends BaseController {
     @ApiOperation(value = "通过类型查询label")
     @GetMapping
     public ResponseEntity<List<LabelDTO>> listByType(LabelDTO label) {
+        return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "通过类型查询组织层label")
+    @GetMapping(value = "/org/{organization_id}")
+    public ResponseEntity<List<LabelDTO>> listByTypeAtOrg(@PathVariable(name = "organization_id") Long organizationId,
+                                                          LabelDTO label) {
+        label.setLevel(ResourceType.ORGANIZATION.value());
         return new ResponseEntity<>(labelService.listByOption(label), HttpStatus.OK);
     }
 

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.iam.infra.mapper.RoleMapper">
     <resultMap id="roleWithPermissionsAndLabels" type="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
-        <id column="id" property="id"></id>
+        <id column="id" property="id"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="code" property="code" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
@@ -12,7 +12,7 @@
         <result column="is_built_in" property="builtIn" jdbcType="BOOLEAN"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
         <collection property="permissions" ofType="io.choerodon.iam.infra.dto.PermissionDTO">
-            <id column="permission_id" property="id"></id>
+            <id column="permission_id" property="id"/>
             <result column="permission_code" property="code" jdbcType="VARCHAR"/>
             <result column="path" property="path" jdbcType="VARCHAR"/>
             <result column="method" property="method" jdbcType="VARCHAR"/>
@@ -25,7 +25,7 @@
             <result column="permission_description" property="description" jdbcType="VARCHAR"/>
         </collection>
         <collection property="labels" ofType="io.choerodon.iam.infra.dto.LabelDTO">
-            <id column="label_id" property="id"></id>
+            <id column="label_id" property="id"/>
             <result column="label_name" property="name" jdbcType="VARCHAR"/>
             <result column="label_type" property="type" jdbcType="VARCHAR"/>
         </collection>
@@ -33,7 +33,7 @@
 
     <!--建立boolean映射关系-->
     <resultMap id="RoleDTO" type="io.choerodon.iam.infra.dto.RoleDTO" autoMapping="true">
-        <id column="id" property="id"></id>
+        <id column="id" property="id"/>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
         <result column="is_modified" property="modified" jdbcType="BOOLEAN"/>
         <result column="is_enable_forbidden" property="enableForbidden" jdbcType="BOOLEAN"/>
@@ -66,8 +66,40 @@
                 )
             </if>
         </where>
+        order by r.id desc
     </select>
 
+    <select id="pagingQueryOrgRoles" resultMap="RoleDTO">
+        SELECT
+        *
+        FROM
+        IAM_ROLE
+        WHERE
+        RESOURCE_LEVEL = "organization"
+        AND (
+        ORGANIZATION_ID IS NULL
+        OR ORGANIZATION_ID = #{orgId}
+        )
+        <if test="roleQuery.name != null">
+            AND NAME LIKE concat(concat('%',#{roleQuery.name}), '%')
+        </if>
+        <if test="roleQuery.code != null">
+            AND CODE LIKE concat(concat('%',#{roleQuery.code}), '%')
+        </if>
+        <if test="roleQuery.enabled != null">
+            AND IS_ENABLED = #{roleQuery.enabled}
+        </if>
+        <if test="roleQuery.builtIn != null">
+            AND IS_BUILT_IN = #{roleQuery.builtIn}
+        </if>
+        <if test="param != null">
+            AND (
+            NAME LIKE concat(concat('%',#{param}), '%') OR
+            CODE LIKE concat(concat('%',#{param}), '%')
+            )
+        </if>
+        ORDER BY IS_ENABLED DESC
+    </select>
 
     <select id="selectRoleWithPermissionsAndLabels" resultMap="roleWithPermissionsAndLabels">
         SELECT
