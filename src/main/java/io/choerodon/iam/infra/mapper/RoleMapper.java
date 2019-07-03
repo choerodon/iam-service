@@ -30,7 +30,8 @@ public interface RoleMapper extends Mapper<RoleDTO> {
 
     int rolesLevelCount(@Param("roleIds") List<Long> roleIds);
 
-    List<RoleDTO> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type);
+    List<RoleDTO> selectRolesByLabelNameAndType(@Param("name") String name, @Param("type") String type,
+                                                @Param("organizationId") Long organizationId);
 
     List<RoleDTO> selectInitRolesByPermissionId(Long permissionId);
 

@@ -149,4 +149,16 @@ public class RoleController extends BaseController {
                                                                   @RequestParam(value = "params", required = false) String[] params) {
         return new ResponseEntity<>(permissionService.listPermissionsByRoleId(page, size, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
+
+    /**
+     * 根据标签查询角色
+     *
+     * @return 查询结果
+     */
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据标签查询角色")
+    @GetMapping(value = "/selectByLabel")
+    public ResponseEntity<List<RoleDTO>> selectByLabel(@RequestParam String label) {
+        return ResponseEntity.ok(roleService.selectByLabel(label, null));
+    }
 }
