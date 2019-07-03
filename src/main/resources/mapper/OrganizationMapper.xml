@@ -306,4 +306,39 @@
         FROM
             fd_organization
     </select>
+
+
+    <select id="selectSpecified" resultType="io.choerodon.iam.api.dto.OrgSharesDTO">
+        SELECT
+        fo.id,
+        fo. NAME,
+        fo. CODE,
+        fo.is_enabled AS enabled,
+        fo.category AS categoryCode,
+        foc. NAME AS categoryName
+        FROM
+        fd_organization fo
+        LEFT JOIN fd_organization_category foc ON fo.category = foc. CODE
+        WHERE
+        1 = 1
+        <if test="name != null">
+            AND fo.name LIKE concat(concat('%', #{name}), '%')
+        </if>
+        <if test="code != null">
+            AND fo.code LIKE concat(concat('%', #{code}), '%')
+        </if>
+        <if test="enabled != null">
+            AND fo.is_enabled = #{enabled}
+        </if>
+        <if test="params != null">
+            AND (
+            fo.name LIKE concat(concat('%', #{params}), '%') OR
+            fo.code LIKE concat(concat('%', #{params}), '%')
+            )
+        </if>
+        AND fo.id IN
+        <foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

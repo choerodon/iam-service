@@ -1,27 +1,31 @@
 package io.choerodon.iam.api.controller.v1;
 
-import java.util.List;
-import java.util.Set;
-import javax.validation.Valid;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.base.BaseController;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.OrgSharesDTO;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
+import io.choerodon.iam.app.service.OrganizationService;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.base.BaseController;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.infra.common.utils.ParamUtils;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -105,15 +109,15 @@ public class OrganizationController extends BaseController {
         organization.setName(name);
         organization.setCode(code);
         organization.setEnabled(enabled);
-        return new ResponseEntity<>(organizationService.pagingQuery(organization, page,size,ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingQuery(organization, page, size, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
     @GetMapping(value = "/all")
     public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                    @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size) {
-        return new ResponseEntity<>(organizationService.getAllOrgs(page,size), HttpStatus.OK);
+                                                                        @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size) {
+        return new ResponseEntity<>(organizationService.getAllOrgs(page, size), HttpStatus.OK);
     }
 
     /**
@@ -168,4 +172,18 @@ public class OrganizationController extends BaseController {
                                                                         @RequestParam(required = false) String param) {
         return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, page, size, param), HttpStatus.OK);
     }
+
+    @CustomPageRequest
+    @PostMapping("/specified")
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据组织Id列表分页查询组织简要信息")
+    public ResponseEntity<PageInfo<OrgSharesDTO>> pagingQuery(@SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+                                                              @RequestParam(required = false) String name,
+                                                              @RequestParam(required = false) String code,
+                                                              @RequestParam(required = false) Boolean enabled,
+                                                              @RequestParam(required = false) String params,
+                                                              @RequestBody Set<Long> orgIds) {
+        return new ResponseEntity<>(organizationService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
+    }
+
 }

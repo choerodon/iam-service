@@ -1,41 +1,41 @@
 package io.choerodon.iam.app.service.impl;
 
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_DISABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_ENABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.ORG_UPDATE;
-
-import java.util.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
-import io.choerodon.iam.api.dto.payload.OrganizationPayload;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.OrgSharesDTO;
+import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
+import io.choerodon.iam.api.dto.payload.OrganizationPayload;
 import io.choerodon.iam.app.service.OrganizationService;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.domain.repository.RoleRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
 
 /**
  * @author wuguokai
@@ -259,5 +259,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public PageInfo<OrganizationSimplifyDTO> getAllOrgs(int page, int size) {
         return organizationRepository.selectAllOrgIdAndName(page, size);
+    }
+
+
+    @Override
+    public PageInfo<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest) {
+        if (CollectionUtils.isEmpty(orgIds)) {
+            return new PageInfo<>();
+        }
+        return organizationRepository.pagingSpecified(orgIds, name, code, enabled, params, pageRequest);
     }
 }
