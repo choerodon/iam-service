@@ -1,20 +1,21 @@
 package io.choerodon.iam.infra.repository.impl;
 
-import java.util.List;
-import java.util.Set;
-
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.iam.infra.common.utils.PageUtils;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import org.springframework.stereotype.Component;
-
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.OrgSharesDTO;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.infra.common.utils.PageUtils;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author wuguokai
@@ -126,5 +127,11 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override
     public PageInfo<OrganizationSimplifyDTO> selectAllOrgIdAndName(int page, int size) {
         return PageHelper.startPage(page, size).doSelectPageInfo(() -> organizationMapper.selectAllOrgIdAndName());
+    }
+
+    @Override
+    public PageInfo<OrgSharesDTO> pagingSpecified(Set<Long> orgIds, String name, String code, Boolean enabled, String params, PageRequest pageRequest) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSort().toSql())
+                .doSelectPageInfo(() -> organizationMapper.selectSpecified(orgIds,name,code,enabled,params));
     }
 }

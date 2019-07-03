@@ -3,6 +3,7 @@ package io.choerodon.iam.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.iam.api.dto.OrgSharesDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -50,4 +51,19 @@ public interface OrganizationMapper extends Mapper<OrganizationDTO> {
      */
     List<OrganizationSimplifyDTO> selectAllOrgIdAndName();
 
+    /**
+     * 获取 指定id范围 的 组织简要信息
+     *
+     * @param orgIds  指定的组织范围
+     * @param name    组织名查询参数
+     * @param code    组织编码查询参数
+     * @param enabled 组织启停用查询参数
+     * @param params  全局模糊搜索查询参数
+     * @return 查询结果
+     */
+    List<OrgSharesDTO> selectSpecified(@Param("orgIds") Set<Long> orgIds,
+                                       @Param("name") String name,
+                                       @Param("code") String code,
+                                       @Param("enabled") Boolean enabled,
+                                       @Param("params") String params);
 }
