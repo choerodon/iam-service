@@ -178,6 +178,14 @@ public class ApplicationController {
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据code查询APP的id")
+    @GetMapping(value = "/code")
+    public ResponseEntity<Long> getIdByCode(@PathVariable("organization_id") Long organizationId, @RequestParam String code) {
+        return new ResponseEntity<>(applicationService.getIdByCode(code), HttpStatus.OK);
+
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建application的token")
     @PostMapping(value = "/{id}/token")
     public ResponseEntity<String> createToken(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id) {

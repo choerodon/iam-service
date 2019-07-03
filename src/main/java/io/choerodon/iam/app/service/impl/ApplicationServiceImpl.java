@@ -261,6 +261,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public Long getIdByCode(String code) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setCode(code);
+        return applicationMapper.selectOne(applicationDTO).getId();
+    }
+
+    @Override
     public void check(ApplicationDTO applicationDTO) {
         if (!StringUtils.isEmpty(applicationDTO.getName())) {
             //name是组织下唯一
