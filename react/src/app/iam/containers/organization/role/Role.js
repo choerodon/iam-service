@@ -296,8 +296,8 @@ export default class Role extends Component {
       render: (text, record) => (
         <StatusTag
           mode="icon"
-          name={intl.formatMessage({ id: record.builtIn ? 'predefined' : 'custom' })}
-          colorCode={record.builtIn ? 'PREDEFINE' : 'CUSTOM'}
+          name={intl.formatMessage({ id: !record.organizationId ? '平台' : '本组织' })}
+          colorCode={!record.organizationId ? 'PREDEFINE' : 'CUSTOM'}
         />
       ),
       sorter: true,
