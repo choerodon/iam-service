@@ -77,7 +77,10 @@
         WHERE
         RESOURCE_LEVEL = "organization"
         AND (
+        (
         ORGANIZATION_ID IS NULL
+        AND IS_ENABLED = 1
+        )
         OR ORGANIZATION_ID = #{orgId}
         )
         <if test="roleQuery.name != null">
@@ -98,7 +101,6 @@
             CODE LIKE concat(concat('%',#{param}), '%')
             )
         </if>
-        ORDER BY IS_ENABLED DESC
     </select>
 
     <select id="selectRoleWithPermissionsAndLabels" resultMap="roleWithPermissionsAndLabels">
