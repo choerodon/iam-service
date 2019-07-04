@@ -155,7 +155,7 @@ public class RoleController extends BaseController {
      *
      * @return 查询结果
      */
-    @Permission(type = ResourceType.ORGANIZATION)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "根据标签查询角色")
     @GetMapping(value = "/selectByLabel")
     public ResponseEntity<List<RoleDTO>> selectByLabel(@RequestParam String label) {
