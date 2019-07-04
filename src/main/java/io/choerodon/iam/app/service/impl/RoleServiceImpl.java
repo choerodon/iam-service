@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -78,8 +79,8 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
-        return roleRepository.pagingQueryOrgRoles(orgId, page, size, roleQuery);
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, PageRequest pageRequest, RoleQuery roleQuery) {
+        return roleRepository.pagingQueryOrgRoles(orgId, pageRequest, roleQuery);
     }
 
     @Override

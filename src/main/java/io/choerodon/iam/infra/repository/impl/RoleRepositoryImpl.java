@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.repository.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.domain.repository.RoleRepository;
@@ -30,8 +31,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, int page, int size, RoleQuery roleQuery) {
-        return PageHelper.startPage(page, size).doSelectPageInfo(() -> mapper.pagingQueryOrgRoles(orgId, roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
+    public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, PageRequest pageRequest, RoleQuery roleQuery) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSort().toSql()).doSelectPageInfo(() ->
+                mapper.pagingQueryOrgRoles(orgId, roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
     }
 
     @Override

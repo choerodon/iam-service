@@ -2,12 +2,14 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +37,7 @@ public class OrganizationRoleController extends BaseController {
      * 分页查询组织层角色
      *
      * @param organizationId 组织Id
-     * @param page           分页
-     * @param size           页面大小
+     * @param pageRequest    分页信息
      * @param roleQuery      查询数据
      * @return 分页查询结果
      */
@@ -44,12 +45,11 @@ public class OrganizationRoleController extends BaseController {
     @ApiOperation(value = "组织层分页查询组织层角色（包括该组织创建的角色 及 平台层创建的组织角色）")
     @PostMapping(value = "/paging")
     public ResponseEntity<PageInfo<RoleDTO>> pagingQuery(@PathVariable(name = "organization_id") Long organizationId,
-                                                         @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                          @RequestBody RoleQuery roleQuery) {
         roleQuery.setSourceId(organizationId);
         roleQuery.setSourceType(ResourceType.ORGANIZATION.value());
-        return new ResponseEntity<>(roleService.pagingQueryOrgRoles(organizationId, page, size, roleQuery), HttpStatus.OK);
+        return new ResponseEntity<>(roleService.pagingQueryOrgRoles(organizationId, pageRequest, roleQuery), HttpStatus.OK);
     }
 
 
