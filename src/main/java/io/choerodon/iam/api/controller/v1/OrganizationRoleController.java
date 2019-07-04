@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 /**
  * @author Eugen
@@ -145,6 +147,18 @@ public class OrganizationRoleController extends BaseController {
                                 @RequestBody RoleDTO role) {
         roleService.check(role);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    /**
+     * 根据标签查询组织层角色
+     *
+     * @return 查询结果
+     */
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "根据标签查询组织层角色")
+    @GetMapping(value = "/selectByLabel")
+    public ResponseEntity<List<RoleDTO>> selectByLabel(@PathVariable(name = "organization_id") Long organizationId, @RequestParam String label) {
+        return ResponseEntity.ok(roleService.selectByLabel(label, organizationId));
     }
 
 }

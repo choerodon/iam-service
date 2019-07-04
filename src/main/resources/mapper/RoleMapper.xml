@@ -156,6 +156,14 @@
         LEFT JOIN iam_label il ON irl.label_id = il.id
         WHERE il.name = #{name}
         AND il.type = #{type}
+        <choose>
+            <when test="organizationId != null">
+                AND ir.organization_id = #{organizationId}
+            </when>
+            <otherwise>
+                AND ir.organization_id is null
+            </otherwise>
+        </choose>
     </select>
 
 

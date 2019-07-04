@@ -311,8 +311,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType) {
-        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(labelName, labelType);
+        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(labelName, labelType, null);
         return roles.stream().map(RoleDTO::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RoleDTO> selectByLabel(String label, Long organizationId) {
+        return roleRepository.selectRolesByLabelNameAndType(label, "role", organizationId);
     }
 
     @Override

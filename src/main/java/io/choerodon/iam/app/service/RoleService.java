@@ -56,6 +56,8 @@ public interface RoleService {
 
     List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType);
 
+    List<RoleDTO> selectByLabel(String label, Long organizationId);
+
     List<RoleDTO> listRolesBySourceIdAndTypeAndUserId(String sourceType, Long sourceId, Long userId);
 
     RoleDTO queryByCode(String code);

@@ -192,7 +192,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
 
     private Set<String> initMemberRole(ProjectDTO project) {
-        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role");
+        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role", null);
         if (roles.isEmpty()) {
             throw new CommonException("error.role.not.found.by.label", RoleLabel.PROJECT_OWNER.value(), "role");
         }
