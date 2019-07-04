@@ -428,7 +428,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public void createApp(MenuDTO menu) {
+    public void processModelMenu(MenuDTO menu) {
         menu.setCategory("MODEL");
         menu.setServiceCode("low-code-service");
         menu.setResourceLevel(ResourceType.ORGANIZATION.value());
