@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.payload.DevOpsAppDelPayload;
+import io.choerodon.iam.api.dto.payload.IamAppPayLoad;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
@@ -219,4 +220,44 @@ public class ApplicationListener {
         applicationMapper.deleteByPrimaryKey(application);
     }
 
+    @SagaTask(code = APP_SYNC_ACTIVE, sagaCode = DEVOPS_SYNC_APP_ACTIVE, seq = 1, description = "iam接收devops启用、禁用应用事件")
+    public void syncApplicationActiveStatus(String message) throws IOException {
+        IamAppPayLoad iamAppPayLoad = objectMapper.readValue(message, IamAppPayLoad.class);
+        if (iamAppPayLoad == null) {
+            logger.warn("iam receiving no one application while devops change application active status!");
+            return;
+        }
+        if (iamAppPayLoad.getCode() == null) {
+            logger.warn("application received by the iam is illegal because of code is null when devops change application active status, application: {}", iamAppPayLoad);
+            return;
+        }
+        if (iamAppPayLoad.getProjectId() == null) {
+            logger.warn("application received by the iam is illegal because of projectId is null when devops change application active status, application: {}", iamAppPayLoad);
+            return;
+        }
+        if (iamAppPayLoad.getOrganizationId() == null) {
+            logger.warn("application received by the iam is illegal because of organizationId is null when devops change application active status, application: {}", iamAppPayLoad);
+            return;
+        }
+        if (iamAppPayLoad.getActive() == null) {
+            logger.warn("application received by the iam is illegal because of isActive is null when devops change application active status, application: {}", iamAppPayLoad);
+            return;
+        }
+        ApplicationDTO application = new ApplicationDTO();
+        application.setCode(iamAppPayLoad.getCode());
+        application.setProjectId(iamAppPayLoad.getProjectId());
+        application.setOrganizationId(iamAppPayLoad.getOrganizationId());
+        List<ApplicationDTO> applicationDTOList = applicationMapper.select(application);
+        if (CollectionUtils.isEmpty(applicationDTOList)) {
+            logger.warn("there is no corresponding devlops application for iam when devops change application active status, application: {}", application);
+            return;
+        }
+        if (applicationDTOList.size() > 1) {
+            logger.warn("there are multi corresponding devlops application for when devops change application active status, applications: {}", applicationDTOList);
+            return;
+        }
+        application = applicationDTOList.get(0);
+        application.setEnabled(iamAppPayLoad.getActive());
+        applicationMapper.updateByPrimaryKeySelective(application);
+    }
 }

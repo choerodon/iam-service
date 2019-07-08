@@ -2,6 +2,7 @@ package io.choerodon.iam.api.eventhandler
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.payload.DevOpsAppDelPayload
+import io.choerodon.iam.api.dto.payload.IamAppPayLoad
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
@@ -46,10 +47,9 @@ class ApplicationListenerSpec extends Specification {
         applicationDTO.setApplicationType("normal")
         applicationMapper.insertSelective(applicationDTO)
         applicationDTO = applicationMapper.selectOne(applicationDTO)
-        String message = objectMapper.writeValueAsString(applicationDTO)
-
         ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
                 applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
+        String message = objectMapper.writeValueAsString(applicationDTO)
 
         when: "调用方法"
         applicationListener.updateApplicationAbnormal(message)
@@ -102,5 +102,39 @@ class ApplicationListenerSpec extends Specification {
         applicationDTO1.setCode("test")
         applicationMapper.select(applicationDTO1).size() == 0
         applicationExplorationMapper.selectDescendantByPath(path).size() == 0
+    }
+
+    @Transactional
+    def "syncApplicationActiveStatus"() {
+        given: "构造请求参数"
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setOrganizationId(803)
+        applicationDTO.setProjectId(826)
+        applicationDTO.setCode("test")
+        applicationDTO.setName("test")
+        applicationDTO.setEnabled(false)
+        applicationDTO.setAbnormal(false)
+        applicationDTO.setApplicationCategory("application")
+        applicationDTO.setApplicationType("normal")
+        applicationMapper.insertSelective(applicationDTO)
+        applicationDTO = applicationMapper.selectOne(applicationDTO)
+        ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
+                applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
+
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
+        iamAppPayLoad.setProjectId(applicationDTO.getProjectId())
+        iamAppPayLoad.setOrganizationId(applicationDTO.getOrganizationId())
+        iamAppPayLoad.setCode(applicationDTO.getCode())
+        iamAppPayLoad.setActive(true)
+        String message = objectMapper.writeValueAsString(iamAppPayLoad)
+        when: "调用方法"
+        applicationListener.syncApplicationActiveStatus(message)
+
+        then: "校验结果"
+        ApplicationDTO applicationDTO1 = new ApplicationDTO();
+        applicationDTO1.setOrganizationId(803)
+        applicationDTO1.setProjectId(826)
+        applicationDTO1.setCode("test")
+        applicationMapper.selectOne(applicationDTO1).getEnabled()
     }
 }
