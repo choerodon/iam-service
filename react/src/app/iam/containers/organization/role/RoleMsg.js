@@ -417,23 +417,6 @@ export default class CreateRole extends Component {
             />,
           )}
         </FormItem>
-        <FormItem
-          {...formItemLayout}
-        >
-          {getFieldDecorator('label', {
-            initialValue: isEdit ? (RoleStore.roleMsg.labels || []).map(l => l.id) : [],
-          })(
-            <Select
-              mode="multiple"
-              label={<FormattedMessage id={`${intlPrefix}.label`} />}
-              size="default"
-              style={{ width: 512 }}
-              disabled={false}
-            >
-              {this.renderRoleLabel()}
-            </Select>,
-          )}
-        </FormItem>
       </Form>
     );
   }
