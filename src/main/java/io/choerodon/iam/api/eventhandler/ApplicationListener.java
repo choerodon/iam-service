@@ -1,9 +1,24 @@
 package io.choerodon.iam.api.eventhandler;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.*;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.api.dto.payload.DevOpsAppDelPayload;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
@@ -12,21 +27,6 @@ import io.choerodon.iam.infra.enums.ApplicationCategory;
 import io.choerodon.iam.infra.enums.ApplicationType;
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper;
 import io.choerodon.iam.infra.mapper.ApplicationMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DEVOPS_CREATE_FAIL;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_SYNC;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_UPDATE_ABNORMAL;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.IAM_SYNC_APP;
 
 /**
  * 应用监听器
@@ -181,4 +181,42 @@ public class ApplicationListener {
         application.setAbnormal(true);
         applicationMapper.updateByPrimaryKey(application);
     }
+
+    @SagaTask(code = APP_SYNC_DELETE, sagaCode = DEVOPS_APP_DELETE, seq = 1, description = "iam接收devops删除应用事件")
+    public void syncDeleteApplication(String message) throws IOException {
+        DevOpsAppDelPayload appDelPayload = objectMapper.readValue(message, DevOpsAppDelPayload.class);
+        if (appDelPayload == null) {
+            logger.warn("iam receiving no one application while devops delete application!");
+            return;
+        }
+        if (appDelPayload.getCode() == null) {
+            logger.warn("application received by the iam is illegal because of code is null when devops delete application, application: {}", appDelPayload);
+            return;
+        }
+        if (appDelPayload.getProjectId() == null) {
+            logger.warn("application received by the iam is illegal because of projectId is null when devops delete application, application: {}", appDelPayload);
+            return;
+        }
+        if (appDelPayload.getOrganizationId() == null) {
+            logger.warn("application received by the iam is illegal because of organizationId is null when devops delete application, application: {}", appDelPayload);
+            return;
+        }
+        ApplicationDTO application = new ApplicationDTO();
+        application.setCode(appDelPayload.getCode());
+        application.setProjectId(appDelPayload.getProjectId());
+        application.setOrganizationId(appDelPayload.getOrganizationId());
+        List<ApplicationDTO> applicationDTOList = applicationMapper.select(application);
+        if (CollectionUtils.isEmpty(applicationDTOList)) {
+            logger.warn("there is no corresponding devlops application for iam when devops delete application, application: {}", application);
+            return;
+        }
+        if (applicationDTOList.size() > 1) {
+            logger.warn("there are multi corresponding devlops application for iam when devops delete application, applications: {}", applicationDTOList);
+            return;
+        }
+        application = applicationDTOList.get(0);
+        applicationExplorationMapper.deleteDescendantByApplicationId(application.getId());
+        applicationMapper.deleteByPrimaryKey(application);
+    }
+
 }

@@ -115,11 +115,7 @@
 
     <delete id="deleteDescendantByApplicationId" parameterType="Long">
         DELETE iae FROM iam_application_exploration iae
-        JOIN
-        (
-        SELECT path FROM iam_application_exploration WHERE application_id = #{id}
-        ) t ON 1=1
-        WHERE iae.path LIKE concat(t.path,'%')
+        WHERE iae.path LIKE concat((select t.path from (SELECT iae2.path FROM iam_application_exploration iae2 WHERE iae2.application_id =  #{id}) t),'%')
     </delete>
     <delete id="deleteDescendantByApplicationIds">
         DELETE iae FROM iam_application_exploration iae
