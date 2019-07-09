@@ -142,7 +142,7 @@ public class MenuServiceImpl implements MenuService {
         dto.setResourceLevel(level);
         List<MenuDTO> allMenus = menuMapper.select(dto);
         //筛除重复menu
-        Set<Long> menuIds = menus.stream().map(m -> m.getId()).collect(Collectors.toSet());
+        Set<Long> menuIds = menus.stream().map(MenuDTO::getId).collect(Collectors.toSet());
         Set<MenuDTO> menuCollect = allMenus.stream().filter(m -> !menuIds.contains(m.getId())).collect(Collectors.toSet());
         //添加类型为menu的菜单
         menus.addAll(menuCollect);
@@ -244,6 +244,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public void saveMenuConfig(String code, List<MenuDTO> menus) {
         MenuDTO topMenu = getTopMenuByCode(code);
+        validate(code, menus);
         String level = topMenu.getResourceLevel();
         // 传入的菜单列表
         List<MenuDTO> submitMenuList = menuTreeToList(menus);
@@ -268,15 +269,13 @@ public class MenuServiceImpl implements MenuService {
                         break;
                     }
                 }
-                if (needToDelete) {
-                    if (MenuType.isMenu(existMenu.getType())) {
-                        boolean isNotDefaultMenu = existMenu.getDefault() != null && !existMenu.getDefault();
-                        // 追溯到自设目录的根目录 只有与传入根目录相同的才删除
-                        if (isNotDefaultMenu) {
-                            MenuDTO deleteTopMenu = getTopMenu(existMenu);
-                            if (topMenu.getCode().equalsIgnoreCase(deleteTopMenu.getCode())) {
-                                deleteMenus.add(existMenu);
-                            }
+                if (needToDelete && MenuType.isMenu(existMenu.getType())) {
+                    boolean isNotDefaultMenu = existMenu.getDefault() != null && !existMenu.getDefault();
+                    // 追溯到自设目录的根目录 只有与传入根目录相同的才删除
+                    if (isNotDefaultMenu) {
+                        MenuDTO deleteTopMenu = getTopMenu(existMenu);
+                        if (topMenu.getCode().equalsIgnoreCase(deleteTopMenu.getCode())) {
+                            deleteMenus.add(existMenu);
                         }
                     }
                 }
@@ -313,6 +312,17 @@ public class MenuServiceImpl implements MenuService {
                 menuMapper.deleteByPrimaryKey(deleteMenu);
             }
         }
+    }
+
+    private void validate(String code, List<MenuDTO> menus) {
+        menus.forEach(m -> {
+            String parentCode = m.getParentCode();
+            //由于菜单目前只能是两层结构，所以所有的menu父节点必须是top menu
+            if (MenuType.isMenu(m.getType()) && !code.equals(parentCode)) {
+                throw new CommonException("error.menu.illegal.parent.code", m.getCode());
+            }
+        });
+
     }
 
     @Override
@@ -439,7 +449,7 @@ public class MenuServiceImpl implements MenuService {
         example.setCode(menu.getCode());
         example.setSourceId(menu.getSourceId());
         MenuDTO result = menuMapper.selectOne(example);
-        if (result != null){
+        if (result != null) {
             menu.setId(result.getId());
             menu.setObjectVersionNumber(result.getObjectVersionNumber());
             menuMapper.updateByPrimaryKeySelective(menu);
