@@ -129,7 +129,7 @@ class LDAPStore {
     { current, pageSize },
     { uuid, loginName, realName, email },
     { columnKey = 'id', order = 'descend' },
-    params, id) {
+    params, organizationId, id) {
     const queryObj = {
       page: current,
       size: pageSize,
@@ -148,7 +148,7 @@ class LDAPStore {
       }
       queryObj.sort = sorter.join(',');
     }
-    return axios.get(`/iam/v1/ldap_histories/${id}/error_users?${querystring.stringify(queryObj)}`);
+    return axios.get(`/iam/v1/organizations/${organizationId}/ldap_histories/${id}/error_users?${querystring.stringify(queryObj)}`);
   }
 
   loadLDAP = (organizationId) => {

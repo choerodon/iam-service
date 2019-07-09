@@ -80,6 +80,7 @@ public class OrganizationRoleController extends BaseController {
     @PostMapping
     public ResponseEntity<RoleDTO> create(@PathVariable(name = "organization_id") Long organizationId,
                                           @RequestBody @Validated RoleDTO roleDTO) {
+        roleDTO.setLabels(null);
         roleDTO.setResourceLevel(ResourceType.ORGANIZATION.value());
         roleDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(roleService.create(roleDTO), HttpStatus.OK);
@@ -101,6 +102,7 @@ public class OrganizationRoleController extends BaseController {
                                           @PathVariable Long id,
                                           @RequestBody RoleDTO roleDTO) {
         roleDTO.setId(id);
+        roleDTO.setLabels(null);
         return new ResponseEntity<>(roleService.orgUpdate(roleDTO, organizationId), HttpStatus.OK);
     }
 

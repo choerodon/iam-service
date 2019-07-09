@@ -165,11 +165,11 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @GetMapping(value = "/{organization_id}/users")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
-                                                                        @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                        @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                        @RequestParam(required = false, name = "id") Long userId,
-                                                                        @RequestParam(required = false) String email,
-                                                                        @RequestParam(required = false) String param) {
+                                                                            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
+                                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                            @RequestParam(required = false, name = "id") Long userId,
+                                                                            @RequestParam(required = false) String email,
+                                                                            @RequestParam(required = false) String param) {
         return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, page, size, param), HttpStatus.OK);
     }
 
@@ -177,12 +177,12 @@ public class OrganizationController extends BaseController {
     @PostMapping("/specified")
     @Permission(permissionWithin = true)
     @ApiOperation(value = "根据组织Id列表分页查询组织简要信息")
-    public ResponseEntity<PageInfo<OrgSharesDTO>> pagingQuery(@SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
-                                                              @RequestParam(required = false) String name,
-                                                              @RequestParam(required = false) String code,
-                                                              @RequestParam(required = false) Boolean enabled,
-                                                              @RequestParam(required = false) String params,
-                                                              @RequestBody Set<Long> orgIds) {
+    public ResponseEntity<PageInfo<OrgSharesDTO>> pagingSpecified(@SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+                                                                  @RequestParam(required = false) String name,
+                                                                  @RequestParam(required = false) String code,
+                                                                  @RequestParam(required = false) Boolean enabled,
+                                                                  @RequestParam(required = false) String params,
+                                                                  @RequestBody Set<Long> orgIds) {
         return new ResponseEntity<>(organizationService.pagingSpecified(orgIds, name, code, enabled, params, pageRequest), HttpStatus.OK);
     }
 
