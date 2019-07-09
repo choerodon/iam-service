@@ -49,7 +49,6 @@ public class IAMServiceApplication {
         return executor;
     }
 
-
     @Bean
     @Qualifier("notify-executor")
     public AsyncTaskExecutor asyncSendNoticeExecutor() {
