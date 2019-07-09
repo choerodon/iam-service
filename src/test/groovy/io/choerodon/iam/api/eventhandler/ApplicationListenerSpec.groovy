@@ -1,8 +1,8 @@
 package io.choerodon.iam.api.eventhandler
 
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.payload.DevOpsAppDelPayload
-import io.choerodon.iam.api.dto.payload.IamAppPayLoad
+import io.choerodon.iam.api.dto.payload.DevOpsAppSyncPayload
+
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
@@ -86,7 +86,7 @@ class ApplicationListenerSpec extends Specification {
         applicationExplorationMapper.insertSelective(example)
         ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
                 applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
-        DevOpsAppDelPayload payload = new DevOpsAppDelPayload()
+        DevOpsAppSyncPayload payload = new DevOpsAppSyncPayload()
         payload.setProjectId(applicationDTO.getProjectId())
         payload.setOrganizationId(applicationDTO.getOrganizationId())
         payload.setCode(applicationDTO.getCode())
@@ -121,12 +121,12 @@ class ApplicationListenerSpec extends Specification {
         ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
                 applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
 
-        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
-        iamAppPayLoad.setProjectId(applicationDTO.getProjectId())
-        iamAppPayLoad.setOrganizationId(applicationDTO.getOrganizationId())
-        iamAppPayLoad.setCode(applicationDTO.getCode())
-        iamAppPayLoad.setActive(true)
-        String message = objectMapper.writeValueAsString(iamAppPayLoad)
+        DevOpsAppSyncPayload devOpsAppSyncPayload = new DevOpsAppSyncPayload()
+        devOpsAppSyncPayload.setProjectId(applicationDTO.getProjectId())
+        devOpsAppSyncPayload.setOrganizationId(applicationDTO.getOrganizationId())
+        devOpsAppSyncPayload.setCode(applicationDTO.getCode())
+        devOpsAppSyncPayload.setActive(true)
+        String message = objectMapper.writeValueAsString(devOpsAppSyncPayload)
         when: "调用方法"
         applicationListener.syncApplicationActiveStatus(message)
 

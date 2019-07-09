@@ -1,9 +1,18 @@
 package io.choerodon.iam.api.dto.payload;
 
-public class DevOpsAppDelPayload {
+public class DevOpsAppSyncPayload {
     private Long organizationId;
     private Long projectId;
     private String code;
+    private Boolean active;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     public Long getOrganizationId() {
         return organizationId;
