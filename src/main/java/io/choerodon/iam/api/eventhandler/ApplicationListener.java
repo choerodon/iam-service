@@ -208,11 +208,11 @@ public class ApplicationListener {
         application.setOrganizationId(appDelPayload.getOrganizationId());
         List<ApplicationDTO> applicationDTOList = applicationMapper.select(application);
         if (CollectionUtils.isEmpty(applicationDTOList)) {
-            logger.warn("there is no corresponding devlops application for iam when devops delete application, application: {}", application);
+            logger.warn("there is no corresponding devops application for iam when devops delete application, application: {}", application);
             return;
         }
         if (applicationDTOList.size() > 1) {
-            logger.warn("there are multi corresponding devlops application for iam when devops delete application, applications: {}", applicationDTOList);
+            logger.warn("there are multi corresponding devops application for iam when devops delete application, applications: {}", applicationDTOList);
             return;
         }
         application = applicationDTOList.get(0);
@@ -249,11 +249,11 @@ public class ApplicationListener {
         application.setOrganizationId(iamAppPayLoad.getOrganizationId());
         List<ApplicationDTO> applicationDTOList = applicationMapper.select(application);
         if (CollectionUtils.isEmpty(applicationDTOList)) {
-            logger.warn("there is no corresponding devlops application for iam when devops change application active status, application: {}", application);
+            logger.warn("there is no corresponding devops application for iam when devops change application active status, application: {}", application);
             return;
         }
         if (applicationDTOList.size() > 1) {
-            logger.warn("there are multi corresponding devlops application for when devops change application active status, applications: {}", applicationDTOList);
+            logger.warn("there are multi corresponding devops application for when devops change application active status, applications: {}", applicationDTOList);
             return;
         }
         application = applicationDTOList.get(0);
