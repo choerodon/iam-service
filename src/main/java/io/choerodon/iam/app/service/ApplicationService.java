@@ -135,5 +135,5 @@ public interface ApplicationService {
 
     ApplicationDTO getApplicationByToken(String applicationToken);
 
-    Long getIdByCode(String code);
+    Long getIdByCode(String code, Long projectId);
 }
