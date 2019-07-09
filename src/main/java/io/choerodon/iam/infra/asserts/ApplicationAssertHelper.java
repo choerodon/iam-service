@@ -1,9 +1,6 @@
 package io.choerodon.iam.infra.asserts;
 
-import java.util.List;
-
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -19,6 +16,7 @@ import io.choerodon.iam.infra.mapper.ApplicationMapper;
 @Component
 public class ApplicationAssertHelper extends AssertHelper {
 
+    private static final String ERROR_APPLICATION_NOT_EXIST = "error.application.not.exist";
     private ApplicationMapper applicationMapper;
 
     public ApplicationAssertHelper(ApplicationMapper applicationMapper) {
@@ -26,15 +24,23 @@ public class ApplicationAssertHelper extends AssertHelper {
     }
 
     public ApplicationDTO applicationNotExisted(Long id) {
-        return applicationNotExisted(id, "error.application.not.exist");
-    }
-
-    public ApplicationDTO applicationNotExisted(Long id, String message) {
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(id);
         if (ObjectUtils.isEmpty(applicationDTO)) {
-            throw new CommonException(message);
+            throw new CommonException(ERROR_APPLICATION_NOT_EXIST);
         }
         return applicationDTO;
+    }
+
+    public ApplicationDTO applicationNotExistedByUniqueIndex(ApplicationDTO applicationDTO) {
+        ApplicationDTO example = new ApplicationDTO();
+        example.setCode(applicationDTO.getCode());
+        example.setProjectId(applicationDTO.getProjectId());
+        example.setOrganizationId(applicationDTO.getOrganizationId());
+        example = applicationMapper.selectOne(example);
+        if (ObjectUtils.isEmpty(example)) {
+            throw new CommonException(ERROR_APPLICATION_NOT_EXIST);
+        }
+        return example;
     }
 
     public void applicationExisted(ApplicationDTO applicationDTO) {
@@ -42,8 +48,8 @@ public class ApplicationAssertHelper extends AssertHelper {
         example.setCode(applicationDTO.getCode());
         example.setProjectId(applicationDTO.getProjectId());
         example.setOrganizationId(applicationDTO.getOrganizationId());
-        List<ApplicationDTO> applicationDTOList = applicationMapper.select(example);
-        if (!CollectionUtils.isEmpty(applicationDTOList)) {
+        example = applicationMapper.selectOne(example);
+        if (!ObjectUtils.isEmpty(example)) {
             throw new CommonException("error.application.exist");
         }
     }
