@@ -94,7 +94,9 @@ export default class SyncRecord extends Component {
   };
 
   loadDetail(paginationIn, filtersIn, sortIn, paramsIn) {
-    const { LDAPStore } = this.props;
+    const { LDAPStore, AppState } = this.props;
+    const { currentMenuType } = AppState;
+    const { organizationId } = currentMenuType;
     const {
       detailPagination: paginationState,
       detailSort: sortState,
@@ -123,7 +125,7 @@ export default class SyncRecord extends Component {
       return;
     }
 
-    LDAPStore.loadDetail(detailPagination, filters, detailSort, params, recordId).then((data) => {
+    LDAPStore.loadDetail(detailPagination, filters, detailSort, params, organizationId, recordId).then((data) => {
       LDAPStore.setDetailRecord(data.list || []);
       this.setState({
         detailPagination: {
