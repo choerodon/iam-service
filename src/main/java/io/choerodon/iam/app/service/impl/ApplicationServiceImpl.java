@@ -1,7 +1,18 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -19,28 +30,6 @@ import io.choerodon.iam.infra.enums.ApplicationCategory;
 import io.choerodon.iam.infra.enums.ApplicationType;
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper;
 import io.choerodon.iam.infra.mapper.ApplicationMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_CREATE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DELETE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_DISABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_ENABLE;
-import static io.choerodon.iam.infra.common.utils.SagaTopic.Application.APP_UPDATE;
 
 /**
  * @author superlee
@@ -86,6 +75,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public ApplicationDTO create(ApplicationDTO applicationDTO) {
         organizationAssertHelper.organizationNotExisted(applicationDTO.getOrganizationId());
+        applicationAssertHelper.applicationExisted(applicationDTO);
         validate(applicationDTO);
         //combination-application不能选项目
         if (ObjectUtils.isEmpty(applicationDTO.getProjectId())) {
@@ -650,8 +640,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private String generatePath(Long appId) {
-        StringBuilder builder = new StringBuilder();
-        return builder.append(SEPARATOR).append(appId).append(SEPARATOR).toString();
+        return new StringBuilder().append(SEPARATOR).append(appId).append(SEPARATOR).toString();
     }
 
     private void doInsert(ApplicationDTO applicationDTO) {
