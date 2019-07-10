@@ -1,11 +1,12 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.iam.api.dto.ApplicationSearchDTO;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
-
-import java.util.List;
 
 /**
  * @author superlee
@@ -15,17 +16,17 @@ public interface ApplicationService {
     /**
      * 新建应用
      *
-     * @param applicationDTO
-     * @return
+     * @param applicationDTO 应用DTO
+     * @return 应用DTO
      */
     ApplicationDTO create(ApplicationDTO applicationDTO);
 
     /**
-     * 更新应用
+     * 根据主键更新应用
      * code，organizationId不可更新，如果projectId非空也不可更新
      *
-     * @param applicationDTO
-     * @return
+     * @param applicationDTO 应用DTO
+     * @return 应用DTO
      */
     ApplicationDTO update(ApplicationDTO applicationDTO);
 
@@ -50,30 +51,30 @@ public interface ApplicationService {
     /**
      * 启用
      *
-     * @param id
-     * @return
+     * @param id 应用Id
+     * @return 应用DTO
      */
     ApplicationDTO enable(Long id);
 
     /**
      * 禁用
      *
-     * @param id
-     * @return
+     * @param id 应用Id
+     * @return 应用DTO
      */
     ApplicationDTO disable(Long id);
 
     /**
      * 获取{@link io.choerodon.iam.infra.enums.ApplicationType}的所有code
      *
-     * @return
+     * @return 应用类型编码列表
      */
     List<String> types();
 
     /**
      * 校验code，name的唯一性
      *
-     * @param applicationDTO
+     * @param applicationDTO 应用DTO
      */
     void check(ApplicationDTO applicationDTO);
 
