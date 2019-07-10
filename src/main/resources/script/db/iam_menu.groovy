@@ -66,7 +66,7 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
 
     changeSet(author: 'fan@choerodon.io', id: '2019-03-11-add-column') {
         addColumn(tableName: 'IAM_MENU') {
-            column(name: 'CATEGORY', type: 'VARCHAR(64)', remarks: '项目层菜单分类，可以为AGILE，PROGRAM，ANALYTICAL,MODEL')
+            column(name: 'CATEGORY', type: 'VARCHAR(64)', remarks: '项目层菜单分类，可以为AGILE，PROGRAM，ANALYTICAL')
         }
     }
 
@@ -123,13 +123,6 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
     changeSet(author: 'superlee', id: '2019-06-18-rename-sequence') {
         if (helper.dbType().isSupportSequence()) {
             sql("rename IAM_MENU_S TO IAM_MENU_B_S")
-        }
-    }
-
-    changeSet(author: 'xausky', id: '2019-06-25-add-organization-model') {
-        addColumn(tableName: 'IAM_MENU_B') {
-            column(name: 'MODEL_CODE', type: 'VARCHAR(128)', remarks: '模型代码')
-            column(name: 'SOURCE_ID', type: 'BIGINT UNSIGNED', remarks: '来源ID')
         }
     }
 }

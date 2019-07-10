@@ -13,9 +13,7 @@ import io.choerodon.iam.infra.dto.MenuDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
-import io.choerodon.iam.infra.mapper.MenuPermissionMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.iam.infra.mapper.PermissionMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,20 +40,16 @@ public class MenuServiceImpl implements MenuService {
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private MenuAssertHelper menuAssertHelper;
-    private PermissionMapper permissionMapper;
-    private MenuPermissionMapper menuPermissionMapper;
 
 
     public MenuServiceImpl(ProjectRepository projectRepository, OrganizationMapper organizationMapper,
                            MenuMapper menuMapper, MenuAssertHelper menuAssertHelper,
-                           ProjectMapCategoryMapper projectMapCategoryMapper, PermissionMapper permissionMapper, MenuPermissionMapper menuPermissionMapper) {
+                           ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.projectRepository = projectRepository;
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.menuAssertHelper = menuAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
-        this.permissionMapper = permissionMapper;
-        this.menuPermissionMapper = menuPermissionMapper;
     }
 
     @Override
@@ -126,7 +120,7 @@ public class MenuServiceImpl implements MenuService {
                     menus = new LinkedHashSet<>(
                             menuMapper.queryProjectMenusWithCategoryByRootUser(getProjectCategory(level, sourceId)));
                 } else {
-                    menus = menuMapper.selectByLevelWithPermissionType(level, sourceId);
+                    menus = menuMapper.selectByLevelWithPermissionType(level);
                 }
             } else {
                 menus = new HashSet<>(
@@ -220,10 +214,10 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuDTO menuConfig(String code, Long sourceId) {
+    public MenuDTO menuConfig(String code) {
         MenuDTO menu = getTopMenuByCode(code);
         String level = menu.getResourceLevel();
-        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level, sourceId));
+        Set<MenuDTO> menus = new HashSet<>(menuMapper.selectMenusWithPermission(level));
         toTreeMenu(menu, menus, true);
         return menu;
     }

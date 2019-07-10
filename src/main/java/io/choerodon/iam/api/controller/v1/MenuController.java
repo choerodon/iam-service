@@ -48,19 +48,19 @@ public class MenuController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("菜单配置界面根据层级查菜单")
     @GetMapping("/menu_config")
-    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code, @RequestParam(required = false) Long sourceId) {
-        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
+    public ResponseEntity<MenuDTO> menuConfig(@RequestParam String code) {
+        return new ResponseEntity<>(menuService.menuConfig(code), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation("查询组织层菜单")
     @GetMapping("/org/{organization_id}/menu_config")
     public ResponseEntity<MenuDTO> orgMenuConfig(@PathVariable(name = "organization_id") Long organizationId,
-                                                 @RequestParam String code, @RequestParam(required = false) Long sourceId) {
+                                                 @RequestParam String code) {
         if (!(PROJ_TOP_MENU_CODE.equalsIgnoreCase(code) || ORG_TOP_MENU_CODE.equalsIgnoreCase(code))) {
             throw new CommonException("error.menu.code.cannot.query");
         }
-        return new ResponseEntity<>(menuService.menuConfig(code, sourceId), HttpStatus.OK);
+        return new ResponseEntity<>(menuService.menuConfig(code), HttpStatus.OK);
     }
 
 
