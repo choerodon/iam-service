@@ -79,5 +79,4 @@ public interface MenuService {
      */
     List<MenuDTO> list();
 
-    void processModelMenu(MenuDTO menu);
 }
