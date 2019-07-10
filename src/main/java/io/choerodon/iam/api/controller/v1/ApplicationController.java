@@ -180,8 +180,8 @@ public class ApplicationController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据code查询APP的id")
     @GetMapping(value = "/code")
-    public ResponseEntity<Long> getIdByCode(@PathVariable("organization_id") Long organizationId, @RequestParam String code) {
-        return new ResponseEntity<>(applicationService.getIdByCode(code), HttpStatus.OK);
+    public ResponseEntity<Long> getIdByCode(@PathVariable("organization_id") Long organizationId, @RequestParam String code, @RequestParam Long projectId) {
+        return new ResponseEntity<>(applicationService.getIdByCode(code, projectId), HttpStatus.OK);
 
     }
 
