@@ -31,14 +31,6 @@ public interface ApplicationService {
     ApplicationDTO update(ApplicationDTO applicationDTO);
 
     /**
-     * 根据唯一性索引更新应用.
-     *
-     * @param applicationDTO 应用DTO
-     * @return 应用DTO
-     */
-    ApplicationDTO updateByUniqueIndex(ApplicationDTO applicationDTO);
-
-    /**
      * 删除应用.
      *
      * @param organizationId 组织Id

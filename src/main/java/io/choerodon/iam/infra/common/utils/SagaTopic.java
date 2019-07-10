@@ -104,6 +104,8 @@ public final class SagaTopic {
         public static final String DEVOPS_APP_DELETE = "devops-app-delete";
         public static final String APP_SYNC_ACTIVE = "iam-sync-app-active";
         public static final String DEVOPS_SYNC_APP_ACTIVE = "devops-sync-app-active";
+        public static final String APP_SYNC_NAME = "iam-sync-app-name";
+        public static final String DEVOPS_SYNC_APP_NAME = "devops-update-iam-app";
         public static final String APP_UPDATE_ABNORMAL = "iam-update-application-abnormal";
         public static final String APP_DEVOPS_CREATE_FAIL = "devops-create-app-fail";
 

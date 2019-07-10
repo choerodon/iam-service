@@ -5,7 +5,6 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,15 +50,6 @@ public class ApplicationController {
         applicationDTO.setOrganizationId(organizationId);
         applicationDTO.setId(id);
         return new ResponseEntity<>(applicationService.update(applicationDTO), HttpStatus.OK);
-    }
-
-    @Permission(type = ResourceType.PROJECT, permissionWithin = true)
-    @ApiOperation(value = "根据orgId、projectId以及code更新应用(供devops feign调用)")
-    @PostMapping
-    public ResponseEntity<ApplicationDTO> updateByUniqueIndex(@PathVariable("organization_id") Long organizationId,
-                                                              @Param("applicationDTO") ApplicationDTO applicationDTO) {
-        applicationDTO.setOrganizationId(organizationId);
-        return new ResponseEntity<>(applicationService.updateByUniqueIndex(applicationDTO), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)

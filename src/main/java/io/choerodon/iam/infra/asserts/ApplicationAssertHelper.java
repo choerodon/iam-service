@@ -17,6 +17,7 @@ import io.choerodon.iam.infra.mapper.ApplicationMapper;
 public class ApplicationAssertHelper extends AssertHelper {
 
     private static final String ERROR_APPLICATION_NOT_EXIST = "error.application.not.exist";
+    private static final String ERROR_APPLICATION_EXIST = "error.application.exist";
     private ApplicationMapper applicationMapper;
 
     public ApplicationAssertHelper(ApplicationMapper applicationMapper) {
@@ -31,18 +32,6 @@ public class ApplicationAssertHelper extends AssertHelper {
         return applicationDTO;
     }
 
-    public ApplicationDTO applicationNotExistedByUniqueIndex(ApplicationDTO applicationDTO) {
-        ApplicationDTO example = new ApplicationDTO();
-        example.setCode(applicationDTO.getCode());
-        example.setProjectId(applicationDTO.getProjectId());
-        example.setOrganizationId(applicationDTO.getOrganizationId());
-        example = applicationMapper.selectOne(example);
-        if (ObjectUtils.isEmpty(example)) {
-            throw new CommonException(ERROR_APPLICATION_NOT_EXIST);
-        }
-        return example;
-    }
-
     public void applicationExisted(ApplicationDTO applicationDTO) {
         ApplicationDTO example = new ApplicationDTO();
         example.setCode(applicationDTO.getCode());
@@ -50,7 +39,7 @@ public class ApplicationAssertHelper extends AssertHelper {
         example.setOrganizationId(applicationDTO.getOrganizationId());
         example = applicationMapper.selectOne(example);
         if (!ObjectUtils.isEmpty(example)) {
-            throw new CommonException("error.application.exist");
+            throw new CommonException(ERROR_APPLICATION_EXIST);
         }
     }
 }

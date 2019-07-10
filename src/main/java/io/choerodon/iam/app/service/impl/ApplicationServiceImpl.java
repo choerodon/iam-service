@@ -164,14 +164,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO updateByUniqueIndex(ApplicationDTO applicationDTO) {
-        ApplicationDTO targetApplication = applicationAssertHelper.applicationNotExistedByUniqueIndex(applicationDTO);
-        targetApplication.setName(applicationDTO.getName());
-        applicationMapper.updateByPrimaryKeySelective(targetApplication);
-        return targetApplication;
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = APP_DELETE, description = "iam删除应用", inputSchemaClass = ApplicationDTO.class)
     public void delete(Long organizationId, Long id) {

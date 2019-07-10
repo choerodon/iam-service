@@ -2,7 +2,6 @@ package io.choerodon.iam.api.eventhandler
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.payload.DevOpsAppSyncPayload
-
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.dto.ApplicationDTO
@@ -117,7 +116,6 @@ class ApplicationListenerSpec extends Specification {
         applicationDTO.setApplicationCategory("application")
         applicationDTO.setApplicationType("normal")
         applicationMapper.insertSelective(applicationDTO)
-        applicationDTO = applicationMapper.selectOne(applicationDTO)
         ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
                 applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
 
@@ -136,5 +134,38 @@ class ApplicationListenerSpec extends Specification {
         applicationDTO1.setProjectId(826)
         applicationDTO1.setCode("test")
         applicationMapper.selectOne(applicationDTO1).getEnabled()
+    }
+
+    @Transactional
+    def "syncApplicationName"() {
+        given: "构造请求参数"
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setOrganizationId(803)
+        applicationDTO.setProjectId(826)
+        applicationDTO.setCode("test")
+        applicationDTO.setName("test")
+        applicationDTO.setEnabled(false)
+        applicationDTO.setAbnormal(false)
+        applicationDTO.setApplicationCategory("application")
+        applicationDTO.setApplicationType("normal")
+        applicationMapper.insertSelective(applicationDTO)
+        ApplicationListener applicationListener = new ApplicationListener(applicationMapper,
+                applicationExplorationMapper, organizationAssertHelper, projectAssertHelper)
+
+        DevOpsAppSyncPayload devOpsAppSyncPayload = new DevOpsAppSyncPayload()
+        devOpsAppSyncPayload.setProjectId(applicationDTO.getProjectId())
+        devOpsAppSyncPayload.setOrganizationId(applicationDTO.getOrganizationId())
+        devOpsAppSyncPayload.setCode(applicationDTO.getCode())
+        devOpsAppSyncPayload.setName("change-test")
+        String message = objectMapper.writeValueAsString(devOpsAppSyncPayload)
+        when: "调用方法"
+        applicationListener.syncApplicationName(message)
+
+        then: "校验结果"
+        ApplicationDTO applicationDTO1 = new ApplicationDTO();
+        applicationDTO1.setOrganizationId(803)
+        applicationDTO1.setProjectId(826)
+        applicationDTO1.setCode("test")
+        applicationMapper.selectOne(applicationDTO1).getName().equals("change-test")
     }
 }
