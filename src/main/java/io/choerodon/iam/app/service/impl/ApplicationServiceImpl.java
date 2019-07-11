@@ -170,7 +170,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         organizationAssertHelper.organizationNotExisted(organizationId);
         ApplicationDTO applicationDTO = applicationAssertHelper.applicationNotExisted(id);
         applicationExplorationMapper.deleteDescendantByApplicationId(id);
-        deleteAndSendEvent(applicationDTO, APP_DELETE);
+        if (devopsMessage) {
+            deleteAndSendEvent(applicationDTO, APP_DELETE);
+        } else {
+            doDelete(applicationDTO);
+        }
     }
 
     @Override
@@ -586,9 +590,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .withRefType("application")
                         .withSagaCode(sagaCode),
                 builder -> {
-                    if (applicationMapper.deleteByPrimaryKey(application) != 1) {
-                        throw new CommonException("error.application.delete");
-                    }
+                    doDelete(application);
                     builder
                             .withPayloadAndSerialize(application)
                             .withRefId(String.valueOf(application.getId()))
@@ -646,6 +648,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     private void doInsert(ApplicationDTO applicationDTO) {
         if (applicationMapper.insertSelective(applicationDTO) != 1) {
             throw new CommonException("error.application.insert");
+        }
+    }
+
+    private void doDelete(ApplicationDTO applicationDTO) {
+        if (applicationMapper.deleteByPrimaryKey(applicationDTO) != 1) {
+            throw new CommonException("error.application.delete");
         }
     }
 }
