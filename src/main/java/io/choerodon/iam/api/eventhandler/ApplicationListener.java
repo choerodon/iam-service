@@ -168,14 +168,12 @@ public class ApplicationListener {
     public void updateApplicationAbnormal(String message) throws IOException {
         ApplicationDTO applicationDTO = objectMapper.readValue(message, ApplicationDTO.class);
         if (applicationDTO == null) {
-            logger.warn("iam receiving no one application while devops create application failed!");
-            return;
+            throw new CommonException("error.application.payload.empty");
         }
         long id = applicationDTO.getId();
         ApplicationDTO application = applicationMapper.selectByPrimaryKey(id);
         if (application == null) {
-            logger.warn("application does not exist which id = {}", id);
-            return;
+            throw new CommonException("error.application.not.exist", applicationDTO);
         }
         application.setAbnormal(true);
         applicationMapper.updateByPrimaryKey(application);
@@ -183,94 +181,55 @@ public class ApplicationListener {
 
     @SagaTask(code = APP_SYNC_DELETE, sagaCode = DEVOPS_APP_DELETE, seq = 1, description = "iam接收devops删除应用事件")
     public void syncDeleteApplication(String message) throws IOException {
-        DevOpsAppSyncPayload appDelPayload = objectMapper.readValue(message, DevOpsAppSyncPayload.class);
-        if (appDelPayload == null) {
-            logger.warn("iam receiving no one application when devops delete application!");
-            return;
-        }
-        if (appDelPayload.getCode() == null) {
-            logger.warn("application received by the iam is illegal because of code is null when devops delete application, application: {}", appDelPayload);
-            return;
-        }
-        if (appDelPayload.getProjectId() == null) {
-            logger.warn("application received by the iam is illegal because of projectId is null when devops delete application, application: {}", appDelPayload);
-            return;
-        }
-        if (appDelPayload.getOrganizationId() == null) {
-            logger.warn("application received by the iam is illegal because of organizationId is null when devops delete application, application: {}", appDelPayload);
-            return;
-        }
+        DevOpsAppSyncPayload appDelPayload = getPayload(message);
+        validatePayload(appDelPayload, false, false);
         ApplicationDTO applicationDTO = getTargetApplicationByUniqueIndex(appDelPayload);
-        if (ObjectUtils.isEmpty(applicationDTO)) {
-            logger.warn("there is no corresponding devops application for iam when devops delete application, application: {}", applicationDTO);
-            return;
-        }
         applicationExplorationMapper.deleteDescendantByApplicationId(applicationDTO.getId());
         applicationMapper.deleteByPrimaryKey(applicationDTO);
     }
 
     @SagaTask(code = APP_SYNC_ACTIVE, sagaCode = DEVOPS_SYNC_APP_ACTIVE, seq = 1, description = "iam接收devops启用、禁用应用事件")
     public void syncApplicationActiveStatus(String message) throws IOException {
-        DevOpsAppSyncPayload devOpsAppSyncPayload = objectMapper.readValue(message, DevOpsAppSyncPayload.class);
-        if (devOpsAppSyncPayload == null) {
-            logger.warn("iam receiving no one application when devops change application active status!");
-            return;
-        }
-        if (devOpsAppSyncPayload.getCode() == null) {
-            logger.warn("application received by the iam is illegal because of code is null when devops change application active status, application: {}", devOpsAppSyncPayload);
-            return;
-        }
-        if (devOpsAppSyncPayload.getProjectId() == null) {
-            logger.warn("application received by the iam is illegal because of projectId is null when devops change application active status, application: {}", devOpsAppSyncPayload);
-            return;
-        }
-        if (devOpsAppSyncPayload.getOrganizationId() == null) {
-            logger.warn("application received by the iam is illegal because of organizationId is null when devops change application active status, application: {}", devOpsAppSyncPayload);
-            return;
-        }
-        if (devOpsAppSyncPayload.getActive() == null) {
-            logger.warn("application received by the iam is illegal because of isActive is null when devops change application active status, application: {}", devOpsAppSyncPayload);
-            return;
-        }
+        DevOpsAppSyncPayload devOpsAppSyncPayload = getPayload(message);
+        validatePayload(devOpsAppSyncPayload, true, false);
         ApplicationDTO applicationDTO = getTargetApplicationByUniqueIndex(devOpsAppSyncPayload);
-        if (ObjectUtils.isEmpty(applicationDTO)) {
-            logger.warn("there is no corresponding devops application for iam when devops change application active status, application: {}", applicationDTO);
-            return;
-        }
         applicationDTO.setEnabled(devOpsAppSyncPayload.getActive());
         applicationMapper.updateByPrimaryKeySelective(applicationDTO);
     }
 
     @SagaTask(code = APP_SYNC_NAME, sagaCode = DEVOPS_SYNC_APP_NAME, seq = 1, description = "iam接收devops更新应用名称事件")
     public void syncApplicationName(String message) throws IOException {
-        DevOpsAppSyncPayload syncPayload = objectMapper.readValue(message, DevOpsAppSyncPayload.class);
-        if (syncPayload == null) {
-            logger.warn("iam receiving no one application when devops change application name!");
-            return;
-        }
-        if (syncPayload.getCode() == null) {
-            logger.warn("application received by the iam is illegal because of code is null when devops change application name, application: {}", syncPayload);
-            return;
-        }
-        if (syncPayload.getProjectId() == null) {
-            logger.warn("application received by the iam is illegal because of projectId is null when devops change application name, application: {}", syncPayload);
-            return;
-        }
-        if (syncPayload.getOrganizationId() == null) {
-            logger.warn("application received by the iam is illegal because of organizationId is null when devops change application name, application: {}", syncPayload);
-            return;
-        }
-        if (syncPayload.getName() == null) {
-            logger.warn("application received by the iam is illegal because of name is null when devops change application name, application: {}", syncPayload);
-            return;
-        }
+        DevOpsAppSyncPayload syncPayload = getPayload(message);
+        validatePayload(syncPayload, false, true);
         ApplicationDTO applicationDTO = getTargetApplicationByUniqueIndex(syncPayload);
-        if (ObjectUtils.isEmpty(applicationDTO)) {
-            logger.warn("there is no corresponding devops application for iam when devops change application name, application: {}", applicationDTO);
-            return;
-        }
         applicationDTO.setName(syncPayload.getName());
         applicationMapper.updateByPrimaryKeySelective(applicationDTO);
+    }
+
+    private DevOpsAppSyncPayload getPayload(String message) throws IOException {
+        DevOpsAppSyncPayload devOpsAppSyncPayload = objectMapper.readValue(message, DevOpsAppSyncPayload.class);
+        if (devOpsAppSyncPayload == null) {
+            throw new CommonException("error.application.payload.empty");
+        }
+        return devOpsAppSyncPayload;
+    }
+
+    private void validatePayload(DevOpsAppSyncPayload devOpsAppSyncPayload, boolean activeValidate, boolean nameValidate) {
+        if (devOpsAppSyncPayload.getCode() == null) {
+            throw new CommonException("error.application.code.empty", devOpsAppSyncPayload);
+        }
+        if (devOpsAppSyncPayload.getProjectId() == null) {
+            throw new CommonException("error.application.projectId.empty", devOpsAppSyncPayload);
+        }
+        if (devOpsAppSyncPayload.getOrganizationId() == null) {
+            throw new CommonException("error.application.organizationId.empty", devOpsAppSyncPayload);
+        }
+        if (activeValidate && devOpsAppSyncPayload.getActive() == null) {
+            throw new CommonException("error.application.name.empty", devOpsAppSyncPayload);
+        }
+        if (nameValidate && devOpsAppSyncPayload.getName() == null) {
+            throw new CommonException("error.application.name.empty", devOpsAppSyncPayload);
+        }
     }
 
     private ApplicationDTO getTargetApplicationByUniqueIndex(DevOpsAppSyncPayload syncPayload) {
@@ -278,6 +237,11 @@ public class ApplicationListener {
         applicationDTO.setCode(syncPayload.getCode());
         applicationDTO.setProjectId(syncPayload.getProjectId());
         applicationDTO.setOrganizationId(syncPayload.getOrganizationId());
-        return applicationMapper.selectOne(applicationDTO);
+        applicationDTO = applicationMapper.selectOne(applicationDTO);
+        if (applicationDTO == null) {
+            throw new CommonException("error.application.not.exist", syncPayload);
+        }
+        return applicationDTO;
     }
+
 }
