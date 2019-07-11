@@ -6,6 +6,7 @@ public class DevOpsAppSyncPayload {
     private String code;
     private String name;
     private Boolean active;
+    private Long appId;
 
     public Long getOrganizationId() {
         return organizationId;
@@ -45,5 +46,13 @@ public class DevOpsAppSyncPayload {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }
