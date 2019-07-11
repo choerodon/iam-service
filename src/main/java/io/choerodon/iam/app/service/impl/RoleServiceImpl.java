@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -347,7 +348,7 @@ public class RoleServiceImpl implements RoleService {
         if (roleDTO == null) {
             throw new CommonException("error.role.not.exist");
         }
-        if (roleDTO.getOrganizationId() == null || roleDTO.getOrganizationId() != orgId) {
+        if (roleDTO.getOrganizationId() == null || !Objects.equals(roleDTO.getOrganizationId(), orgId)) {
             throw new CommonException("error.role.modify.check");
         }
     }
