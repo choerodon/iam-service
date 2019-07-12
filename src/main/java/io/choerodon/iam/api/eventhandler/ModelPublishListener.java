@@ -44,6 +44,7 @@ public class ModelPublishListener {
                     role.setName(rolePayload.getName());
                     role.setPermissions(defaultOrganizationPermissions);
                     roleService.create(role);
+                    rolePayload.setId(role.getId());
                 } else {
                     RoleDTO role = roleService.queryWithPermissionsAndLabels(rolePayload.getId());
                     rolePayload.setCode(role.getCode());
