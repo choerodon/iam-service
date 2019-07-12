@@ -44,6 +44,7 @@
     <select id="fulltextSearch" resultMap="RoleDTO">
         select * from iam_role r
         <where>
+            r.organization_id IS NULL
             <if test="roleQuery.name != null">
                 AND r.name LIKE concat(concat('%',#{roleQuery.name}), '%')
             </if>
