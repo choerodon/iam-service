@@ -138,7 +138,7 @@ public class MenuServiceImpl implements MenuService {
         Set<MenuDTO> menuCollect = allMenus.stream().filter(m -> !menuIds.contains(m.getId())).collect(Collectors.toSet());
         //添加类型为menu的菜单
         menus.addAll(menuCollect);
-        toTreeMenu(topMenu, menus, false);
+        toTreeMenu(topMenu, menus, true);
         return topMenu;
     }
 

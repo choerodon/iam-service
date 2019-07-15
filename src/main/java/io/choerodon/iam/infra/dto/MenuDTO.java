@@ -232,13 +232,11 @@ public class MenuDTO extends BaseDTO {
                 Objects.equals(category, menuDTO.category) &&
                 Objects.equals(searchCondition, menuDTO.searchCondition) &&
                 Objects.equals(route, menuDTO.route) &&
-                Objects.equals(pagePermissionType, menuDTO.pagePermissionType) &&
-                Objects.equals(permissions, menuDTO.permissions) &&
-                Objects.equals(subMenus, menuDTO.subMenus);
+                Objects.equals(pagePermissionType, menuDTO.pagePermissionType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, route, pagePermissionType, permissions, subMenus);
+        return Objects.hash(id, code, name, pagePermissionCode, parentCode, resourceLevel, type, serviceCode, sort, isDefault, icon, category, searchCondition, route, pagePermissionType);
     }
 }
