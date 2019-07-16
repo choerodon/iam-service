@@ -69,12 +69,23 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
             column(name: 'CATEGORY', type: 'VARCHAR(255)', remarks: '组织类型code', afterColumn: 'HOME_PAGE', defaultValue: 'test')
         }
     }
-    
+
 
     changeSet(author: 'jiameng.cao@hand-china.com', id: '2019-06-06-exchange-fd-organization.groovy') {
         dropColumn(tableName: 'FD_ORGANIZATION', columnName: 'CATEGORY')
         addColumn(tableName: 'FD_ORGANIZATION') {
             column(name: 'CATEGORY', type: 'VARCHAR(255)', remarks: '组织类型code', afterColumn: 'HOME_PAGE', defaultValue: 'DEFAULT')
+        }
+    }
+
+    changeSet(author: 'qiang.zeng@hand-china.com', id: '2019-07-16-fd-organization-add') {
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'BUSINESS_TYPE', type: 'VARCHAR(50)', remarks: '组织所在行业', afterColumn: 'CATEGORY')
+        }
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'EMAIL_SUFFIX', type: 'VARCHAR(50)', remarks: '组织邮箱后缀', afterColumn: 'BUSINESS_TYPE') {
+                constraints(unique: true, uniqueConstraintName: 'UK_FD_ORGANIZATION_U2')
+            }
         }
     }
 

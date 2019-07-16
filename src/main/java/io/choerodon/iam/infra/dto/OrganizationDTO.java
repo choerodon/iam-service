@@ -1,14 +1,15 @@
 package io.choerodon.iam.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-import io.swagger.annotations.ApiModelProperty;
-
+import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.Date;
-import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * @author superlee
@@ -51,6 +52,15 @@ public class OrganizationDTO extends BaseDTO {
 
     @ApiModelProperty(value = "组织官网地址")
     private String homePage;
+
+    @ApiModelProperty(value = "组织规模")
+    private Integer scale;
+
+    @ApiModelProperty(value = "组织所在行业")
+    private String businessType;
+
+    @ApiModelProperty(value = "邮箱后缀，唯一。注册时必输，数据库非必输")
+    private String emailSuffix;
 
     @Transient
     private List<ProjectDTO> projects;
@@ -224,5 +234,29 @@ public class OrganizationDTO extends BaseDTO {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public void setScale(Integer scale) {
+        this.scale = scale;
+    }
+
+    public String getBusinessType() {
+        return businessType;
+    }
+
+    public void setBusinessType(String businessType) {
+        this.businessType = businessType;
+    }
+
+    public String getEmailSuffix() {
+        return emailSuffix;
+    }
+
+    public void setEmailSuffix(String emailSuffix) {
+        this.emailSuffix = emailSuffix;
     }
 }
