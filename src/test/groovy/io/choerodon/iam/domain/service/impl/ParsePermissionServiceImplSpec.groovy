@@ -1,9 +1,7 @@
 package io.choerodon.iam.domain.service.impl
 
 import io.choerodon.eureka.event.EurekaEventPayload
-import io.choerodon.iam.domain.repository.PermissionRepository
-import io.choerodon.iam.domain.repository.RolePermissionRepository
-import io.choerodon.iam.domain.repository.RoleRepository
+import io.choerodon.iam.app.service.impl.ParsePermissionServiceImpl
 import io.choerodon.iam.infra.dto.PermissionDTO
 import io.choerodon.iam.infra.dto.RoleDTO
 import org.springframework.http.HttpStatus
@@ -15,9 +13,9 @@ import spock.lang.Specification
  * @author dengyouquan
  * */
 class ParsePermissionServiceImplSpec extends Specification {
-    private PermissionRepository permissionRepository = Mock(PermissionRepository)
-    private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
-    private RoleRepository roleRepository = Mock(RoleRepository)
+//    private PermissionRepository permissionRepository = Mock(PermissionRepository)
+//    private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
+//    private RoleRepository roleRepository = Mock(RoleRepository)
     private ParsePermissionServiceImpl parsePermissionService =
             new ParsePermissionServiceImpl(permissionRepository, rolePermissionRepository, roleRepository)
 

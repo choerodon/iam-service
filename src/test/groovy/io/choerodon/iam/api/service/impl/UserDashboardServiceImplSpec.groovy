@@ -1,8 +1,9 @@
 package io.choerodon.iam.api.service.impl
 
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.service.UserDashboardService
+import io.choerodon.iam.app.service.UserDashboardService
 import io.choerodon.iam.api.validator.MemberRoleValidator
+import io.choerodon.iam.app.service.impl.UserDashboardServiceImpl
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.DashboardDTO
 import io.choerodon.iam.infra.dto.UserDashboardDTO

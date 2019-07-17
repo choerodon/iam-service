@@ -2,9 +2,10 @@ package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.netflix.appinfo.InstanceInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -13,18 +14,13 @@ import io.choerodon.core.swagger.PermissionData;
 import io.choerodon.core.swagger.SwaggerExtraData;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
-import io.choerodon.iam.domain.repository.MenuPermissionRepository;
-import io.choerodon.iam.domain.repository.PermissionRepository;
-import io.choerodon.iam.domain.repository.RolePermissionRepository;
+import io.choerodon.iam.infra.asserts.PermissionAssertHelper;
 import io.choerodon.iam.infra.dto.MenuPermissionDTO;
 import io.choerodon.iam.infra.dto.PermissionDTO;
 import io.choerodon.iam.infra.dto.RolePermissionDTO;
-import io.choerodon.iam.infra.mapper.OrganizationMapper;
-import io.choerodon.iam.infra.mapper.PermissionMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
@@ -35,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import tk.mybatis.mapper.entity.Example;
 
 import java.io.IOException;
 import java.util.*;
@@ -48,16 +45,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
-    private PermissionRepository permissionRepository;
-
-    @Autowired
     private PermissionMapper permissionMapper;
 
-    private RolePermissionRepository rolePermissionRepository;
-
     private DiscoveryClient discoveryClient;
-
-    private MenuPermissionRepository menuPermissionRepository;
 
     private OrganizationMapper organizationMapper;
 
@@ -65,24 +55,34 @@ public class PermissionServiceImpl implements PermissionService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository,
-                                 DiscoveryClient discoveryClient,
-                                 RolePermissionRepository rolePermissionRepository,
-                                 MenuPermissionRepository menuPermissionRepository,
+    private PermissionAssertHelper permissionAssertHelper;
+
+    private RolePermissionMapper rolePermissionMapper;
+
+    private MenuPermissionMapper menuPermissionMapper;
+
+    public PermissionServiceImpl(DiscoveryClient discoveryClient,
                                  OrganizationMapper organizationMapper,
-                                 ProjectMapper projectMapper) {
-        this.permissionRepository = permissionRepository;
+                                 ProjectMapper projectMapper,
+                                 PermissionMapper permissionMapper,
+                                 PermissionAssertHelper permissionAssertHelper,
+                                 RolePermissionMapper rolePermissionMapper,
+                                 MenuPermissionMapper menuPermissionMapper) {
         this.discoveryClient = discoveryClient;
-        this.rolePermissionRepository = rolePermissionRepository;
-        this.menuPermissionRepository = menuPermissionRepository;
         this.organizationMapper = organizationMapper;
         this.projectMapper = projectMapper;
+        this.permissionMapper = permissionMapper;
+        this.permissionAssertHelper = permissionAssertHelper;
+        this.rolePermissionMapper = rolePermissionMapper;
+        this.menuPermissionMapper = menuPermissionMapper;
     }
 
 
     @Override
-    public PageInfo<PermissionDTO> pagingQuery(int page, int size, PermissionDTO permissionDTO, String param) {
-        return permissionRepository.pagingQuery(page, size, permissionDTO, param);
+    public PageInfo<PermissionDTO> pagingQuery(PageRequest pageRequest, PermissionDTO permissionDTO, String param) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> permissionMapper.fuzzyQuery(permissionDTO, param));
     }
 
 
@@ -95,7 +95,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
         //super admin例外处理
         if (details.getAdmin() != null && details.getAdmin()) {
-            checkPermissionDTOList.forEach(dto -> dto.setApprove(permissionRepository.existByCode(dto.getCode().trim())));
+            checkPermissionDTOList.forEach(dto -> dto.setApprove(permissionAssertHelper.codeExisted(dto.getCode().trim())));
             return checkPermissionDTOList;
         }
         Long userId = details.getUserId();
@@ -116,8 +116,7 @@ public class PermissionServiceImpl implements PermissionService {
         Set<String> siteCodes = checkPermissionDTOList.stream().filter(i -> ResourceLevel.SITE.value().equals(i.getResourceType()))
                 .map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
         //site层校验之后的权限集
-        siteCodes = permissionRepository.checkPermission(userId, ResourceLevel.SITE.value(), 0L, siteCodes);
-        return siteCodes;
+        return permissionMapper.checkPermission(userId, ResourceLevel.SITE.value(), 0L, siteCodes);
     }
 
     private Set<String> checkOrgPermission(final List<CheckPermissionDTO> checkPermissionDTOList, final Long userId) {
@@ -143,8 +142,7 @@ public class PermissionServiceImpl implements PermissionService {
                 }
             }
             Set<String> searchOrganizationCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
-            searchOrganizationCodes = permissionRepository.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes);
-            organizationCodes.addAll(searchOrganizationCodes);
+            organizationCodes.addAll(permissionMapper.checkPermission(userId, ResourceLevel.ORGANIZATION.value(), orgId, searchOrganizationCodes));
         }
         return organizationCodes;
     }
@@ -172,8 +170,7 @@ public class PermissionServiceImpl implements PermissionService {
                 }
             }
             Set<String> searchProjectCodes = entry.getValue().stream().map(CheckPermissionDTO::getCode).collect(Collectors.toSet());
-            searchProjectCodes = permissionRepository.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes);
-            projectCodes.addAll(searchProjectCodes);
+            projectCodes.addAll(permissionMapper.checkPermission(userId, ResourceLevel.PROJECT.value(), projectId, searchProjectCodes));
         }
         return projectCodes;
     }
@@ -183,7 +180,7 @@ public class PermissionServiceImpl implements PermissionService {
     public Set<PermissionDTO> queryByRoleIds(List<Long> roleIds) {
         Set<PermissionDTO> permissions = new HashSet<>();
         roleIds.forEach(roleId -> {
-            List<PermissionDTO> permissionList = permissionRepository.selectByRoleId(roleId);
+            List<PermissionDTO> permissionList = permissionMapper.selectByRoleId(roleId, null);
             permissions.addAll(permissionList);
         });
         return permissions;
@@ -191,31 +188,31 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionDTO> query(String level, String serviceName, String code) {
-        return permissionRepository.query(level, serviceName, code);
+        Example example = new Example(PermissionDTO.class);
+        example.setOrderByClause("code asc");
+        example.createCriteria()
+                .andEqualTo("resourceLevel", level)
+                .andEqualTo("serviceCode", serviceName)
+                .andEqualTo("code", code);
+        return permissionMapper.selectByExample(example);
     }
 
     @Override
     @Transactional(rollbackFor = CommonException.class)
     public void deleteByCode(String code) {
-        PermissionDTO permissionDTO = permissionRepository.selectByCode(code);
-        boolean deleted =
-                Optional
-                        .ofNullable(permissionDTO)
-                        .map(p -> {
-                            String serviceCode = p.getServiceCode();
-                            String json = fetchLatestSwaggerJson(serviceCode);
-                            Set<String> permissionCodes = parseCodeFromJson(json, serviceCode);
-                            return !permissionCodes.contains(code);
-                        })
-                        .orElseThrow(() -> new CommonException("error.permission.does.not.exist"));
-        if (deleted) {
-            permissionRepository.deleteById(permissionDTO.getId());
+        PermissionDTO permission = permissionAssertHelper.permissionNotExisted(code);
+        String serviceCode = permission.getServiceCode();
+        String json = fetchLatestSwaggerJson(serviceCode);
+        Set<String> permissionCodes = parseCodeFromJson(json, serviceCode);
+        boolean isDeleted = !permissionCodes.contains(code);
+        if (isDeleted) {
+            permissionMapper.deleteByPrimaryKey(permission.getId());
             RolePermissionDTO rolePermission = new RolePermissionDTO();
-            rolePermission.setPermissionId(permissionDTO.getId());
-            rolePermissionRepository.delete(rolePermission);
+            rolePermission.setPermissionId(permission.getId());
+            rolePermissionMapper.delete(rolePermission);
             MenuPermissionDTO menuPermission = new MenuPermissionDTO();
             menuPermission.setPermissionCode(code);
-            menuPermissionRepository.delete(menuPermission);
+            menuPermissionMapper.delete(menuPermission);
         } else {
             throw new CommonException("error.permission.not.obsoleting");
         }
@@ -308,7 +305,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public PageInfo<PermissionDTO> listPermissionsByRoleId(int page, int size, Long id, String params) {
-        return permissionRepository.pagingQueryByRoleId(page, size, id, params);
+    public PageInfo<PermissionDTO> listPermissionsByRoleId(PageRequest pageRequest, Long id, String params) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize()).doSelectPageInfo(() -> permissionMapper.selectByRoleId(id, params));
     }
 }

@@ -1,10 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -12,12 +14,16 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
 import io.choerodon.iam.app.service.OrganizationProjectService;
 import io.choerodon.iam.app.service.ProjectService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -29,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDATE;
+import static io.choerodon.iam.infra.asserts.UserAssertHelper.WhichColumn;
 
 /**
  * @author flyleft
@@ -36,12 +43,6 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.PROJECT_UPDA
 @Service
 @RefreshScope
 public class ProjectServiceImpl implements ProjectService {
-
-    private ProjectRepository projectRepository;
-
-    private UserRepository userRepository;
-
-    private OrganizationRepository organizationRepository;
 
     private OrganizationProjectService organizationProjectService;
 
@@ -58,30 +59,46 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public ProjectServiceImpl(ProjectRepository projectRepository,
-                              UserRepository userRepository,
-                              OrganizationRepository organizationRepository,
-                              OrganizationProjectService organizationProjectService,
-                              SagaClient sagaClient) {
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
-        this.organizationRepository = organizationRepository;
+    private UserMapper userMapper;
+
+    private ProjectMapper projectMapper;
+    private ProjectAssertHelper projectAssertHelper;
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
+    private UserAssertHelper userAssertHelper;
+    private OrganizationMapper organizationMapper;
+
+    public ProjectServiceImpl(OrganizationProjectService organizationProjectService,
+                              SagaClient sagaClient,
+                              UserMapper userMapper,
+                              ProjectMapper projectMapper,
+                              ProjectAssertHelper projectAssertHelper,
+                              ProjectMapCategoryMapper projectMapCategoryMapper,
+                              UserAssertHelper userAssertHelper,
+                              OrganizationMapper organizationMapper) {
         this.organizationProjectService = organizationProjectService;
         this.sagaClient = sagaClient;
+        this.userMapper = userMapper;
+        this.projectMapper = projectMapper;
+        this.projectAssertHelper = projectAssertHelper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.userAssertHelper = userAssertHelper;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
     public ProjectDTO queryProjectById(Long projectId) {
+        ProjectDTO dto = projectAssertHelper.projectNotExisted(projectId);
         if (enableCategory) {
-            return projectRepository.selectByPrimaryKeyWithCategory(projectId);
-        } else {
-            return projectRepository.selectByPrimaryKey(projectId);
+            dto.setCategories(projectMapCategoryMapper.selectProjectCategoryNames(dto.getId()));
         }
+        return dto;
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, int page, int size, String param) {
-        return userRepository.pagingQueryUsersByProjectId(id, userId, email, page, size, param);
+    public PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.PROJECT.value(), id, userId, email, param));
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -90,10 +107,11 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO update(ProjectDTO projectDTO) {
         if (devopsMessage) {
             ProjectDTO dto = new ProjectDTO();
-            CustomUserDetails details = DetailsHelper.getUserDetails();
-            UserDTO user = userRepository.selectByLoginName(details.getUsername());
-            ProjectDTO newProject = projectRepository.selectByPrimaryKey(projectDTO.getId());
-            OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(newProject.getOrganizationId());
+            CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
+            UserDTO user = userAssertHelper.userNotExisted(WhichColumn.LOGIN_NAME, details.getUsername());
+            ProjectDTO newProject = projectAssertHelper.projectNotExisted(projectDTO.getId());
+
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(newProject.getOrganizationId());
             ProjectEventPayload projectEventMsg = new ProjectEventPayload();
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(user.getId());
@@ -103,7 +121,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
             projectEventMsg.setProjectId(newProject.getId());
             projectEventMsg.setProjectCode(newProject.getCode());
-            ProjectDTO newDTO = projectRepository.updateSelective(projectDTO);
+            ProjectDTO newDTO = organizationProjectService.updateSelective(projectDTO);
             projectEventMsg.setProjectName(projectDTO.getName());
             projectEventMsg.setImageUrl(newDTO.getImageUrl());
             BeanUtils.copyProperties(newDTO, dto);
@@ -115,7 +133,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
             return dto;
         } else {
-            return projectRepository.updateSelective(projectDTO);
+            return organizationProjectService.updateSelective(projectDTO);
         }
     }
 
@@ -123,12 +141,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO disableProject(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        return organizationProjectService.disableProjectAndSendEvent(projectId, userId);
+        return organizationProjectService.disableProject(null, projectId, userId);
     }
 
     @Override
     public List<Long> listUserIds(Long projectId) {
-        return projectRepository.listUserIds(projectId);
+        return projectMapper.listUserIds(projectId);
     }
 
     @Override
@@ -136,7 +154,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return projectRepository.queryByIds(ids);
+            return projectMapper.selectByIds(ids);
         }
     }
 
@@ -144,6 +162,6 @@ public class ProjectServiceImpl implements ProjectService {
     public Boolean checkProjCode(String code) {
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setCode(code);
-        return projectRepository.selectOne(projectDTO) == null;
+        return projectMapper.selectOne(projectDTO) == null;
     }
 }

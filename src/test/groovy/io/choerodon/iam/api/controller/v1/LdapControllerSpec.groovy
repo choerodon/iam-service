@@ -6,14 +6,13 @@ import io.choerodon.iam.api.dto.LdapAccountDTO
 import io.choerodon.iam.api.dto.LdapConnectionDTO
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.impl.LdapServiceImpl
-import io.choerodon.iam.domain.repository.LdapHistoryRepository
-import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.dto.LdapDTO
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO
 import io.choerodon.iam.infra.dto.LdapHistoryDTO
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.enums.LdapErrorUserCause
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
+import io.choerodon.iam.infra.mapper.LdapHistoryMapper
 import io.choerodon.iam.infra.mapper.LdapMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import org.springframework.beans.BeanUtils
@@ -47,9 +46,7 @@ class LdapControllerSpec extends Specification {
     @Autowired
     private LdapErrorUserMapper ldapErrorUserMapper
     @Autowired
-    private LdapHistoryRepository ldapHistoryRepository
-
-    private ILdapService iLdapService = Mock(ILdapService)
+    private LdapHistoryMapper ldapHistoryMapper
 
     //设置为共享，以免每个方法使用false，调用
     @Shared
@@ -375,7 +372,8 @@ class LdapControllerSpec extends Specification {
         LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
         ldapHistory.setLdapId(1L)
         ldapHistory.setSyncBeginTime(new Date(System.currentTimeMillis()))
-        LdapHistoryDTO returnValue = ldapHistoryRepository.insertSelective(ldapHistory)
+        ldapHistoryMapper.insertSelective(ldapHistory)
+        LdapHistoryDTO returnValue = ldapHistoryMapper.selectByPrimaryKey(ldapHistory)
         long id = returnValue.getId()
 
         when: "调用controller"
@@ -389,12 +387,12 @@ class LdapControllerSpec extends Specification {
     @Transactional
     def "pagingQueryHistories"() {
         given:
-        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, ldapHistoryRepository, null)
+        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, ldapHistoryMapper, null)
         LdapController ldapController = new LdapController(ldapService)
 //        PageRequest pageRequest = new PageRequest(0, 10)
         LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
         ldapHistory.setLdapId(1L)
-        ldapHistoryRepository.insertSelective(ldapHistory)
+        ldapHistoryMapper.insertSelective(ldapHistory)
 
         when:
         def entity = ldapController.pagingQueryHistories(0, 10, 1L, 1L)

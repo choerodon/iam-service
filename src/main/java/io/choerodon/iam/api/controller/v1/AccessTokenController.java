@@ -4,15 +4,19 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.infra.dto.AccessTokenDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.iam.app.service.AccessTokenService;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author Eugen
@@ -29,12 +33,13 @@ public class AccessTokenController {
 
     @Permission(permissionLogin = true, type = ResourceType.SITE)
     @ApiOperation(value = "分页查询当前用户token")
+    @CustomPageRequest
     @GetMapping
-    public ResponseEntity<PageInfo<AccessTokenDTO>> list(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                         @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+    public ResponseEntity<PageInfo<AccessTokenDTO>> list(@ApiIgnore
+                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                          @RequestParam(value = "clientName", required = false) String clientName,
                                                          @RequestParam(value = "currentToken") String currentToken) {
-        return new ResponseEntity<>(accessTokenService.pagedSearch(page, size, clientName, currentToken), HttpStatus.OK);
+        return new ResponseEntity<>(accessTokenService.pagedSearch(pageRequest, clientName, currentToken), HttpStatus.OK);
     }
 
     @Permission(permissionLogin = true, type = ResourceType.SITE)

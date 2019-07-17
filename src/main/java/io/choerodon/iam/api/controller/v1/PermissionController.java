@@ -3,14 +3,19 @@ package io.choerodon.iam.api.controller.v1;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.CheckPermissionDTO;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Set;
@@ -38,13 +43,14 @@ public class PermissionController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation("通过层级查询权限列表")
     @GetMapping
-    public ResponseEntity<PageInfo<PermissionDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                               @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<PermissionDTO>> pagingQuery(@ApiIgnore
+                                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                @RequestParam("level") String level,
                                                                @RequestParam(required = false) String param) {
         PermissionDTO dto = new PermissionDTO();
         dto.setResourceLevel(level);
-        return new ResponseEntity<>(permissionService.pagingQuery(page, size, dto, param), HttpStatus.OK);
+        return new ResponseEntity<>(permissionService.pagingQuery(pageRequest, dto, param), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)

@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.infra.dto.LanguageDTO;
 
 import java.util.List;
@@ -12,11 +12,11 @@ import java.util.List;
  */
 public interface LanguageService {
 
-    PageInfo<LanguageDTO> pagingQuery(int page, int size, LanguageDTO languageDTO, String param);
+    PageInfo<LanguageDTO> pagingQuery(PageRequest pageRequest, LanguageDTO languageDTO, String param);
 
     LanguageDTO update(LanguageDTO languageDTO);
 
-    LanguageDTO queryByCode(LanguageDTO language);
+    LanguageDTO queryByCode(String code);
 
     List<LanguageDTO> listAll();
 }

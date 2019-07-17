@@ -26,7 +26,6 @@ import java.util.List;
 @RequestMapping(value = "/v1/organizations/{organization_id}/roles")
 public class OrganizationRoleController extends BaseController {
 
-
     private RoleService roleService;
 
     public OrganizationRoleController(RoleService roleService) {
@@ -159,7 +158,8 @@ public class OrganizationRoleController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "根据标签查询组织层角色")
     @GetMapping(value = "/selectByLabel")
-    public ResponseEntity<List<RoleDTO>> selectByLabel(@PathVariable(name = "organization_id") Long organizationId, @RequestParam String label) {
+    public ResponseEntity<List<RoleDTO>> selectByLabel(@PathVariable(name = "organization_id") Long organizationId,
+                                                       @RequestParam String label) {
         return ResponseEntity.ok(roleService.selectByLabel(label, organizationId));
     }
 

@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.infra.exception.AlreadyExsitedException;
 import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -32,4 +33,19 @@ public class ProjectAssertHelper extends AssertHelper {
         }
         return dto;
     }
+
+    public void codeExisted(String code, Long organizationId) {
+        codeExisted(code, organizationId, "error.project.code.duplicated");
+    }
+
+    public void codeExisted(String code, Long organizationId, String message) {
+        ProjectDTO dto = new ProjectDTO();
+        dto.setCode(code);
+        dto.setOrganizationId(organizationId);
+        if (projectMapper.selectOne(dto) != null) {
+            throw new AlreadyExsitedException(message);
+        }
+    }
+
+
 }

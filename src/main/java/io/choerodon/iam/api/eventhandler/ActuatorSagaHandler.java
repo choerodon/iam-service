@@ -7,7 +7,7 @@ import io.choerodon.annotation.entity.PermissionDescription;
 import io.choerodon.annotation.entity.PermissionEntity;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.swagger.PermissionData;
-import io.choerodon.iam.domain.service.ParsePermissionService;
+import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ public class ActuatorSagaHandler {
     private static final String PERMISSION_REFRESH_TASK_SAGA_CODE = "iam-permission-task-refresh";
     private static final String INIT_DATA_REFRESH_TASK_SAGA_CODE = "iam-init-data-task-refresh";
 
-    private ParsePermissionService parsePermissionService;
+    private UploadHistoryService.ParsePermissionService parsePermissionService;
 
     private DataSource dataSource;
 
 
-    public ActuatorSagaHandler(ParsePermissionService parsePermissionService,
+    public ActuatorSagaHandler(UploadHistoryService.ParsePermissionService parsePermissionService,
                                DataSource dataSource) {
         this.parsePermissionService = parsePermissionService;
         this.dataSource = dataSource;

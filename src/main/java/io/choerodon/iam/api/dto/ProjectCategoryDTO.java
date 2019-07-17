@@ -51,7 +51,6 @@ public class ProjectCategoryDTO extends BaseDTO {
         this.code = code;
     }
 
-
     public Boolean getDisplayFlag() {
         return displayFlag;
     }

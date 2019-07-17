@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -17,6 +18,8 @@ import java.util.List;
 @Table(name = "oauth_client")
 public class ClientDTO extends BaseDTO {
 
+    private static final String regex = "^[a-z0-9A-Z]+$";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty(value = "客户端ID/非必填")
@@ -25,6 +28,7 @@ public class ClientDTO extends BaseDTO {
     @ApiModelProperty(value = "客户端名称/必填")
     @Size(min = 1, max = 12, message = "error.client.name.size")
     @NotNull(message = "error.clientName.null")
+    @Pattern(regexp = regex, message = "error.client.name.regex")
     private String name;
 
     @ApiModelProperty(value = "组织ID/必填")
@@ -36,6 +40,7 @@ public class ClientDTO extends BaseDTO {
     @ApiModelProperty(value = "客户端秘钥/必填")
     @Size(min = 6, max = 16, message = "error.client.secret.size")
     @NotNull(message = "error.secret.null")
+    @Pattern(regexp = regex, message = "error.client.secret.regex")
     private String secret;
 
     @ApiModelProperty(value = "作用域/非必填")

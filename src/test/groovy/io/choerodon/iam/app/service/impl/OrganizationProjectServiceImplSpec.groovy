@@ -3,10 +3,9 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.service.ProjectTypeService
+import io.choerodon.iam.app.service.ProjectTypeService
 import io.choerodon.iam.app.service.OrganizationProjectService
-import io.choerodon.iam.domain.repository.*
-import io.choerodon.iam.domain.service.IUserService
+import io.choerodon.iam.app.service.UserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.dto.ProjectDTO
@@ -31,18 +30,18 @@ import java.lang.reflect.Field
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
 class OrganizationProjectServiceImplSpec extends Specification {
-    private ProjectRepository projectRepository = Mock(ProjectRepository)
-    private UserRepository userRepository = Mock(UserRepository)
-    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-    private RoleRepository roleRepository = Mock(RoleRepository)
-    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
-    private LabelRepository labelRepository = Mock(LabelRepository)
+//    private ProjectRepository projectRepository = Mock(ProjectRepository)
+//    private UserRepository userRepository = Mock(UserRepository)
+//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
+//    private RoleRepository roleRepository = Mock(RoleRepository)
+//    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
+//    private LabelRepository labelRepository = Mock(LabelRepository)
     private SagaClient sagaClient = Mock(SagaClient)
-    private IUserService iUserService = Mock(IUserService)
+    private UserService userService = Mock(UserService)
     private AsgardFeignClient asgardFeignClient = Mock(AsgardFeignClient)
     private ProjectTypeService projectTypeService = Mock(ProjectTypeService)
     private OrganizationProjectService organizationProjectService
-    private ProjectRelationshipRepository projectRelationshipRepository
+//    private ProjectRelationshipRepository projectRelationshipRepository
     private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
     private ProjectCategoryMapper projectCategoryMapper = Mock(ProjectCategoryMapper)
 
@@ -50,7 +49,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
         given: "构造organizationProjectService"
         organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
                 userRepository, organizationRepository, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, iUserService, asgardFeignClient,
+                memberRoleRepository, labelRepository, sagaClient, userService, asgardFeignClient,
                 projectTypeService, projectRelationshipRepository, projectMapCategoryMapper, projectCategoryMapper)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
@@ -75,7 +74,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
 
         then: "校验结果"
         noExceptionThrown()
-        1 * projectRepository.create(_) >> { new ProjectDTO() }
+//        1 * projectRepository.create(_) >> { new ProjectDTO() }
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
         1 * roleRepository.selectRolesByLabelNameAndType(_, _) >> {
             List<RoleDTO> list = new ArrayList<RoleDTO>()
@@ -128,7 +127,7 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * iUserService.sendNotice(_, _, _, _, _)
+        1 * userService.sendNotice(_, _, _, _, _)
     }
 
     def "DisableProject"() {
@@ -146,6 +145,6 @@ class OrganizationProjectServiceImplSpec extends Specification {
             return userIds
         }
         2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * iUserService.sendNotice(_, _, _, _, _)
+        1 * userService.sendNotice(_, _, _, _, _)
     }
 }

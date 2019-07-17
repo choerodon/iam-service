@@ -35,9 +35,5 @@ public interface RoleMapper extends Mapper<RoleDTO> {
 
     List<RoleDTO> selectInitRolesByPermissionId(Long permissionId);
 
-//    Set<String> matchCode(@Param("codeSet") Set<String> codeSet);
-
-//    List<RoleDTO> queryRoleByOrgId(@Param("orgId") Long orgId);
-
     List<RoleDTO> fuzzySearchRolesByName(@Param("roleName") String roleName, @Param("sourceType") String sourceType);
 }

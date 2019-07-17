@@ -6,7 +6,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.api.validator.MenuValidator;
 import io.choerodon.iam.app.service.MenuService;
-import io.choerodon.iam.domain.repository.ProjectRepository;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.MenuAssertHelper;
 import io.choerodon.iam.infra.dto.MenuDTO;
@@ -15,9 +14,10 @@ import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.mapper.MenuMapper;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import io.choerodon.mybatis.entity.Criteria;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -29,27 +29,29 @@ import java.util.stream.Collectors;
  * @author wuguokai
  * @author superlee
  */
-@Component
+@Service
 public class MenuServiceImpl implements MenuService {
 
-    @Value("${choerodon.category.enabled:false}")
     private boolean enableCategory;
 
-    private ProjectRepository projectRepository;
     private OrganizationMapper organizationMapper;
     private MenuMapper menuMapper;
     private ProjectMapCategoryMapper projectMapCategoryMapper;
     private MenuAssertHelper menuAssertHelper;
+    private ProjectMapper projectMapper;
 
-
-    public MenuServiceImpl(ProjectRepository projectRepository, OrganizationMapper organizationMapper,
-                           MenuMapper menuMapper, MenuAssertHelper menuAssertHelper,
-                           ProjectMapCategoryMapper projectMapCategoryMapper) {
-        this.projectRepository = projectRepository;
+    public MenuServiceImpl(@Value("${choerodon.category.enabled:false}") Boolean enableCategory,
+                           OrganizationMapper organizationMapper,
+                           MenuMapper menuMapper,
+                           MenuAssertHelper menuAssertHelper,
+                           ProjectMapCategoryMapper projectMapCategoryMapper,
+                           ProjectMapper projectMapper) {
+        this.enableCategory = enableCategory;
         this.organizationMapper = organizationMapper;
         this.menuMapper = menuMapper;
         this.menuAssertHelper = menuAssertHelper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.projectMapper = projectMapper;
     }
 
     @Override
@@ -112,7 +114,8 @@ public class MenuServiceImpl implements MenuService {
         Long userId = userDetails.getUserId();
         boolean isAdmin = userDetails.getAdmin();
         Set<MenuDTO> menus;
-        if ((ResourceType.isProject(level) || ResourceType.isOrganization(level)) && enableCategory) {
+        boolean isProjectOrOrganization = (ResourceType.isProject(level) || ResourceType.isOrganization(level));
+        if (isProjectOrOrganization && enableCategory) {
             menus = menusByCategory(isAdmin, userId, level, sourceId);
         } else {
             if (isAdmin) {
@@ -181,7 +184,7 @@ public class MenuServiceImpl implements MenuService {
     private String getProjectCategory(String level, Long sourceId) {
         String category = null;
         if (ResourceType.isProject(level)) {
-            ProjectDTO project = projectRepository.selectByPrimaryKey(sourceId);
+            ProjectDTO project = projectMapper.selectByPrimaryKey(sourceId);
             if (project != null) {
                 category = project.getCategory();
             }

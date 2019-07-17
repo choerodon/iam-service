@@ -7,9 +7,9 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
-import io.choerodon.iam.domain.repository.LabelRepository;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
+import io.choerodon.iam.infra.mapper.LabelMapper;
 import io.choerodon.iam.infra.mapper.MemberRoleMapper;
 import org.springframework.stereotype.Component;
 
@@ -28,16 +28,17 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_RO
 public class DevopsListener {
 
     private MemberRoleMapper memberRoleMapper;
-    private LabelRepository labelRepository;
     private SagaClient sagaClient;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    private LabelMapper labelMapper;
+
     public DevopsListener(MemberRoleMapper memberRoleMapper,
-                          LabelRepository labelRepository,
-                          SagaClient sagaClient) {
+                          SagaClient sagaClient,
+                          LabelMapper labelMapper) {
         this.memberRoleMapper = memberRoleMapper;
-        this.labelRepository = labelRepository;
         this.sagaClient = sagaClient;
+        this.labelMapper = labelMapper;
     }
 
     @SagaTask(code = MEMBER_ROLE_UPDATE, sagaCode = "devops-upgrade-0.9", seq = 1, description = "iam接收devops平滑升级事件")
@@ -68,7 +69,7 @@ public class DevopsListener {
             payload.setResourceType("project");
             payload.setUserId(userId);
             if (!roleIds.isEmpty()) {
-                payload.setRoleLabels(labelRepository.selectLabelNamesInRoleIds(roleIds));
+                payload.setRoleLabels(labelMapper.selectLabelNamesInRoleIds(roleIds));
             }
             userMemberEventPayloads.add(payload);
         }

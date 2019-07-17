@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.iam.api.dto.ApplicationSearchDTO;
+import io.choerodon.iam.api.query.ApplicationQuery;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 
@@ -46,7 +46,7 @@ public interface ApplicationService {
      * @param applicationSearchDTO
      * @return
      */
-    PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO, Boolean withDescendants);
+    PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationQuery applicationSearchDTO, Boolean withDescendants);
 
     /**
      * 启用
@@ -134,6 +134,11 @@ public interface ApplicationService {
 
     String createToken(Long id);
 
+    /**
+     * 根据token查询应用
+     * @param applicationToken
+     * @return
+     */
     ApplicationDTO getApplicationByToken(String applicationToken);
 
     Long getIdByCode(String code, Long projectId);

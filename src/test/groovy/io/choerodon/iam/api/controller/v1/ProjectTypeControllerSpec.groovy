@@ -2,7 +2,7 @@ package io.choerodon.iam.api.controller.v1
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.service.ProjectTypeService
+import io.choerodon.iam.app.service.ProjectTypeService
 import io.choerodon.iam.infra.dto.ProjectTypeDTO
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper
 import org.modelmapper.ModelMapper

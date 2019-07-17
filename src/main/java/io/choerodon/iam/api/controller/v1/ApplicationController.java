@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.api.dto.ApplicationSearchDTO;
+import io.choerodon.iam.api.query.ApplicationQuery;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
@@ -67,7 +67,7 @@ public class ApplicationController {
                                                                 @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                                 @RequestParam(defaultValue = "true", name = "with_descendants") Boolean withDescendants,
-                                                                ApplicationSearchDTO applicationSearchDTO) {
+                                                                ApplicationQuery applicationSearchDTO) {
         applicationSearchDTO.setOrganizationId(organizationId);
         return new ResponseEntity<>(applicationService.pagingQuery(page, size, applicationSearchDTO, withDescendants), HttpStatus.OK);
     }

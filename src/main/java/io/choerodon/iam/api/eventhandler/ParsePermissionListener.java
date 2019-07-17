@@ -2,7 +2,7 @@ package io.choerodon.iam.api.eventhandler;
 
 import io.choerodon.eureka.event.AbstractEurekaEventObserver;
 import io.choerodon.eureka.event.EurekaEventPayload;
-import io.choerodon.iam.domain.service.ParsePermissionService;
+import io.choerodon.iam.app.service.UploadHistoryService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ParsePermissionListener extends AbstractEurekaEventObserver {
 
-    private ParsePermissionService parsePermissionService;
+    private UploadHistoryService.ParsePermissionService parsePermissionService;
 
-    public ParsePermissionListener(ParsePermissionService parsePermissionService) {
+    public ParsePermissionListener(UploadHistoryService.ParsePermissionService parsePermissionService) {
         this.parsePermissionService = parsePermissionService;
     }
 

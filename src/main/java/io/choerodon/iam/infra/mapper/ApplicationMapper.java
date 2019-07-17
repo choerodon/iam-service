@@ -1,6 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.ApplicationSearchDTO;
+import io.choerodon.iam.api.query.ApplicationQuery;
 import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,7 +19,7 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
      * @param applicationSearchDTO
      * @return
      */
-    List fuzzyQuery(@Param("applicationSearchDTO") ApplicationSearchDTO applicationSearchDTO);
+    List fuzzyQuery(@Param("applicationSearchDTO") ApplicationQuery applicationSearchDTO);
 
     /**
      * 传入application id集合，返回application 对象集合

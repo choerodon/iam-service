@@ -2,8 +2,6 @@ package io.choerodon.iam.infra.common.utils.ldap
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.OrganizationUserService
-import io.choerodon.iam.domain.repository.LdapHistoryRepository
-import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,9 +16,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class LdapSyncUserTaskSpec extends Specification {
-    private UserRepository userRepository = Mock(UserRepository)
+//    private UserRepository userRepository = Mock(UserRepository)
     private OrganizationUserService organizationUserService = Mock(OrganizationUserService)
-    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
+//    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapSyncUserTask ldapSyncUserTask
     @Autowired
     private LdapErrorUserMapper ldapErrorUserMapper

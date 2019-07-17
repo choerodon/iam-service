@@ -7,7 +7,8 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.*;
@@ -15,9 +16,10 @@ import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,11 +42,11 @@ import io.choerodon.iam.infra.common.utils.ParamUtils;
 public class UserController extends BaseController {
 
     private UserService userService;
-    @Autowired
     private PasswordPolicyService passwordPolicyService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordPolicyService passwordPolicyService) {
         this.userService = userService;
+        this.passwordPolicyService = passwordPolicyService;
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
@@ -146,27 +148,29 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "分页查询当前登录用户所有项目列表")
     @GetMapping(value = "/self/projects/paging_query")
-    public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                    @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                    @NamingRuleTrans ProjectDTO projectDTO,
-                                                                    @RequestParam(required = false) String[] params) {
-        return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, page, size, ParamUtils.arrToStr(params)), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectsSelf(@ApiIgnore
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                        @NamingRuleTrans ProjectDTO projectDTO,
+                                                                        @RequestParam(required = false) String[] params) {
+        return new ResponseEntity<>(userService.pagingQueryProjectsSelf(projectDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "分页查询当前登录用户所有组织列表")
     @GetMapping(value = "/self/organizations/paging_query")
-    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationsSelf(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                              @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                              @RequestParam(required = false) String name,
-                                                                              @RequestParam(required = false) String code,
-                                                                              @RequestParam(required = false) Boolean enabled,
-                                                                              @RequestParam(required = false) String[] params) {
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationsSelf(@ApiIgnore
+                                                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                                  @RequestParam(required = false) String name,
+                                                                                  @RequestParam(required = false) String code,
+                                                                                  @RequestParam(required = false) Boolean enabled,
+                                                                                  @RequestParam(required = false) String[] params) {
         OrganizationDTO organizationDTO = new OrganizationDTO();
         organizationDTO.setName(name);
         organizationDTO.setCode(code);
         organizationDTO.setEnabled(enabled);
-        return new ResponseEntity<>(userService.pagingQueryOrganizationsSelf(organizationDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryOrganizationsSelf(organizationDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**
@@ -226,9 +230,10 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询管理员用户列表")
     @GetMapping("/admin")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryAdminUsers(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(required = false, name = "loginName") String loginName,
             @RequestParam(required = false, name = "realName") String realName,
             @RequestParam(required = false, name = "enabled") Boolean enabled,
@@ -240,7 +245,7 @@ public class UserController extends BaseController {
         userDTO.setRealName(realName);
         userDTO.setEnabled(enabled);
         userDTO.setLocked(locked);
-        return new ResponseEntity<>(userService.pagingQueryAdminUsers(page, size, userDTO, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryAdminUsers(pageRequest, userDTO, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
 
@@ -286,23 +291,25 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据id分页获取组织列表和角色")
     @GetMapping("/{id}/organization_roles")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<OrganizationDTO>> pagingQueryOrganizationAndRolesById(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(value = "id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
-        return new ResponseEntity<>(userService.pagingQueryOrganizationsWithRoles(page,size, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryOrganizationsWithRoles(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据id分页获取项目列表和角色")
     @GetMapping("/{id}/project_roles")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<ProjectDTO>> pagingQueryProjectAndRolesById(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable("id") Long id,
             @RequestParam(value = "params", required = false) String[] params) {
-        return new ResponseEntity<>(userService.pagingQueryProjectAndRolesById(page,size, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryProjectAndRolesById(pageRequest, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)
@@ -351,12 +358,13 @@ public class UserController extends BaseController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation("根据id分页获取用户所有角色列表")
     @GetMapping("/{id}/roles")
-    public ResponseEntity<PageInfo<UserRoleDTO>> pagingQueryRole(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                             @PathVariable("id") Long id,
-                                                             @RequestParam(required = false) Long organizationId,
-                                                             @RequestParam(required = false) String params) {
-        return new ResponseEntity<>(userService.pagingQueryRole(page, size, params, id, organizationId), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<UserRoleDTO>> pagingQueryRole(@ApiIgnore
+                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                 @PathVariable("id") Long id,
+                                                                 @RequestParam(required = false) Long organizationId,
+                                                                 @RequestParam(required = false) String params) {
+        return new ResponseEntity<>(userService.pagingQueryRole(pageRequest, params, id, organizationId), HttpStatus.OK);
     }
 
 }

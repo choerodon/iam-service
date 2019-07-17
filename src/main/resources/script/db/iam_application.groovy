@@ -78,4 +78,9 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
             }
         }
     }
+
+    changeSet(id: '2019-07-10-iam-application-add-unique-constraint', author: 'superlee') {
+        addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'APPLICATION_TOKEN',
+                constraintName: 'UK_IAM_APPLICATION_U4')
+    }
 }

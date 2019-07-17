@@ -1,10 +1,9 @@
 package io.choerodon.iam.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO
+import io.choerodon.iam.api.query.ClientRoleQuery
 import io.choerodon.iam.api.dto.RoleAssignmentDeleteDTO
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO
 import io.choerodon.iam.api.dto.UploadHistoryDTO
@@ -332,7 +331,7 @@ class RoleMemberControllerSpec extends Specification {
         def paramsMap = new HashMap<String, Object>()
         def roleId = roleDOList.get(0).getId()
         paramsMap.put("role_id", roleId)
-        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+        def clientRoleSearchDTO = new ClientRoleQuery()
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH + "/site/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
@@ -364,7 +363,7 @@ class RoleMemberControllerSpec extends Specification {
         def roleId = roleDOList.get(0).getId()
         paramsMap.put("role_id", roleId)
         paramsMap.put("organization_id", 1L)
-        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+        def clientRoleSearchDTO = new ClientRoleQuery()
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH + "/organizations/{organization_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
@@ -397,7 +396,7 @@ class RoleMemberControllerSpec extends Specification {
         def roleId = roleDOList.get(0).getId()
         paramsMap.put("role_id", roleId)
         paramsMap.put("project_id", projectDO.getId())
-        def clientRoleSearchDTO = new ClientRoleSearchDTO()
+        def clientRoleSearchDTO = new ClientRoleQuery()
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(BASE_PATH + "/projects/{project_id}/role_members/clients?role_id={role_id}", clientRoleSearchDTO, PageInfo, paramsMap)
@@ -609,7 +608,7 @@ class RoleMemberControllerSpec extends Specification {
         given: "构造请求参数"
         def paramsMap = new HashMap<String, Object>()
         paramsMap.put("organization_id", 1L)
-        def clientSearch = new ClientRoleSearchDTO()
+        def clientSearch = new ClientRoleQuery()
         clientSearch.setClientName("client")
         clientSearch.setRoleName("管理")
 

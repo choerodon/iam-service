@@ -18,7 +18,7 @@
     </select>
 
     <select id="selectClientCountFromMemberRoleByOptions" resultType="int"
-            parameterType="io.choerodon.iam.api.dto.ClientRoleSearchDTO">
+            parameterType="io.choerodon.iam.api.query.ClientRoleQuery">
         SELECT COUNT(1) FROM (
         SELECT DISTINCT client.id FROM iam_member_role imr
         INNER JOIN oauth_client client ON imr.member_id = client.id

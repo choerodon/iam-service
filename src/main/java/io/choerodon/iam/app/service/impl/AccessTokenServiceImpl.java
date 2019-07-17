@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.asserts.UserAssertHelper;
@@ -46,14 +47,56 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public PageInfo<AccessTokenDTO> pagedSearch(int page, int size, String clientName, String currentToken) {
+    public PageInfo<AccessTokenDTO> pagedSearch(PageRequest pageRequest, String clientName, String currentToken) {
         CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
         UserDTO userDTO = userAssertHelper.userNotExisted(userDetails.getUserId());
         List<AccessTokenDTO> result = searchAndOrderBy(clientName, currentToken, userDTO.getLoginName());
-        return doPage(page, size, result);
+        return doPage(pageRequest, result);
     }
 
-    private PageInfo<AccessTokenDTO> doPage(int page, int size, List<AccessTokenDTO> result) {
+    @Override
+    public void delete(String tokenId, String currentToken) {
+        AccessTokenDTO accessTokenDTO = accessTokenMapper.selectByPrimaryKey(tokenId);
+        if (accessTokenDTO == null) {
+            throw new CommonException("error.token.not.exist");
+        }
+        if (((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenDTO.getToken())).getValue().equalsIgnoreCase(currentToken)) {
+            throw new CommonException("error.delete.current.token");
+        }
+        oauthTokenFeignClient.deleteToken(tokenId);
+        logger.info("iam delete token,tokenId:{}", tokenId);
+    }
+
+    @Override
+    public void deleteList(List<String> tokenIds, String currentToken) {
+        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectTokenList(tokenIds);
+        List<String> tokens = accessTokens.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
+
+        if (tokens != null && !tokens.isEmpty() && tokens.contains(currentToken)) {
+            throw new CommonException("error.delete.current.token");
+        }
+        if (tokens != null && tokens.size() != tokenIds.size()) {
+            tokenIds = accessTokens.stream().map(AccessTokenDTO::getTokenId).collect(Collectors.toList());
+        }
+        oauthTokenFeignClient.deleteTokenList(tokenIds);
+    }
+
+    @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
+    @Override
+    public void deleteAllExpiredToken(Map<String, Object> map) {
+        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectAll();
+        //过滤出所有失效token
+        List<AccessTokenDTO> allExpired = accessTokens.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).isExpired()).collect(Collectors.toList());
+        allExpired.forEach(t -> {
+            accessTokenMapper.deleteByPrimaryKey(t.getTokenId());
+            refreshTokenMapper.deleteByPrimaryKey(t.getRefreshToken());
+        });
+        logger.info("All expired tokens have been cleared.");
+    }
+
+    private PageInfo<AccessTokenDTO> doPage(PageRequest pageRequest, List<AccessTokenDTO> result) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
         Page<AccessTokenDTO> pageResult = new Page<>(page, size);
         int total = result.size();
         pageResult.setTotal(total);
@@ -100,45 +143,5 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         result.addAll(tokensWithCreateTime);
         result.addAll(tokensWithoutCreateTime);
         return result;
-    }
-
-    @Override
-    public void delete(String tokenId, String currentToken) {
-        AccessTokenDTO accessTokenDTO = accessTokenMapper.selectByPrimaryKey(tokenId);
-        if (accessTokenDTO == null) {
-            throw new CommonException("error.token.not.exist");
-        }
-        if (((DefaultOAuth2AccessToken) SerializationUtils.deserialize(accessTokenDTO.getToken())).getValue().equalsIgnoreCase(currentToken)) {
-            throw new CommonException("error.delete.current.token");
-        }
-        oauthTokenFeignClient.deleteToken(tokenId);
-        logger.info("iam delete token,tokenId:{}", tokenId);
-    }
-
-    @Override
-    public void deleteList(List<String> tokenIds, String currentToken) {
-        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectTokenList(tokenIds);
-        List<String> tokens = accessTokens.stream().map(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).getValue()).collect(Collectors.toList());
-
-        if (tokens != null && !tokens.isEmpty() && tokens.contains(currentToken)) {
-            throw new CommonException("error.delete.current.token");
-        }
-        if (tokens != null && tokens.size() != tokenIds.size()) {
-            tokenIds = accessTokens.stream().map(AccessTokenDTO::getTokenId).collect(Collectors.toList());
-        }
-        oauthTokenFeignClient.deleteTokenList(tokenIds);
-    }
-
-    @JobTask(maxRetryCount = 2, code = "deleteAllExpiredToken", level = ResourceLevel.SITE, description = "删除所有失效token")
-    @Override
-    public void deleteAllExpiredToken(Map<String, Object> map) {
-        List<AccessTokenDTO> accessTokens = accessTokenMapper.selectAll();
-        //过滤出所有失效token
-        List<AccessTokenDTO> allExpired = accessTokens.stream().filter(t -> ((DefaultOAuth2AccessToken) SerializationUtils.deserialize(t.getToken())).isExpired()).collect(Collectors.toList());
-        allExpired.forEach(t -> {
-            accessTokenMapper.deleteByPrimaryKey(t.getTokenId());
-            refreshTokenMapper.deleteByPrimaryKey(t.getRefreshToken());
-        });
-        logger.info("All expired tokens have been cleared.");
     }
 }

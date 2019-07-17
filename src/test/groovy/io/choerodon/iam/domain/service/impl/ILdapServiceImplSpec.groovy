@@ -2,7 +2,8 @@ package io.choerodon.iam.domain.service.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapConnectionDTO
-import io.choerodon.iam.domain.service.ILdapService
+import io.choerodon.iam.app.service.LdapService
+import io.choerodon.iam.app.service.impl.LdapServiceImpl
 import io.choerodon.iam.infra.dto.LdapDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -16,7 +17,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class ILdapServiceImplSpec extends Specification {
-    private ILdapService iLdapService = new ILdapServiceImpl()
+    private LdapService iLdapService = new LdapServiceImpl()
 
     def "TestConnect"() {
         given: "构造请求参数"
@@ -33,7 +34,7 @@ class ILdapServiceImplSpec extends Specification {
         ldapDO.setConnectionTimeout(10)
 
         when: "调用方法[异常-连接失败]"
-        LdapConnectionDTO ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(ILdapServiceImpl.LDAP_CONNECTION_DTO)
+        LdapConnectionDTO ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(LdapServiceImpl.LDAP_CONNECTION_DTO)
 
         then: "校验结果"
         !ldapConnectionDTO.getCanConnectServer()
@@ -42,7 +43,7 @@ class ILdapServiceImplSpec extends Specification {
 
         when: "调用方法[匿名登录]"
         ldapDO.setBaseDn("ou=employee,dc=hand-china,dc=com")
-        ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(ILdapServiceImpl.LDAP_CONNECTION_DTO)
+        ldapConnectionDTO = (LdapConnectionDTO)iLdapService.testConnect(ldapDO).get(LdapServiceImpl.LDAP_CONNECTION_DTO)
 
         then: "校验结果"
         ldapConnectionDTO.getCanConnectServer()

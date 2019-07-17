@@ -2,21 +2,21 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.NotFoundException;
 import io.choerodon.iam.app.service.LanguageService;
 import io.choerodon.iam.infra.dto.LanguageDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author superlee
@@ -42,12 +42,7 @@ public class LanguageController extends BaseController {
     public ResponseEntity<LanguageDTO> update(@PathVariable Long id,
                                               @RequestBody @Valid LanguageDTO languageDTO) {
         languageDTO.setId(id);
-        LanguageDTO language =
-                Optional
-                        .ofNullable(languageDTO.getObjectVersionNumber())
-                        .map(i -> languageService.update(languageDTO))
-                        .orElseThrow(() -> new CommonException("error.language.objectVersionNumber.empty"));
-        return new ResponseEntity<>(language, HttpStatus.OK);
+        return ResponseEntity.ok(languageService.update(languageDTO));
     }
 
     /**
@@ -59,18 +54,19 @@ public class LanguageController extends BaseController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "分页查询Language")
     @GetMapping
-    public ResponseEntity<PageInfo<LanguageDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                             @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<LanguageDTO>> pagingQuery(@ApiIgnore
+                                                             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                              LanguageDTO languageDTO,
-                                                             @RequestParam(required = false)String param) {
-        return new ResponseEntity<>(languageService.pagingQuery(page,size, languageDTO,param), HttpStatus.OK);
+                                                             @RequestParam(required = false) String param) {
+        return ResponseEntity.ok(languageService.pagingQuery(pageRequest, languageDTO, param));
     }
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "查询language列表")
     @GetMapping(value = "/list")
     public ResponseEntity<List<LanguageDTO>> listAll() {
-        return new ResponseEntity<>(languageService.listAll(), HttpStatus.OK);
+        return ResponseEntity.ok(languageService.listAll());
     }
 
 
@@ -84,10 +80,6 @@ public class LanguageController extends BaseController {
     @ApiOperation(value = "通过code查询Language")
     @GetMapping(value = "/code")
     public ResponseEntity<LanguageDTO> queryByCode(@RequestParam(name = "value") String code) {
-        LanguageDTO language = new LanguageDTO();
-        language.setCode(code);
-        return Optional.ofNullable(languageService.queryByCode(language))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(NotFoundException::new);
+        return ResponseEntity.ok(languageService.queryByCode(code));
     }
 }

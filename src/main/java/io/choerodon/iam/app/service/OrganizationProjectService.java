@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 
 import java.util.List;
@@ -11,19 +12,20 @@ import java.util.Map;
  */
 public interface OrganizationProjectService {
 
-    ProjectDTO createProject(ProjectDTO projectDTO, List<Long> categoryIds);
+    ProjectDTO createProject(ProjectDTO projectDTO);
+    ProjectDTO create(ProjectDTO projectDTO);
 
     List<ProjectDTO> queryAll(ProjectDTO projectDTO);
 
-    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param);
+    PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param);
 
     ProjectDTO update(Long organizationId, ProjectDTO projectDTO);
+
+    ProjectDTO updateSelective(ProjectDTO projectDTO);
 
     ProjectDTO enableProject(Long organizationId, Long projectId, Long userId);
 
     ProjectDTO disableProject(Long organizationId, Long projectId, Long userId);
-
-    ProjectDTO disableProjectAndSendEvent(Long projectId, Long userId);
 
     void check(ProjectDTO projectDTO);
 
@@ -44,6 +46,8 @@ public interface OrganizationProjectService {
      * @return 项目列表
      */
     List<ProjectDTO> getAvailableAgileProj(Long organizationId, Long projectId);
+
+    ProjectDTO selectCategoryByPrimaryKey(Long projectId);
 
     /**
      * 查询当前项目生效的普通项目群信息(项目为启用状态且当前时间在其有效期内).

@@ -1,33 +1,42 @@
 package io.choerodon.iam.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.query.ClientRoleQuery;
 import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.iam.api.dto.payload.UserMemberEventPayload;
 import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.app.service.RoleService;
-import io.choerodon.iam.domain.repository.ClientRepository;
-import io.choerodon.iam.domain.repository.RolePermissionRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IRoleService;
+import io.choerodon.iam.infra.asserts.LabelAssertHelper;
+import io.choerodon.iam.infra.asserts.PermissionAssertHelper;
+import io.choerodon.iam.infra.asserts.RoleAssertHelper;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import io.choerodon.iam.infra.dto.PermissionDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.exception.EmptyParamException;
+import io.choerodon.iam.infra.exception.IllegalArgumentException;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
+import io.choerodon.iam.infra.mapper.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static io.choerodon.iam.infra.common.utils.SagaTopic.MemberRole.MEMBER_ROLE_UPDATE;
 
 /**
  * @author superlee
@@ -36,44 +45,79 @@ import java.util.stream.Collectors;
 @Component
 public class RoleServiceImpl implements RoleService {
 
-    private ClientRepository clientRepository;
+    @Value("${choerodon.devops.message:false}")
+    private boolean devopsMessage;
 
-    private RoleRepository roleRepository;
+    private ClientMapper clientMapper;
 
-    private IRoleService iRoleService;
+    private RoleMapper roleMapper;
 
-    private UserRepository userRepository;
+    private RoleAssertHelper roleAssertHelper;
 
-    private RolePermissionRepository rolePermissionRepository;
+    private LabelAssertHelper labelAssertHelper;
 
-    public RoleServiceImpl(RoleRepository roleRepository, IRoleService iRoleService,
-                           UserRepository userRepository, RolePermissionRepository rolePermissionRepository,
-                           ClientRepository clientRepository) {
-        this.roleRepository = roleRepository;
-        this.iRoleService = iRoleService;
-        this.userRepository = userRepository;
-        this.rolePermissionRepository = rolePermissionRepository;
-        this.clientRepository = clientRepository;
+    private RoleLabelMapper roleLabelMapper;
+
+    private LabelMapper labelMapper;
+
+    private UserMapper userMapper;
+
+    private RolePermissionMapper rolePermissionMapper;
+
+    private PermissionAssertHelper permissionAssertHelper;
+
+    private SagaClient sagaClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+
+    public RoleServiceImpl(ClientMapper clientMapper,
+                           RoleMapper roleMapper,
+                           RoleAssertHelper roleAssertHelper,
+                           LabelAssertHelper labelAssertHelper,
+                           RoleLabelMapper roleLabelMapper,
+                           PermissionAssertHelper permissionAssertHelper,
+                           LabelMapper labelMapper,
+                           SagaClient sagaClient, UserMapper userMapper,
+                           RolePermissionMapper rolePermissionMapper) {
+        this.clientMapper = clientMapper;
+        this.roleMapper = roleMapper;
+        this.roleAssertHelper = roleAssertHelper;
+        this.labelAssertHelper = labelAssertHelper;
+        this.roleLabelMapper = roleLabelMapper;
+        this.permissionAssertHelper = permissionAssertHelper;
+        this.labelMapper = labelMapper;
+        this.sagaClient = sagaClient;
+        this.userMapper = userMapper;
+        this.rolePermissionMapper = rolePermissionMapper;
     }
 
     @Override
-    public PageInfo<RoleDTO> pagingSearch(int page, int size, RoleQuery roleQuery) {
+    public PageInfo<RoleDTO> pagingSearch(PageRequest pageRequest, RoleQuery roleQuery) {
         boolean isWithUser = (roleQuery.getWithUser() != null && roleQuery.getWithUser() == true);
         final String level = roleQuery.getLevel();
         final Long sourceId = roleQuery.getSourceId();
-        PageInfo<RoleDTO> roles = roleRepository.pagingQuery(page, size, roleQuery);
+        PageInfo<RoleDTO> roles =
+                PageHelper
+                        .startPage(pageRequest.getPage(), pageRequest.getSize())
+                        .doSelectPageInfo(() -> roleMapper.fulltextSearch(roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
         if (isWithUser) {
             roles.getList().forEach(role -> {
                 Long roleId = role.getId();
+                List<UserDTO> users = new ArrayList<>();
                 if (level == null || ResourceType.isSite(level)) {
-                    role.setUsers(userRepository.listUsersByRoleIdOnSiteLevel(roleId));
+                    users = userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", 0L,
+                            ResourceLevel.SITE.value(), null, null);
                 }
                 if (ResourceType.isOrganization(level)) {
-                    role.setUsers(userRepository.listUsersByRoleIdOnOrganizationLevel(sourceId, roleId));
+                    users = userMapper.selectUsersFromMemberRoleByOptions(roleId, "user",
+                            sourceId, ResourceLevel.ORGANIZATION.value(), null, null);
                 }
                 if (ResourceType.isProject(level)) {
-                    role.setUsers(userRepository.listUsersByRoleIdOnProjectLevel(sourceId, roleId));
+                    users = userMapper.selectUsersFromMemberRoleByOptions(roleId, "user",
+                            sourceId, ResourceLevel.PROJECT.value(), null, null);
                 }
+                role.setUsers(users);
             });
         }
         return roles;
@@ -81,19 +125,79 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageInfo<RoleDTO> pagingQueryOrgRoles(Long orgId, PageRequest pageRequest, RoleQuery roleQuery) {
-        return roleRepository.pagingQueryOrgRoles(orgId, pageRequest, roleQuery);
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSort().toSql())
+                .doSelectPageInfo(() -> roleMapper.pagingQueryOrgRoles(orgId, roleQuery, ParamUtils.arrToStr(roleQuery.getParams())));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RoleDTO create(RoleDTO roleDTO) {
         insertCheck(roleDTO);
-        return iRoleService.create(roleDTO);
+        roleDTO.setBuiltIn(false);
+        roleDTO.setEnabled(true);
+        roleDTO.setEnableForbidden(true);
+        roleDTO.setModified(true);
+        roleAssertHelper.codeExisted(roleDTO.getCode());
+        if (roleMapper.insertSelective(roleDTO) != 1) {
+            throw new InsertException("error.role.insert");
+        }
+        //维护role_permission表
+        insertRolePermission(roleDTO);
+        //维护role_label表
+        insertRoleLabel(roleDTO);
+        return roleDTO;
+    }
+
+    private void insertRoleLabel(RoleDTO role) {
+        List<LabelDTO> labels = role.getLabels();
+        if (labels != null) {
+            labels.forEach(label -> {
+                Long labelId = label.getId();
+                if (labelId == null) {
+                    throw new CommonException("error.label.id.null");
+                }
+                labelAssertHelper.labelNotExisted(labelId);
+                RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+                roleLabelDTO.setLabelId(label.getId());
+                roleLabelDTO.setRoleId(role.getId());
+                roleLabelMapper.insertSelective(roleLabelDTO);
+            });
+        }
+    }
+
+    private void insertRolePermission(RoleDTO role) {
+        List<PermissionDTO> permissions = role.getPermissions();
+        if (!ObjectUtils.isEmpty(permissions)) {
+            permissions.forEach(p -> {
+                RolePermissionDTO dto = new RolePermissionDTO();
+                dto.setPermissionId(p.getId());
+                dto.setRoleId(role.getId());
+                rolePermissionMapper.insertSelective(dto);
+            });
+        }
     }
 
     private void insertCheck(RoleDTO roleDTO) {
-        ResourceLevelValidator.validate(roleDTO.getResourceLevel());
+        validateResourceLevel(roleDTO);
         validateCode(roleDTO.getCode());
         validatePermissions(roleDTO.getPermissions());
+    }
+
+    private void validateResourceLevel(RoleDTO roleDTO) {
+        String level = roleDTO.getResourceLevel();
+        if (!ResourceType.contains(level)) {
+            throw new IllegalArgumentException("error.role.illegal.level");
+        }
+        List<Long> roleIds = roleDTO.getRoleIds();
+        if (roleIds != null) {
+            roleIds.forEach(roleId -> {
+                RoleDTO dto = roleAssertHelper.roleNotExisted(roleId);
+                if (!dto.getResourceLevel().equals(level)) {
+                    throw new CommonException("error.roles.in.same.level");
+                }
+            });
+        }
     }
 
     private void validatePermissions(List<PermissionDTO> permissions) {
@@ -122,13 +226,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO createBaseOnRoles(RoleDTO roleDTO) {
         insertCheck(roleDTO);
-        List<Long> roleIds = roleDTO.getRoleIds();
-        if (!roleRepository.judgeRolesSameLevel(roleIds)) {
-            throw new CommonException("error.roles.in.same.level");
-        }
         List<PermissionDTO> permissionDTOS = new ArrayList<>();
-        if (!roleIds.isEmpty()) {
-            List<Long> permissionIds = rolePermissionRepository.queryExistingPermissionIdsByRoleIds(roleIds);
+        List<Long> roleIds = roleDTO.getRoleIds();
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<Long> permissionIds = rolePermissionMapper.queryExistingPermissionIdsByRoleIds(roleIds);
             permissionDTOS = permissionIds.parallelStream().map(id -> {
                 PermissionDTO permissionDTO = new PermissionDTO();
                 permissionDTO.setId(id);
@@ -145,7 +246,139 @@ public class RoleServiceImpl implements RoleService {
         updateCheck(roleDTO);
         //更新操作不能改level
         roleDTO.setResourceLevel(null);
-        return iRoleService.update(roleDTO);
+        Long id = roleDTO.getId();
+        RoleDTO role1 = roleAssertHelper.roleNotExisted(id);
+        //内置的角色不允许更新字段，只能更新label
+        if (role1.getBuiltIn()) {
+            updateRoleLabel(roleDTO);
+            return roleDTO;
+        } else {
+            if (roleMapper.updateByPrimaryKeySelective(roleDTO) != 1) {
+                throw new UpdateExcetion("error.role.update");
+            }
+            //维护role_permission关系
+            updateRolePermission(roleDTO);
+            //维护role_label表
+            updateRoleLabel(roleDTO);
+            return roleDTO;
+        }
+    }
+
+    private void updateRolePermission(RoleDTO role) {
+        Long roleId = role.getId();
+        List<PermissionDTO> permissions = role.getPermissions();
+        RolePermissionDTO rolePermissionDTO = new RolePermissionDTO();
+        rolePermissionDTO.setRoleId(roleId);
+        List<RolePermissionDTO> existingRolePermissions = rolePermissionMapper.select(rolePermissionDTO);
+        List<Long> existingPermissionId =
+                existingRolePermissions.stream().map(RolePermissionDTO::getPermissionId).collect(Collectors.toList());
+        List<Long> newPermissionId =
+                permissions.stream().map(PermissionDTO::getId).collect(Collectors.toList());
+        //permissionId交集
+        List<Long> intersection = existingPermissionId.stream().filter(newPermissionId::contains).collect(Collectors.toList());
+        //删除的permissionId集合
+        List<Long> deleteList = existingPermissionId.stream().filter(item ->
+                !intersection.contains(item)).collect(Collectors.toList());
+        //新增的permissionId集合
+        List<Long> insertList = newPermissionId.stream().filter(item ->
+                !intersection.contains(item)).collect(Collectors.toList());
+        insertList.forEach(permissionId -> {
+            validate(role, permissionId);
+            RolePermissionDTO rp = new RolePermissionDTO();
+            rp.setRoleId(roleId);
+            rp.setPermissionId(permissionId);
+            if (rolePermissionMapper.insertSelective(rp) != 1) {
+                throw new InsertException("error.rolePermission.insert");
+            }
+        });
+        deleteList.forEach(permissionId -> {
+            validate(role, permissionId);
+            RolePermissionDTO rp = new RolePermissionDTO();
+            rp.setRoleId(roleId);
+            rp.setPermissionId(permissionId);
+            rolePermissionMapper.delete(rp);
+        });
+    }
+
+    private void validate(RoleDTO role, Long permissionId) {
+        if (permissionId == null) {
+            throw new EmptyParamException("error.permission.id.null");
+        }
+        PermissionDTO permission = permissionAssertHelper.permissionNotExisted(permissionId);
+        if (!permission.getResourceLevel().equals(role.getResourceLevel())) {
+            throw new CommonException("error.role.level.not.equals.to.permission.level");
+        }
+    }
+
+    private void updateRoleLabel(RoleDTO roleDTO) {
+        RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+        roleLabelDTO.setRoleId(roleDTO.getId());
+        List<RoleLabelDTO> roleLabels = roleLabelMapper.select(roleLabelDTO);
+        List<Long> existingLabelIds = roleLabels.stream()
+                .map(RoleLabelDTO::getLabelId).collect(Collectors.toList());
+        List<LabelDTO> labels = roleDTO.getLabels();
+        final List<Long> newLabelIds = new ArrayList<>();
+        if (!ObjectUtils.isEmpty(labels)) {
+            newLabelIds.addAll(labels.stream().map(LabelDTO::getId).collect(Collectors.toList()));
+        }
+        //labelId交集
+        List<Long> intersection = existingLabelIds.stream().filter(newLabelIds::contains).collect(Collectors.toList());
+        //删除的labelId集合
+        List<Long> deleteList = existingLabelIds.stream().filter(item ->
+                !intersection.contains(item)).collect(Collectors.toList());
+        //新增的labelId集合
+        List<Long> insertList = newLabelIds.stream().filter(item ->
+                !intersection.contains(item)).collect(Collectors.toList());
+        List<UserMemberEventPayload> userMemberEventPayloads = new ArrayList<>();
+        List<UserDTO> users = userMapper.selectUsersFromMemberRoleByOptions(roleDTO.getId(), "user", null, ResourceLevel.PROJECT.value(), null, null);
+        boolean sendSagaEvent = !ObjectUtils.isEmpty(users) && devopsMessage;
+        doUpdateAndDelete(roleDTO, insertList, deleteList);
+        if (sendSagaEvent) {
+            users.forEach(user -> {
+                List<LabelDTO> labelList = labelMapper.selectByUserId(user.getId());
+                UserMemberEventPayload payload = new UserMemberEventPayload();
+                payload.setResourceId(user.getSourceId());
+                payload.setUserId(user.getId());
+                payload.setResourceType(ResourceLevel.PROJECT.value());
+                payload.setUsername(user.getLoginName());
+                Set<String> nameSet = new HashSet<>(labelList.stream().map(LabelDTO::getName).collect(Collectors.toSet()));
+                payload.setRoleLabels(nameSet);
+                userMemberEventPayloads.add(payload);
+            });
+            try {
+                String input = mapper.writeValueAsString(userMemberEventPayloads);
+                String refIds = userMemberEventPayloads.stream().map(t -> String.valueOf(t.getUserId())).collect(Collectors.joining(","));
+                sagaClient.startSaga(MEMBER_ROLE_UPDATE, new StartInstanceDTO(input, "users", refIds));
+            } catch (Exception e) {
+                throw new CommonException("error.IRoleServiceImpl.update.event", e);
+            }
+        }
+    }
+
+    private void doUpdateAndDelete(RoleDTO roleDTO, List<Long> insertList, List<Long> deleteList) {
+        insertList.forEach(labelId -> {
+            checkLabelId(labelId);
+            RoleLabelDTO rl = new RoleLabelDTO();
+            rl.setRoleId(roleDTO.getId());
+            rl.setLabelId(labelId);
+            if (roleLabelMapper.insertSelective(rl) != 1) {
+                throw new CommonException("error.roleLabel.create");
+            }
+        });
+        deleteList.forEach(labelId -> {
+            checkLabelId(labelId);
+            RoleLabelDTO rl = new RoleLabelDTO();
+            rl.setRoleId(roleDTO.getId());
+            rl.setLabelId(labelId);
+            roleLabelMapper.delete(rl);
+        });
+    }
+
+    private void checkLabelId(Long labelId) {
+        if (labelId == null) {
+            throw new CommonException("error.labelId.empty");
+        }
+        labelAssertHelper.labelNotExisted(labelId);
     }
 
     @Override
@@ -171,26 +404,42 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void delete(Long id) {
-        iRoleService.deleteByPrimaryKey(id);
+        RoleDTO roleDTO = roleAssertHelper.roleNotExisted(id);
+        if (!roleDTO.getBuiltIn()) {
+            roleMapper.deleteByPrimaryKey(id);
+        } else {
+            throw new CommonException("error.role.not.allow.to.be.delete");
+        }
+        RolePermissionDTO rolePermission = new RolePermissionDTO();
+        rolePermission.setRoleId(id);
+        rolePermissionMapper.delete(rolePermission);
+        RoleLabelDTO roleLabelDTO = new RoleLabelDTO();
+        roleLabelDTO.setRoleId(id);
+        roleLabelMapper.delete(roleLabelDTO);
     }
 
     @Override
     public RoleDTO queryById(Long id) {
-        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(id);
-        if (roleDTO == null) {
-            throw new CommonException("error.role.not.exist");
-        }
-        return roleDTO;
+        return roleAssertHelper.roleNotExisted(id);
     }
 
     @Override
     public RoleDTO enableRole(Long id) {
-        return iRoleService.updateRoleEnabled(id);
+        return updateStatus(id, true);
+    }
+
+    private RoleDTO updateStatus(Long id, boolean enabled) {
+        RoleDTO dto = roleAssertHelper.roleNotExisted(id);
+        dto.setEnabled(enabled);
+        if (roleMapper.updateByPrimaryKeySelective(dto) != 1) {
+            throw new UpdateExcetion("error.role.update.status");
+        }
+        return dto;
     }
 
     @Override
     public RoleDTO disableRole(Long id) {
-        return iRoleService.updateRoleDisabled(id);
+        return updateStatus(id, false);
     }
 
     @Override
@@ -207,28 +456,28 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO queryWithPermissionsAndLabels(Long id) {
-        return roleRepository.selectRoleWithPermissionsAndLabels(id);
+        return roleMapper.selectRoleWithPermissionsAndLabels(id);
     }
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnSiteLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.SITE.value());
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.SITE.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
-                    r.getId(), "user", 0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param);
+            Integer count = userMapper.selectUserCountFromMemberRoleByOptions(r.getId(),
+                    "user", 0L, ResourceLevel.SITE.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;
     }
 
     @Override
-    public List<RoleDTO> listRolesWithClientCountOnSiteLevel(ClientRoleSearchDTO clientRoleSearchDTO) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.SITE.value());
+    public List<RoleDTO> listRolesWithClientCountOnSiteLevel(ClientRoleQuery clientRoleSearchDTO) {
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.SITE.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
-                    r.getId(), 0L, ResourceLevel.SITE.value(), clientRoleSearchDTO, param);
+            Integer count = clientMapper.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), ResourceLevel.SITE.value(), 0L, clientRoleSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;
@@ -236,23 +485,23 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnOrganizationLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
-                    r.getId(), "user", sourceId, ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param);
+            Integer count = userMapper.selectUserCountFromMemberRoleByOptions(r.getId(),
+                    "user", sourceId, ResourceLevel.ORGANIZATION.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;
     }
 
     @Override
-    public List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
+    public List<RoleDTO> listRolesWithClientCountOnOrganizationLevel(ClientRoleQuery clientRoleSearchDTO, Long sourceId) {
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.ORGANIZATION.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
-                    r.getId(), sourceId, ResourceLevel.ORGANIZATION.value(), clientRoleSearchDTO, param);
+            Integer count = clientMapper.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), ResourceLevel.ORGANIZATION.value(), sourceId, clientRoleSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;
@@ -260,10 +509,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(roleAssignmentSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
         String param = ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = userRepository.selectUserCountFromMemberRoleByOptions(
+            Integer count = userMapper.selectUserCountFromMemberRoleByOptions(
                     r.getId(), "user", sourceId, ResourceLevel.PROJECT.value(), roleAssignmentSearchDTO, param);
             r.setUserCount(count);
         });
@@ -271,12 +520,12 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleSearchDTO clientRoleSearchDTO, Long sourceId) {
-        List<RoleDTO> roles = roleRepository.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
+    public List<RoleDTO> listRolesWithClientCountOnProjectLevel(ClientRoleQuery clientRoleSearchDTO, Long sourceId) {
+        List<RoleDTO> roles = roleMapper.fuzzySearchRolesByName(clientRoleSearchDTO.getRoleName(), ResourceLevel.PROJECT.value());
         String param = ParamUtils.arrToStr(clientRoleSearchDTO.getParam());
         roles.forEach(r -> {
-            Integer count = clientRepository.selectClientCountFromMemberRoleByOptions(
-                    r.getId(), sourceId, ResourceLevel.PROJECT.value(), clientRoleSearchDTO, param);
+            Integer count = clientMapper.selectClientCountFromMemberRoleByOptions(
+                    r.getId(), ResourceLevel.PROJECT.value(), sourceId, clientRoleSearchDTO, param);
             r.setUserCount(count);
         });
         return roles;
@@ -293,45 +542,41 @@ public class RoleServiceImpl implements RoleService {
 
     private void checkCode(RoleDTO role) {
         Boolean createCheck = StringUtils.isEmpty(role.getId());
-        RoleDTO roleDTO = new RoleDTO();
-        roleDTO.setCode(role.getCode());
         if (createCheck) {
-            Boolean existed = roleRepository.selectOne(roleDTO) != null;
-            if (existed) {
-                throw new CommonException("error.role.code.exist");
-            }
+            roleAssertHelper.codeExisted(role.getCode());
         } else {
             Long id = role.getId();
-            RoleDTO roleDTO1 = roleRepository.selectOne(roleDTO);
+            RoleDTO roleDTO = new RoleDTO();
+            roleDTO.setCode(role.getCode());
+            RoleDTO roleDTO1 = roleMapper.selectOne(roleDTO);
             Boolean existed = roleDTO1 != null && !id.equals(roleDTO1.getId());
             if (existed) {
                 throw new CommonException("error.role.code.exist");
             }
         }
-
     }
 
     @Override
     public List<Long> queryIdsByLabelNameAndLabelType(String labelName, String labelType) {
-        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(labelName, labelType, null);
+        List<RoleDTO> roles = roleMapper.selectRolesByLabelNameAndType(labelName, labelType, null);
         return roles.stream().map(RoleDTO::getId).collect(Collectors.toList());
     }
 
     @Override
     public List<RoleDTO> selectByLabel(String label, Long organizationId) {
-        return roleRepository.selectRolesByLabelNameAndType(label, "role", organizationId);
+        return roleMapper.selectRolesByLabelNameAndType(label, "role", organizationId);
     }
 
     @Override
     public List<RoleDTO> listRolesBySourceIdAndTypeAndUserId(String sourceType, Long sourceId, Long userId) {
-        return roleRepository.selectUsersRolesBySourceIdAndType(sourceType, sourceId, userId);
+        return roleMapper.queryRolesInfoByUser(sourceType, sourceId, userId);
     }
 
     @Override
     public RoleDTO queryByCode(String code) {
         RoleDTO roleDTO = new RoleDTO();
         roleDTO.setCode(code);
-        return roleRepository.selectOne(roleDTO);
+        return roleMapper.selectOne(roleDTO);
     }
 
 
@@ -344,10 +589,7 @@ public class RoleServiceImpl implements RoleService {
      * @param orgId
      */
     private void checkRoleCanBeModified(Long roleId, Long orgId) {
-        RoleDTO roleDTO = roleRepository.selectByPrimaryKey(roleId);
-        if (roleDTO == null) {
-            throw new CommonException("error.role.not.exist");
-        }
+        RoleDTO roleDTO = roleAssertHelper.roleNotExisted(roleId);
         if (roleDTO.getOrganizationId() == null || !Objects.equals(roleDTO.getOrganizationId(), orgId)) {
             throw new CommonException("error.role.modify.check");
         }

@@ -1,6 +1,6 @@
 package io.choerodon.iam.infra.asserts;
 
-import io.choerodon.core.exception.CommonException;
+import io.choerodon.iam.infra.exception.EmptyParamException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
@@ -17,7 +17,7 @@ public class AssertHelper {
 
     public void objectVersionNumberNotNull(Long objectVersionNumber, String message) {
         if (ObjectUtils.isEmpty(objectVersionNumber)) {
-            throw new CommonException(message);
+            throw new EmptyParamException(message);
         }
     }
 }

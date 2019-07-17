@@ -2,8 +2,11 @@ package io.choerodon.iam.app.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
@@ -41,32 +44,25 @@ public interface UserService {
 
     List<ProjectDTO> queryProjects(Long id, Boolean includedDisabled);
 
-    PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page,int size,
-                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+    PageInfo<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest,
+                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, ResourceType resourceType);
 
-    PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page,int size,
-                                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                     Long sourceId);
-
-    PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page,int size,
-                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage);
-
-    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size,
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest,
                                                           RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage);
 
-    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page,int size,
-                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                              Long roleId, Long sourceId, boolean doPage);
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest,
+                                                                  RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                  Long roleId, Long sourceId, boolean doPage);
 
-    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size,
-                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                         Long roleId, Long sourceId, boolean doPage);
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                             Long roleId, Long sourceId, boolean doPage);
 
     String uploadPhoto(Long id, MultipartFile file);
 
     String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height);
 
-    PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params);
+    PageInfo<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDTO userDTO, String params);
 
     void addAdminUsers(long[] ids);
 
@@ -89,19 +85,19 @@ public interface UserService {
      */
     List<UserDTO> listUsersByEmails(String[] emails);
 
-    PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size,
-                                                                    Long id, String params);
+    PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest,
+                                                                Long id, String params);
 
-    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size,
-                                                    Long id, String params);
+    PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest,
+                                                        Long id, String params);
 
     UserDTO createUserAndAssignRoles(CreateUserWithRolesDTO userWithRoles);
 
     PageInfo<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
-                                             int page, int size, String params);
+                                                 PageRequest pageRequest, String params);
 
     PageInfo<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
-                                                       int page, int size, String params);
+                                                           PageRequest pageRequest, String params);
 
     Long[] listUserIds();
 
@@ -110,19 +106,37 @@ public interface UserService {
     OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId);
 
 
-    PageInfo<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId);
+    PageInfo<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId);
 
-    PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param);
 
     Map<String, Object> queryAllAndNewUsers();
 
-    PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId);
+    PageInfo<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId, Long organizationId);
 
     /**
      * 根据loginName集合查询所有用户
+     *
      * @param loginNames
      * @param onlyEnabled
      * @return
      */
     List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled);
+
+    /**
+     * 异步
+     * 向用户发送通知（包括邮件和站内信）
+     *
+     * @param fromUserId 发送通知的用户
+     * @param userIds    接受通知的目标用户
+     * @param code       业务code
+     * @param params     渲染参数
+     * @param sourceId   触发发送通知对应的组织/项目id，如果是site层，可以为0或null
+     */
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId);
+
+    Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll);
+
+    UserDTO updateUserDisabled(Long userId);
+
 }

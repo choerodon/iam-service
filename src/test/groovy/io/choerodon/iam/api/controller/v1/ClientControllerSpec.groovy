@@ -3,7 +3,6 @@ package io.choerodon.iam.api.controller.v1
 import com.github.pagehelper.PageInfo
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ClientCreateDTO
 import io.choerodon.iam.infra.dto.ClientDTO
 import io.choerodon.iam.infra.mapper.ClientMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -147,7 +146,7 @@ class ClientControllerSpec extends Specification {
         def organizationId = 1L
         paramMap.put("organization_id", organizationId)
         when: "调用createInfo方法"
-        def entity = restTemplate.getForEntity(BASE_PATH + "/createInfo", ClientCreateDTO, paramMap)
+        def entity = restTemplate.getForEntity(BASE_PATH + "/createInfo", ClientDTO, paramMap)
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
     }

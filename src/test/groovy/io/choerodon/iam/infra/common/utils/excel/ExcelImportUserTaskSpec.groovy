@@ -5,16 +5,13 @@ import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.OrganizationUserService
-import io.choerodon.iam.domain.repository.MemberRoleRepository
-import io.choerodon.iam.domain.repository.RoleRepository
-import io.choerodon.iam.domain.repository.UploadHistoryRepository
-import io.choerodon.iam.domain.repository.UserRepository
-import io.choerodon.iam.domain.service.IRoleMemberService
-import io.choerodon.iam.domain.service.IUserService
+import io.choerodon.iam.app.service.RoleMemberService
+import io.choerodon.iam.app.service.UserService
 import io.choerodon.iam.infra.dto.RoleDTO
 import io.choerodon.iam.infra.dto.UploadHistoryDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
+import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -29,27 +26,27 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class ExcelImportUserTaskSpec extends Specification {
-    private UserRepository userRepository = Mock(UserRepository)
-    private RoleRepository roleRepository = Mock(RoleRepository)
-    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
-    private IRoleMemberService iRoleMemberService = Mock(IRoleMemberService)
+//    private UserRepository userRepository = Mock(UserRepository)
+//    private RoleRepository roleRepository = Mock(RoleRepository)
+    private MemberRoleMapper  memberRoleMapper = Mock(MemberRoleMapper)
+    private RoleMemberService roleMemberService = Mock(RoleMemberService)
     private OrganizationUserService organizationUserService = Mock(OrganizationUserService)
     private FileFeignClient fileFeignClient = Mock(FileFeignClient)
-    private IUserService iUserService = Mock(IUserService)
+    private UserService userService = Mock(UserService)
     private ExcelImportUserTask excelImportUserTask
-    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
+//    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
     private UserPasswordValidator userPasswordValidator = Mockito.mock(UserPasswordValidator)
     private int count = 3
 
     def setup() {
-        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService, userPasswordValidator)
+        excelImportUserTask = new ExcelImportUserTask(userRepository, roleRepository, memberRoleMapper, roleMemberService, organizationUserService, fileFeignClient, userService, userPasswordValidator)
     }
 
     def "import users with invalid password"() {
         given: "构造请求参数"
         UserPasswordValidator userPasswordValidator2 = Mockito.mock(UserPasswordValidator)
         Mockito.when(userPasswordValidator.validate(Mockito.anyString(), Mockito.any(Long), Mockito.anyBoolean())).thenReturn(false)
-        ExcelImportUserTask excelImportUserTask2 = new ExcelImportUserTask(userRepository, roleRepository, memberRoleRepository, iRoleMemberService, organizationUserService, fileFeignClient, iUserService, userPasswordValidator2)
+        ExcelImportUserTask excelImportUserTask2 = new ExcelImportUserTask(userRepository, roleRepository, memberRoleMapper, iRoleMemberService, organizationUserService, fileFeignClient, userService, userPasswordValidator2)
         Long userId = 1L
         List<UserDTO> users = new ArrayList<>()
         for (int i = 0; i < count; i++) {
@@ -231,8 +228,8 @@ class ExcelImportUserTaskSpec extends Specification {
 
         then: "校验结果"
         1 * roleRepository.selectOne(_) >> { roleDO }
-        1 * memberRoleRepository.selectOne(_)
-        1 * iRoleMemberService.insertAndSendEvent(_, _)
+        1 * memberRoleMapper.selectOne(_)
+        1 * roleMemberService.insertAndSendEvent(_, _)
         1 * userRepository.selectOne(_) >> { new UserDTO() }
         1 * 1 * fileFeignClient.uploadFile(_, _, _) >> { new ResponseEntity<String>(HttpStatus.OK) }
         1 * uploadHistoryRepository.selectByPrimaryKey(_) >> { new UploadHistoryDTO() }

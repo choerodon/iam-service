@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 
@@ -15,7 +16,7 @@ public interface ProjectService {
 
     ProjectDTO queryProjectById(Long projectId);
 
-    PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, int page, int size, String param);
+    PageInfo<UserDTO> pagingQueryTheUsersOfProject(Long id, Long userId, String email, PageRequest pageRequest, String param);
 
     ProjectDTO update(ProjectDTO projectDTO);
 

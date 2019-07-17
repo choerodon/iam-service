@@ -5,9 +5,6 @@ import io.choerodon.core.excel.ExcelReadHelper
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO
 import io.choerodon.iam.app.service.RoleMemberService
-import io.choerodon.iam.domain.repository.MemberRoleRepository
-import io.choerodon.iam.domain.repository.UploadHistoryRepository
-import io.choerodon.iam.domain.service.IRoleMemberService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask
 import io.choerodon.iam.infra.dto.OrganizationDTO
@@ -30,13 +27,13 @@ import spock.lang.Specification
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper, ConvertHelper, ExcelReadHelper])
 class RoleMemberServiceImplSpec extends Specification {
-    private IRoleMemberService iRoleMemberService = Mock(IRoleMemberService)
-    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
+//    private IRoleMemberService iRoleMemberService = Mock(IRoleMemberService)
+//    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
     private ExcelImportUserTask excelImportUserTask = Mock(ExcelImportUserTask)
     private OrganizationMapper organizationMapper = Mock(OrganizationMapper)
     private ProjectMapper projectMapper = Mock(ProjectMapper)
     private ExcelImportUserTask.FinishFallback finishFallback = Mock(ExcelImportUserTask.FinishFallback)
-    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
+//    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
     private RoleMemberService roleMemberService
     private Long userId
 

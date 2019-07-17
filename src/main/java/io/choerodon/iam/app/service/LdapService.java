@@ -1,11 +1,14 @@
 package io.choerodon.iam.app.service;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.api.dto.LdapAccountDTO;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.infra.dto.LdapDTO;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.LdapHistoryDTO;
+
+import java.util.Map;
 
 /**
  * @author wuguokai
@@ -17,7 +20,7 @@ public interface LdapService {
 
     LdapDTO queryByOrganizationId(Long organizationId);
 
-    Boolean delete(Long organizationId, Long id);
+    void delete(Long organizationId, Long id);
 
     /**
      * 测试是否能连接到ldap
@@ -27,6 +30,8 @@ public interface LdapService {
      * @return LdapConnectionDTO 连接测试结构体
      */
     LdapConnectionDTO testConnect(Long organizationId, Long id, LdapAccountDTO ldapAccountDTO);
+
+    Map<String, Object> testConnect(LdapDTO ldap);
 
     /**
      * 根据ldap配置同步用户
@@ -57,7 +62,7 @@ public interface LdapService {
      * @param ldapId
      * @return
      */
-    PageInfo<LdapHistoryDTO> pagingQueryHistories(int page, int size, Long ldapId);
+    PageInfo<LdapHistoryDTO> pagingQueryHistories(PageRequest pageRequest, Long ldapId);
 
-    PageInfo<LdapErrorUserDTO> pagingQueryErrorUsers(int page,int size, Long id, LdapErrorUserDTO ldapErrorUserDTO);
+    PageInfo<LdapErrorUserDTO> pagingQueryErrorUsers(PageRequest pageRequest, Long id, LdapErrorUserDTO ldapErrorUserDTO);
 }

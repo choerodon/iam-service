@@ -5,9 +5,6 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.app.service.ProjectService
-import io.choerodon.iam.domain.repository.OrganizationRepository
-import io.choerodon.iam.domain.repository.ProjectRepository
-import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.dto.ProjectDTO
@@ -30,9 +27,9 @@ import java.lang.reflect.Field
 @PrepareForTest([DetailsHelper])
 class ProjectServiceImplSpec extends Specification {
     //不要用@Shared，mock时有问题
-    private ProjectRepository projectRepository = Mock(ProjectRepository)
-    private UserRepository userRepository = Mock(UserRepository)
-    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
+//    private ProjectRepository projectRepository = Mock(ProjectRepository)
+//    private UserRepository userRepository = Mock(UserRepository)
+//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
     private SagaClient mockSagaClient = Mock(SagaClient)
     private OrganizationProjectService organizationProjectService = Mock(OrganizationProjectService)
     private ProjectService projectService

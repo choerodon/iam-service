@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.infra.dto.AccessTokenDTO;
 
 /**
@@ -15,7 +16,7 @@ public interface AccessTokenService {
      *
      * @return Token列表
      */
-    PageInfo<AccessTokenDTO> pagedSearch(int page, int size, String clientName, String currentToken);
+    PageInfo<AccessTokenDTO> pagedSearch(PageRequest pageRequest, String clientName, String currentToken);
 
     /**
      * 手动失效用户已存在的token

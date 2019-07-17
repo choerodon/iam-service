@@ -2,11 +2,10 @@ package io.choerodon.iam
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.appinfo.InstanceInfo
-import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.iam.api.dto.LdapConnectionDTO
-import io.choerodon.iam.domain.service.ILdapService
-import io.choerodon.iam.domain.service.impl.ILdapServiceImpl
+import io.choerodon.iam.app.service.LdapService
+import io.choerodon.iam.app.service.impl.LdapServiceImpl
 import io.choerodon.iam.infra.dto.LdapDTO
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
@@ -52,18 +51,18 @@ class IntegrationTestConfiguration {
     final ObjectMapper objectMapper = new ObjectMapper()
 
     @Bean
-    ILdapService iLdapService() {
-        ILdapService iLdapService = Mockito.mock(ILdapService)
+    LdapService LdapService() {
+        LdapService ldapService = Mockito.mock(LdapService)
         LdapConnectionDTO dto = new LdapConnectionDTO()
         dto.setMatchAttribute(true)
         dto.setCanLogin(true)
         dto.setCanConnectServer(true)
         LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate)
         Map<String, Object> map = new HashMap<>(2)
-        map.put(ILdapServiceImpl.LDAP_CONNECTION_DTO, dto)
-        map.put(ILdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
-        Mockito.doReturn(map).when(iLdapService).testConnect(Mockito.any(LdapDTO.class))
-        return iLdapService
+        map.put(LdapServiceImpl.LDAP_CONNECTION_DTO, dto)
+        map.put(LdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
+        Mockito.doReturn(map).when(ldapService).testConnect(Mockito.any(LdapDTO.class))
+        return ldapService
     }
 
     @Bean("mockDiscoveryClient")

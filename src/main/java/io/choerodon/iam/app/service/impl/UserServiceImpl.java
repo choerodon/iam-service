@@ -2,40 +2,35 @@ package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.CreateUserWithRolesDTO;
-import io.choerodon.iam.api.dto.OrganizationProjectDTO;
-import io.choerodon.iam.api.dto.ProjectCategoryDTO;
-import io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO;
-import io.choerodon.iam.api.dto.RegistrantInfoDTO;
-import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.api.dto.SimplifiedUserDTO;
-import io.choerodon.iam.api.dto.UserPasswordDTO;
-import io.choerodon.iam.api.dto.UserRoleDTO;
+import io.choerodon.iam.api.dto.*;
 import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.ResourceLevelValidator;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.UserService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.asserts.*;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
+import io.choerodon.iam.infra.common.utils.PageUtils;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
 import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.MemberRoleMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.feign.NotifyFeignClient;
+import io.choerodon.iam.infra.mapper.*;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
@@ -46,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,17 +50,14 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
+import static io.choerodon.iam.infra.asserts.UserAssertHelper.WhichColumn;
 
 /**
  * @author superlee
@@ -84,59 +78,70 @@ public class UserServiceImpl implements UserService {
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
-    private UserRepository userRepository;
-    private IUserService iUserService;
-    private OrganizationRepository organizationRepository;
-    private ProjectRepository projectRepository;
     private PasswordRecord passwordRecord;
     private FileFeignClient fileFeignClient;
     private BasePasswordPolicyMapper basePasswordPolicyMapper;
     private PasswordPolicyManager passwordPolicyManager;
     private UserPasswordValidator userPasswordValidator;
-    private RoleRepository roleRepository;
     private SagaClient sagaClient;
     private MemberRoleMapper memberRoleMapper;
     private final ObjectMapper mapper = new ObjectMapper();
     private ProjectMapCategoryMapper projectMapCategoryMapper;
+    private NotifyFeignClient notifyFeignClient;
+    private UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository,
-                           OrganizationRepository organizationRepository,
-                           ProjectRepository projectRepository,
-                           IUserService iUserService,
-                           PasswordRecord passwordRecord,
+    private UserAssertHelper userAssertHelper;
+
+    private OrganizationAssertHelper organizationAssertHelper;
+
+    private ProjectMapper projectMapper;
+
+    private OrganizationMapper organizationMapper;
+    private ProjectAssertHelper projectAssertHelper;
+    private RoleAssertHelper roleAssertHelper;
+
+
+    public UserServiceImpl(PasswordRecord passwordRecord,
                            FileFeignClient fileFeignClient,
                            SagaClient sagaClient,
                            BasePasswordPolicyMapper basePasswordPolicyMapper,
                            UserPasswordValidator userPasswordValidator,
                            PasswordPolicyManager passwordPolicyManager,
-                           RoleRepository roleRepository,
                            MemberRoleMapper memberRoleMapper,
-                           ProjectMapCategoryMapper projectMapCategoryMapper) {
-        this.userRepository = userRepository;
-        this.organizationRepository = organizationRepository;
-        this.projectRepository = projectRepository;
-        this.iUserService = iUserService;
+                           ProjectMapCategoryMapper projectMapCategoryMapper,
+                           NotifyFeignClient notifyFeignClient,
+                           UserMapper userMapper,
+                           UserAssertHelper userAssertHelper,
+                           OrganizationAssertHelper organizationAssertHelper,
+                           ProjectMapper projectMapper,
+                           OrganizationMapper organizationMapper,
+                           ProjectAssertHelper projectAssertHelper,
+                           RoleAssertHelper roleAssertHelper) {
         this.passwordRecord = passwordRecord;
         this.fileFeignClient = fileFeignClient;
         this.sagaClient = sagaClient;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.passwordPolicyManager = passwordPolicyManager;
         this.userPasswordValidator = userPasswordValidator;
-        this.roleRepository = roleRepository;
         this.memberRoleMapper = memberRoleMapper;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
+        this.notifyFeignClient = notifyFeignClient;
+        this.userMapper = userMapper;
+        this.userAssertHelper = userAssertHelper;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectMapper = projectMapper;
+        this.organizationMapper = organizationMapper;
+        this.projectAssertHelper = projectAssertHelper;
+        this.roleAssertHelper = roleAssertHelper;
     }
 
     @Override
     public UserDTO querySelf() {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        if (customUserDetails == null) {
-            throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
-        }
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         Long userId = customUserDetails.getUserId();
-        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
-        if (userDTO != null && userDTO.getOrganizationId() != null) {
-            OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
+        UserDTO userDTO = userMapper.selectByPrimaryKey(userId);
+        if (userDTO != null) {
+            OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(userDTO.getOrganizationId());
             userDTO.setOrganizationName(organizationDTO.getName());
             userDTO.setOrganizationCode(organizationDTO.getCode());
             if (userDTO.getPhone() == null || userDTO.getPhone().isEmpty()) {
@@ -148,10 +153,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<OrganizationDTO> queryOrganizations(Long userId, Boolean includedDisabled) {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        if (customUserDetails == null) {
-            throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
-        }
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         if (!userId.equals(customUserDetails.getUserId())) {
             throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
         }
@@ -161,7 +163,7 @@ public class UserServiceImpl implements UserService {
         }
         //superAdmin例外处理
         if (isAdmin) {
-            return organizationRepository.selectAll();
+            return organizationMapper.selectAll();
         } else {
             return getOwnedOrganizations(userId, includedDisabled);
         }
@@ -175,22 +177,21 @@ public class UserServiceImpl implements UserService {
         if (customUserDetails.getAdmin() != null) {
             isAdmin = customUserDetails.getAdmin();
         }
-
-        List<ProjectDTO> projectDTOS = new ArrayList<>();
+        List<ProjectDTO> projects;
         //superAdmin例外处理
         if (isAdmin) {
-            projectDTOS = projectRepository.selectAll();
+            projects = projectMapper.selectAll();
         } else {
             ProjectDTO project = new ProjectDTO();
             if (!includedDisabled) {
                 project.setEnabled(true);
             }
-            projectDTOS = projectRepository.selectProjectsFromMemberRoleByOptions(id, project);
+            projects = projectMapper.selectProjectsByUserId(id, project);
         }
         if (enableCategory) {
-            projectDTOS = mergeCategories(projectDTOS);
+            projects = mergeCategories(projects);
         }
-        return projectDTOS;
+        return projects;
     }
 
     private List<ProjectDTO> mergeCategories(List<ProjectDTO> projectDTOS) {
@@ -230,44 +231,59 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersWithSiteLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return
-                userRepository.pagingQueryUsersWithSiteLevelRoles(
-                        page, size, roleAssignmentSearchDTO);
+    public PageInfo<UserDTO> pagingQueryUsersWithRoles(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                       Long sourceId, ResourceType resourceType) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        boolean doPage = (size != 0);
+        Page<UserDTO> result = new Page<>(page, size);
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count = userMapper.selectCountUsers(roleAssignmentSearchDTO, sourceId, resourceType.value(),
+                    ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            List<UserDTO> users =
+                    userMapper.selectUserWithRolesByOption(
+                            roleAssignmentSearchDTO, sourceId, resourceType.value(), start, size,
+                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            result.setTotal(count);
+            result.addAll(users);
+        } else {
+            List<UserDTO> users =
+                    userMapper.selectUserWithRolesByOption(roleAssignmentSearchDTO, sourceId, resourceType.value(), null, null,
+                            ParamUtils.arrToStr(roleAssignmentSearchDTO.getParam()));
+            result.setTotal(users.size());
+            result.addAll(users);
+        }
+        return result.toPageInfo();
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersWithOrganizationLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId) {
-        return
-                userRepository.pagingQueryUsersWithOrganizationLevelRoles(
-                        page, size, roleAssignmentSearchDTO, sourceId);
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage) {
+        return pagingQueryUsersByRoleIdAndLevel(pageRequest, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value(), doPage);
+    }
+
+    private PageInfo<UserDTO> pagingQueryUsersByRoleIdAndLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, String level, boolean doPage) {
+        String param = Optional.ofNullable(roleAssignmentSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        if (!doPage) {
+            List<UserDTO> users =
+                    userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
+                            level, roleAssignmentSearchDTO, param);
+            Page<UserDTO> result = new Page<>();
+            result.addAll(users);
+            return result.toPageInfo();
+        }
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize()).doSelectPageInfo(() -> userMapper.selectUsersFromMemberRoleByOptions(roleId, "user", sourceId,
+                level, roleAssignmentSearchDTO, param));
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersWithProjectLevelRoles(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long sourceId, boolean doPage) {
-        return
-                userRepository.pagingQueryUsersWithProjectLevelRoles(
-                        page, size, roleAssignmentSearchDTO, sourceId, doPage);
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
+        return pagingQueryUsersByRoleIdAndLevel(pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value(), doPage);
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, boolean doPage) {
-        return userRepository.pagingQueryUsersByRoleIdAndLevel(
-                page, size, roleAssignmentSearchDTO, roleId, 0L, ResourceLevel.SITE.value(), doPage);
-    }
-
-    @Override
-    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnOrganizationLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
-        return
-                userRepository.pagingQueryUsersByRoleIdAndLevel(
-                        page, size, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value(), doPage);
-    }
-
-    @Override
-    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
-        return
-                userRepository.pagingQueryUsersByRoleIdAndLevel(
-                        page, size, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value(), doPage);
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest, RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId, Long sourceId, boolean doPage) {
+        return pagingQueryUsersByRoleIdAndLevel(pageRequest, roleAssignmentSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value(), doPage);
     }
 
     @Override
@@ -280,10 +296,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public String savePhoto(Long id, MultipartFile file, Double rotate, Integer axisX, Integer axisY, Integer width, Integer height) {
         checkLoginUser(id);
+        UserDTO dto = userAssertHelper.userNotExisted(id);
         try {
             file = ImageUtils.cutImage(file, rotate, axisX, axisY, width, height);
             String photoUrl = fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
-            userRepository.updatePhoto(id, photoUrl);
+            dto.setImageUrl(photoUrl);
+            if (userMapper.updateByPrimaryKeySelective(dto) != 1) {
+                throw new CommonException("error.user.update");
+            }
             return photoUrl;
         } catch (Exception e) {
             LOGGER.warn("error happened when save photo {}", e.getMessage());
@@ -298,8 +318,8 @@ public class UserServiceImpl implements UserService {
 
 
     private List<OrganizationDTO> getOwnedOrganizations(Long userId, Boolean includedDisabled) {
-        List<OrganizationDTO> resultOrganizations = organizationRepository.selectFromMemberRoleByMemberId(userId, includedDisabled);
-        List<OrganizationDTO> notIntoOrganizations = organizationRepository.selectOrgByUserAndPros(userId, includedDisabled);
+        List<OrganizationDTO> resultOrganizations = organizationMapper.selectFromMemberRoleByMemberId(userId, includedDisabled);
+        List<OrganizationDTO> notIntoOrganizations = organizationMapper.selectOrgByUserAndPros(userId, includedDisabled);
         List<Long> resultIds = resultOrganizations.stream().map(OrganizationDTO::getId).collect(Collectors.toList());
         List<Long> notIntoIds = notIntoOrganizations.stream().map(OrganizationDTO::getId).collect(Collectors.toList());
         //差集
@@ -313,7 +333,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword) {
         checkLoginUser(userId);
-        UserDTO user = userRepository.selectByPrimaryKey(userId);
+        UserDTO user = userAssertHelper.userNotExisted(userId);
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
@@ -324,7 +344,7 @@ public class UserServiceImpl implements UserService {
         if (checkPassword) {
             BaseUserDTO baseUserDTO = new BaseUserDTO();
             BeanUtils.copyProperties(user, baseUserDTO);
-            OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
+            OrganizationDTO organizationDTO = organizationMapper.selectByPrimaryKey(user.getOrganizationId());
             if (organizationDTO != null) {
                 BasePasswordPolicyDTO example = new BasePasswordPolicyDTO();
                 example.setOrganizationId(organizationDTO.getId());
@@ -337,7 +357,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         user.setPassword(ENCODER.encode(userPasswordDTO.getPassword()));
-        userRepository.updateSelective(user);
+        updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
         // send siteMsg
@@ -345,14 +365,22 @@ public class UserServiceImpl implements UserService {
         paramsMap.put("userName", user.getRealName());
         List<Long> userIds = new ArrayList<>();
         userIds.add(user.getId());
-        iUserService.sendNotice(user.getId(), userIds, "modifyPassword", paramsMap, 0L);
+        sendNotice(user.getId(), userIds, "modifyPassword", paramsMap, 0L);
+    }
+
+    private UserDTO updateSelective(UserDTO userDTO) {
+        userAssertHelper.objectVersionNumberNotNull(userDTO.getObjectVersionNumber());
+        if (userMapper.updateByPrimaryKeySelective(userDTO) != 1) {
+            throw new UpdateExcetion("error.user.update");
+        }
+        return userMapper.selectByPrimaryKey(userDTO);
     }
 
     @Override
     public UserDTO queryInfo(Long userId) {
         checkLoginUser(userId);
-        UserDTO user = userRepository.selectByPrimaryKey(userId);
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(user.getOrganizationId());
+        UserDTO user = userAssertHelper.userNotExisted(userId);
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(user.getOrganizationId());
         user.setOrganizationName(organizationDTO.getName());
         user.setOrganizationCode(organizationDTO.getCode());
         return user;
@@ -360,11 +388,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode) {
-        OrganizationDTO organizationDTO = new OrganizationDTO();
-        organizationDTO.setCode(orgCode);
-        organizationDTO = organizationRepository.selectOne(organizationDTO);
-        UserDTO user = userRepository.selectByPrimaryKey(organizationDTO.getUserId());
-        UserDTO admin = userRepository.selectByLoginName("admin");
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(orgCode);
+        Long userId = organizationDTO.getUserId();
+        UserDTO user = userAssertHelper.userNotExisted(userId);
+        UserDTO admin = userAssertHelper.userNotExisted(WhichColumn.LOGIN_NAME, "admin");
         RegistrantInfoDTO registrantInfoDTO = new RegistrantInfoDTO();
         registrantInfoDTO.setUser(user);
         registrantInfoDTO.setOrganizationName(organizationDTO.getName());
@@ -379,7 +406,7 @@ public class UserServiceImpl implements UserService {
         UserDTO dto;
         if (devopsMessage) {
             UserEventPayload userEventPayload = new UserEventPayload();
-            dto = iUserService.updateUserInfo(userDTO);
+            dto = updateSelective(userDTO);
             userEventPayload.setEmail(dto.getEmail());
             userEventPayload.setId(dto.getId().toString());
             userEventPayload.setName(dto.getRealName());
@@ -392,9 +419,9 @@ public class UserServiceImpl implements UserService {
                 throw new CommonException("error.UserService.updateInfo.event", e);
             }
         } else {
-            dto = iUserService.updateUserInfo(userDTO);
+            dto = updateSelective(userDTO);
         }
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(dto.getOrganizationId());
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(dto.getOrganizationId());
         dto.setOrganizationName(organizationDTO.getName());
         dto.setOrganizationCode(organizationDTO.getCode());
         return dto;
@@ -432,13 +459,13 @@ public class UserServiceImpl implements UserService {
         userDTO.setPhone(phone);
         userDTO.setEnabled(true);
         if (createCheck) {
-            Boolean existed = userRepository.selectOne(userDTO) != null;
+            Boolean existed = userMapper.selectOne(userDTO) != null;
             if (existed) {
                 throw new CommonException("error.user.phone.exist");
             }
         } else {
             Long id = user.getId();
-            UserDTO dto = userRepository.selectOne(userDTO);
+            UserDTO dto = userMapper.selectOne(userDTO);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.user.phone.exist");
@@ -452,13 +479,13 @@ public class UserServiceImpl implements UserService {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail(email);
         if (createCheck) {
-            Boolean existed = userRepository.selectOne(userDTO) != null;
+            Boolean existed = userMapper.selectOne(userDTO) != null;
             if (existed) {
                 throw new CommonException("error.user.email.exist");
             }
         } else {
             Long id = user.getId();
-            UserDTO dto = userRepository.selectOne(userDTO);
+            UserDTO dto = userMapper.selectOne(userDTO);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.user.email.exist");
@@ -475,13 +502,13 @@ public class UserServiceImpl implements UserService {
         UserDTO userDTO = new UserDTO();
         userDTO.setLoginName(loginName);
         if (createCheck) {
-            Boolean existed = userRepository.selectOne(userDTO) != null;
+            Boolean existed = userMapper.selectOne(userDTO) != null;
             if (existed) {
                 throw new CommonException("error.user.loginName.exist");
             }
         } else {
             Long id = user.getId();
-            UserDTO dto = userRepository.selectOne(userDTO);
+            UserDTO dto = userMapper.selectOne(userDTO);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.user.loginName.exist");
@@ -492,46 +519,48 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO queryByLoginName(String loginName) {
-        return userRepository.selectByLoginName(loginName);
+        UserDTO dto = new UserDTO();
+        dto.setLoginName(loginName);
+        return userMapper.selectOne(dto);
     }
 
     @Override
     public UserDTO lockUser(Long userId, Integer lockExpireTime) {
-        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+        UserDTO userDTO = userAssertHelper.userNotExisted(userId);
         userDTO.setLocked(true);
         userDTO.setLockedUntilAt(new Date(System.currentTimeMillis() + lockExpireTime * 1000));
-        return userRepository.updateSelective(userDTO);
+        return updateSelective(userDTO);
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryAdminUsers(int page, int size, UserDTO userDTO, String params) {
-        return userRepository.pagingQueryAdminUsers(page, size, userDTO, params);
+    public PageInfo<UserDTO> pagingQueryAdminUsers(PageRequest pageRequest, UserDTO userDTO, String params) {
+        userDTO.setAdmin(true);
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> userMapper.selectAdminUserPage(userDTO, params));
     }
 
     @Override
     @Transactional
     public void addAdminUsers(long[] ids) {
         for (long id : ids) {
-            UserDTO dto = userRepository.selectByPrimaryKey(id);
+            UserDTO dto = userMapper.selectByPrimaryKey(id);
             if (dto != null && !dto.getAdmin()) {
                 dto.setAdmin(true);
-                userRepository.updateSelective(dto);
+                updateSelective(dto);
             }
         }
     }
 
     @Override
     public void deleteAdminUser(long id) {
-        UserDTO dto = userRepository.selectByPrimaryKey(id);
-        if (dto == null) {
-            throw new CommonException("error.user.not.exist");
-        }
+        UserDTO dto = userAssertHelper.userNotExisted(id);
         UserDTO userDTO = new UserDTO();
         userDTO.setAdmin(true);
-        if (userRepository.selectCount(userDTO) > 1) {
+        if (userMapper.selectCount(userDTO) > 1) {
             if (dto.getAdmin()) {
                 dto.setAdmin(false);
-                userRepository.updateSelective(dto);
+                updateSelective(dto);
             }
         } else {
             throw new CommonException("error.user.admin.size");
@@ -543,7 +572,7 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtils.isEmpty(ids)) {
             return new ArrayList<>();
         } else {
-            return userRepository.listUsersByIds(ids, onlyEnabled);
+            return userMapper.listUsersByIds(ids, onlyEnabled);
         }
     }
 
@@ -552,7 +581,7 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtils.isEmpty(emails)) {
             return new ArrayList<>();
         } else {
-            return userRepository.listUsersByEmails(emails);
+            return userMapper.listUsersByEmails(emails);
         }
     }
 
@@ -561,18 +590,39 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtils.isEmpty(loginNames)) {
             return new ArrayList<>();
         } else {
-            return userRepository.listUsersByLoginNames(loginNames, onlyEnabled);
+            return userMapper.listUsersByLoginNames(loginNames, onlyEnabled);
         }
     }
 
     @Override
-    public PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(int page, int size, Long id, String params) {
-        return organizationRepository.pagingQueryOrganizationAndRoleById(page, size, id, params);
+    public PageInfo<OrganizationDTO> pagingQueryOrganizationsWithRoles(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        Page<OrganizationDTO> result = new Page<>(page, size);
+        int start = PageUtils.getBegin(page, size);
+        int count = memberRoleMapper.selectCountBySourceId(id, "organization");
+        result.setTotal(count);
+        result.addAll(organizationMapper.selectOrganizationsWithRoles(id, start, size, params));
+        return result.toPageInfo();
     }
 
     @Override
-    public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(int page, int size, Long id, String params) {
-        return projectRepository.pagingQueryProjectAndRolesById(page, size, id, params);
+    public PageInfo<ProjectDTO> pagingQueryProjectAndRolesById(PageRequest pageRequest, Long id, String params) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        Page<ProjectDTO> result = new Page<>(page, size);
+        if (size == 0) {
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, null, null, params);
+            result.setTotal(projectList.size());
+            result.addAll(projectList);
+        } else {
+            int start = PageUtils.getBegin(page, size);
+            int count = memberRoleMapper.selectCountBySourceId(id, "project");
+            result.setTotal(count);
+            List<ProjectDTO> projectList = projectMapper.selectProjectsWithRoles(id, start, size, params);
+            result.addAll(projectList);
+        }
+        return result.toPageInfo();
     }
 
     @Override
@@ -580,7 +630,10 @@ public class UserServiceImpl implements UserService {
     public UserDTO createUserAndAssignRoles(final CreateUserWithRolesDTO userWithRoles) {
         List<RoleDTO> roles = validateRoles(userWithRoles);
         UserDTO user = validateUser(userWithRoles);
-        UserDTO userDTO = userRepository.insertSelective(user);
+        if (userMapper.insertSelective(user) != 1) {
+            throw new CommonException("error.user.create");
+        }
+        UserDTO userDTO = userMapper.selectByPrimaryKey(user);
         Long userId = userDTO.getId();
         roles.forEach(r -> {
             MemberRoleDTO memberRole = new MemberRoleDTO();
@@ -599,21 +652,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageInfo<ProjectDTO> pagingQueryProjectsSelf(ProjectDTO projectDTO,
-                                                        int page, int size, String params) {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        return projectRepository.pagingQueryByUserId(customUserDetails.getUserId(), projectDTO, page, size, params);
+                                                        PageRequest pageRequest, String params) {
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
+        Long userId = customUserDetails.getUserId();
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> projectMapper.selectProjectsByUserIdWithParam(userId, projectDTO, params));
     }
 
     @Override
     public PageInfo<OrganizationDTO> pagingQueryOrganizationsSelf(OrganizationDTO organizationDTO,
-                                                                  int page, int size, String params) {
+                                                                  PageRequest pageRequest, String params) {
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        return organizationRepository.pagingQueryByUserId(customUserDetails.getUserId(), organizationDTO, page, size, params);
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> organizationMapper.selectOrganizationsByUserId(customUserDetails.getUserId(), organizationDTO, params));
     }
 
     @Override
     public Long[] listUserIds() {
-        return userRepository.listUserIds();
+        return userMapper.listUserIds();
     }
 
     private UserDTO validateUser(CreateUserWithRolesDTO userWithRoles) {
@@ -626,14 +684,8 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isEmpty(email)) {
             throw new CommonException("error.user.email.empty");
         }
-        if (userRepository.selectByLoginName(loginName) != null) {
-            throw new CommonException("error.user.loginName.existed");
-        }
-        UserDTO userDTO = new UserDTO();
-        userDTO.setEmail(email);
-        if (userRepository.selectOne(userDTO) != null) {
-            throw new CommonException("error.user.email.existed");
-        }
+        userAssertHelper.loginNameExisted(loginName);
+        userAssertHelper.emailExisted(email);
         validatePassword(user);
         user.setPassword(ENCODER.encode(user.getPassword()));
         user.setEnabled(true);
@@ -685,10 +737,7 @@ public class UserServiceImpl implements UserService {
             throw new CommonException("error.roleCode.null");
         } else {
             roleCodes.forEach(code -> {
-                RoleDTO role = roleRepository.selectByCode(code);
-                if (role == null) {
-                    throw new CommonException("error.role.not.existed");
-                }
+                RoleDTO role = roleAssertHelper.roleNotExisted(code);
                 if (!role.getResourceLevel().equals(sourceType)) {
                     throw new CommonException("error.illegal.role.level");
                 }
@@ -704,76 +753,148 @@ public class UserServiceImpl implements UserService {
                 || ResourceLevel.USER.value().equals(sourceType)) {
             throw new CommonException("error.illegal.sourceType");
         } else if (ResourceLevel.PROJECT.value().equals(sourceType)) {
-            ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(sourceId);
-            if (projectDTO == null) {
-                throw new CommonException("error.project.not.existed");
-            }
+            ProjectDTO projectDTO = projectAssertHelper.projectNotExisted(sourceId);
             Long organizationId = projectDTO.getOrganizationId();
             user.setOrganizationId(organizationId);
         } else {
             //organization level
-            if (organizationRepository.selectByPrimaryKey(sourceId) == null) {
-                throw new CommonException("error.organization.not.existed");
-            }
+            organizationAssertHelper.organizationNotExisted(sourceId);
             user.setOrganizationId(sourceId);
         }
     }
 
     @Override
     public Long queryOrgIdByEmail(String email) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setEmail(email);
-        UserDTO dto = userRepository.selectOne(userDTO);
-        if (null == dto) {
-            throw new CommonException("error.user.email.not.exist");
-        }
-        return dto.getOrganizationId();
+        return userAssertHelper.userNotExisted(WhichColumn.EMAIL, email).getOrganizationId();
     }
 
     @Override
     public OrganizationProjectDTO queryByUserIdWithRoleOrganizationAndProject(Long userId) {
         OrganizationProjectDTO organizationProjectDTO = new OrganizationProjectDTO();
-        organizationProjectDTO.setOrganizationList(organizationRepository.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
+        organizationProjectDTO.setOrganizationList(organizationMapper.selectFromMemberRoleByMemberId(userId, false).stream().map(organizationDO ->
                 OrganizationProjectDTO.newInstanceOrganization(organizationDO.getId(), organizationDO.getName(), organizationDO.getCode())
         ).collect(Collectors.toList()));
         ProjectDTO projectDTO = new ProjectDTO();
         //查询启用的项目
         projectDTO.setEnabled(true);
-        organizationProjectDTO.setProjectList(projectRepository.selectProjectsFromMemberRoleByOptions(userId, projectDTO)
+        organizationProjectDTO.setProjectList(projectMapper.selectProjectsByUserId(userId, projectDTO)
                 .stream().map(projectDO1 ->
                         OrganizationProjectDTO.newInstanceProject(projectDO1.getId(), projectDO1.getName(), projectDO1.getCode())).collect(Collectors.toList()));
         return organizationProjectDTO;
     }
 
     @Override
-    public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(int page, int size, String param, Long organizationId) {
+    public PageInfo<SimplifiedUserDTO> pagingQueryAllUser(PageRequest pageRequest, String param, Long organizationId) {
         if (StringUtils.isEmpty(param) && Long.valueOf(0).equals(organizationId)) {
             Page<SimplifiedUserDTO> result = new Page<>(0, 20);
             result.setTotal(0);
             return result.toPageInfo();
         }
-        return userRepository.pagingAllUsersByParams(page, size, param, organizationId);
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        if (organizationId.equals(0L)) {
+            return PageHelper.startPage(page, size).doSelectPageInfo(() -> userMapper.selectAllUsersSimplifiedInfo(param));
+        } else {
+            return PageHelper.startPage(page, size).doSelectPageInfo(() -> userMapper.selectUsersOptional(param, organizationId));
+        }
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, int page, int size, String param) {
-        return userRepository.pagingQueryUsersOnSiteLevel(userId, email, page, size, param);
+    public PageInfo<UserDTO> pagingQueryUsersOnSiteLevel(Long userId, String email, PageRequest pageRequest, String param) {
+        return
+                PageHelper
+                        .startPage(pageRequest.getPage(), pageRequest.getSize())
+                        .doSelectPageInfo(() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.SITE.value(), 0L, userId, email, param));
     }
 
     @Override
     public Map<String, Object> queryAllAndNewUsers() {
         Map<String, Object> map = new HashMap<>();
-        map.put("allUsers", userRepository.totalNumberOfUsers());
-        map.put("newUsers", userRepository.newUsersToday());
+        UserDTO dto = new UserDTO();
+        map.put("allUsers", userMapper.selectCount(dto));
+        LocalDate localDate = LocalDate.now();
+        String begin = localDate.toString();
+        String end = localDate.plusDays(1).toString();
+        map.put("newUsers", userMapper.newUsersByDate(begin, end));
         return map;
     }
 
     @Override
-    public PageInfo<UserRoleDTO> pagingQueryRole(int page, int size, String param, Long userId, Long organizationId) {
-        Long id = DetailsHelper.getUserDetails().getUserId();
-        if (id == null || !id.equals(userId)) {
+    public PageInfo<UserRoleDTO> pagingQueryRole(PageRequest pageRequest, String param, Long userId, Long organizationId) {
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
+        Long id = customUserDetails.getUserId();
+        if (!id.equals(userId)) {
             throw new CommonException("error.permission.id.notMatch");
         }
-        return userRepository.pagingQueryRole(page, size, param, userId, organizationId);
+        PageInfo<UserRoleDTO> result = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize()).doSelectPageInfo(() -> userMapper.selectRoles(userId, param, organizationId));
+        result.getList().forEach(i -> {
+            String[] roles = i.getRoleNames().split(",");
+            List<RoleNameAndEnabledDTO> list = new ArrayList<>(roles.length);
+            for (int j = 0; j < roles.length; j++) {
+                String[] nameAndEnabled = roles[j].split("\\|");
+                boolean roleEnabled = true;
+                if (nameAndEnabled[2].equals("0")) {
+                    roleEnabled = false;
+                }
+                list.add(new RoleNameAndEnabledDTO(nameAndEnabled[0], nameAndEnabled[1], roleEnabled));
+            }
+            i.setRoles(list);
+            if (ResourceLevel.PROJECT.value().equals(i.getLevel())) {
+                i.setOrganizationId(projectMapper.selectByPrimaryKey(i.getId()).getOrganizationId());
+            }
+        });
+        return result;
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code,
+                                     Map<String, Object> params, Long sourceId) {
+        return sendNotice(fromUserId, userIds, code, params, sourceId, false);
+    }
+
+    @Override
+    @Async("notify-executor")
+    public Future<String> sendNotice(Long fromUserId, List<Long> userIds, String code, Map<String, Object> params, Long sourceId, boolean sendAll) {
+        LOGGER.info("ready : send Notice to {} users", userIds.size());
+        if (userIds == null || userIds.isEmpty()) {
+            return new AsyncResult<>("userId is null");
+        }
+        long beginTime = System.currentTimeMillis();
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(code);
+        NoticeSendDTO.User currentUser = new NoticeSendDTO.User();
+        currentUser.setId(fromUserId);
+        noticeSendDTO.setFromUser(currentUser);
+        noticeSendDTO.setParams(params);
+        noticeSendDTO.setSourceId(sourceId);
+        List<NoticeSendDTO.User> users = new LinkedList<>();
+        userIds.forEach(id -> {
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setId(id);
+            //如果是发送给所有人，我们无需查看是否有角色分配，全部发送，避免查表
+            if (!sendAll) {
+                UserDTO userDTO = userMapper.selectByPrimaryKey(id);
+                if (userDTO != null) {
+                    //有角色分配，但是角色已经删除
+                    user.setEmail(userDTO.getEmail());
+                    users.add(user);
+                }
+            } else {
+                users.add(user);
+            }
+        });
+        noticeSendDTO.setTargetUsers(users);
+        LOGGER.info("start : send Notice to {} users", userIds.size());
+        notifyFeignClient.postNotice(noticeSendDTO);
+        LOGGER.info("end : send Notice to {} users", userIds.size());
+        return new AsyncResult<>((System.currentTimeMillis() - beginTime) / 1000 + "s");
+    }
+
+    @Override
+    public UserDTO updateUserDisabled(Long userId) {
+        UserDTO userDTO = userAssertHelper.userNotExisted(userId);
+        userDTO.setEnabled(false);
+        return updateSelective(userDTO);
     }
 }

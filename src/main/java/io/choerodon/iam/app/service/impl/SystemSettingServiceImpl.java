@@ -7,12 +7,14 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.api.dto.payload.SystemSettingEventPayload;
 import io.choerodon.iam.app.service.SystemSettingService;
-import io.choerodon.iam.domain.repository.SystemSettingRepository;
 import io.choerodon.iam.infra.common.utils.ImageUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.common.utils.SagaTopic;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
+import io.choerodon.iam.infra.exception.AlreadyExsitedException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.SystemSettingMapper;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author zmf
@@ -30,21 +33,22 @@ import java.io.IOException;
 @Saga(code = SagaTopic.SystemSetting.SYSTEM_SETTING_UPDATE, description = "iam更改系统设置", inputSchemaClass = SystemSettingEventPayload.class)
 public class SystemSettingServiceImpl implements SystemSettingService {
     private final FileFeignClient fileFeignClient;
-    private final SystemSettingRepository systemSettingRepository;
     private final SagaClient sagaClient;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String ERROR_UPDATE_SYSTEM_SETTING_EVENT_SEND = "error.system.setting.update.send.event";
 
     private final Boolean enableCategory;
 
-    public SystemSettingServiceImpl(FileFeignClient fileFeignClient, SystemSettingRepository systemSettingRepository,
+    private SystemSettingMapper systemSettingMapper;
+
+    public SystemSettingServiceImpl(FileFeignClient fileFeignClient,
                                     SagaClient sagaClient,
+                                    SystemSettingMapper systemSettingMapper,
                                     @Value("${choerodon.category.enabled:false}") Boolean enableCategory) {
         this.fileFeignClient = fileFeignClient;
-        this.systemSettingRepository = systemSettingRepository;
         this.sagaClient = sagaClient;
-        this.objectMapper = new ObjectMapper();
         this.enableCategory = enableCategory;
+        this.systemSettingMapper = systemSettingMapper;
     }
 
     @Override
@@ -76,8 +80,14 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         validateLength(systemSettingDTO);
 
         // 执行业务代码
-        SystemSettingDTO dto = systemSettingRepository.addSetting(systemSettingDTO);
-
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        if (!records.isEmpty()) {
+            throw new AlreadyExsitedException("error.setting.already.one");
+        }
+        if (systemSettingMapper.insertSelective(systemSettingDTO) != 1) {
+            throw new CommonException("error.setting.insert.failed");
+        }
+        SystemSettingDTO dto = systemSettingMapper.selectByPrimaryKey(systemSettingDTO.getId());
         // 触发 saga 流程
         triggerSagaFlow(dto);
 
@@ -90,7 +100,16 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         validateLength(systemSettingDTO);
 
         // 执行业务代码
-        SystemSettingDTO dto = systemSettingRepository.updateSetting(systemSettingDTO);
+
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        if (records.isEmpty()) {
+            throw new CommonException("error.setting.update.invalid");
+        }
+        systemSettingDTO.setId(records.get(0).getId());
+        if (systemSettingMapper.updateByPrimaryKeySelective(systemSettingDTO) != 1) {
+            throw new UpdateExcetion("error.setting.update");
+        }
+        SystemSettingDTO dto = systemSettingMapper.selectByPrimaryKey(systemSettingDTO.getId());
 
         // 触发 saga 流程
         triggerSagaFlow(dto);
@@ -116,7 +135,10 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     @Override
     public void resetSetting() {
         // 执行业务代码
-        systemSettingRepository.resetSetting();
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        for (SystemSettingDTO domain : records) {
+            systemSettingMapper.deleteByPrimaryKey(domain.getId());
+        }
 
         // 触发 saga 流程
         try {
@@ -128,18 +150,14 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     @Override
     public SystemSettingDTO getSetting() {
-        return systemSettingRepository.getSetting();
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        return records.isEmpty() ? null : records.get(0);
     }
 
     private String uploadFile(MultipartFile file) {
         return fileFeignClient.uploadFile("iam-service", file.getOriginalFilename(), file).getBody();
     }
 
-//    private SystemSettingDO convert(SystemSettingDTO systemSettingDTO) {
-//        SystemSettingDO systemSettingDO = new SystemSettingDO();
-//        BeanUtils.copyProperties(systemSettingDTO, systemSettingDO);
-//        return systemSettingDO;
-//    }
 
     /**
      * If the value is empty, default value is to be set.

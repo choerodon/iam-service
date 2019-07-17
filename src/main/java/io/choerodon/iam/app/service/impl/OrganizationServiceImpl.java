@@ -2,6 +2,7 @@ package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -9,23 +10,26 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.OrgSharesDTO;
 import io.choerodon.iam.api.dto.OrganizationSimplifyDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationEventPayload;
 import io.choerodon.iam.api.dto.payload.OrganizationPayload;
 import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.ProjectDTO;
 import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
+import io.choerodon.iam.infra.mapper.RoleMapper;
+import io.choerodon.iam.infra.mapper.UserMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -43,57 +47,65 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
 @Component
 public class OrganizationServiceImpl implements OrganizationService {
 
-    private OrganizationRepository organizationRepository;
-    private ProjectRepository projectRepository;
-    private RoleRepository roleRepository;
-    private UserRepository userRepository;
     private AsgardFeignClient asgardFeignClient;
 
-    @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
-
-    @Value("${spring.application.name:default}")
-    private String serviceName;
 
     private SagaClient sagaClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private IUserService iUserService;
+    private UserService userService;
 
-    private static final String ORG_MSG_NOT_EXIST = "error.organization.not.exist";
+    private OrganizationAssertHelper organizationAssertHelper;
 
-    public OrganizationServiceImpl(OrganizationRepository organizationRepository,
+    private ProjectMapper projectMapper;
+
+    private UserMapper userMapper;
+
+    private OrganizationMapper organizationMapper;
+
+    private RoleMapper roleMapper;
+
+
+    public OrganizationServiceImpl(@Value("${choerodon.devops.message:false}") Boolean devopsMessage,
                                    SagaClient sagaClient,
-                                   ProjectRepository projectRepository,
-                                   RoleRepository roleRepository,
-                                   UserRepository userRepository,
-                                   IUserService iUserService,
-                                   AsgardFeignClient asgardFeignClient) {
-        this.organizationRepository = organizationRepository;
+                                   UserService userService,
+                                   AsgardFeignClient asgardFeignClient,
+                                   OrganizationAssertHelper organizationAssertHelper,
+                                   ProjectMapper projectMapper,
+                                   UserMapper userMapper,
+                                   OrganizationMapper organizationMapper,
+                                   RoleMapper roleMapper) {
+        this.devopsMessage = devopsMessage;
         this.sagaClient = sagaClient;
-        this.projectRepository = projectRepository;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.iUserService = iUserService;
+        this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectMapper = projectMapper;
+        this.userMapper = userMapper;
+        this.organizationMapper = organizationMapper;
+        this.roleMapper = roleMapper;
     }
 
     @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORG_MSG_NOT_EXIST, organizationId);
-        }
-        List<ProjectDTO> projects = projectRepository.selectByOrgId(organizationId);
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(organizationId);
+
+        ProjectDTO example = new ProjectDTO();
+        example.setOrganizationId(organizationId);
+        List<ProjectDTO> projects = projectMapper.select(example);
         organizationDTO.setProjects(projects);
         organizationDTO.setProjectCount(projects.size());
+
         Long userId = organizationDTO.getUserId();
-        UserDTO user = userRepository.selectByPrimaryKey(userId);
-        organizationDTO.setOwnerLoginName(user.getLoginName());
-        organizationDTO.setOwnerRealName(user.getRealName());
-        organizationDTO.setOwnerPhone(user.getPhone());
-        organizationDTO.setOwnerEmail(user.getEmail());
+        UserDTO user = userMapper.selectByPrimaryKey(userId);
+        if (user != null) {
+            organizationDTO.setOwnerLoginName(user.getLoginName());
+            organizationDTO.setOwnerRealName(user.getRealName());
+            organizationDTO.setOwnerPhone(user.getPhone());
+            organizationDTO.setOwnerEmail(user.getEmail());
+        }
         return organizationDTO;
     }
 
@@ -103,7 +115,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDTO updateOrganization(Long organizationId, OrganizationDTO organizationDTO, String resourceLevel, Long sourceId) {
         preUpdate(organizationId, organizationDTO);
 
-        organizationDTO = organizationRepository.update(organizationDTO);
+        organizationDTO = doUpdate(organizationDTO);
         if (devopsMessage) {
             OrganizationPayload payload = new OrganizationPayload();
             payload
@@ -125,11 +137,15 @@ public class OrganizationServiceImpl implements OrganizationService {
         return organizationDTO;
     }
 
-    private void preUpdate(Long organizationId, OrganizationDTO organizationDTO) {
-        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
-        if (ObjectUtils.isEmpty(organization)) {
-            throw new CommonException("error.organization.notFound");
+    private OrganizationDTO doUpdate(OrganizationDTO organizationDTO) {
+        if (organizationMapper.updateByPrimaryKeySelective(organizationDTO) != 1) {
+            throw new UpdateExcetion("error.organization.update");
         }
+        return organizationMapper.selectByPrimaryKey(organizationDTO);
+    }
+
+    private void preUpdate(Long organizationId, OrganizationDTO organizationDTO) {
+        OrganizationDTO organization = organizationAssertHelper.organizationNotExisted(organizationId);
         organizationDTO.setId(organizationId);
         //code和创建人不可修改
         organizationDTO.setUserId(organization.getUserId());
@@ -141,35 +157,29 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationDTO queryOrganizationWithRoleById(Long organizationId) {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        if (customUserDetails == null) {
-            throw new CommonException("error.user.not.login");
-        }
+        CustomUserDetails customUserDetails = DetailsHelperAssert.userDetailNotExisted();
         OrganizationDTO dto = queryOrganizationById(organizationId);
         long userId = customUserDetails.getUserId();
 
-        List<ProjectDTO> projects = projectRepository.selectUserProjectsUnderOrg(userId, organizationId, null);
+        List<ProjectDTO> projects = projectMapper.selectUserProjectsUnderOrg(userId, organizationId, null);
         dto.setProjects(projects);
         dto.setProjectCount(projects.size());
 
         List<RoleDTO> roles =
-                roleRepository.selectUsersRolesBySourceIdAndType(ResourceType.ORGANIZATION.value(), organizationId, userId);
+                roleMapper.queryRolesInfoByUser(ResourceType.ORGANIZATION.value(), organizationId, userId);
         dto.setRoles(roles);
         return dto;
     }
 
     @Override
-    public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param) {
-        return organizationRepository.pagingQuery(organizationDTO, page, size, param);
+    public PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize()).doSelectPageInfo(() -> organizationMapper.fulltextSearch(organizationDTO, param));
     }
 
     @Override
     @Saga(code = ORG_ENABLE, description = "iam启用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO enableOrganization(Long organizationId, Long userId) {
-        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organization == null) {
-            throw new CommonException(ORG_MSG_NOT_EXIST);
-        }
+        OrganizationDTO organization = organizationAssertHelper.organizationNotExisted(organizationId);
         organization.setEnabled(true);
         return updateAndSendEvent(organization, ORG_ENABLE, userId);
     }
@@ -177,16 +187,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @Saga(code = ORG_DISABLE, description = "iam停用组织", inputSchemaClass = OrganizationEventPayload.class)
     public OrganizationDTO disableOrganization(Long organizationId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORG_MSG_NOT_EXIST);
-        }
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(organizationId);
         organizationDTO.setEnabled(false);
         return updateAndSendEvent(organizationDTO, ORG_DISABLE, userId);
     }
 
     private OrganizationDTO updateAndSendEvent(OrganizationDTO organization, String consumerType, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.update(organization);
+        OrganizationDTO organizationDTO = doUpdate(organization);
         if (devopsMessage) {
             OrganizationEventPayload payload = new OrganizationEventPayload();
             payload.setOrganizationId(organization.getId());
@@ -200,13 +207,13 @@ public class OrganizationServiceImpl implements OrganizationService {
             //给asgard发送禁用定时任务通知
             asgardFeignClient.disableOrg(organization.getId());
             // 给组织下所有用户发送通知
-            List<Long> userIds = organizationRepository.listMemberIds(organization.getId());
+            List<Long> userIds = organizationMapper.listMemberIds(organization.getId(), "organization");
             Map<String, Object> params = new HashMap<>();
-            params.put("organizationName", organizationRepository.selectByPrimaryKey(organization.getId()).getName());
+            params.put("organizationName", organizationDTO.getName());
             if (ORG_DISABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId());
+                userService.sendNotice(userId, userIds, "disableOrganization", params, organization.getId());
             } else if (ORG_ENABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
+                userService.sendNotice(userId, userIds, "enableOrganization", params, organization.getId());
             }
         }
         return organizationDTO;
@@ -223,8 +230,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, int page, int size, String param) {
-        return userRepository.pagingQueryUsersByOrganizationId(organizationId, userId, email, page, size, param);
+    public PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId, Long userId, String email, PageRequest pageRequest, String param) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> userMapper.selectUsersByLevelAndOptions(ResourceLevel.ORGANIZATION.value(), organizationId, userId, email, param));
     }
 
     @Override
@@ -232,7 +241,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         } else {
-            return organizationRepository.queryByIds(ids);
+            return organizationMapper.selectByIds(ids);
         }
     }
 
@@ -242,13 +251,13 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationDTO organizationDTO = new OrganizationDTO();
         organizationDTO.setCode(code);
         if (createCheck) {
-            Boolean existed = organizationRepository.selectOne(organizationDTO) != null;
+            Boolean existed = organizationMapper.selectOne(organizationDTO) != null;
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
             }
         } else {
             Long id = organization.getId();
-            OrganizationDTO dto = organizationRepository.selectOne(organizationDTO);
+            OrganizationDTO dto = organizationMapper.selectOne(organizationDTO);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.organization.code.exist");
@@ -257,8 +266,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(int page, int size) {
-        return organizationRepository.selectAllOrgIdAndName(page, size);
+    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> organizationMapper.selectAllOrgIdAndName());
     }
 
 
@@ -267,6 +278,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (CollectionUtils.isEmpty(orgIds)) {
             return new PageInfo<>();
         }
-        return organizationRepository.pagingSpecified(orgIds, name, code, enabled, params, pageRequest);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSort().toSql())
+                .doSelectPageInfo(() -> organizationMapper.selectSpecified(orgIds, name, code, enabled, params));
     }
 }

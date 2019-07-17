@@ -2,6 +2,8 @@ package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.iam.infra.exception.AlreadyExsitedException;
+import io.choerodon.iam.infra.exception.NotExistedException;
 import io.choerodon.iam.infra.mapper.RoleMapper;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +22,11 @@ public class RoleAssertHelper extends AssertHelper {
         this.roleMapper = roleMapper;
     }
 
-    public void codeExisted(String code){
+    public void codeExisted(String code) {
         RoleDTO dto = new RoleDTO();
         dto.setCode(code);
-        if(!roleMapper.select(dto).isEmpty()) {
-            throw new CommonException("error.role.code.existed");
+        if (roleMapper.selectOne(dto) != null) {
+            throw new AlreadyExsitedException("error.role.code.existed");
         }
     }
 
@@ -38,5 +40,19 @@ public class RoleAssertHelper extends AssertHelper {
             throw new CommonException(message, id);
         }
         return dto;
+    }
+
+    public RoleDTO roleNotExisted(String code) {
+        return roleNotExisted(code, "error.role.not.existed");
+    }
+
+    public RoleDTO roleNotExisted(String code, String message) {
+        RoleDTO dto = new RoleDTO();
+        dto.setCode(code);
+        RoleDTO result = roleMapper.selectOne(dto);
+        if (result == null) {
+            throw new NotExistedException(message);
+        }
+        return result;
     }
 }

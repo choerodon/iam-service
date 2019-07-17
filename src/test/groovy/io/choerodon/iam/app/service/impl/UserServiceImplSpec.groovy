@@ -3,18 +3,12 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 
-//import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
 import io.choerodon.iam.api.dto.UserPasswordDTO
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.UserService
-import io.choerodon.iam.domain.repository.OrganizationRepository
-import io.choerodon.iam.domain.repository.ProjectRepository
-import io.choerodon.iam.domain.repository.RoleRepository
-import io.choerodon.iam.domain.repository.UserRepository
-import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.MemberRoleDTO
 import io.choerodon.iam.infra.dto.OrganizationDTO
@@ -30,7 +24,6 @@ import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
 import io.choerodon.oauth.core.password.record.PasswordRecord
 import org.apache.http.entity.ContentType
 import org.junit.runner.RunWith
-import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -51,15 +44,14 @@ import java.lang.reflect.Field
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
 class UserServiceImplSpec extends Specification {
-    private UserRepository userRepository = Mock(UserRepository)
-    private IUserService iUserService = Mock(IUserService)
-    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-    private ProjectRepository projectRepository = Mock(ProjectRepository)
+//    private UserRepository userRepository = Mock(UserRepository)
+//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
+//    private ProjectRepository projectRepository = Mock(ProjectRepository)
     private PasswordRecord passwordRecord = Mock(PasswordRecord)
     private FileFeignClient fileFeignClient = Mock(FileFeignClient)
     private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
     private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
-    private RoleRepository roleRepository = Mock(RoleRepository)
+//    private RoleRepository roleRepository = Mock(RoleRepository)
     private SagaClient sagaClient = Mock(SagaClient)
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
     private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
@@ -70,7 +62,7 @@ class UserServiceImplSpec extends Specification {
     def setup() {
         given: "构造userService"
         userService = new UserServiceImpl(userRepository, organizationRepository,
-                projectRepository, iUserService, passwordRecord, fileFeignClient,
+                projectRepository, passwordRecord, fileFeignClient,
                 sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager, roleRepository,
                 memberRoleMapper, projectMapCategoryMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
@@ -201,7 +193,7 @@ class UserServiceImplSpec extends Specification {
         1 * passwordPolicyManager.passwordValidate(_, _, _)
         1 * userRepository.updateSelective(_)
         1 * passwordRecord.updatePassword(_, _)
-        1 * iUserService.sendNotice(_, _, _, _, _)
+//        1 * iUserService.sendNotice(_, _, _, _, _)
         noExceptionThrown()
     }
 
@@ -255,14 +247,14 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDTO()
-        1 * iUserService.updateUserInfo(_) >> {
-            UserDTO user = new UserDTO()
-            user.setPassword("123456")
-            Field field = user.getClass().getDeclaredField("id")
-            field.setAccessible(true)
-            field.set(user, 1L)
-            return user
-        }
+//        1 * iUserService.updateUserInfo(_) >> {
+//            UserDTO user = new UserDTO()
+//            user.setPassword("123456")
+//            Field field = user.getClass().getDeclaredField("id")
+//            field.setAccessible(true)
+//            field.set(user, 1L)
+//            return user
+//        }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
