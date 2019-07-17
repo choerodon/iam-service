@@ -263,26 +263,6 @@ export default class Role extends Component {
       ),
     },
     {
-      title: <FormattedMessage id="level" />,
-      dataIndex: 'level',
-      key: 'level',
-      filters: [
-        {
-          text: intl.formatMessage({ id: 'global' }),
-          value: 'site',
-        }, {
-          text: intl.formatMessage({ id: 'organization' }),
-          value: 'organization',
-        }, {
-          text: intl.formatMessage({ id: 'project' }),
-          value: 'project',
-        }],
-      render: text => this.renderLevel(text),
-      sorter: true,
-      sortOrder: columnKey === 'level' && order,
-      filteredValue: filters.level || [],
-    },
-    {
       title: <FormattedMessage id="source" />,
       dataIndex: 'builtIn',
       key: 'builtIn',
