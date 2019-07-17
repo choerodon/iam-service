@@ -19,7 +19,7 @@ class OrganizationSettingStore {
     this.projectInfo = data;
   }
 
-  @computed get getOrganizationInfo() {
+  @computed get organizationInfo() {
     return this.projectInfo;
   }
 
@@ -28,7 +28,10 @@ class OrganizationSettingStore {
   }
 
   axiosSaveProjectInfo(data) {
-    return axios.put(`/iam/v1/organizations/${data.id}/organization_level`, data);
+    return axios.put(
+      `/iam/v1/organizations/${data.id}/organization_level`,
+      data
+    );
   }
 }
 

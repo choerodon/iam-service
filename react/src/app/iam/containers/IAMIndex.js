@@ -18,7 +18,7 @@ const projectType = asyncRouter(() => import('./global/project-type'));
 const client = asyncRouter(() => import('./organization/client'));
 const orgRole = asyncRouter(() => import('./organization/role'));
 const ldap = asyncRouter(() => import('./organization/ldap'));
-const passwordPolicy = asyncRouter(() => import('./organization/password-policy'));
+const passwordPolicy = asyncRouter(() => import('./organization/organization-setting/password-policy'));
 const project = asyncRouter(() => import('./organization/project'));
 const user = asyncRouter(() => import('./organization/user'));
 const organizationSetting = asyncRouter(() => import('./organization/organization-setting'));
