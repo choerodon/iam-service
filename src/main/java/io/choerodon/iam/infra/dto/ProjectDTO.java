@@ -58,8 +58,12 @@ public class ProjectDTO extends BaseDTO {
 
     @ApiModelProperty(value = "项目类型code/非必填")
     private String type;
+
     @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)")
     private String category;
+
+    @ApiModelProperty(value = "项目类型")
+    private List<Long> categoryIds;
 
     @ApiModelProperty(value = "项目类型(非开源，一对多)")
     private List<ProjectCategoryDTO> categories;
@@ -179,5 +183,13 @@ public class ProjectDTO extends BaseDTO {
 
     public void setCategories(List<ProjectCategoryDTO> categories) {
         this.categories = categories;
+    }
+
+    public List<Long> getCategoryIds() {
+        return categoryIds;
+    }
+
+    public void setCategoryIds(List<Long> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 }

@@ -3,7 +3,6 @@ package io.choerodon.iam.api.service.impl
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.app.service.ExcelService
 import io.choerodon.iam.app.service.impl.ExcelServiceImpl
-import io.choerodon.iam.domain.repository.UploadHistoryRepository
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask
 import org.apache.http.entity.ContentType
@@ -26,7 +25,7 @@ import spock.lang.Specification
 @PrepareForTest([DetailsHelper])
 class ExcelServiceImplSpec extends Specification {
 
-    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
+//    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
 
     private ExcelImportUserTask excelImportUserTask = Mock(ExcelImportUserTask)
     private ExcelImportUserTask.FinishFallback finishFallback =

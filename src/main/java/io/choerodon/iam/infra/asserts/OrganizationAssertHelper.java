@@ -22,7 +22,7 @@ public class OrganizationAssertHelper extends AssertHelper {
     }
 
     public OrganizationDTO organizationNotExisted(Long id) {
-        return organizationNotExisted(id, "error.organization.notFound");
+        return organizationNotExisted(id, "error.organization.not.exist");
     }
 
     public OrganizationDTO organizationNotExisted(Long id, String message) {
@@ -31,5 +31,19 @@ public class OrganizationAssertHelper extends AssertHelper {
             throw new CommonException(message, id);
         }
         return dto;
+    }
+
+    public OrganizationDTO organizationNotExisted(String code) {
+        return organizationNotExisted(code, "error.organization.not.exist");
+    }
+
+    public OrganizationDTO organizationNotExisted(String code, String message) {
+        OrganizationDTO dto = new OrganizationDTO();
+        dto.setCode(code);
+        OrganizationDTO result = organizationMapper.selectOne(dto);
+        if (ObjectUtils.isEmpty(dto)) {
+            throw new CommonException(message);
+        }
+        return result;
     }
 }

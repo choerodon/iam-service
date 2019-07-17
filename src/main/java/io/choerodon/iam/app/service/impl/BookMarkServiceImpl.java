@@ -7,7 +7,7 @@ import io.choerodon.iam.infra.asserts.BookMarkAssertHelper;
 import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
 import io.choerodon.iam.infra.dto.BookMarkDTO;
 import io.choerodon.iam.infra.mapper.BookMarkMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * @author dengyouquan
  **/
-@Component
+@Service
 public class BookMarkServiceImpl implements BookMarkService {
 
     private BookMarkMapper bookMarkMapper;
@@ -32,6 +32,8 @@ public class BookMarkServiceImpl implements BookMarkService {
 
     @Override
     public BookMarkDTO create(BookMarkDTO bookMarkDTO) {
+        CustomUserDetails userDetails = DetailsHelperAssert.userDetailNotExisted();
+        bookMarkDTO.setUserId(userDetails.getUserId());
         bookMarkMapper.insert(bookMarkDTO);
         return bookMarkDTO;
     }

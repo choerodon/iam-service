@@ -6,8 +6,6 @@ import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.service.OrganizationService
 import io.choerodon.iam.app.service.PasswordPolicyService
-import io.choerodon.iam.domain.repository.ProjectRepository
-import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -27,8 +25,8 @@ class OrganizationListenerSpec extends Specification {
     private PasswordPolicyService passwordPolicyService = Mock(PasswordPolicyService)
     private OrganizationService organizationService = Mock(OrganizationService)
     private OrganizationListener organizationListener
-    private ProjectRepository projectRepository
-    private IUserService iUserService
+//    private ProjectRepository projectRepository
+//    private IUserService iUserService
     private final ObjectMapper mapper = new ObjectMapper()
 
     def setup() {

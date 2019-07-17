@@ -4,10 +4,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import io.choerodon.iam.app.service.impl.LdapServiceImpl;
 import io.choerodon.iam.infra.dto.LdapDTO;
 import io.choerodon.iam.infra.dto.LdapHistoryDTO;
 import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.enums.LdapSyncType;
+import io.choerodon.iam.infra.mapper.LdapHistoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.LdapTemplate;
@@ -19,9 +21,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.iam.api.dto.LdapConnectionDTO;
 import io.choerodon.iam.app.service.LdapService;
-import io.choerodon.iam.domain.repository.LdapHistoryRepository;
-import io.choerodon.iam.domain.service.ILdapService;
-import io.choerodon.iam.domain.service.impl.ILdapServiceImpl;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncReport;
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask;
 import io.choerodon.iam.infra.mapper.OrganizationMapper;
@@ -36,19 +35,17 @@ public class LdapSyncUserQuartzTask {
     private LdapService ldapService;
     private OrganizationMapper organizationMapper;
     private LdapSyncUserTask ldapSyncUserTask;
-    private LdapHistoryRepository ldapHistoryRepository;
-    private ILdapService iLdapService;
+    private LdapHistoryMapper ldapHistoryMapper;
 
     private static final String ORGANIZATION_CODE = "organizationCode";
 
     public LdapSyncUserQuartzTask(LdapService ldapService, OrganizationMapper organizationMapper,
-                                  LdapSyncUserTask ldapSyncUserTask, LdapHistoryRepository ldapHistoryRepository,
-                                  ILdapService iLdapService) {
+                                  LdapSyncUserTask ldapSyncUserTask,
+                                  LdapHistoryMapper ldapHistoryMapper) {
         this.ldapService = ldapService;
         this.organizationMapper = organizationMapper;
         this.ldapSyncUserTask = ldapSyncUserTask;
-        this.ldapHistoryRepository = ldapHistoryRepository;
-        this.iLdapService = iLdapService;
+        this.ldapHistoryMapper = ldapHistoryMapper;
     }
 
     @JobTask(maxRetryCount = 2, code = "syncLdapUserSite",
@@ -107,15 +104,15 @@ public class LdapSyncUserQuartzTask {
             ldap.setCustomFilter(filter);
         }
         //获取测试连接的returnMap 及 测试连接十分成功
-        Map<String, Object> returnMap = iLdapService.testConnect(ldap);
+        Map<String, Object> returnMap = ldapService.testConnect(ldap);
         validateConnection(returnMap);
         //获取ldapTemplate
-        LdapTemplate ldapTemplate = (LdapTemplate) returnMap.get(ILdapServiceImpl.LDAP_TEMPLATE);
+        LdapTemplate ldapTemplate = (LdapTemplate) returnMap.get(LdapServiceImpl.LDAP_TEMPLATE);
         CountDownLatch latch = new CountDownLatch(1);
         //开始同步
-        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap,syncType, (LdapSyncReport ldapSyncReport, LdapHistoryDTO ldapHistoryDTO) -> {
+        ldapSyncUserTask.syncLDAPUser(ldapTemplate, ldap, syncType, (LdapSyncReport ldapSyncReport, LdapHistoryDTO ldapHistoryDTO) -> {
             latch.countDown();
-            LdapSyncUserTask.FinishFallback fallback = ldapSyncUserTask.new FinishFallbackImpl(ldapHistoryRepository);
+            LdapSyncUserTask.FinishFallback fallback = ldapSyncUserTask.new FinishFallbackImpl(ldapHistoryMapper);
             return fallback.callback(ldapSyncReport, ldapHistoryDTO);
         });
         try {
@@ -153,7 +150,7 @@ public class LdapSyncUserQuartzTask {
      */
     private void validateConnection(Map<String, Object> returnMap) {
         LdapConnectionDTO ldapConnectionDTO =
-                (LdapConnectionDTO) returnMap.get(ILdapServiceImpl.LDAP_CONNECTION_DTO);
+                (LdapConnectionDTO) returnMap.get(LdapServiceImpl.LDAP_CONNECTION_DTO);
         if (!ldapConnectionDTO.getCanConnectServer()) {
             throw new CommonException("error.ldap.connect");
         }

@@ -31,6 +31,5 @@ public class ApplicationTokenController {
     @PostMapping(value = "/token")
     public ResponseEntity<ApplicationDTO> getApplicationByToken(@RequestBody ApplicationDTO applicationDTO) {
         return new ResponseEntity<>(applicationService.getApplicationByToken(applicationDTO.getApplicationToken()), HttpStatus.OK);
-
     }
 }

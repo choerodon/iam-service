@@ -6,12 +6,8 @@ import io.choerodon.iam.api.dto.ErrorUserDTO;
 import io.choerodon.iam.api.dto.ExcelMemberRoleDTO;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.repository.MemberRoleRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UploadHistoryRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IRoleMemberService;
-import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
 import io.choerodon.iam.infra.common.utils.MockMultipartFile;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
@@ -19,6 +15,10 @@ import io.choerodon.iam.infra.dto.RoleDTO;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.RoleMapper;
+import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
+import io.choerodon.iam.infra.mapper.UserMapper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,26 +47,35 @@ public class ExcelImportUserTask {
     private static final Logger logger = LoggerFactory.getLogger(ExcelImportUserTask.class);
     private static final String ADD_USER = "addUser";
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private MemberRoleRepository memberRoleRepository;
-    private IRoleMemberService iRoleMemberService;
+    private RoleMemberService roleMemberService;
     private OrganizationUserService organizationUserService;
     private FileFeignClient fileFeignClient;
-    private IUserService iUserService;
+    private UserService userService;
     private UserPasswordValidator userPasswordValidator;
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
+    private UserMapper userMapper;
 
-    public ExcelImportUserTask(UserRepository userRepository, RoleRepository roleRepository, MemberRoleRepository memberRoleRepository, IRoleMemberService iRoleMemberService, OrganizationUserService organizationUserService, FileFeignClient fileFeignClient, IUserService iUserService, UserPasswordValidator userPasswordValidator) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.memberRoleRepository = memberRoleRepository;
-        this.iRoleMemberService = iRoleMemberService;
+    private RoleMapper roleMapper;
+
+    private MemberRoleMapper memberRoleMapper;
+
+    public ExcelImportUserTask(RoleMemberService roleMemberService,
+                               OrganizationUserService organizationUserService,
+                               FileFeignClient fileFeignClient,
+                               UserService userService,
+                               UserPasswordValidator userPasswordValidator,
+                               UserMapper userMapper,
+                               RoleMapper roleMapper,
+                               MemberRoleMapper memberRoleMapper) {
+        this.roleMemberService = roleMemberService;
         this.organizationUserService = organizationUserService;
         this.fileFeignClient = fileFeignClient;
-        this.iUserService = iUserService;
+        this.userService = userService;
         this.userPasswordValidator = userPasswordValidator;
+        this.userMapper = userMapper;
+        this.roleMapper = roleMapper;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
     @Async("excel-executor")
@@ -107,7 +116,7 @@ public class ExcelImportUserTask {
         paramsMap.put("addCount", successCount);
         List<Long> userIds = new ArrayList<>();
         userIds.add(userId);
-        iUserService.sendNotice(userId, userIds, ADD_USER, paramsMap, organizationId);
+        userService.sendNotice(userId, userIds, ADD_USER, paramsMap, organizationId);
         logger.info("batch import user send station letter.");
     }
 
@@ -182,7 +191,7 @@ public class ExcelImportUserTask {
             if (memberRole == null) {
                 return;
             }
-            iRoleMemberService.insertAndSendEvent(memberRole, loginName);
+            roleMemberService.insertAndSendEvent(memberRole, loginName);
         });
         Integer failedCount = errorMemberRoles.size();
         Integer successfulCount = total - failedCount;
@@ -214,7 +223,7 @@ public class ExcelImportUserTask {
         memberRole.setMemberType("user");
         memberRole.setMemberId(userId);
         memberRole.setRoleId(roleId);
-        if (memberRoleRepository.selectOne(memberRole) != null) {
+        if (memberRoleMapper.selectOne(memberRole) != null) {
             emr.setCause("该用户已经被分配了该角色，sourceId={" + sourceId + "}");
             errorMemberRoles.add(emr);
             return null;
@@ -225,7 +234,7 @@ public class ExcelImportUserTask {
     private RoleDTO getRole(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String code) {
         RoleDTO roleDTO = new RoleDTO();
         roleDTO.setCode(code);
-        RoleDTO role = roleRepository.selectOne(roleDTO);
+        RoleDTO role = roleMapper.selectOne(roleDTO);
         if (role == null) {
             emr.setCause("角色编码不存在");
             errorMemberRoles.add(emr);
@@ -237,7 +246,7 @@ public class ExcelImportUserTask {
     private UserDTO getUser(List<ExcelMemberRoleDTO> errorMemberRoles, ExcelMemberRoleDTO emr, String loginName) {
         UserDTO user = new UserDTO();
         user.setLoginName(loginName);
-        UserDTO userDTO = userRepository.selectOne(user);
+        UserDTO userDTO = userMapper.selectOne(user);
         if (userDTO == null) {
             emr.setCause("登录名不存在");
             errorMemberRoles.add(emr);
@@ -284,11 +293,11 @@ public class ExcelImportUserTask {
             //oracle In-list上限为1000，这里List size要小于1000
             List<Set<String>> subNameSet = CollectionUtils.subSet(nameSet, 999);
             Set<String> existedNames = new HashSet<>();
-            subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
+            subNameSet.forEach(set -> existedNames.addAll(userMapper.matchLoginName(set)));
             Set<String> emailSet = validateUsers.stream().map(UserDTO::getEmail).collect(Collectors.toSet());
             List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
             Set<String> existedEmails = new HashSet<>();
-            subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
+            subEmailSet.forEach(set -> existedEmails.addAll(userMapper.matchEmail(set)));
             for (UserDTO user : validateUsers) {
                 boolean loginNameExisted = false;
                 boolean emailExisted = false;
@@ -580,15 +589,15 @@ public class ExcelImportUserTask {
     @Component
     public class FinishFallbackImpl implements FinishFallback {
 
-        private UploadHistoryRepository uploadHistoryRepository;
+        private UploadHistoryMapper uploadHistoryMapper;
 
-        public FinishFallbackImpl(UploadHistoryRepository uploadHistoryRepository) {
-            this.uploadHistoryRepository = uploadHistoryRepository;
+        public FinishFallbackImpl(UploadHistoryMapper uploadHistoryMapper) {
+            this.uploadHistoryMapper = uploadHistoryMapper;
         }
 
         @Override
         public void callback(UploadHistoryDTO uploadHistoryDTO) {
-            UploadHistoryDTO history = uploadHistoryRepository.selectByPrimaryKey(uploadHistoryDTO.getId());
+            UploadHistoryDTO history = uploadHistoryMapper.selectByPrimaryKey(uploadHistoryDTO.getId());
             history.setEndTime(new Date((System.currentTimeMillis())));
             history.setSuccessfulCount(uploadHistoryDTO.getSuccessfulCount());
             history.setFailedCount(uploadHistoryDTO.getFailedCount());
@@ -596,7 +605,7 @@ public class ExcelImportUserTask {
             history.setFinished(uploadHistoryDTO.getFinished());
             history.setSourceId(uploadHistoryDTO.getSourceId());
             history.setSourceType(uploadHistoryDTO.getSourceType());
-            uploadHistoryRepository.updateByPrimaryKeySelective(history);
+            uploadHistoryMapper.updateByPrimaryKeySelective(history);
         }
     }
 }

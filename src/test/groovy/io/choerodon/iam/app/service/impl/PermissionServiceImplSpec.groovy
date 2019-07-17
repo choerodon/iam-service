@@ -6,11 +6,9 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.CheckPermissionDTO
 import io.choerodon.iam.app.service.PermissionService
-import io.choerodon.iam.domain.repository.MenuPermissionRepository
-import io.choerodon.iam.domain.repository.PermissionRepository
-import io.choerodon.iam.domain.repository.RolePermissionRepository
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.PermissionDTO
+import io.choerodon.iam.infra.mapper.MenuPermissionMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import io.choerodon.iam.infra.mapper.ProjectMapper
 import org.junit.runner.RunWith
@@ -32,10 +30,10 @@ import spock.lang.Specification
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper, ConvertHelper, PermissionServiceImpl])
 class PermissionServiceImplSpec extends Specification {
-    private PermissionRepository permissionRepository = Mock(PermissionRepository)
-    private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
+//    private PermissionRepository permissionRepository = Mock(PermissionRepository)
+//    private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
     private DiscoveryClient discoveryClient = Mockito.mock(DiscoveryClient)
-    private MenuPermissionRepository menuPermissionRepository = Mock(MenuPermissionRepository)
+    private MenuPermissionMapper menuPermissionMapper = Mock(MenuPermissionMapper)
     private OrganizationMapper organizationMapper = Mock(OrganizationMapper)
     private ProjectMapper projectMapper = Mock(ProjectMapper)
     private PermissionService permissionService
@@ -45,7 +43,7 @@ class PermissionServiceImplSpec extends Specification {
     def setup() {
         given: "构造userService"
         permissionService = PowerMockito.spy(new PermissionServiceImpl(permissionRepository,
-                discoveryClient, rolePermissionRepository, menuPermissionRepository,
+                discoveryClient, rolePermissionRepository, menuPermissionMapper,
                 organizationMapper, projectMapper))
 
         def file = new File(this.class.getResource('/templates/swagger.json').toURI())
@@ -128,6 +126,6 @@ class PermissionServiceImplSpec extends Specification {
         1 * permissionRepository.selectByCode(_) >> { permission }
         1 * permissionRepository.deleteById(_)
         1 * rolePermissionRepository.delete(_)
-        1 * menuPermissionRepository.delete(_)
+        1 * menuPermissionMapper.delete(_)
     }
 }

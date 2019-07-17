@@ -10,15 +10,12 @@ import javax.naming.directory.SearchControls;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.OrganizationUserService;
-import io.choerodon.iam.domain.repository.LdapHistoryRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.infra.common.utils.CollectionUtils;
-import io.choerodon.iam.infra.dto.LdapDTO;
-import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
-import io.choerodon.iam.infra.dto.LdapHistoryDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.enums.LdapErrorUserCause;
 import io.choerodon.iam.infra.mapper.LdapErrorUserMapper;
+import io.choerodon.iam.infra.mapper.LdapHistoryMapper;
+import io.choerodon.iam.infra.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -35,7 +32,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 
-
 /**
  * @author wuguokai
  */
@@ -46,22 +42,22 @@ public class LdapSyncUserTask {
 
     private static final String OBJECT_CLASS = "objectclass";
 
-    private UserRepository userRepository;
-
     private OrganizationUserService organizationUserService;
-
-    private LdapHistoryRepository ldapHistoryRepository;
 
     private LdapErrorUserMapper ldapErrorUserMapper;
 
-    public LdapSyncUserTask(UserRepository userRepository,
-                            OrganizationUserService organizationUserService,
-                            LdapHistoryRepository ldapHistoryRepository,
-                            LdapErrorUserMapper ldapErrorUserMapper) {
-        this.userRepository = userRepository;
+    private UserMapper userMapper;
+
+    private LdapHistoryMapper ldapHistoryMapper;
+
+    public LdapSyncUserTask(OrganizationUserService organizationUserService,
+                            LdapErrorUserMapper ldapErrorUserMapper,
+                            UserMapper userMapper,
+                            LdapHistoryMapper ldapHistoryMapper) {
         this.organizationUserService = organizationUserService;
-        this.ldapHistoryRepository = ldapHistoryRepository;
         this.ldapErrorUserMapper = ldapErrorUserMapper;
+        this.userMapper = userMapper;
+        this.ldapHistoryMapper = ldapHistoryMapper;
     }
 
     @Async("ldap-executor")
@@ -297,8 +293,8 @@ public class LdapSyncUserTask {
         List<Set<String>> subEmailSet = CollectionUtils.subSet(emailSet, 999);
         Set<String> existedNames = new HashSet<>();
         Set<String> existedEmails = new HashSet<>();
-        subNameSet.forEach(set -> existedNames.addAll(userRepository.matchLoginName(set)));
-        subEmailSet.forEach(set -> existedEmails.addAll(userRepository.matchEmail(set)));
+        subNameSet.forEach(set -> existedNames.addAll(userMapper.matchLoginName(set)));
+        subEmailSet.forEach(set -> existedEmails.addAll(userMapper.matchEmail(set)));
 
         users.forEach(user -> {
             String loginName = user.getLoginName();
@@ -319,7 +315,7 @@ public class LdapSyncUserTask {
                     ldapSyncReport.incrementNewInsert();
                 }
             } else {
-                UserDTO userDTO = userRepository.selectByLoginName(loginName);
+                UserDTO userDTO = selectByLoginName(loginName);
                 //lastUpdatedBy=0则是程序同步的，跳过在用户界面上手动禁用的情况
                 if (userDTO.getLastUpdatedBy().equals(0L) && !userDTO.getEnabled()) {
                     organizationUserService.enableUser(ldapSyncReport.getOrganizationId(), userDTO.getId());
@@ -334,11 +330,17 @@ public class LdapSyncUserTask {
         cleanAfterDataPersistence(insertUsers, nameSet, emailSet, subNameSet, subEmailSet, existedNames, existedEmails);
     }
 
+    private UserDTO selectByLoginName(String loginName) {
+        UserDTO dto = new UserDTO();
+        dto.setLoginName(loginName);
+        return userMapper.selectOne(dto);
+    }
+
 
     private void disable(List<UserDTO> users, LdapSyncReport ldapSyncReport,
                          List<LdapErrorUserDTO> errorUsers, Long ldapHistoryId) {
         users.forEach(user -> {
-            UserDTO userDTO = userRepository.selectByLoginName(user.getLoginName());
+            UserDTO userDTO = selectByLoginName(user.getLoginName());
             if (userDTO == null) {
                 return;
             }
@@ -385,7 +387,11 @@ public class LdapSyncUserTask {
         LdapHistoryDTO ldapHistory = new LdapHistoryDTO();
         ldapHistory.setLdapId(ldapId);
         ldapHistory.setSyncBeginTime(new Date(System.currentTimeMillis()));
-        return ldapHistoryRepository.insertSelective(ldapHistory);
+
+        if (ldapHistoryMapper.insertSelective(ldapHistory) != 1) {
+            throw new CommonException("error.ldapHistory.insert");
+        }
+        return ldapHistoryMapper.selectByPrimaryKey(ldapHistory);
     }
 
     private void cleanAfterDataPersistence(List<UserDTO> insertUsers, Set<String> nameSet, Set<String> emailSet,
@@ -413,10 +419,10 @@ public class LdapSyncUserTask {
     @Component
     public class FinishFallbackImpl implements FinishFallback {
 
-        private LdapHistoryRepository ldapHistoryRepository;
+        private LdapHistoryMapper ldapHistoryMapper;
 
-        public FinishFallbackImpl(LdapHistoryRepository ldapHistoryRepository) {
-            this.ldapHistoryRepository = ldapHistoryRepository;
+        public FinishFallbackImpl(LdapHistoryMapper ldapHistoryMapper) {
+            this.ldapHistoryMapper = ldapHistoryMapper;
         }
 
         @Override
@@ -425,7 +431,8 @@ public class LdapSyncUserTask {
             ldapHistoryDTO.setNewUserCount(ldapSyncReport.getInsert());
             ldapHistoryDTO.setUpdateUserCount(ldapSyncReport.getUpdate());
             ldapHistoryDTO.setErrorUserCount(ldapSyncReport.getError());
-            return ldapHistoryRepository.updateByPrimaryKeySelective(ldapHistoryDTO);
+            ldapHistoryMapper.updateByPrimaryKeySelective(ldapHistoryDTO);
+            return ldapHistoryMapper.selectByPrimaryKey(ldapHistoryDTO);
         }
     }
 }

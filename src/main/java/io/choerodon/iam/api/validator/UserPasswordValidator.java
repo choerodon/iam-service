@@ -1,12 +1,13 @@
 package io.choerodon.iam.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.iam.domain.repository.PasswordPolicyRepository;
-import io.choerodon.iam.domain.repository.SystemSettingRepository;
 import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
+import io.choerodon.iam.infra.mapper.SystemSettingMapper;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * 当用户组织的密码策略未开启时，如果修改过系统设置，根据系统设置中的密码长度要求，校验用户密码
@@ -15,13 +16,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class UserPasswordValidator {
-    private final PasswordPolicyRepository passwordPolicyRepository;
-    private final SystemSettingRepository systemSettingRepository;
 
-    @Autowired
-    public UserPasswordValidator(PasswordPolicyRepository passwordPolicyRepository, SystemSettingRepository systemSettingRepository) {
-        this.passwordPolicyRepository = passwordPolicyRepository;
-        this.systemSettingRepository = systemSettingRepository;
+    private final PasswordPolicyMapper passwordPolicyMapper;
+
+    private final SystemSettingMapper systemSettingMapper;
+
+    public UserPasswordValidator(PasswordPolicyMapper passwordPolicyMapper,
+                                 SystemSettingMapper systemSettingMapper) {
+        this.passwordPolicyMapper = passwordPolicyMapper;
+        this.systemSettingMapper = systemSettingMapper;
     }
 
     /**
@@ -33,13 +36,15 @@ public class UserPasswordValidator {
      * @return 当符合校验时，返回true
      */
     public boolean validate(String password, Long organizationId, boolean isToThrowException) {
-        PasswordPolicyDTO passwordPolicyDTO = passwordPolicyRepository.queryByOrgId(organizationId);
+        PasswordPolicyDTO dto = new PasswordPolicyDTO();
+        dto.setOrganizationId(organizationId);
+        PasswordPolicyDTO passwordPolicyDTO = passwordPolicyMapper.selectOne(dto);
         // 组织启用密码策略时，跳过验证
         if (passwordPolicyDTO != null && Boolean.TRUE.equals(passwordPolicyDTO.getEnablePassword())) {
             return true;
         }
-
-        SystemSettingDTO setting = systemSettingRepository.getSetting();
+        List<SystemSettingDTO> records = systemSettingMapper.selectAll();
+        SystemSettingDTO setting = records.isEmpty() ? null : records.get(0);
         // 系统设置为空时，跳过
         if (setting == null || setting.getMinPasswordLength() == null || setting.getMaxPasswordLength() == null) {
             return true;

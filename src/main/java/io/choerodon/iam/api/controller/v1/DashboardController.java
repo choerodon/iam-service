@@ -2,9 +2,12 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.infra.dto.DashboardDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -12,8 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.iam.api.service.DashboardService;
+import io.choerodon.iam.app.service.DashboardService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author dongfan117@gmail.com
@@ -61,16 +65,17 @@ public class DashboardController extends BaseController {
     /**
      * 分页模糊查询Dashboard
      *
-     * @param name        Dashboard名称
-     * @param params      模糊查询参数
+     * @param name   Dashboard名称
+     * @param params 模糊查询参数
      * @return 查询到的Dashboard分页对象
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询Dashboard")
     @GetMapping
+    @CustomPageRequest
     public ResponseEntity<PageInfo<DashboardDTO>> list(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String level,
@@ -78,7 +83,6 @@ public class DashboardController extends BaseController {
             @RequestParam(required = false) Boolean enable,
             @RequestParam(required = false) Boolean needRoles,
             @RequestParam(required = false) String[] params) {
-
         DashboardDTO dashboardDTO = new DashboardDTO();
         dashboardDTO.setName(name);
         dashboardDTO.setCode(code);
@@ -86,7 +90,7 @@ public class DashboardController extends BaseController {
         dashboardDTO.setLevel(level);
         dashboardDTO.setNamespace(namespace);
         dashboardDTO.setNeedRoles(needRoles);
-        return new ResponseEntity<>(dashboardService.list(dashboardDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(dashboardService.list(dashboardDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)

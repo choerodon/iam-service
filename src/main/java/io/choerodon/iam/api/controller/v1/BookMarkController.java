@@ -1,7 +1,6 @@
 package io.choerodon.iam.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.app.service.BookMarkService;
 import io.choerodon.iam.infra.dto.BookMarkDTO;
@@ -30,7 +29,6 @@ public class BookMarkController {
     @ApiOperation(value = "创建书签")
     @PostMapping
     public ResponseEntity<BookMarkDTO> create(@RequestBody @Valid BookMarkDTO bookMarkDTO) {
-        bookMarkDTO.setUserId(DetailsHelper.getUserDetails().getUserId());
         return new ResponseEntity<>(bookMarkService.create(bookMarkDTO), HttpStatus.OK);
     }
 

@@ -6,12 +6,14 @@
     <resultMap id="projectDTO" type="io.choerodon.iam.infra.dto.ProjectDTO" autoMapping="true">
         <id column="id" property="id"></id>
         <result column="is_enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="type_name" property="type"/>
         <collection property="projects" ofType="io.choerodon.iam.infra.dto.ProjectDTO">
             <id property="id" column="project_id"></id>
             <result property="name" column="project_name"/>
             <result property="code" column="project_code"/>
             <result property="enabled" column="project_enabled"/>
             <result property="organizationId" column="project_organization_id"/>
+            <result property="category" column="project_category"/>
         </collection>
     </resultMap>
 
@@ -93,6 +95,42 @@
         </if>
     </select>
 
+    <select id="fulltextSearchCountIgnoreProgramProject" resultType="java.lang.Integer">
+        select
+        count(fp.id)
+        from fd_project fp
+        left join (
+            select distinct fpmc.project_id
+            from fd_project_map_category fpmc
+            left join fd_project_category fpc
+            on fpmc.category_id = fpc.id
+            where fpc.code != 'PROGRAM_PROJECT'
+        ) t1
+        on fp.id = t1.project_id
+        left join fd_project_type fpt
+        on fp.type = fpt.code
+        where fp.organization_id = #{project.organizationId}
+        <if test="project.name != null">
+            and fp.name like concat(concat('%',#{project.name}),'%')
+        </if>
+        <if test="project.code != null">
+            and fp.code like concat(concat('%',#{project.code}),'%')
+        </if>
+        <if test="project.enabled != null">
+            and fp.is_enabled = #{project.enabled}
+        </if>
+        <if test="project.typeName != null">
+            and fpt.name like concat(concat('%',#{project.typeName}),'%')
+        </if>
+        <if test="param != null">
+            and(
+            fp.name like concat(concat('%',#{param}),'%') or
+            fp.code like concat(concat('%',#{param}),'%') or
+            fpt.name like concat(concat('%',#{param}),'%')
+            )
+        </if>
+    </select>
+
     <select id="fulltextSearch" resultMap="projectDTO">
         select
         t1.*,
@@ -141,59 +179,67 @@
 
     <select id="fulltextSearchCategory" resultMap="projectDTO">
         select
-        t1.*,
+        t2.*,
+        fpr.is_enabled as project_enabled,
+        fpc2.code as category,
         fp1.id as project_id,
         fp1.name as project_name,
         fp1.code as project_code,
-        fpr.is_enabled as project_enabled,
-        fp1.organization_id as project_organization_id
+        fp1.organization_id as project_organization_id,
+        fpc3.code as project_category
         from
         (
-        select fpc.code as category,fp.id,fp.name,fp.code,fp.organization_id,fp.is_enabled,fp.IMAGE_URL,fp.object_version_number, fpt.name as
-        type_name
-        from fd_project fp
-        left join fd_project_type fpt
-        on fp.type = fpt.code
-        left join fd_project_map_category fpmc
-        ON fpmc.PROJECT_ID=fp.id
-        left join fd_project_category fpc
-        ON fpc.id = fpmc.CATEGORY_ID
-        where fp.organization_id = #{project.organizationId}
-        AND fpc.code!='PROGRAM_PROJECT'
-        <if test="project.name != null">
-            and fp.name like concat(concat('%',#{project.name}),'%')
-        </if>
-        <if test="project.code != null">
-            and fp.code like concat(concat('%',#{project.code}),'%')
-        </if>
-        <if test="project.enabled != null">
-            and fp.is_enabled = #{project.enabled}
-        </if>
-        <if test="project.typeName != null">
-            and fpt.name like concat(concat('%',#{project.typeName}),'%')
-        </if>
-        <if test="param != null">
-            and(
-            fp.name like concat(concat('%',#{param}),'%') or
-            fp.code like concat(concat('%',#{param}),'%') or
-            fpt.name like concat(concat('%',#{param}),'%')
-            )
-        </if>
-        order by fp.id desc
-        <if test="start != null and size != null">
-            limit #{start}, #{size}
-        </if>
-        ) t1
+            select
+            fp.*,
+            fpt.name as type_name
+            from fd_project fp
+            left join (
+                select distinct fpmc.project_id
+                from fd_project_map_category fpmc
+                left join fd_project_category fpc
+                on fpmc.category_id = fpc.id
+                where fpc.code != 'PROGRAM_PROJECT'
+            ) t1
+            on fp.id = t1.project_id
+            left join fd_project_type fpt
+            on fp.type = fpt.code
+            where fp.organization_id = #{project.organizationId}
+            <if test="project.name != null">
+                and fp.name like concat(concat('%',#{project.name}),'%')
+            </if>
+            <if test="project.code != null">
+                and fp.code like concat(concat('%',#{project.code}),'%')
+            </if>
+            <if test="project.enabled != null">
+                and fp.is_enabled = #{project.enabled}
+            </if>
+            <if test="project.typeName != null">
+                and fpt.name like concat(concat('%',#{project.typeName}),'%')
+            </if>
+            <if test="param != null">
+                and(
+                fp.name like concat(concat('%',#{param}),'%') or
+                fp.code like concat(concat('%',#{param}),'%') or
+                fpt.name like concat(concat('%',#{param}),'%')
+                )
+            </if>
+            order by fp.id desc
+            <if test="start != null and size != null">
+                limit #{start}, #{size}
+            </if>
+        ) t2
+        left join fd_project_map_category fpmc1
+        on t2.id = fpmc1.project_id
+        left join fd_project_category fpc2
+        on fpmc1.category_id = fpc2.id
         left join fd_project_relationship fpr
-        on
-        (
-        t1.id = fpr.program_id
-        and t1.category = 'PROGRAM'
-        )
+        on t2.id = fpr.program_id
         left join fd_project fp1
         on fpr.project_id = fp1.id
-        WHERE t1.category!='PROGRAM_PROJECT'
-
+        left join fd_project_map_category fpmc2
+        on fp1.id = fpmc2.project_id
+        left join fd_project_category fpc3
+        on fpmc1.category_id = fpc3.id
     </select>
 
 

@@ -4,17 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.ldap.DirectoryType;
+import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.api.dto.payload.OrganizationCreateEventPayload;
 import io.choerodon.iam.api.dto.payload.OrganizationRegisterEventPayload;
-import io.choerodon.iam.app.service.LdapService;
-import io.choerodon.iam.app.service.OrganizationService;
-import io.choerodon.iam.app.service.PasswordPolicyService;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.dto.LdapDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
+import io.choerodon.iam.app.service.*;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Random;
 
+import static io.choerodon.iam.app.service.impl.OrganizationProjectServiceImpl.PROJECT_DEFAULT_CATEGORY;
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Organization.*;
 
 
@@ -37,8 +35,13 @@ public class OrganizationListener {
     private PasswordPolicyService passwordPolicyService;
     private OrganizationService organizationService;
     private LdapService ldapService;
-    private ProjectRepository projectRepository;
-    private IUserService iUserService;
+    private ProjectMapper projectMapper;
+    private UserService userService;
+    private OrganizationProjectService organizationProjectService;
+
+    private ProjectCategoryMapper projectCategoryMapper;
+
+    private ProjectMapCategoryMapper projectMapCategoryMapper;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -54,13 +57,19 @@ public class OrganizationListener {
     private Boolean categoryEnable;
 
     public OrganizationListener(LdapService ldapService, PasswordPolicyService passwordPolicyService,
-                                OrganizationService organizationService, ProjectRepository projectRepository,
-                                IUserService iUserService) {
+                                OrganizationService organizationService,
+                                UserService userService, OrganizationProjectService organizationProjectService,
+                                ProjectMapper projectMapper,
+                                ProjectCategoryMapper projectCategoryMapper,
+                                ProjectMapCategoryMapper projectMapCategoryMapper) {
         this.passwordPolicyService = passwordPolicyService;
         this.organizationService = organizationService;
         this.ldapService = ldapService;
-        this.projectRepository = projectRepository;
-        this.iUserService = iUserService;
+        this.userService = userService;
+        this.organizationProjectService = organizationProjectService;
+        this.projectMapper = projectMapper;
+        this.projectCategoryMapper = projectCategoryMapper;
+        this.projectMapCategoryMapper = projectMapCategoryMapper;
     }
 
     @SagaTask(code = TASK_ORG_CREATE, sagaCode = ORG_CREATE, seq = 1, description = "iam接收org服务创建组织事件")
@@ -89,7 +98,7 @@ public class OrganizationListener {
         if (organizationDTO == null) {
             throw new CommonException("error.organization.not exist");
         }
-        iUserService.updateUserDisabled(organizationRegisterEventPayload.getUser().getId());
+        userService.updateUserDisabled(organizationRegisterEventPayload.getUser().getId());
         createLdap(orgId, organizationDTO.getName());
         createPasswordPolicy(orgId, organizationDTO.getCode(), organizationDTO.getName());
         return organizationRegisterEventPayload;
@@ -107,15 +116,31 @@ public class OrganizationListener {
         dto.setOrganizationId(organizationRegisterEventPayload.getOrganization().getId());
         dto.setCode(randomProjCode());
         dto.setEnabled(true);
-        dto = projectRepository.create(dto);
+        dto = organizationProjectService.create(dto);
         if (categoryEnable) {
-            projectRepository.assignDefaultCategoriesToProjects(dto.getId());
+            assignDefaultCategoriesToProjects(dto.getId());
         }
         organizationRegisterEventPayload.setProject(
                 new OrganizationRegisterEventPayload.Project(dto.getId(), dto.getCode(), dto.getName()));
         return organizationRegisterEventPayload;
     }
 
+    private ProjectMapCategoryDTO assignDefaultCategoriesToProjects(Long projectId) {
+        ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
+
+        ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+        projectCategoryDTO.setCode(PROJECT_DEFAULT_CATEGORY);
+        projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
+        if (projectCategoryDTO != null) {
+            projectMapCategoryDTO.setCategoryId(projectCategoryDTO.getId());
+        }
+        projectMapCategoryDTO.setProjectId(projectId);
+
+        if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
+            throw new CommonException("error.project.map.category.insert");
+        }
+        return projectMapCategoryDTO;
+    }
 
     private void createPasswordPolicy(Long orgId, String code, String name) {
         try {
@@ -177,7 +202,7 @@ public class OrganizationListener {
             projectCode = "proj-" + generateString(false, 8);
             ProjectDTO projectDTO = new ProjectDTO();
             projectDTO.setCode(projectCode);
-            ProjectDTO projByCode = projectRepository.selectOne(projectDTO);
+            ProjectDTO projByCode = projectMapper.selectOne(projectDTO);
             if (projByCode == null) {
                 flag = true;
             }

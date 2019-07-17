@@ -2,7 +2,6 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
@@ -22,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -99,8 +99,9 @@ public class OrganizationController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页查询组织")
     @GetMapping
-    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<OrganizationDTO>> pagingQuery(@ApiIgnore
+                                                                 @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                  @RequestParam(required = false) String name,
                                                                  @RequestParam(required = false) String code,
                                                                  @RequestParam(required = false) Boolean enabled,
@@ -109,15 +110,16 @@ public class OrganizationController extends BaseController {
         organization.setName(name);
         organization.setCode(code);
         organization.setEnabled(enabled);
-        return new ResponseEntity<>(organizationService.pagingQuery(organization, page, size, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingQuery(organization, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "分页查询所有组织基本信息")
     @GetMapping(value = "/all")
-    public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                        @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size) {
-        return new ResponseEntity<>(organizationService.getAllOrgs(page, size), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@ApiIgnore
+                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
+        return new ResponseEntity<>(organizationService.getAllOrgs(pageRequest), HttpStatus.OK);
     }
 
     /**
@@ -164,13 +166,14 @@ public class OrganizationController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询组织下的用户")
     @GetMapping(value = "/{organization_id}/users")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnOrganization(@PathVariable(name = "organization_id") Long id,
-                                                                            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                            @ApiIgnore
+                                                                            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                             @RequestParam(required = false, name = "id") Long userId,
                                                                             @RequestParam(required = false) String email,
                                                                             @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, page, size, param), HttpStatus.OK);
+        return new ResponseEntity<>(organizationService.pagingQueryUsersInOrganization(id, userId, email, pageRequest, param), HttpStatus.OK);
     }
 
     @CustomPageRequest

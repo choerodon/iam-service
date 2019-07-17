@@ -1,6 +1,6 @@
 package io.choerodon.iam.infra.mapper;
 
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.query.ClientRoleQuery;
 import io.choerodon.iam.infra.dto.ClientDTO;
 import io.choerodon.iam.infra.dto.MemberRoleDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -23,13 +23,13 @@ public interface MemberRoleMapper extends Mapper<MemberRoleDTO> {
 
     int selectCountClients(@Param("sourceId") Long sourceId,
                            @Param("sourceType") String sourceType,
-                           @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
+                           @Param("clientRoleSearchDTO") ClientRoleQuery clientRoleSearchDTO,
                            @Param("param") String param);
 
     List<ClientDTO> selectClientsWithRoles(
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,
-            @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
+            @Param("clientRoleSearchDTO") ClientRoleQuery clientRoleSearchDTO,
             @Param("param") String param,
             @Param("start") Integer start,
             @Param("size") Integer size);

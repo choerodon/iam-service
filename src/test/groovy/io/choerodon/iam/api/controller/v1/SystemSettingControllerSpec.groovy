@@ -5,7 +5,6 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.SystemSettingService
 import io.choerodon.iam.app.service.impl.SystemSettingServiceImpl
-import io.choerodon.iam.domain.repository.SystemSettingRepository
 import io.choerodon.iam.infra.dto.SystemSettingDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,8 +31,8 @@ class SystemSettingControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
 
-    @Autowired
-    private SystemSettingRepository systemSettingRepository
+//    @Autowired
+//    private SystemSettingRepository systemSettingRepository
 
     FileFeignClient fileFeignClient = Mock(FileFeignClient)
     SagaClient sagaClient = Mock(SagaClient)

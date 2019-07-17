@@ -3,8 +3,6 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.LdapService
 import io.choerodon.iam.app.task.LdapSyncUserQuartzTask
-import io.choerodon.iam.domain.repository.LdapHistoryRepository
-import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,9 +24,9 @@ class LdapSyncUserQuartzTaskSpec extends Specification {
     private OrganizationMapper organizationMapper
     @Autowired
     private LdapSyncUserTask ldapSyncUserTask
-    @Autowired
-    private ILdapService iLdapService
-    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
+//    @Autowired
+//    private ILdapService iLdapService
+//    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapSyncUserQuartzTask ldapSyncUserQuartzTask
 
     def setup() {

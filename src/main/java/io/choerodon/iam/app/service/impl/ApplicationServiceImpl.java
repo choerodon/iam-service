@@ -7,7 +7,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ApplicationSearchDTO;
+import io.choerodon.iam.api.query.ApplicationQuery;
 import io.choerodon.iam.app.service.ApplicationService;
 import io.choerodon.iam.infra.asserts.ApplicationAssertHelper;
 import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
@@ -17,6 +17,7 @@ import io.choerodon.iam.infra.dto.ApplicationDTO;
 import io.choerodon.iam.infra.dto.ApplicationExplorationDTO;
 import io.choerodon.iam.infra.enums.ApplicationCategory;
 import io.choerodon.iam.infra.enums.ApplicationType;
+import io.choerodon.iam.infra.exception.EmptyParamException;
 import io.choerodon.iam.infra.mapper.ApplicationExplorationMapper;
 import io.choerodon.iam.infra.mapper.ApplicationMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -189,7 +190,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationSearchDTO applicationSearchDTO, Boolean withDescendants) {
+    public PageInfo<ApplicationDTO> pagingQuery(int page, int size, ApplicationQuery applicationSearchDTO, Boolean withDescendants) {
         PageInfo<ApplicationDTO> result = PageHelper.startPage(page, size).doSelectPageInfo(() -> applicationMapper.fuzzyQuery(applicationSearchDTO));
         if (withDescendants) {
             result.getList().forEach(app -> {
@@ -247,7 +248,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String createToken(Long id) {
         String token = UUID.randomUUID().toString();
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(id);
@@ -260,6 +261,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public ApplicationDTO getApplicationByToken(String applicationToken) {
+        if (StringUtils.isEmpty(applicationToken)) {
+            throw new EmptyParamException("error.application.token.empty");
+        }
         ApplicationDTO applicationDTO = new ApplicationDTO();
         applicationDTO.setApplicationToken(applicationToken);
         return applicationMapper.selectOne(applicationDTO);

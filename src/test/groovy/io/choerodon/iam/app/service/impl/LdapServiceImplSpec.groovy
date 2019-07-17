@@ -2,10 +2,6 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.LdapService
-import io.choerodon.iam.domain.repository.LdapHistoryRepository
-import io.choerodon.iam.domain.repository.LdapRepository
-import io.choerodon.iam.domain.repository.OrganizationRepository
-import io.choerodon.iam.domain.service.ILdapService
 import io.choerodon.iam.infra.common.utils.ldap.LdapSyncUserTask
 import io.choerodon.iam.infra.dto.LdapDTO
 import io.choerodon.iam.infra.dto.OrganizationDTO
@@ -22,13 +18,13 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class LdapServiceImplSpec extends Specification {
-    private LdapRepository ldapRepository = Mock(LdapRepository)
-    @Autowired
-    private ILdapService iLdapService
-    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
+//    private LdapRepository ldapRepository = Mock(LdapRepository)
+//    @Autowired
+//    private ILdapService iLdapService
+//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
     private LdapSyncUserTask ldapSyncUserTask = Mock(LdapSyncUserTask)
     private LdapSyncUserTask.FinishFallback finishFallback = Mock(LdapSyncUserTask.FinishFallback)
-    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
+//    private LdapHistoryRepository ldapHistoryRepository = Mock(LdapHistoryRepository)
     private LdapService ldapService
     @Autowired
     private LdapErrorUserMapper ldapErrorUserMapper

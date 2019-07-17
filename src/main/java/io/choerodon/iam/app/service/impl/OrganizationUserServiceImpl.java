@@ -6,11 +6,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
+import io.choerodon.iam.infra.mapper.OrganizationMapper;
+import io.choerodon.iam.infra.mapper.UserMapper;
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
 import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import org.springframework.beans.BeanUtils;
@@ -32,9 +40,6 @@ import io.choerodon.iam.api.dto.payload.UserEventPayload;
 import io.choerodon.iam.api.validator.UserPasswordValidator;
 import io.choerodon.iam.app.service.OrganizationUserService;
 import io.choerodon.iam.app.service.SystemSettingService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.enums.LdapErrorUserCause;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
@@ -48,15 +53,11 @@ import io.choerodon.oauth.core.password.record.PasswordRecord;
 @Component
 @RefreshScope
 public class OrganizationUserServiceImpl implements OrganizationUserService {
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     @Value("${choerodon.devops.message:false}")
     private boolean devopsMessage;
     @Value("${spring.application.name:default}")
     private String serviceName;
-    private OrganizationRepository organizationRepository;
-    private UserRepository userRepository;
     private PasswordRecord passwordRecord;
-    private IUserService iUserService;
     private SagaClient sagaClient;
     private final ObjectMapper mapper = new ObjectMapper();
     private PasswordPolicyManager passwordPolicyManager;
@@ -69,19 +70,28 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
-    public OrganizationUserServiceImpl(OrganizationRepository organizationRepository,
-                                       UserRepository userRepository,
-                                       PasswordRecord passwordRecord,
+    private OrganizationAssertHelper organizationAssertHelper;
+
+    private OrganizationMapper organizationMapper;
+
+    private UserAssertHelper userAssertHelper;
+
+    private UserMapper userMapper;
+
+    private UserService userService;
+
+    public OrganizationUserServiceImpl(PasswordRecord passwordRecord,
                                        PasswordPolicyManager passwordPolicyManager,
                                        BasePasswordPolicyMapper basePasswordPolicyMapper,
                                        OauthTokenFeignClient oauthTokenFeignClient,
                                        UserPasswordValidator userPasswordValidator,
-                                       IUserService iUserService,
                                        SystemSettingService systemSettingService,
-                                       SagaClient sagaClient) {
-        this.organizationRepository = organizationRepository;
-        this.userRepository = userRepository;
-        this.iUserService = iUserService;
+                                       SagaClient sagaClient,
+                                       OrganizationAssertHelper organizationAssertHelper,
+                                       OrganizationMapper organizationMapper,
+                                       UserAssertHelper userAssertHelper,
+                                       UserMapper userMapper,
+                                       UserService userService) {
         this.passwordPolicyManager = passwordPolicyManager;
         this.basePasswordPolicyMapper = basePasswordPolicyMapper;
         this.sagaClient = sagaClient;
@@ -89,6 +99,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         this.passwordRecord = passwordRecord;
         this.systemSettingService = systemSettingService;
         this.oauthTokenFeignClient = oauthTokenFeignClient;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.organizationMapper = organizationMapper;
+        this.userAssertHelper = userAssertHelper;
+        this.userMapper = userMapper;
+        this.userService = userService;
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -98,10 +113,8 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         String password =
                 Optional.ofNullable(userDTO.getPassword())
                         .orElseThrow(() -> new CommonException("error.user.password.empty"));
-        OrganizationDTO organizationDTO =
-                Optional.ofNullable(organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId()))
-                        .orElseThrow(() -> new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION));
-        Long organizationId = organizationDTO.getId();
+        Long organizationId = userDTO.getOrganizationId();
+        organizationAssertHelper.organizationNotExisted(organizationId);
         if (checkPassword) {
             validatePasswordPolicy(userDTO, password, organizationId);
             // 校验用户密码
@@ -130,16 +143,24 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     private UserDTO createUser(UserDTO userDTO) {
-        if (userRepository.selectByLoginName(userDTO.getLoginName()) != null) {
-            throw new CommonException("error.user.loginName.exist");
-        }
+        userAssertHelper.loginNameExisted(userDTO.getLoginName());
         userDTO.setLocked(false);
         userDTO.setEnabled(true);
         userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
-        userRepository.insertSelective(userDTO);
+        if (userMapper.insertSelective(userDTO) != 1) {
+            throw new InsertException("error.user.create");
+        }
         passwordRecord.updatePassword(userDTO.getId(), userDTO.getPassword());
-        return userRepository.selectByPrimaryKey(userDTO.getId());
+        return userMapper.selectByPrimaryKey(userDTO.getId());
     }
+
+    private UserDTO insertSelective(UserDTO user) {
+        if (userMapper.insertSelective(user) != 1) {
+            throw new InsertException("error.user.create");
+        }
+        return userMapper.selectByPrimaryKey(user.getId());
+    }
+
 
     @Override
     @Transactional(rollbackFor = CommonException.class)
@@ -150,7 +171,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         insertUsers.forEach(user -> {
             UserDTO userDTO = null;
             try {
-                userDTO = userRepository.insertSelective(user);
+                userDTO = insertSelective(user);
             } catch (Exception e) {
                 LdapErrorUserDTO errorUser = new LdapErrorUserDTO();
                 errorUser.setUuid(user.getUuid());
@@ -202,18 +223,17 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user) {
-        return userRepository.pagingQuery(page, size, user, ParamUtils.arrToStr(user.getParam()));
+    public PageInfo<UserDTO> pagingQuery(PageRequest pageRequest, UserSearchDTO user) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> userMapper.fulltextSearch(user, ParamUtils.arrToStr(user.getParam())));
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_UPDATE, description = "iam更新用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO update(UserDTO userDTO) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(userDTO.getOrganizationId());
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
+        organizationAssertHelper.organizationNotExisted(userDTO.getOrganizationId());
         UserDTO dto;
         if (devopsMessage) {
             UserEventPayload userEventPayload = new UserEventPayload();
@@ -238,24 +258,28 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         if (userDTO.getPassword() != null) {
             userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
         }
-        return userRepository.updateSelective(userDTO);
+        return updateSelective(userDTO);
+    }
+
+    private UserDTO updateSelective(UserDTO userDTO) {
+        userAssertHelper.objectVersionNumberNotNull(userDTO.getObjectVersionNumber());
+        if (userMapper.updateByPrimaryKeySelective(userDTO) != 1) {
+            throw new UpdateExcetion("error.user.update");
+        }
+        return userMapper.selectByPrimaryKey(userDTO.getId());
     }
 
     @Transactional
     @Override
     public UserDTO resetUserPassword(Long organizationId, Long userId) {
-        UserDTO user = userRepository.selectByPrimaryKey(userId);
-        if (user == null) {
-            throw new CommonException("error.user.not.exist", userId);
-        }
-
+        UserDTO user = userAssertHelper.userNotExisted(userId);
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
         }
 
         String defaultPassword = getDefaultPassword(organizationId);
         user.setPassword(ENCODER.encode(defaultPassword));
-        userRepository.updateSelective(user);
+        updateSelective(user);
         passwordRecord.updatePassword(user.getId(), user.getPassword());
 
         // delete access tokens, refresh tokens and sessions of the user after resetting his password
@@ -266,7 +290,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         paramsMap.put("userName", user.getRealName());
         paramsMap.put("defaultPassword", defaultPassword);
         List<Long> userIds = Collections.singletonList(userId);
-        iUserService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
+        userService.sendNotice(userId, userIds, "resetOrganizationUserPassword", paramsMap, organizationId);
 
         return user;
     }
@@ -297,14 +321,11 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Override
     @Saga(code = USER_DELETE, description = "iam删除用户", inputSchemaClass = UserEventPayload.class)
     public void delete(Long organizationId, Long id) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        UserDTO user = userRepository.selectByPrimaryKey(id);
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        UserDTO user = userAssertHelper.userNotExisted(id);
         UserEventPayload userEventPayload = new UserEventPayload();
         userEventPayload.setUsername(user.getLoginName());
-        userRepository.deleteById(id);
+        userMapper.deleteByPrimaryKey(id);
         if (devopsMessage) {
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
@@ -318,94 +339,75 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     @Override
     public UserDTO query(Long organizationId, Long id) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        return userRepository.selectByPrimaryKey(id);
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        return userMapper.selectByPrimaryKey(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserDTO unlock(Long organizationId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
+        organizationAssertHelper.organizationNotExisted(organizationId);
         return unlockUser(userId);
     }
 
     private UserDTO unlockUser(Long userId) {
-        UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
-        if (userDTO == null) {
-            throw new CommonException("error.user.not.exist");
-        }
+        UserDTO userDTO = userAssertHelper.userNotExisted(userId);
         userDTO.setLocked(false);
         passwordRecord.unLockUser(userDTO.getId());
-        return userRepository.updateSelective(userDTO);
-//        return userDTO;
+        return updateSelective(userDTO);
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_ENABLE, description = "iam启用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO enableUser(Long organizationId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        UserDTO userDTO;
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        UserDTO user = updateStatus(userId, true);
         if (devopsMessage) {
-            userDTO = new UserDTO();
-            UserDTO user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            UserDTO dto = iUserService.updateUserEnabled(userId);
-            BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
                 sagaClient.startSaga(USER_ENABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.enableUser.event", e);
             }
-        } else {
-            userDTO = iUserService.updateUserEnabled(userId);
         }
-        return userDTO;
+        return user;
+    }
+
+    private UserDTO updateStatus(Long userId, boolean enabled) {
+        UserDTO dto = userAssertHelper.userNotExisted(userId);
+        dto.setEnabled(enabled);
+        if (userMapper.updateByPrimaryKeySelective(dto) != 1) {
+            throw new UpdateExcetion("error.user.update");
+        }
+        return dto;
     }
 
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_DISABLE, description = "iam停用用户", inputSchemaClass = UserEventPayload.class)
     public UserDTO disableUser(Long organizationId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        UserDTO userDTO;
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        UserDTO user = updateStatus(userId, false);
         if (devopsMessage) {
-            userDTO = new UserDTO();
-            UserDTO user = userRepository.selectByPrimaryKey(userId);
             UserEventPayload userEventPayload = new UserEventPayload();
             userEventPayload.setUsername(user.getLoginName());
             userEventPayload.setId(userId.toString());
-            UserDTO dto = iUserService.updateUserDisabled(userId);
-            BeanUtils.copyProperties(dto, userDTO);
             try {
                 String input = mapper.writeValueAsString(userEventPayload);
                 sagaClient.startSaga(USER_DISABLE, new StartInstanceDTO(input, "user", userEventPayload.getId(), ResourceLevel.ORGANIZATION.value(), organizationId));
             } catch (Exception e) {
                 throw new CommonException("error.organizationUserService.disableUser.event", e);
             }
-        } else {
-            userDTO = iUserService.updateUserDisabled(userId);
         }
-        return userDTO;
+        return user;
     }
 
     @Override
     public List<Long> listUserIds(Long organizationId) {
-        return organizationRepository.listMemberIds(organizationId);
+        return organizationMapper.listMemberIds(organizationId, "organization");
     }
 }

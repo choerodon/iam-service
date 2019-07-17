@@ -1,82 +1,127 @@
 package io.choerodon.iam.app.service.impl;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.exception.CommonException;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.app.service.LookupService;
-import io.choerodon.iam.domain.repository.LookupRepository;
-import io.choerodon.iam.domain.repository.LookupValueRepository;
-import io.choerodon.iam.domain.service.ILookupService;
+import io.choerodon.iam.infra.asserts.AssertHelper;
 import io.choerodon.iam.infra.dto.LookupDTO;
 import io.choerodon.iam.infra.dto.LookupValueDTO;
+import io.choerodon.iam.infra.exception.EmptyParamException;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
+import io.choerodon.iam.infra.mapper.LookupMapper;
+import io.choerodon.iam.infra.mapper.LookupValueMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+
+import java.util.List;
 
 /**
  * @author superlee
  */
-@Component
+@Service
 public class LookupServiceImpl implements LookupService {
 
+    private LookupMapper lookupMapper;
 
-    private ILookupService service;
+    private LookupValueMapper lookupValueMapper;
 
-    private LookupRepository lookupRepository;
+    private AssertHelper assertHelper;
 
-    private LookupValueRepository lookupValueRepository;
+    public LookupServiceImpl(LookupMapper lookupMapper,
+                             LookupValueMapper lookupValueMapper,
+                             AssertHelper assertHelper) {
+        this.lookupMapper = lookupMapper;
+        this.lookupValueMapper = lookupValueMapper;
+        this.assertHelper = assertHelper;
 
-    public LookupServiceImpl(ILookupService service,
-                             LookupRepository lookupRepository,
-                             LookupValueRepository lookupValueRepository) {
-        this.service = service;
-        this.lookupRepository = lookupRepository;
-        this.lookupValueRepository = lookupValueRepository;
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public LookupDTO create(LookupDTO lookupDTO) {
-        return
-                service.create(lookupDTO);
+        lookupDTO.setId(null);
+        List<LookupValueDTO> values = lookupDTO.getLookupValues();
+        if (lookupMapper.insertSelective(lookupDTO) != 1) {
+            throw new InsertException("error.repo.lookup.insert");
+        }
+        if (!ObjectUtils.isEmpty(values)) {
+            values.forEach(v -> {
+                v.setId(null);
+                v.setLookupId(lookupDTO.getId());
+                if (lookupValueMapper.insertSelective(v) != 1) {
+                    throw new InsertException("error.lookupValue.insert");
+                }
+            });
+        }
+        return lookupDTO;
     }
 
     @Override
-    public PageInfo<LookupDTO> pagingQuery(int page, int size, LookupDTO lookupDTO, String param) {
-        return lookupRepository.pagingQuery(page,size,lookupDTO,param);
+    public PageInfo<LookupDTO> pagingQuery(PageRequest pageRequest, LookupDTO lookupDTO, String param) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> lookupMapper.fulltextSearch(lookupDTO, param));
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long id) {
-        lookupRepository.deleteById(id);
+        lookupMapper.deleteByPrimaryKey(id);
         //删除lookup级联删除lookupValue
         LookupValueDTO lookupValue = new LookupValueDTO();
         lookupValue.setLookupId(id);
-        lookupValueRepository.delete(lookupValue);
+        lookupValueMapper.delete(lookupValue);
     }
 
-    @Transactional(rollbackFor = CommonException.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public LookupDTO update(LookupDTO lookupDTO) {
-        return service.update(lookupDTO);
+        assertHelper.objectVersionNumberNotNull(lookupDTO.getObjectVersionNumber());
+        List<LookupValueDTO> values = lookupDTO.getLookupValues();
+        if (lookupMapper.updateByPrimaryKeySelective(lookupDTO) != 1) {
+            throw new UpdateExcetion("error.repo.lookup.update");
+        }
+
+        LookupValueDTO dto = new LookupValueDTO();
+        dto.setLookupId(lookupDTO.getId());
+        List<LookupValueDTO> list = lookupValueMapper.select(dto);
+
+        if (!ObjectUtils.isEmpty(values)) {
+            values.forEach(v -> {
+                if (v.getId() == null) {
+                    throw new EmptyParamException("error.lookupValue.id.null");
+                }
+                list.forEach(d -> {
+                    if (d.getId().equals(v.getId())) {
+                        d.setCode(v.getCode());
+                        d.setDescription(v.getDescription());
+                        lookupValueMapper.updateByPrimaryKeySelective(d);
+                    }
+                });
+
+            });
+        }
+        return lookupDTO;
     }
 
     @Override
     public LookupDTO queryById(Long id) {
-        LookupDTO lookupDTO = new LookupDTO();
-        lookupDTO.setId(id);
-        return service.queryById(lookupDTO);
-    }
-
-    @Override
-    public LookupDTO queryByCode(String code) {
-        LookupDTO lookupDTO = new LookupDTO();
-        lookupDTO.setCode(code);
-        return service.queryByCode(lookupDTO);
+        LookupDTO lookup = lookupMapper.selectByPrimaryKey(id);
+        if (lookup == null) {
+            return null;
+        }
+        LookupValueDTO lookupValue = new LookupValueDTO();
+        lookupValue.setLookupId(id);
+        lookup.setLookupValues(lookupValueMapper.select(lookupValue));
+        return lookup;
     }
 
     @Override
     public LookupDTO listByCodeWithLookupValues(String code) {
-        return lookupRepository.listByCodeWithLookupValues(code);
+        return lookupMapper.selectByCodeWithLookupValues(code);
     }
 }

@@ -4,18 +4,21 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.iam.infra.dto.ClientDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.base.BaseController;
-import io.choerodon.iam.api.validator.ClientValidator;
 import io.choerodon.iam.app.service.ClientService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author wuguokai
@@ -25,11 +28,9 @@ import io.choerodon.iam.infra.common.utils.ParamUtils;
 public class ClientController extends BaseController {
 
     private ClientService clientService;
-    private ClientValidator clientValidator;
 
-    public ClientController(ClientService clientService, ClientValidator clientValidator) {
+    public ClientController(ClientService clientService) {
         this.clientService = clientService;
-        this.clientValidator = clientValidator;
     }
 
     /**
@@ -42,8 +43,8 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "创建客户端")
     @PostMapping
-    public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId, @RequestBody @Valid ClientDTO clientDTO) {
-        clientValidator.create(clientDTO);
+    public ResponseEntity<ClientDTO> create(@PathVariable("organization_id") Long organizationId,
+                                            @RequestBody @Valid ClientDTO clientDTO) {
         return new ResponseEntity<>(clientService.create(organizationId, clientDTO), HttpStatus.OK);
     }
 
@@ -57,7 +58,7 @@ public class ClientController extends BaseController {
     @ApiOperation(value = "随机的客户端创建信息生成")
     @GetMapping(value = "/createInfo")
     public ResponseEntity<ClientDTO> createInfo(@PathVariable("organization_id") Long organizationId) {
-        return new ResponseEntity<>(clientService.getDefaultCreatedata(organizationId), HttpStatus.OK);
+        return new ResponseEntity<>(clientService.getDefaultCreateData(organizationId), HttpStatus.OK);
     }
 
     /**
@@ -71,12 +72,12 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "修改客户端")
     @PostMapping(value = "/{client_id}")
-    public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId,
+    public ResponseEntity<ClientDTO> update(@PathVariable("organization_id") Long organizationId,
+                                            @PathVariable("client_id") Long clientId,
                                             @RequestBody ClientDTO clientDTO) {
         clientDTO.setId(clientId);
         clientDTO.setOrganizationId(organizationId);
-        clientDTO = clientValidator.update(clientDTO);
-        return new ResponseEntity<>(clientService.update(organizationId, clientId, clientDTO), HttpStatus.OK);
+        return new ResponseEntity<>(clientService.update(clientDTO), HttpStatus.OK);
     }
 
     /**
@@ -89,8 +90,9 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "删除客户端")
     @DeleteMapping(value = "/{client_id}")
-    public ResponseEntity<Boolean> delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
-        return new ResponseEntity<>(clientService.delete(organizationId, clientId), HttpStatus.OK);
+    public ResponseEntity delete(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId) {
+        clientService.delete(organizationId, clientId);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**
@@ -132,15 +134,16 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页模糊查询客户端")
     @GetMapping
+    @CustomPageRequest
     public ResponseEntity<PageInfo<ClientDTO>> list(@PathVariable("organization_id") Long organizationId,
-                                                    @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                    @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                    @ApiIgnore
+                                                    @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                     @RequestParam(required = false) String name,
                                                     @RequestParam(required = false) String[] params) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setOrganizationId(organizationId);
         clientDTO.setName(name);
-        return new ResponseEntity<>(clientService.list(clientDTO, page,size, ParamUtils.arrToStr(params)), HttpStatus.OK);
+        return new ResponseEntity<>(clientService.list(clientDTO, pageRequest, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 
     /**
@@ -153,10 +156,9 @@ public class ClientController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "客户端信息校验")
     @PostMapping(value = "/check")
-    public ResponseEntity check(@PathVariable(name = "organization_id") Long organizationId,
-                                @RequestBody ClientDTO client) {
+    public void check(@PathVariable(name = "organization_id") Long organizationId,
+                      @RequestBody ClientDTO client) {
         clientService.check(client);
-        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

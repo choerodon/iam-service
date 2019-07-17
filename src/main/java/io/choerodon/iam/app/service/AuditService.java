@@ -1,8 +1,8 @@
 package io.choerodon.iam.app.service;
 
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.iam.infra.dto.AuditDTO;
 
 /**
@@ -26,5 +26,5 @@ public interface AuditService {
      * @param pageRequest  分页请求
      * @return 分页结果
      */
-    PageInfo<AuditDTO> pagingQuery(Long userId, String businessType, String dataType, int page, int size);
+    PageInfo<AuditDTO> pagingQuery(Long userId, String businessType, String dataType, PageRequest pageRequest);
 }

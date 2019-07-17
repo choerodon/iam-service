@@ -1,10 +1,12 @@
 package io.choerodon.iam.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -12,16 +14,23 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.api.dto.ProjectCategoryDTO;
 import io.choerodon.iam.api.dto.payload.ProjectEventPayload;
-import io.choerodon.iam.api.service.ProjectTypeService;
 import io.choerodon.iam.app.service.OrganizationProjectService;
-import io.choerodon.iam.domain.repository.*;
-import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.app.service.RoleMemberService;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.infra.asserts.DetailsHelperAssert;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper;
+import io.choerodon.iam.infra.asserts.UserAssertHelper;
+import io.choerodon.iam.infra.common.utils.PageUtils;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.enums.ProjectCategory;
 import io.choerodon.iam.infra.enums.RoleLabel;
+import io.choerodon.iam.infra.exception.EmptyParamException;
+import io.choerodon.iam.infra.exception.IllegalArgumentException;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
 import io.choerodon.iam.infra.feign.AsgardFeignClient;
-import io.choerodon.iam.infra.mapper.ProjectCategoryMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.iam.infra.mapper.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
+import static io.choerodon.iam.infra.asserts.UserAssertHelper.WhichColumn;
 
 /**
  * @author flyleft
@@ -42,7 +52,6 @@ import static io.choerodon.iam.infra.common.utils.SagaTopic.Project.*;
 @Service
 @RefreshScope
 public class OrganizationProjectServiceImpl implements OrganizationProjectService {
-    private static final String ORGANIZATION_NOT_EXIST_EXCEPTION = "error.organization.not.exist";
     private static final String PROJECT_NOT_EXIST_EXCEPTION = "error.project.not.exist";
     public static final String PROJECT_DEFAULT_CATEGORY = "AGILE";
     public static final String PROJECT = "project";
@@ -56,129 +65,145 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Value("${choerodon.category.enabled:false}")
     private Boolean categoryEnable;
 
-    private ProjectRepository projectRepository;
-
-    private UserRepository userRepository;
-
-    private OrganizationRepository organizationRepository;
-
-    private RoleRepository roleRepository;
-
-    private MemberRoleRepository memberRoleRepository;
-
-    private LabelRepository labelRepository;
-
     private SagaClient sagaClient;
 
-    private IUserService iUserService;
+    private UserService userService;
 
     private AsgardFeignClient asgardFeignClient;
 
-    private ProjectTypeService projectTypeService;
-
     private ProjectMapCategoryMapper projectMapCategoryMapper;
 
-    private ProjectRelationshipRepository projectRelationshipRepository;
+    private ProjectRelationshipMapper projectRelationshipMapper;
 
     private ProjectCategoryMapper projectCategoryMapper;
 
+    private ProjectMapper projectMapper;
+
+    private ProjectTypeMapper projectTypeMapper;
+
+    private RoleMapper roleMapper;
+
+    private LabelMapper labelMapper;
+
+    private ProjectAssertHelper projectAssertHelper;
+    private OrganizationAssertHelper organizationAssertHelper;
+    private UserAssertHelper userAssertHelper;
+
+    private RoleMemberService roleMemberService;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public OrganizationProjectServiceImpl(ProjectRepository projectRepository,
-                                          UserRepository userRepository,
-                                          OrganizationRepository organizationRepository,
-                                          RoleRepository roleRepository,
-                                          MemberRoleRepository memberRoleRepository,
-                                          LabelRepository labelRepository,
-                                          SagaClient sagaClient,
-                                          IUserService iUserService,
+    public OrganizationProjectServiceImpl(SagaClient sagaClient,
+                                          UserService userService,
                                           AsgardFeignClient asgardFeignClient,
-                                          ProjectTypeService projectTypeService,
-                                          ProjectRelationshipRepository projectRelationshipRepository,
                                           ProjectMapCategoryMapper projectMapCategoryMapper,
-                                          ProjectCategoryMapper projectCategoryMapper) {
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
-        this.organizationRepository = organizationRepository;
-        this.roleRepository = roleRepository;
-        this.memberRoleRepository = memberRoleRepository;
-        this.labelRepository = labelRepository;
+                                          ProjectCategoryMapper projectCategoryMapper,
+                                          ProjectMapper projectMapper,
+                                          ProjectAssertHelper projectAssertHelper,
+                                          ProjectTypeMapper projectTypeMapper,
+                                          OrganizationAssertHelper organizationAssertHelper,
+                                          UserAssertHelper userAssertHelper,
+                                          RoleMapper roleMapper,
+                                          LabelMapper labelMapper,
+                                          ProjectRelationshipMapper projectRelationshipMapper,
+                                          RoleMemberService roleMemberService) {
         this.sagaClient = sagaClient;
-        this.iUserService = iUserService;
+        this.userService = userService;
         this.asgardFeignClient = asgardFeignClient;
-        this.projectTypeService = projectTypeService;
-        this.projectRelationshipRepository = projectRelationshipRepository;
         this.projectMapCategoryMapper = projectMapCategoryMapper;
         this.projectCategoryMapper = projectCategoryMapper;
+        this.projectMapper = projectMapper;
+        this.projectAssertHelper = projectAssertHelper;
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.projectTypeMapper = projectTypeMapper;
+        this.userAssertHelper = userAssertHelper;
+        this.roleMapper = roleMapper;
+        this.labelMapper = labelMapper;
+        this.projectRelationshipMapper = projectRelationshipMapper;
+        this.roleMemberService = roleMemberService;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     @Saga(code = PROJECT_CREATE, description = "iam创建项目", inputSchemaClass = ProjectEventPayload.class)
-    public ProjectDTO createProject(ProjectDTO projectDTO, List<Long> categoryIds) {
-
-        if (projectDTO.getEnabled() == null) {
-            projectDTO.setEnabled(true);
-        }
-        if (categoryEnable && !CollectionUtils.isEmpty(categoryIds)) {
-            ProjectCategoryDTO projectCategoryDTO = projectCategoryMapper.selectByPrimaryKey(categoryIds.get(0));
-            if (projectCategoryDTO != null) {
-                projectDTO.setCategory(projectCategoryDTO.getCode());
-            }
-        }
+    public ProjectDTO createProject(ProjectDTO projectDTO) {
+        List<Long> categoryIds = projectDTO.getCategoryIds();
+        Boolean enabled = projectDTO.getEnabled();
+        projectDTO.setEnabled(enabled == null ? true : enabled);
         ProjectDTO dto;
         if (devopsMessage) {
             dto = createProjectBySaga(projectDTO);
         } else {
-            dto = projectRepository.create(projectDTO);
+            dto = create(projectDTO);
             initMemberRole(dto);
         }
         if (categoryEnable) {
-            //添加默认类型Agile
-            if (CollectionUtils.isEmpty(categoryIds)) {
-                categoryIds = new ArrayList<>();
-                ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
-                projectCategoryDTO.setCode(PROJECT_DEFAULT_CATEGORY);
-                projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
-                if (projectCategoryDTO != null) {
-                    categoryIds.add(projectCategoryDTO.getId());
-                }
-            }
-            if (categoryIds != null) {
-                for (Long categoryId : categoryIds) {
-                    ProjectMapCategoryDTO projectMapCategoryDTO = new ProjectMapCategoryDTO();
-                    projectMapCategoryDTO.setCategoryId(categoryId);
-                    projectMapCategoryDTO.setProjectId(dto.getId());
-                    if (projectMapCategoryMapper.insert(projectMapCategoryDTO) != 1) {
-                        throw new CommonException("error.projectMapCategory.insert");
-                    }
-                }
-            }
+            initProjectCategories(categoryIds, dto);
         }
         return dto;
+    }
+
+    @Override
+    public ProjectDTO create(ProjectDTO projectDTO) {
+        Long organizationId = projectDTO.getOrganizationId();
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        projectAssertHelper.codeExisted(projectDTO.getCode(), organizationId);
+        if (projectMapper.insertSelective(projectDTO) != 1) {
+            throw new CommonException("error.project.create");
+        }
+        ProjectTypeDTO projectTypeDTO = new ProjectTypeDTO();
+        projectTypeDTO.setCode(projectDTO.getType());
+        if (projectDTO.getType() != null && projectTypeMapper.selectCount(projectTypeDTO) != 1) {
+            throw new CommonException("error.project.type.notExist");
+        }
+        return projectMapper.selectByPrimaryKey(projectDTO);
+    }
+
+
+    private void initProjectCategories(List<Long> categoryIds, ProjectDTO dto) {
+        if (CollectionUtils.isEmpty(categoryIds)) {
+            //添加默认类型Agile
+            List<Long> ids = new ArrayList<>();
+            ProjectCategoryDTO projectCategory = new ProjectCategoryDTO();
+            projectCategory.setCode(PROJECT_DEFAULT_CATEGORY);
+            ProjectCategoryDTO result = projectCategoryMapper.selectOne(projectCategory);
+            if (result != null) {
+                ids.add(result.getId());
+                dto.setCategoryIds(ids);
+            }
+        } else {
+            categoryIds.forEach(id -> {
+                ProjectMapCategoryDTO example = new ProjectMapCategoryDTO();
+                example.setCategoryId(id);
+                example.setProjectId(dto.getId());
+                if (projectMapCategoryMapper.insertSelective(example) != 1) {
+                    throw new InsertException("error.projectMapCategory.insert");
+                }
+            });
+        }
     }
 
     private ProjectDTO createProjectBySaga(final ProjectDTO projectDTO) {
         ProjectEventPayload projectEventMsg = new ProjectEventPayload();
         CustomUserDetails details = DetailsHelper.getUserDetails();
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(projectDTO.getOrganizationId());
         if (details != null && details.getUserId() != 0) {
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(details.getUserId());
         } else {
-            Long userId = organizationRepository.selectByPrimaryKey(projectDTO.getOrganizationId()).getUserId();
-            UserDTO userDTO = userRepository.selectByPrimaryKey(userId);
+            Long userId = organizationDTO.getUserId();
+            UserDTO userDTO = userAssertHelper.userNotExisted(userId);
             projectEventMsg.setUserId(userId);
             projectEventMsg.setUserName(userDTO.getLoginName());
         }
-        ProjectDTO dto = projectRepository.create(projectDTO);
+        ProjectDTO dto = create(projectDTO);
+        //init member_role
         projectEventMsg.setRoleLabels(initMemberRole(dto));
         projectEventMsg.setProjectId(dto.getId());
         projectEventMsg.setProjectCode(dto.getCode());
         projectEventMsg.setProjectCategory(dto.getCategory());
         projectEventMsg.setProjectName(dto.getName());
         projectEventMsg.setImageUrl(projectDTO.getImageUrl());
-        OrganizationDTO organizationDTO =
-                organizationRepository.selectByPrimaryKey(dto.getOrganizationId());
         projectEventMsg.setOrganizationCode(organizationDTO.getCode());
         projectEventMsg.setOrganizationName(organizationDTO.getName());
         try {
@@ -192,7 +217,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
 
     private Set<String> initMemberRole(ProjectDTO project) {
-        List<RoleDTO> roles = roleRepository.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role", null);
+        List<RoleDTO> roles = roleMapper.selectRolesByLabelNameAndType(RoleLabel.PROJECT_OWNER.value(), "role", null);
         if (roles.isEmpty()) {
             throw new CommonException("error.role.not.found.by.label", RoleLabel.PROJECT_OWNER.value(), "role");
         }
@@ -207,7 +232,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             //创建项目只分配项目层的角色
             if (ResourceLevel.PROJECT.value().equals(role.getResourceLevel())) {
                 //查出来的符合要求的角色，要拿出来所有的label，发送给devops处理
-                List<LabelDTO> labels = labelRepository.selectByRoleId(role.getId());
+                List<LabelDTO> labels = labelMapper.selectByRoleId(role.getId());
                 labelNames.addAll(labels.stream().map(LabelDTO::getName).collect(Collectors.toList()));
                 MemberRoleDTO memberRole = new MemberRoleDTO();
                 memberRole.setRoleId(role.getId());
@@ -215,7 +240,7 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 memberRole.setMemberId(userId);
                 memberRole.setSourceId(projectId);
                 memberRole.setSourceType(ResourceType.PROJECT.value());
-                memberRoleRepository.insertSelective(memberRole);
+                roleMemberService.insertSelective(memberRole);
             }
         });
         return labelNames;
@@ -223,12 +248,36 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public List<ProjectDTO> queryAll(ProjectDTO projectDTO) {
-        return projectRepository.query(projectDTO);
+        return projectMapper.fulltextSearch(projectDTO, null, null, null);
     }
 
     @Override
-    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, int page, int size, String param) {
-        return projectRepository.pagingQuery(projectDTO, page, size, param, categoryEnable);
+    public PageInfo<ProjectDTO> pagingQuery(ProjectDTO projectDTO, PageRequest pageRequest, String param) {
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize();
+        Page<ProjectDTO> result = new Page<>(page, size);
+        boolean doPage = (pageRequest.getSize() != 0);
+        if (doPage) {
+            int start = PageUtils.getBegin(page, size);
+            int count;
+            if (categoryEnable) {
+                count = projectMapper.fulltextSearchCountIgnoreProgramProject(projectDTO, param);
+                result.setTotal(count);
+                result.addAll(projectMapper.fulltextSearchCategory(projectDTO, param, start, size));
+            } else {
+                count = projectMapper.fulltextSearchCount(projectDTO, param);
+                result.setTotal(count);
+                result.addAll(projectMapper.fulltextSearch(projectDTO, param, start, size));
+            }
+        } else {
+            if (categoryEnable) {
+                result.addAll(projectMapper.fulltextSearchCategory(projectDTO, param, null, null));
+            } else {
+                result.addAll(projectMapper.fulltextSearch(projectDTO, param, null, null));
+            }
+            result.setTotal(result.size());
+        }
+        return result.toPageInfo();
     }
 
     @Transactional(rollbackFor = CommonException.class)
@@ -236,25 +285,18 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     public ProjectDTO update(Long organizationId, ProjectDTO projectDTO) {
         updateCheck(projectDTO);
         projectDTO.setCode(null);
-
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(projectDTO.getOrganizationId());
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        if (projectDTO.getObjectVersionNumber() == null) {
-            throw new CommonException("error.project.objectVersionNumber.empty");
-        }
+        OrganizationDTO organizationDTO = organizationAssertHelper.organizationNotExisted(projectDTO.getOrganizationId());
         ProjectDTO dto;
         if (devopsMessage) {
             dto = new ProjectDTO();
-            CustomUserDetails details = DetailsHelper.getUserDetails();
-            UserDTO user = userRepository.selectByLoginName(details.getUsername());
+            CustomUserDetails details = DetailsHelperAssert.userDetailNotExisted();
+            UserDTO user = userAssertHelper.userNotExisted(WhichColumn.LOGIN_NAME, details.getUsername());
             ProjectEventPayload projectEventMsg = new ProjectEventPayload();
             projectEventMsg.setUserName(details.getUsername());
             projectEventMsg.setUserId(user.getId());
             projectEventMsg.setOrganizationCode(organizationDTO.getCode());
             projectEventMsg.setOrganizationName(organizationDTO.getName());
-            ProjectDTO newProjectDTO = projectRepository.updateSelective(projectDTO);
+            ProjectDTO newProjectDTO = updateSelective(projectDTO);
             projectEventMsg.setProjectId(newProjectDTO.getId());
             projectEventMsg.setProjectCode(newProjectDTO.getCode());
             projectEventMsg.setProjectName(newProjectDTO.getName());
@@ -267,22 +309,53 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 throw new CommonException("error.organizationProjectService.updateProject.event", e);
             }
         } else {
-            dto = projectRepository.updateSelective(projectDTO);
+            dto = updateSelective(projectDTO);
         }
         return dto;
     }
 
+    @Override
+    public ProjectDTO updateSelective(ProjectDTO projectDTO) {
+        ProjectDTO project = projectAssertHelper.projectNotExisted(projectDTO.getId());
+
+        ProjectTypeDTO projectTypeDTO = new ProjectTypeDTO();
+        projectTypeDTO.setCode(projectDTO.getType());
+        if (projectDTO.getType() != null && projectTypeMapper.selectCount(projectTypeDTO) != 1) {
+            throw new CommonException("error.project.type.notExist");
+        }
+        if (!StringUtils.isEmpty(projectDTO.getName())) {
+            project.setName(projectDTO.getName());
+        }
+        if (!StringUtils.isEmpty(projectDTO.getCode())) {
+            project.setCode(projectDTO.getCode());
+        }
+        if (projectDTO.getEnabled() != null) {
+            project.setEnabled(projectDTO.getEnabled());
+        }
+        if (projectDTO.getImageUrl() != null) {
+            project.setImageUrl(projectDTO.getImageUrl());
+        }
+        project.setType(projectDTO.getType());
+        if (projectMapper.updateByPrimaryKey(project) != 1) {
+            throw new UpdateExcetion("error.project.update");
+        }
+        ProjectDTO returnProject = projectMapper.selectByPrimaryKey(projectDTO.getId());
+        if (returnProject.getType() != null) {
+            ProjectTypeDTO dto = new ProjectTypeDTO();
+            dto.setCode(project.getType());
+            returnProject.setTypeName(projectTypeMapper.selectOne(dto).getName());
+        }
+        return returnProject;
+    }
+
     private void updateCheck(ProjectDTO projectDTO) {
         String name = projectDTO.getName();
-        Long objectVersionNumber = projectDTO.getObjectVersionNumber();
+        projectAssertHelper.objectVersionNumberNotNull(projectDTO.getObjectVersionNumber());
         if (StringUtils.isEmpty(name)) {
-            throw new CommonException("error.project.name.empty");
+            throw new EmptyParamException("error.project.name.empty");
         }
         if (name.length() < 1 || name.length() > 32) {
-            throw new CommonException("error.project.code.size");
-        }
-        if (objectVersionNumber == null) {
-            throw new CommonException("error.objectVersionNumber.null");
+            throw new IllegalArgumentException("error.project.code.size");
         }
     }
 
@@ -290,26 +363,17 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Saga(code = PROJECT_ENABLE, description = "iam启用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO enableProject(Long organizationId, Long projectId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
+        organizationAssertHelper.organizationNotExisted(organizationId);
         return updateProjectAndSendEvent(projectId, PROJECT_ENABLE, true, userId);
     }
 
     @Override
+    @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public ProjectDTO disableProject(Long organizationId, Long projectId, Long userId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
+        if (organizationId != null) {
+            organizationAssertHelper.organizationNotExisted(organizationId);
         }
-        return disableProjectAndSendEvent(projectId, userId);
-    }
-
-    @Override
-    @Saga(code = PROJECT_DISABLE, description = "iam停用项目", inputSchemaClass = ProjectEventPayload.class)
-    public ProjectDTO disableProjectAndSendEvent(Long projectId, Long userId) {
         return updateProjectAndSendEvent(projectId, PROJECT_DISABLE, false, userId);
     }
 
@@ -323,10 +387,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
      * @return 项目信息
      */
     private ProjectDTO updateProjectAndSendEvent(Long projectId, String consumerType, boolean enabled, Long userId) {
-        ProjectDTO projectDTO = projectRepository.selectByPrimaryKey(projectId);
+        ProjectDTO projectDTO = projectMapper.selectByPrimaryKey(projectId);
         projectDTO.setEnabled(enabled);
         // 更新项目
-        projectDTO = projectRepository.updateSelective(projectDTO);
+        projectDTO = updateSelective(projectDTO);
         String category = projectDTO.getCategory();
         // 项目所属项目群Id
         Long programId = null;
@@ -336,11 +400,11 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 ProjectRelationshipDTO relationshipDTO = new ProjectRelationshipDTO();
                 relationshipDTO.setProjectId(projectId);
                 relationshipDTO.setEnabled(true);
-                relationshipDTO = projectRelationshipRepository.selectOne(relationshipDTO);
+                relationshipDTO = projectRelationshipMapper.selectOne(relationshipDTO);
                 programId = updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
             } else if ((ProjectCategory.PROGRAM.value().equalsIgnoreCase(category))) {
                 // 项目群禁用时，禁用项目群下所有项目关系
-                List<ProjectRelationshipDTO> relationshipDTOS = projectRelationshipRepository.selectProjectsByParentId(projectId, true);
+                List<ProjectRelationshipDTO> relationshipDTOS = projectRelationshipMapper.selectProjectsByParentId(projectId, true);
                 if (CollectionUtils.isNotEmpty(relationshipDTOS)) {
                     for (ProjectRelationshipDTO relationshipDTO : relationshipDTOS) {
                         updateProjectRelationShip(relationshipDTO, Boolean.FALSE);
@@ -365,8 +429,10 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
             return null;
         }
         relationshipDTO.setEnabled(enabled);
-        projectRelationshipRepository.update(relationshipDTO);
-        if(categoryEnable){
+        if (projectRelationshipMapper.updateByPrimaryKey(relationshipDTO) != 1) {
+            throw new UpdateExcetion("error.project.group.update");
+        }
+        if (categoryEnable) {
             ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
             projectCategoryDTO.setCode("PROGRAM_PROJECT");
             projectCategoryDTO = projectCategoryMapper.selectOne(projectCategoryDTO);
@@ -410,13 +476,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
                 asgardFeignClient.disableProj(projectId);
             }
             // 给项目下所有用户发送通知
-            List<Long> userIds = projectRepository.listUserIds(projectId);
+            List<Long> userIds = projectMapper.listUserIds(projectId);
             Map<String, Object> params = new HashMap<>();
-            params.put("projectName", projectRepository.selectByPrimaryKey(projectId).getName());
+            params.put("projectName", projectMapper.selectByPrimaryKey(projectId).getName());
             if (PROJECT_DISABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "disableProject", params, projectId);
+                userService.sendNotice(userId, userIds, "disableProject", params, projectId);
             } else if (PROJECT_ENABLE.equals(consumerType)) {
-                iUserService.sendNotice(userId, userIds, "enableProject", params, projectId);
+                userService.sendNotice(userId, userIds, "enableProject", params, projectId);
             }
         }
     }
@@ -437,13 +503,13 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
         project.setOrganizationId(projectDTO.getOrganizationId());
         project.setCode(projectDTO.getCode());
         if (createCheck) {
-            Boolean existed = projectRepository.selectOne(project) != null;
+            Boolean existed = projectMapper.selectOne(project) != null;
             if (existed) {
                 throw new CommonException("error.project.code.exist");
             }
         } else {
             Long id = projectDTO.getId();
-            ProjectDTO dto = projectRepository.selectOne(project);
+            ProjectDTO dto = projectMapper.selectOne(project);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
                 throw new CommonException("error.project.code.exist");
@@ -454,28 +520,28 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
     @Override
     public Map<String, Object> getProjectsByType(Long organizationId) {
         //1.获取所有类型
-        List<ProjectTypeDTO> list = projectTypeService.list();
+        List<ProjectTypeDTO> list = projectTypeMapper.selectAll();
         List<String> legend = list.stream().map(ProjectTypeDTO::getName).collect(Collectors.toList());
         List<Map<String, Object>> data = new ArrayList<>();
         //2.获取类型下所有项目名
         list.forEach(type -> {
-            List<String> projectNames = projectRepository.selectProjectNameByTypeCode(type.getCode(), organizationId);
-            Map<String, Object> dataMap = new HashMap<>();
+            List<String> projectNames = projectMapper.selectProjectNameByType(type.getCode(), organizationId);
+            Map<String, Object> dataMap = new HashMap<>(5);
             dataMap.put("value", projectNames.size());
             dataMap.put("name", type.getName());
             dataMap.put("projects", projectNames);
             data.add(dataMap);
         });
         //3.获取无类型的所有项目名
-        List<String> projsNoType = projectRepository.selectProjectNameNoType(organizationId);
-        Map<String, Object> noTypeProjectList = new HashMap<>();
+        List<String> projsNoType = projectMapper.selectProjectNameNoType(organizationId);
+        Map<String, Object> noTypeProjectList = new HashMap<>(5);
         noTypeProjectList.put("value", projsNoType.size());
         noTypeProjectList.put("name", "无");
         noTypeProjectList.put("projects", projsNoType);
         legend.add("无");
         data.add(noTypeProjectList);
         //4.构造返回map
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>(5);
         map.put("legend", legend);
         map.put("data", data);
         return map;
@@ -483,37 +549,69 @@ public class OrganizationProjectServiceImpl implements OrganizationProjectServic
 
     @Override
     public List<ProjectDTO> getAvailableAgileProj(Long organizationId, Long projectId) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organizationDTO == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        ProjectDTO projectDTO = projectRepository.selectCategoryByPrimaryKey(projectId);
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        ProjectDTO projectDTO = selectCategoryByPrimaryKey(projectId);
         if (projectDTO == null) {
             throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
         } else if (!projectDTO.getCategory().equalsIgnoreCase(ProjectCategory.PROGRAM.value())) {
             throw new CommonException("error.only.programs.can.configure.subprojects");
         } else {
             //组织下全部敏捷项目
-            return projectRepository.selectProjsNotGroup(organizationId, projectId);
+            return projectMapper.selectProjsNotGroup(organizationId, projectId);
         }
+    }
+
+    @Override
+    public ProjectDTO selectCategoryByPrimaryKey(Long projectId) {
+        List<ProjectDTO> projects = projectMapper.selectCategoryByPrimaryKey(projectId);
+        ProjectDTO dto = mergeCategories(projects);
+        if (dto == null) {
+            throw new CommonException("error.project.not.exist");
+        }
+        return dto;
+    }
+
+    private ProjectDTO mergeCategories(List<ProjectDTO> projectDTOS) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return null;
+        }
+        ProjectDTO projectDTO = new ProjectDTO();
+        BeanUtils.copyProperties(projectDTOS.get(0), projectDTO);
+        List<ProjectCategoryDTO> categories = new ArrayList<>();
+        String category = null;
+        for (int i = 0; i < projectDTOS.size(); i++) {
+            ProjectDTO p = projectDTOS.get(i);
+            ProjectCategoryDTO projectCategoryDTO = new ProjectCategoryDTO();
+            projectCategoryDTO.setCode(p.getCategory());
+            categories.add(projectCategoryDTO);
+            if (category == null && ProjectCategory.PROGRAM.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.PROGRAM.value();
+            } else if (category == null && ProjectCategory.AGILE.value().equalsIgnoreCase(p.getCategory())) {
+                category = ProjectCategory.AGILE.value();
+            } else if (category == null) {
+                category = p.getCategory();
+            }
+        }
+        projectDTO.setCategory(category);
+        projectDTO.setCategories(categories);
+        return projectDTO;
     }
 
     @Override
     public ProjectDTO getGroupInfoByEnableProject(Long organizationId, Long projectId) {
-        OrganizationDTO organization = organizationRepository.selectByPrimaryKey(organizationId);
-        if (organization == null) {
-            throw new CommonException(ORGANIZATION_NOT_EXIST_EXCEPTION);
-        }
-        ProjectDTO project = projectRepository.selectByPrimaryKey(projectId);
-        if (project == null) {
-            throw new CommonException(PROJECT_NOT_EXIST_EXCEPTION);
-        } else {
-            return projectRepository.selectGroupInfoByEnableProject(organizationId, projectId);
-        }
+        organizationAssertHelper.organizationNotExisted(organizationId);
+        projectAssertHelper.projectNotExisted(projectId);
+        return projectMapper.selectGroupInfoByEnableProject(organizationId, projectId);
     }
 
     @Override
     public List<ProjectDTO> getAgileProjects(Long organizationId, String param) {
-        return projectRepository.getAgileProjects(organizationId, param, categoryEnable);
+        List<ProjectDTO> projectDTOS;
+        if (categoryEnable) {
+            projectDTOS = projectMapper.selectByOrgIdAndCategoryEnable(organizationId, PROJECT_DEFAULT_CATEGORY, param);
+        } else {
+            projectDTOS = projectMapper.selectByOrgIdAndCategory(organizationId, param);
+        }
+        return projectDTOS;
     }
 }

@@ -6,9 +6,7 @@ import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.OrganizationUserService
 import io.choerodon.iam.app.service.SystemSettingService
-import io.choerodon.iam.domain.repository.OrganizationRepository
-import io.choerodon.iam.domain.repository.UserRepository
-import io.choerodon.iam.domain.service.IUserService
+import io.choerodon.iam.app.service.UserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.dto.UserDTO
@@ -35,9 +33,9 @@ import java.lang.reflect.Field
 @PrepareForTest([DetailsHelper])
 class OrganizationUserServiceImplSpec extends Specification {
     private PasswordRecord passwordRecord = Mock(PasswordRecord)
-    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-    private UserRepository userRepository = Mock(UserRepository)
-    private IUserService iUserService = Mock(IUserService)
+//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
+//    private UserRepository userRepository = Mock(UserRepository)
+    private UserService userService = Mock(UserService)
     private SagaClient sagaClient = Mock(SagaClient)
     private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
     private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
@@ -51,7 +49,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         given: "构造organizationUserService"
         organizationUserService = new OrganizationUserServiceImpl(
                 organizationRepository, userRepository, passwordRecord, passwordPolicyManager,
-                basePasswordPolicyMapper, oauthTokenFeignClient, userPasswordValidator, iUserService, systemSettingService, sagaClient)
+                basePasswordPolicyMapper, oauthTokenFeignClient, userPasswordValidator, userService, systemSettingService, sagaClient)
         Field field = organizationUserService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationUserService, true)
@@ -174,7 +172,6 @@ class OrganizationUserServiceImplSpec extends Specification {
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
         1 * userRepository.selectByPrimaryKey(_) >> { user }
-        1 * iUserService.updateUserEnabled(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
@@ -197,7 +194,7 @@ class OrganizationUserServiceImplSpec extends Specification {
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
         1 * userRepository.selectByPrimaryKey(_) >> { user }
-        1 * iUserService.updateUserDisabled(_) >> { user }
+        1 * userService.updateUserDisabled(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 }

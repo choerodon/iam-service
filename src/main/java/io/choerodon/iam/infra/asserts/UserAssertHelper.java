@@ -2,6 +2,7 @@ package io.choerodon.iam.infra.asserts;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.exception.AlreadyExsitedException;
 import io.choerodon.iam.infra.mapper.UserMapper;
 import org.springframework.stereotype.Component;
 
@@ -73,6 +74,30 @@ public class UserAssertHelper extends AssertHelper {
             throw new CommonException(message, id);
         }
         return dto;
+    }
+
+    public void loginNameExisted(String loginName) {
+        loginNameExisted(loginName,"error.user.loginName.exist");
+    }
+
+    public void loginNameExisted(String loginName, String message) {
+        UserDTO dto = new UserDTO();
+        dto.setLoginName(loginName);
+        if (userMapper.selectOne(dto)!=null) {
+            throw new AlreadyExsitedException(message);
+        }
+    }
+
+    public void emailExisted(String email) {
+        emailExisted(email,"error.user.email.existed");
+    }
+
+    public void emailExisted(String email,String message) {
+        UserDTO dto = new UserDTO();
+        dto.setEmail(email);
+        if (userMapper.selectOne(dto)!=null) {
+            throw new AlreadyExsitedException(message);
+        }
     }
 
     public enum WhichColumn {

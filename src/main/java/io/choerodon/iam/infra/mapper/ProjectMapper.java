@@ -11,14 +11,22 @@ import java.util.Set;
  * @author wuguokai
  */
 public interface ProjectMapper extends Mapper<ProjectDTO> {
+    int fulltextSearchCount(@Param("project") ProjectDTO projectDTO,
+                            @Param("param") String param);
+
+    int fulltextSearchCountIgnoreProgramProject(@Param("project") ProjectDTO projectDTO,
+                                                @Param("param") String param);
 
     List<ProjectDTO> fulltextSearch(@Param("project") ProjectDTO projectDTO,
                                     @Param("param") String param,
                                     @Param("start") Integer start,
                                     @Param("size") Integer size);
 
-    int fulltextSearchCount(@Param("project") ProjectDTO projectDTO,
-                            @Param("param") String param);
+    List<ProjectDTO> fulltextSearchCategory(@Param("project") ProjectDTO projectDTO,
+                                            @Param("param") String param,
+                                            @Param("start") Integer start,
+                                            @Param("size") Integer size);
+
 
     List<ProjectDTO> selectProjectsByUserId(@Param("userId") Long userId,
                                             @Param("projectDTO") ProjectDTO projectDTO);
@@ -93,10 +101,6 @@ public interface ProjectMapper extends Mapper<ProjectDTO> {
      */
     ProjectDTO selectGroupInfoByEnableProject(@Param("orgId") Long orgId, @Param("projectId") Long projectId);
 
-    List<ProjectDTO> fulltextSearchCategory(@Param("project") ProjectDTO projectDTO,
-                                            @Param("param") String param,
-                                            @Param("start") Integer start,
-                                            @Param("size") Integer size);
 
     List<ProjectDTO> selectCategoryByPrimaryKey(@Param("projectId") Long projectId);
 

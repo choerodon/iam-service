@@ -1,6 +1,6 @@
 package io.choerodon.iam.app.service.impl
 
-import io.choerodon.iam.api.service.impl.ProjectTypeServiceImpl
+
 import io.choerodon.iam.infra.dto.ProjectTypeDTO
 import io.choerodon.iam.infra.mapper.ProjectTypeMapper
 import spock.lang.Specification

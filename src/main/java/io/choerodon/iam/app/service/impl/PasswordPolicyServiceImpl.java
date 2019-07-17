@@ -2,10 +2,11 @@ package io.choerodon.iam.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.iam.app.service.PasswordPolicyService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.PasswordPolicyRepository;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
 import io.choerodon.iam.infra.dto.PasswordPolicyDTO;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
+import io.choerodon.iam.infra.mapper.PasswordPolicyMapper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,45 +15,48 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordPolicyServiceImpl implements PasswordPolicyService {
 
-    private OrganizationRepository organizationRepository;
-    private PasswordPolicyRepository passwordPolicyRepository;
+    private OrganizationAssertHelper organizationAssertHelper;
+    private PasswordPolicyMapper passwordPolicyMapper;
 
-    public PasswordPolicyServiceImpl(OrganizationRepository organizationRepository, PasswordPolicyRepository passwordPolicyRepository) {
-        this.organizationRepository = organizationRepository;
-        this.passwordPolicyRepository = passwordPolicyRepository;
+    public PasswordPolicyServiceImpl(OrganizationAssertHelper organizationAssertHelper,
+                                     PasswordPolicyMapper passwordPolicyMapper) {
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.passwordPolicyMapper = passwordPolicyMapper;
     }
 
     @Override
     public PasswordPolicyDTO create(Long orgId, PasswordPolicyDTO passwordPolicyDTO) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(orgId);
-        if (organizationDTO == null) {
-            throw new CommonException("error.organization.not.exist");
-        }
+        organizationAssertHelper.organizationNotExisted(orgId);
         passwordPolicyDTO.setOrganizationId(orgId);
-        return passwordPolicyRepository.create(passwordPolicyDTO);
+        if (passwordPolicyMapper.insertSelective(passwordPolicyDTO) != 1) {
+            throw new InsertException("error.passwordPolicy.create");
+        }
+        return passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
     }
 
     @Override
     public PasswordPolicyDTO queryByOrgId(Long orgId) {
-        return passwordPolicyRepository.queryByOrgId(orgId);
+        PasswordPolicyDTO dto = new PasswordPolicyDTO();
+        dto.setOrganizationId(orgId);
+        return passwordPolicyMapper.selectOne(dto);
     }
 
     @Override
     public PasswordPolicyDTO query(Long id) {
-        return passwordPolicyRepository.query(id);
+        return passwordPolicyMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public PasswordPolicyDTO update(Long orgId, Long id, PasswordPolicyDTO passwordPolicyDTO) {
-        OrganizationDTO organizationDTO = organizationRepository.selectByPrimaryKey(orgId);
-        if (organizationDTO == null) {
-            throw new CommonException("error.organization.not.exist");
-        }
-        PasswordPolicyDTO old = query(id);
+        organizationAssertHelper.organizationNotExisted(orgId);
+        PasswordPolicyDTO old = passwordPolicyMapper.selectByPrimaryKey(id);
         if (!orgId.equals(old.getOrganizationId())) {
             throw new CommonException("error.passwordPolicy.organizationId.not.same");
         }
-        return
-                passwordPolicyRepository.update(id, passwordPolicyDTO);
+        passwordPolicyDTO.setId(id);
+        if (passwordPolicyMapper.updateByPrimaryKeySelective(passwordPolicyDTO) != 1) {
+            throw new UpdateExcetion("error.passwordPolicy.update");
+        }
+        return passwordPolicyMapper.selectByPrimaryKey(passwordPolicyDTO.getId());
     }
 }

@@ -1,137 +1,180 @@
 package io.choerodon.iam.app.service.impl;
 
-import java.util.Random;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.iam.infra.asserts.ClientAssertHelper;
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper;
+import io.choerodon.iam.infra.common.utils.JsonUtils;
+import io.choerodon.iam.infra.common.utils.ParamUtils;
 import io.choerodon.iam.infra.dto.ClientDTO;
-import org.springframework.stereotype.Component;
+import io.choerodon.iam.infra.exception.AlreadyExsitedException;
+import io.choerodon.iam.infra.exception.EmptyParamException;
+import io.choerodon.iam.infra.exception.InsertException;
+import io.choerodon.iam.infra.exception.UpdateExcetion;
+import io.choerodon.iam.infra.mapper.ClientMapper;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.query.ClientRoleQuery;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 import io.choerodon.iam.app.service.ClientService;
-import io.choerodon.iam.domain.repository.ClientRepository;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
+
+import java.util.Optional;
 
 /**
  * @author wuguokai
  */
-@Component
+@Service
 public class ClientServiceImpl implements ClientService {
 
     private static final String ORGANIZATION_ID_NOT_EQUAL_EXCEPTION = "error.organizationId.not.same";
-    public static final String SOURCES =
-            "ABCDEFGHIJKLMNOPQISTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-    private OrganizationRepository organizationRepository;
-    private ClientRepository clientRepository;
 
-    public ClientServiceImpl(OrganizationRepository organizationRepository, ClientRepository clientRepository) {
-        this.organizationRepository = organizationRepository;
-        this.clientRepository = clientRepository;
+    private OrganizationAssertHelper organizationAssertHelper;
+    private ClientAssertHelper clientAssertHelper;
+    private ClientMapper clientMapper;
+    private MemberRoleMapper memberRoleMapper;
+
+    public ClientServiceImpl(OrganizationAssertHelper organizationAssertHelper,
+                             ClientAssertHelper clientAssertHelper,
+                             ClientMapper clientMapper,
+                             MemberRoleMapper memberRoleMapper) {
+        this.organizationAssertHelper = organizationAssertHelper;
+        this.clientMapper = clientMapper;
+        this.clientAssertHelper = clientAssertHelper;
+        this.memberRoleMapper = memberRoleMapper;
     }
 
     @Override
     public ClientDTO create(Long orgId, ClientDTO clientDTO) {
-        isOrgExist(orgId);
+        organizationAssertHelper.organizationNotExisted(orgId);
+        validateAdditionalInfo(clientDTO);
         clientDTO.setId(null);
         clientDTO.setOrganizationId(orgId);
-        return clientRepository.create(clientDTO);
+
+        if (clientMapper.insertSelective(clientDTO) != 1) {
+            throw new InsertException("error.client.create");
+        }
+        return clientMapper.selectByPrimaryKey(clientDTO.getId());
     }
 
     /**
      * 创建客户端时生成随机的clientId和secret
      */
     @Override
-    public ClientDTO getDefaultCreatedata(Long orgId) {
-        String name = "";
-        boolean flag = false;
-        while (!flag) {
-            name = generateString(new Random(), SOURCES, 12);
-            ClientDTO clientDTO = new ClientDTO();
-            clientDTO.setName(name);
-            ClientDTO clientByName = clientRepository.selectOne(clientDTO);
-            if (clientByName == null) {
-                flag = true;
-            }
-        }
+    public ClientDTO getDefaultCreateData(Long orgId) {
         ClientDTO clientDTO = new ClientDTO();
-        clientDTO.setName(name);
-        clientDTO.setSecret(generateString(new Random(), SOURCES, 16));
+        clientDTO.setName(generateUniqueName());
+        clientDTO.setSecret(RandomStringUtils.randomAlphanumeric(16));
         return clientDTO;
     }
 
     @Override
-    public ClientDTO update(Long orgId, Long clientId, ClientDTO clientDTO) {
-        isOrgExist(orgId);
-        return clientRepository.update(clientId, clientDTO);
+    public ClientDTO update(ClientDTO clientDTO) {
+        preUpdate(clientDTO);
+
+        if (clientMapper.updateByPrimaryKey(clientDTO) != 1) {
+            throw new UpdateExcetion("error.client.update");
+        }
+        return clientMapper.selectByPrimaryKey(clientDTO.getId());
     }
 
-    @Transactional
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean delete(Long orgId, Long clientId) {
-        ClientDTO clientDTO = query(orgId, clientId);
-        if (!orgId.equals(clientDTO.getOrganizationId())) {
+    public void delete(Long orgId, Long clientId) {
+        ClientDTO dto = clientAssertHelper.clientNotExisted(clientId);
+        if (!dto.getOrganizationId().equals(orgId)) {
             throw new CommonException(ORGANIZATION_ID_NOT_EQUAL_EXCEPTION);
         }
-        return clientRepository.delete(clientId);
+        memberRoleMapper.deleteMemberRoleByMemberIdAndMemberType(clientId, "client");
+        clientMapper.deleteByPrimaryKey(clientId);
     }
 
     @Override
     public ClientDTO query(Long orgId, Long clientId) {
-        ClientDTO clientDTO = clientRepository.query(clientId);
-        if (clientDTO == null) {
-            throw new CommonException("error.client.not.exist");
-        }
-        if (!orgId.equals(clientDTO.getOrganizationId())) {
+        ClientDTO dto = clientAssertHelper.clientNotExisted(clientId);
+        if (!orgId.equals(dto.getOrganizationId())) {
             throw new CommonException(ORGANIZATION_ID_NOT_EQUAL_EXCEPTION);
         }
-        return clientDTO;
+        return dto;
     }
 
     @Override
     public ClientDTO queryByName(Long orgId, String clientName) {
-        ClientDTO clientDTO = clientRepository.queryByClientName(clientName);
-        if (clientDTO == null) {
-            throw new CommonException("error.client.not.exist");
-        }
-        if (!orgId.equals(clientDTO.getOrganizationId())) {
+        ClientDTO dto = clientAssertHelper.clientNotExisted(clientName);
+        if (!orgId.equals(dto.getOrganizationId())) {
             throw new CommonException(ORGANIZATION_ID_NOT_EQUAL_EXCEPTION);
         }
-        return clientDTO;
+        return dto;
     }
 
     @Override
-    public PageInfo<ClientDTO> list(ClientDTO clientDTO, int page, int size, String param) {
-        isOrgExist(clientDTO.getOrganizationId());
-        return clientRepository.pagingQuery(page,size,clientDTO,param);
+    public PageInfo<ClientDTO> list(ClientDTO clientDTO, PageRequest pageRequest, String param) {
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> clientMapper.fulltextSearch(clientDTO, param));
     }
 
     @Override
     public void check(ClientDTO client) {
-        Boolean checkName = !StringUtils.isEmpty(client.getName());
-        if (!checkName) {
-            throw new CommonException("error.clientName.null");
-        } else {
-            checkName(client);
+        String name = client.getName();
+        if (StringUtils.isEmpty(name)) {
+            throw new EmptyParamException(("error.clientName.null"));
         }
+        checkName(client);
     }
 
     @Override
-    public PageInfo<ClientDTO> pagingQueryUsersByRoleIdOnSiteLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId) {
-        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, 0L, ResourceLevel.SITE.value());
+    public PageInfo<ClientDTO> pagingQueryUsersByRoleId(PageRequest pageRequest, ResourceType resourceType, Long sourceId, ClientRoleQuery clientRoleSearchDTO, Long roleId) {
+        String param = Optional.ofNullable(clientRoleSearchDTO).map(dto -> ParamUtils.arrToStr(dto.getParam())).orElse(null);
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize())
+                .doSelectPageInfo(() -> clientMapper.selectClientsByRoleIdAndOptions(roleId, sourceId, resourceType.value(), clientRoleSearchDTO, param));
     }
 
     @Override
-    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnOrganizationLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
-        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.ORGANIZATION.value());
+    public PageInfo<SimplifiedClientDTO> pagingQueryAllClients(PageRequest pageRequest, String params) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize()).doSelectPageInfo(() -> clientMapper.selectAllClientSimplifiedInfo(params));
     }
 
-    @Override
-    public PageInfo<ClientDTO> pagingQueryClientsByRoleIdOnProjectLevel(int page,int size, ClientRoleSearchDTO clientRoleSearchDTO, Long roleId, Long sourceId) {
-        return clientRepository.pagingQueryClientsByRoleIdAndOptions(page,size, clientRoleSearchDTO, roleId, sourceId, ResourceLevel.PROJECT.value());
+    private String generateUniqueName() {
+        String uniqueName;
+        ClientDTO dto = new ClientDTO();
+        while (true) {
+            uniqueName = RandomStringUtils.randomAlphanumeric(12);
+            dto.setName(uniqueName);
+            if (clientMapper.selectOne(dto) == null) {
+                break;
+            }
+        }
+        return uniqueName;
+    }
+
+    private void preUpdate(ClientDTO clientDTO) {
+        if (StringUtils.isEmpty(clientDTO.getName())) {
+            throw new EmptyParamException("error.clientName.empty");
+        }
+        Long id = clientDTO.getId();
+        ClientDTO dto = clientAssertHelper.clientNotExisted(id);
+        //组织id不可修改
+        clientDTO.setOrganizationId(dto.getOrganizationId());
+        validateAdditionalInfo(clientDTO);
+    }
+
+    private void validateAdditionalInfo(ClientDTO clientDTO) {
+        String additionalInfo = clientDTO.getAdditionalInformation();
+        if (StringUtils.isEmpty(additionalInfo)) {
+            clientDTO.setAdditionalInformation("{}");
+        } else if (!JsonUtils.isJSONValid(additionalInfo)) {
+            throw new CommonException("error.client.additionalInfo.notJson");
+        }
     }
 
     private void checkName(ClientDTO client) {
@@ -140,37 +183,19 @@ public class ClientServiceImpl implements ClientService {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setName(name);
         if (createCheck) {
-            Boolean existed = clientRepository.selectOne(clientDTO) != null;
+            Boolean existed = clientMapper.selectOne(clientDTO) != null;
             if (existed) {
-                throw new CommonException("error.clientName.exist");
+                throw new AlreadyExsitedException("error.clientName.exist");
             }
         } else {
             Long id = client.getId();
-            ClientDTO dto = clientRepository.selectOne(clientDTO);
+            ClientDTO dto = clientMapper.selectOne(clientDTO);
             Boolean existed = dto != null && !id.equals(dto.getId());
             if (existed) {
-                throw new CommonException("error.clientName.exist");
+                throw new AlreadyExsitedException("error.clientName.exist");
             }
         }
 
     }
 
-    private void isOrgExist(Long orgId) {
-        if (organizationRepository.selectByPrimaryKey(orgId) == null) {
-            throw new CommonException("error.organization.notFound");
-        }
-    }
-
-    private String generateString(Random random, String characters, int length) {
-        char[] text = new char[length];
-        for (int i = 0; i < length; i++) {
-            text[i] = characters.charAt(random.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    @Override
-    public PageInfo<SimplifiedClientDTO> pagingQueryAllClients(int page, int size, String params) {
-        return clientRepository.pagingAllClientsByParams(page,size, params);
-    }
 }

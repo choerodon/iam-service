@@ -3,7 +3,7 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.api.dto.ApplicationSearchDTO
+import io.choerodon.iam.api.query.ApplicationQuery
 import io.choerodon.iam.app.service.ApplicationService
 import io.choerodon.iam.app.service.impl.ApplicationServiceImpl
 import io.choerodon.iam.infra.asserts.ApplicationAssertHelper
@@ -92,7 +92,7 @@ class ApplicationControllerSpec extends Specification {
 //        PageRequest pageRequest = new PageRequest(0, 10)
 
         when:
-        def result = controller.pagingQuery(1L, 0, 10,false, new ApplicationSearchDTO())
+        def result = controller.pagingQuery(1L, 0, 10,false, new ApplicationQuery())
         then:
         result.statusCode.is2xxSuccessful()
         result.body.list.size() > 0

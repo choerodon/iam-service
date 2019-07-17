@@ -6,7 +6,7 @@ import io.choerodon.iam.infra.dto.ClientDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.iam.api.dto.ClientRoleSearchDTO;
+import io.choerodon.iam.api.query.ClientRoleQuery;
 import io.choerodon.iam.api.dto.SimplifiedClientDTO;
 
 /**
@@ -28,14 +28,14 @@ public interface ClientMapper extends Mapper<ClientDTO> {
             @Param("roleId") Long roleId,
             @Param("sourceType") String sourceType,
             @Param("sourceId") Long sourceId,
-            @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
+            @Param("clientRoleSearchDTO") ClientRoleQuery clientRoleSearchDTO,
             @Param("param") String param);
 
     List<ClientDTO> selectClientsByRoleIdAndOptions(
             @Param("roleId") Long roleId,
             @Param("sourceId") Long sourceId,
             @Param("sourceType") String sourceType,
-            @Param("clientRoleSearchDTO") ClientRoleSearchDTO clientRoleSearchDTO,
+            @Param("clientRoleSearchDTO") ClientRoleQuery clientRoleSearchDTO,
             @Param("param") String param);
 
     List<SimplifiedClientDTO> selectAllClientSimplifiedInfo(@Param("params") String params);

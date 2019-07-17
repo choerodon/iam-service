@@ -2,14 +2,18 @@ package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.api.service.ProjectTypeService;
+import io.choerodon.iam.app.service.ProjectTypeService;
 import io.choerodon.iam.infra.dto.ProjectTypeDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -38,12 +42,13 @@ public class ProjectTypeController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "分页模糊查询项目类型")
     @GetMapping(value = "/paging_query")
-    public ResponseEntity<PageInfo<ProjectTypeDTO>> pagingQuery(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<ProjectTypeDTO>> pagingQuery(@ApiIgnore
+                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                                 @RequestParam(required = false) String name,
                                                                 @RequestParam(required = false) String code,
                                                                 @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(projectTypeService.pagingQuery(page,size, name, code, param), HttpStatus.OK);
+        return new ResponseEntity<>(projectTypeService.pagingQuery(pageRequest, name, code, param), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
@@ -62,7 +67,6 @@ public class ProjectTypeController {
     }
 
     /**
-     *
      * @param projectTypeDTO
      * @return
      */

@@ -21,7 +21,7 @@ public interface OrganizationService {
 
     OrganizationDTO queryOrganizationWithRoleById(Long organizationId);
 
-    PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, int page, int size, String param);
+    PageInfo<OrganizationDTO> pagingQuery(OrganizationDTO organizationDTO, PageRequest pageRequest, String param);
 
     OrganizationDTO enableOrganization(Long organizationId, Long userId);
 
@@ -30,7 +30,7 @@ public interface OrganizationService {
     void check(OrganizationDTO organization);
 
     PageInfo<UserDTO> pagingQueryUsersInOrganization(Long organizationId,
-                                                 Long userId, String email, int page, int size, String param);
+                                                 Long userId, String email, PageRequest pageRequest, String param);
 
     List<OrganizationDTO> queryByIds(Set<Long> ids);
 
@@ -39,7 +39,7 @@ public interface OrganizationService {
      *
      * @return list
      */
-    PageInfo<OrganizationSimplifyDTO> getAllOrgs(int page, int size);
+    PageInfo<OrganizationSimplifyDTO> getAllOrgs(PageRequest pageRequest);
 
 
     /**

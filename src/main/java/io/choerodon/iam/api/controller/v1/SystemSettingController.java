@@ -10,7 +10,6 @@ import io.choerodon.iam.app.service.SystemSettingService;
 import io.choerodon.iam.infra.dto.SystemSettingDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

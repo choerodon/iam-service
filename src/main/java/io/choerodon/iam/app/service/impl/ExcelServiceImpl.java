@@ -6,10 +6,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.iam.app.service.ExcelService;
-import io.choerodon.iam.domain.repository.UploadHistoryRepository;
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.iam.infra.mapper.UploadHistoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -36,17 +36,16 @@ public class ExcelServiceImpl implements ExcelService {
 
     private final Logger logger = LoggerFactory.getLogger(ExcelServiceImpl.class);
 
-    private UploadHistoryRepository uploadHistoryRepository;
-
     private ExcelImportUserTask excelImportUserTask;
     private ExcelImportUserTask.FinishFallback finishFallback;
+    private UploadHistoryMapper uploadHistoryMapper;
 
-    public ExcelServiceImpl(UploadHistoryRepository uploadHistoryRepository,
-                            ExcelImportUserTask excelImportUserTask,
-                            ExcelImportUserTask.FinishFallback finishFallback) {
-        this.uploadHistoryRepository = uploadHistoryRepository;
+    public ExcelServiceImpl(ExcelImportUserTask excelImportUserTask,
+                            ExcelImportUserTask.FinishFallback finishFallback,
+                            UploadHistoryMapper uploadHistoryMapper) {
         this.excelImportUserTask = excelImportUserTask;
         this.finishFallback = finishFallback;
+        this.uploadHistoryMapper = uploadHistoryMapper;
     }
 
     @Override
@@ -77,8 +76,10 @@ public class ExcelServiceImpl implements ExcelService {
         uploadHistory.setUserId(DetailsHelper.getUserDetails().getUserId());
         uploadHistory.setSourceId(organizationId);
         uploadHistory.setSourceType(ResourceLevel.ORGANIZATION.value());
-        uploadHistoryRepository.insertSelective(uploadHistory);
-        return uploadHistory;
+        if (uploadHistoryMapper.insertSelective(uploadHistory) != 1) {
+            throw new CommonException("error.uploadHistory.insert");
+        }
+        return uploadHistoryMapper.selectByPrimaryKey(uploadHistory);
     }
 
     private ExcelReadConfig initExcelReadConfig() {

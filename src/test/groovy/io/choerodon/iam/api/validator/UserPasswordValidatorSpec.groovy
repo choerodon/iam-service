@@ -1,8 +1,6 @@
 package io.choerodon.iam.api.validator
 
 import io.choerodon.core.exception.CommonException
-import io.choerodon.iam.domain.repository.PasswordPolicyRepository
-import io.choerodon.iam.domain.repository.SystemSettingRepository
 import io.choerodon.iam.infra.dto.PasswordPolicyDTO
 import io.choerodon.iam.infra.dto.SystemSettingDTO
 import org.mockito.Mockito
@@ -15,8 +13,8 @@ import spock.lang.Specification
 class UserPasswordValidatorSpec extends Specification {
     def "Validate"() {
         given: '配置validator'
-        PasswordPolicyRepository mockPasswordPolicyRepository = Mockito.mock(PasswordPolicyRepository)
-        SystemSettingRepository mockSystemSettingRepository = Mockito.mock(SystemSettingRepository)
+//        PasswordPolicyRepository mockPasswordPolicyRepository = Mockito.mock(PasswordPolicyRepository)
+//        SystemSettingRepository mockSystemSettingRepository = Mockito.mock(SystemSettingRepository)
         UserPasswordValidator userPasswordValidator = new UserPasswordValidator(mockPasswordPolicyRepository, mockSystemSettingRepository)
 
         and: '组织启用密码策略时'

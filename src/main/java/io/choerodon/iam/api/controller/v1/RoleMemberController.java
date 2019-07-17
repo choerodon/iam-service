@@ -5,14 +5,17 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.validator.ValidList;
 import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.query.ClientRoleQuery;
 import io.choerodon.iam.infra.dto.*;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,7 @@ import io.choerodon.iam.api.validator.MemberRoleValidator;
 import io.choerodon.iam.api.validator.RoleAssignmentViewValidator;
 import io.choerodon.iam.app.service.*;
 import io.choerodon.iam.infra.enums.ExcelSuffix;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author superlee
@@ -45,19 +49,20 @@ public class RoleMemberController extends BaseController {
     private RoleService roleService;
     private UploadHistoryService uploadHistoryService;
 
-    @Autowired
     private MemberRoleValidator memberRoleValidator;
 
     public RoleMemberController(RoleMemberService roleMemberService,
                                 UserService userService,
                                 RoleService roleService,
                                 ClientService clientService,
-                                UploadHistoryService uploadHistoryService) {
+                                UploadHistoryService uploadHistoryService,
+                                MemberRoleValidator memberRoleValidator) {
         this.roleMemberService = roleMemberService;
         this.userService = userService;
         this.roleService = roleService;
         this.uploadHistoryService = uploadHistoryService;
         this.clientService = clientService;
+        this.memberRoleValidator = memberRoleValidator;
     }
 
     /**
@@ -160,13 +165,13 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层分页查询角色下的用户")
     @PostMapping(value = "/site/role_members/users")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnSiteLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnSiteLevel(
-                page, size, roleAssignmentSearchDTO, roleId, doPage), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, doPage), HttpStatus.OK);
     }
 
     /**
@@ -175,38 +180,40 @@ public class RoleMemberController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层分页查询角色下的客户端")
     @PostMapping(value = "/site/role_members/clients")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsByRoleIdOnSiteLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(clientService.pagingQueryUsersByRoleIdOnSiteLevel(page, size, clientRoleSearchDTO, roleId), HttpStatus.OK);
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryUsersByRoleId(pageRequest, ResourceType.SITE, 0L, clientRoleSearchDTO, roleId), HttpStatus.OK);
     }
 
+    @CustomPageRequest
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层分页查询角色下的用户")
     @PostMapping(value = "/organizations/{organization_id}/role_members/users")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnOrganizationLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "organization_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnOrganizationLevel(
-                page, size, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "组织层分页查询角色下的客户端")
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients")
     public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsByRoleIdOnOrganizationLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "organization_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdOnOrganizationLevel(page, size, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryUsersByRoleId(pageRequest, ResourceType.ORGANIZATION, sourceId, clientRoleSearchDTO, roleId), HttpStatus.OK);
     }
 
     /**
@@ -218,28 +225,29 @@ public class RoleMemberController extends BaseController {
      */
     @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的用户")
+    @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/users")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "project_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
             @RequestParam(defaultValue = "true") boolean doPage) {
         return new ResponseEntity<>(userService.pagingQueryUsersByRoleIdOnProjectLevel(
-                page, size, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
+                pageRequest, roleAssignmentSearchDTO, roleId, sourceId, doPage), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层分页查询角色下的客户端")
+    @CustomPageRequest
     @PostMapping(value = "/projects/{project_id}/role_members/clients")
-    public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsByRoleIdOnProjectLevel(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-            @RequestParam(name = "role_id") Long roleId,
-            @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(clientService.pagingQueryClientsByRoleIdOnProjectLevel(page,size, clientRoleSearchDTO, roleId, sourceId), HttpStatus.OK);
+    public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsByRoleIdOnProjectLevel(@ApiIgnore
+                                                                                        @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                                        @RequestParam(name = "role_id") Long roleId,
+                                                                                        @PathVariable(name = "project_id") Long sourceId,
+                                                                                        @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(clientService.pagingQueryUsersByRoleId(pageRequest, ResourceType.PROJECT, sourceId, clientRoleSearchDTO, roleId), HttpStatus.OK);
     }
 
     /**
@@ -265,7 +273,7 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层查询角色列表以及该角色下的客户端数量")
     @PostMapping(value = "/site/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnSiteLevel(
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithClientCountOnSiteLevel(clientRoleSearchDTO), HttpStatus.OK);
     }
 
@@ -277,12 +285,13 @@ public class RoleMemberController extends BaseController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "全局层分页查询site层有角色的用户")
     @GetMapping(value = "/site/role_members/users")
-    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnSiteLevel(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                     @RequestParam(required = false, name = "id") Long userId,
-                                                                     @RequestParam(required = false) String email,
-                                                                     @RequestParam(required = false) String param) {
-        return new ResponseEntity<>(userService.pagingQueryUsersOnSiteLevel(userId, email, page, size, param), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersOnSiteLevel(@ApiIgnore
+                                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                         @RequestParam(required = false, name = "id") Long userId,
+                                                                         @RequestParam(required = false) String email,
+                                                                         @RequestParam(required = false) String param) {
+        return new ResponseEntity<>(userService.pagingQueryUsersOnSiteLevel(userId, email, pageRequest, param), HttpStatus.OK);
     }
 
     /**
@@ -310,7 +319,7 @@ public class RoleMemberController extends BaseController {
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnOrganizationLevel(
             @PathVariable(name = "organization_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithClientCountOnOrganizationLevel(
                 clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
@@ -340,7 +349,7 @@ public class RoleMemberController extends BaseController {
     @PostMapping(value = "/projects/{project_id}/role_members/clients/count")
     public ResponseEntity<List<RoleDTO>> listRolesWithClientCountOnProjectLevel(
             @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
         return new ResponseEntity<>(roleService.listRolesWithClientCountOnProjectLevel(
                 clientRoleSearchDTO, sourceId), HttpStatus.OK);
     }
@@ -353,12 +362,11 @@ public class RoleMemberController extends BaseController {
     @Permission(type = ResourceType.SITE, roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @PostMapping(value = "/site/role_members/users/roles")
-    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersWithSiteLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
-                page, size, roleAssignmentSearchDTO), HttpStatus.OK);
+    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersWithSiteLevelRoles(@ApiIgnore
+                                                                                @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                                @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRoles(
+                pageRequest, roleAssignmentSearchDTO, 0L, ResourceType.SITE), HttpStatus.OK);
     }
 
     /**
@@ -370,11 +378,11 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层查询用户列表以及该用户拥有的角色")
     @PostMapping(value = "/site/role_members/users/roles/for_all")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersWithSiteLevelRolesWithDeveloper(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithSiteLevelRoles(
-                page, size, roleAssignmentSearchDTO), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRoles(
+                pageRequest, roleAssignmentSearchDTO, 0L, ResourceType.SITE), HttpStatus.OK);
     }
 
     /**
@@ -386,10 +394,10 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "全局层查询客户端列表以及该客户端拥有的角色")
     @PostMapping(value = "/site/role_members/clients/roles")
     public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsWithSiteLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithSiteLevelRoles(page,size, clientRoleSearchDTO), HttpStatus.OK);
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithRoles(pageRequest, clientRoleSearchDTO, 0L, ResourceType.SITE), HttpStatus.OK);
     }
 
     /**
@@ -401,12 +409,12 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "组织层查询用户列表以及该用户拥有的角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members/users/roles")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersWithOrganizationLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(name = "organization_id") Long sourceId,
             @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithOrganizationLevelRoles(
-                page, size, roleAssignmentSearchDTO, sourceId), HttpStatus.OK);
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRoles(
+                pageRequest, roleAssignmentSearchDTO, sourceId, ResourceType.ORGANIZATION), HttpStatus.OK);
     }
 
     /**
@@ -418,11 +426,11 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "组织层查询客户端列表以及该客户端拥有的角色")
     @PostMapping(value = "/organizations/{organization_id}/role_members/clients/roles")
     public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsWithOrganizationLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(name = "organization_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithOrganizationLevelRoles(page,size, clientRoleSearchDTO, sourceId), HttpStatus.OK);
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithRoles(pageRequest, clientRoleSearchDTO, sourceId, ResourceType.ORGANIZATION), HttpStatus.OK);
     }
 
     /**
@@ -430,20 +438,18 @@ public class RoleMemberController extends BaseController {
      *
      * @param sourceId                源id，即项目id
      * @param roleAssignmentSearchDTO 查询请求体，无查询条件需要传{}
-     * @param doPage                  做不做分页，如果为false，返回一个page对象，context里为所有数据，没有做分页处理
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = InitRoleCode.PROJECT_OWNER)
     @ApiOperation(value = "项目层查询用户列表以及该用户拥有的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/users/roles")
     public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersWithProjectLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-            @RequestParam(defaultValue = "true") boolean doPage) {
-        return new ResponseEntity<>(userService.pagingQueryUsersWithProjectLevelRoles(
-                page, size, roleAssignmentSearchDTO, sourceId, doPage), HttpStatus.OK);
+            @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        return new ResponseEntity<>(userService.pagingQueryUsersWithRoles(
+                pageRequest, roleAssignmentSearchDTO, sourceId, ResourceType.PROJECT), HttpStatus.OK);
     }
 
 
@@ -456,11 +462,11 @@ public class RoleMemberController extends BaseController {
     @ApiOperation(value = "项目层查询客户端列表以及该客户端拥有的角色")
     @PostMapping(value = "/projects/{project_id}/role_members/clients/roles")
     public ResponseEntity<PageInfo<ClientDTO>> pagingQueryClientsWithProjectLevelRoles(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(name = "project_id") Long sourceId,
-            @RequestBody(required = false) @Valid ClientRoleSearchDTO clientRoleSearchDTO) {
-        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithProjectLevelRoles(page,size, clientRoleSearchDTO, sourceId), HttpStatus.OK);
+            @RequestBody(required = false) @Valid ClientRoleQuery clientRoleSearchDTO) {
+        return new ResponseEntity<>(roleMemberService.pagingQueryClientsWithRoles(pageRequest, clientRoleSearchDTO, sourceId, ResourceType.PROJECT), HttpStatus.OK);
     }
 
 
@@ -577,19 +583,21 @@ public class RoleMemberController extends BaseController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "分页查询全平台层用户（未禁用）")
     @GetMapping(value = "/all/users")
-    public ResponseEntity<PageInfo<SimplifiedUserDTO>> queryAllUsers(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                 @RequestParam(value = "organization_id") Long organizationId,
-                                                                 @RequestParam(value = "param", required = false) String param) {
-        return new ResponseEntity<>(userService.pagingQueryAllUser(page, size, param, organizationId), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<SimplifiedUserDTO>> queryAllUsers(@ApiIgnore
+                                                                     @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                     @RequestParam(value = "organization_id") Long organizationId,
+                                                                     @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(userService.pagingQueryAllUser(pageRequest, param, organizationId), HttpStatus.OK);
     }
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "分页查询全平台层客户端")
     @GetMapping(value = "/all/clients")
-    public ResponseEntity<PageInfo<SimplifiedClientDTO>> queryAllClients(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                     @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                     @RequestParam(value = "param", required = false) String param) {
-        return new ResponseEntity<>(clientService.pagingQueryAllClients(page, size, param), HttpStatus.OK);
+    @CustomPageRequest
+    public ResponseEntity<PageInfo<SimplifiedClientDTO>> queryAllClients(@ApiIgnore
+                                                                         @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                         @RequestParam(value = "param", required = false) String param) {
+        return new ResponseEntity<>(clientService.pagingQueryAllClients(pageRequest, param), HttpStatus.OK);
     }
 }

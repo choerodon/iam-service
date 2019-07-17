@@ -3,6 +3,8 @@ package io.choerodon.iam.api.controller.v1;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
 import io.choerodon.core.iam.ResourceLevel;
@@ -13,6 +15,8 @@ import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author superlee
@@ -95,12 +100,13 @@ public class OrganizationUserController extends BaseController {
     @Permission(type = ResourceType.ORGANIZATION)
     @ApiOperation(value = "分页查询用户")
     @PostMapping(value = "/users/search")
+    @CustomPageRequest
     public ResponseEntity<PageInfo<UserDTO>> list(@PathVariable(name = "organization_id") Long organizationId,
-                                                  @RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                  @ApiIgnore
+                                                  @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
                                                   @RequestBody UserSearchDTO user) {
         user.setOrganizationId(organizationId);
-        return new ResponseEntity<>(organizationUserService.pagingQuery(page,size, user), HttpStatus.OK);
+        return new ResponseEntity<>(organizationUserService.pagingQuery(pageRequest, user), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)

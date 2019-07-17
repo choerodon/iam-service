@@ -1,7 +1,7 @@
 //package io.choerodon.iam.api.eventhandler
 //
 //import io.choerodon.eureka.event.EurekaEventPayload
-//import io.choerodon.iam.domain.service.ParsePermissionService
+//import io.choerodon.iam.app.service.UploadHistoryService.ParsePermissionService
 //import spock.lang.Specification
 //
 //class ParsePermissionListenerSpec extends Specification {
