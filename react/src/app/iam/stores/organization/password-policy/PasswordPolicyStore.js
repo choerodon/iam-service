@@ -3,7 +3,7 @@ import { axios, store } from '@choerodon/boot';
 
 @store('PasswordPolicyStore')
 class PasswordPolicyStore {
-  @observable passwordPolicy = null;
+  @observable _passwordPolicy = null;
   @observable isLoading = true;
 
   @action setIsLoading(flag) {
@@ -15,15 +15,15 @@ class PasswordPolicyStore {
   }
 
   @action setPasswordPolicy(data) {
-    this.passwordPolicy = data;
+    this._passwordPolicy = data;
   }
 
-  @computed get getPasswordPolicy() {
-    return this.passwordPolicy;
+  @computed get passwordPolicy() {
+    return this._passwordPolicy;
   }
 
   @action cleanData() {
-    this.passwordPolicy = {};
+    this._passwordPolicy = {};
   }
 
   @action setPasswordChange(change) {
@@ -43,12 +43,16 @@ class PasswordPolicyStore {
   }
 
   loadData(organizationId) {
-    return axios.get(`/iam/v1/organizations/${organizationId}/password_policies`);
+    return axios.get(
+      `/iam/v1/organizations/${organizationId}/password_policies`
+    );
   }
 
-  updatePasswordPolicy = (orgId, id, data) => (
-    axios.post(`/iam/v1/organizations/${orgId}/password_policies/${id}`, JSON.stringify(data))
-  )
+  updatePasswordPolicy = (orgId, id, data) =>
+    axios.post(
+      `/iam/v1/organizations/${orgId}/password_policies/${id}`,
+      JSON.stringify(data)
+    );
 }
 
 const passwordPolicyStore = new PasswordPolicyStore();
