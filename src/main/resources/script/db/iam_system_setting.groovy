@@ -64,4 +64,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_system_setting.groovy') {
             }
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-system-setting-add-remark') {
+        setTableRemarks(tableName:"IAM_SYSTEM_SETTING",remarks: "系统设置表")
+    }
 }

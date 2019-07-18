@@ -125,4 +125,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu.groovy') {
             sql("rename IAM_MENU_S TO IAM_MENU_B_S")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-menu-add-remark') {
+        setTableRemarks(tableName:"IAM_MENU_B",remarks: "菜单表")
+        setTableRemarks(tableName:"IAM_MENU_TL",remarks: "菜单多语言表")
+    }
 }

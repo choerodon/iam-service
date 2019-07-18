@@ -35,4 +35,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_relationship.groovy') {
             column(name: 'PROGRAM_ID', type: 'BIGINT UNSIGNED', remarks: '所属项目ID（只包含PROGRAM类型）', afterColumn: 'PARENT_ID')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-project-relationship-add-remark') {
+        setTableRemarks(tableName:"FD_PROJECT_RELATIONSHIP",remarks: "项目关系表")
+    }
 }

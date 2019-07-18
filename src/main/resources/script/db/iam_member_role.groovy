@@ -38,4 +38,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_member_role.groovy') {
         }
         addUniqueConstraint(tableName: 'IAM_MEMBER_ROLE', columnNames: 'ROLE_ID, MEMBER_ID, MEMBER_TYPE, SOURCE_ID, SOURCE_TYPE', constraintName: 'UK_IAM_MEMBER_ROLE_U1')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-member-role-add-remark') {
+        setTableRemarks(tableName:"IAM_MEMBER_ROLE",remarks: "成员角色关系表。成员可以是user/client等，使用member_type字段标记")
+    }
 }

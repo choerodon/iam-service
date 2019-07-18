@@ -52,4 +52,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup_value.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-lookup-value-add-remark') {
+        setTableRemarks(tableName:"FD_LOOKUP_VALUE",remarks: "快码值表")
+        setTableRemarks(tableName:"FD_LOOKUP_VALUE_TL",remarks: "快码值表的多语言表")
+    }
 }

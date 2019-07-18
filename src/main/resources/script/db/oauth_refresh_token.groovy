@@ -26,4 +26,8 @@ databaseChangeLog(logicalFilePath: 'oauth_refresh_token.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-refresh-token-add-remark') {
+        setTableRemarks(tableName:"OAUTH_REFRESH_TOKEN",remarks: "oauth的refresh token表")
+    }
 }

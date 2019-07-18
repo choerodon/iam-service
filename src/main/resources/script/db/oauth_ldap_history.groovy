@@ -31,4 +31,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap_history.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-ldap-history-add-remark') {
+        setTableRemarks(tableName:"OAUTH_LDAP_HISTORY",remarks: "ldap同步历史记录表")
+    }
 }

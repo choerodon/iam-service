@@ -43,4 +43,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_menu_permission.groovy') {
         }
         renameColumn(tableName:'IAM_MENU_PERMISSION',oldColumnName:'MENU_ID',newColumnName:'MENU_CODE',columnDataType:'VARCHAR(128)',remarks:'menu code')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-menu-permission-add-remark') {
+        setTableRemarks(tableName:"IAM_MENU_PERMISSION",remarks: "菜单权限关系表")
+    }
 }

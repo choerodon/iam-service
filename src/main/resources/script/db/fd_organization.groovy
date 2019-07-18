@@ -89,4 +89,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
         }
     }
 
+    changeSet(author: 'superlee', id: '2019-07-18-fd-organization-add-remark') {
+        setTableRemarks(tableName:"FD_ORGANIZATION",remarks: "组织表")
+    }
+
 }

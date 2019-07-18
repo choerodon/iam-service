@@ -93,5 +93,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role.groovy') {
         }
     }
 
-
+    changeSet(author: 'superlee', id: '2019-07-18-iam-role-add-remark') {
+        setTableRemarks(tableName:"IAM_ROLE",remarks: "角色表")
+        setTableRemarks(tableName:"IAM_ROLE_TL",remarks: "角色多语言表")
+    }
 }

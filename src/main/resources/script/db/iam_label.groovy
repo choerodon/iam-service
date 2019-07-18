@@ -42,4 +42,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_label.groovy') {
     changeSet(author: 'superleader8@gmail.com', id: '2018-08-22-rename') {
         renameColumn(columnDataType: 'VARCHAR(32)', newColumnName: "FD_LEVEL", oldColumnName: "LEVEL", remarks: '层级', tableName: 'IAM_LABEL')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-label-add-remark') {
+        setTableRemarks(tableName:"IAM_LABEL",remarks: "标签表")
+    }
 }

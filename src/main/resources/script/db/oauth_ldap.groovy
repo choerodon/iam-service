@@ -134,4 +134,7 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_ldap.groovy') {
         renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "LDAP_PASSWORD", oldColumnName: "PASSWORD", remarks: 'ldap登陆密码', tableName: 'OAUTH_LDAP')
     }
 
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-ldap-add-remark') {
+        setTableRemarks(tableName:"OAUTH_LDAP",remarks: "ldap配置表")
+    }
 }

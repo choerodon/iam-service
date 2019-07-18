@@ -46,4 +46,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_upload_history.groovy') {
             column(name: 'SOURCE_TYPE', type: 'VARCHAR(32)', remarks: '创建该记录的源类型，sit/organization/project', afterColumn: 'SOURCE_ID')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-upload-history-add-remark') {
+        setTableRemarks(tableName:"IAM_UPLOAD_HISTORY",remarks: "上传历史记录表")
+    }
 }

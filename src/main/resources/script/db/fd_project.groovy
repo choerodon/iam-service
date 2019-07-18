@@ -56,4 +56,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project.groovy') {
             column(name: 'CATEGORY', type: 'VARCHAR(64)', remarks: '项目类别：AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)', afterColumn: 'TYPE', defaultValue: 'AGILE')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-project-add-remark') {
+        setTableRemarks(tableName:"FD_PROJECT",remarks: "项目表")
+    }
 }

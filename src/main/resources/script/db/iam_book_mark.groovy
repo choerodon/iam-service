@@ -38,4 +38,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_book_mark.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-book-mark-add-remark') {
+        setTableRemarks(tableName:"IAM_BOOK_MARK",remarks: "书签表")
+    }
 }

@@ -94,4 +94,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_permission.groovy') {
         dropNotNullConstraint(columnDataType: 'VARCHAR(64)', columnName: 'METHOD', tableName: 'IAM_PERMISSION')
         dropNotNullConstraint(columnDataType: 'VARCHAR(64)', columnName: 'ACTION', tableName: 'IAM_PERMISSION')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-permission-add-remark') {
+        setTableRemarks(tableName:"IAM_PERMISSION",remarks: "权限表")
+    }
 }

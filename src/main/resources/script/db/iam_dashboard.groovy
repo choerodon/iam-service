@@ -89,4 +89,9 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-dashboard-add-remark') {
+        setTableRemarks(tableName:"IAM_DASHBOARD",remarks: "仪表盘表")
+        setTableRemarks(tableName:"IAM_DASHBOARD_TL",remarks: "仪表盘多语言表")
+    }
 }

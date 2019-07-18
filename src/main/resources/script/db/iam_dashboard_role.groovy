@@ -36,4 +36,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_dashboard_role.groovy') {
         renameColumn(columnDataType: 'VARCHAR(64)', newColumnName: "DASHBOARD_CODE", oldColumnName: "DASHBOARD_ID", remarks: 'Dashboard代码', tableName: 'IAM_DASHBOARD_ROLE')
     }
 
+    changeSet(author: 'superlee', id: '2019-07-18-iam-dashboard-role-add-remark') {
+        setTableRemarks(tableName:"IAM_DASHBOARD_ROLE",remarks: "仪表盘与角色关系表")
+    }
+
 }

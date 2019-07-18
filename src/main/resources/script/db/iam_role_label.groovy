@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role_label.groovy') {
         }
         addUniqueConstraint(tableName: 'IAM_ROLE_LABEL', columnNames: 'ROLE_ID, LABEL_ID', constraintName: 'UK_IAM_ROLE_LABEL_U1')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-role-label-add-remark') {
+        setTableRemarks(tableName:"IAM_ROLE_LABEL",remarks: "角色标签关系表")
+    }
 }
