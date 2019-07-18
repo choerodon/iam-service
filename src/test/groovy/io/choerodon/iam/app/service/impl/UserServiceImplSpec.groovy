@@ -5,10 +5,15 @@ import io.choerodon.asgard.saga.feign.SagaClient
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
 import io.choerodon.iam.api.dto.UserPasswordDTO
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.UserService
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper
+import io.choerodon.iam.infra.asserts.RoleAssertHelper
+import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.MemberRoleDTO
 import io.choerodon.iam.infra.dto.OrganizationDTO
@@ -16,8 +21,12 @@ import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.dto.RoleDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
+import io.choerodon.iam.infra.feign.NotifyFeignClient
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
+import io.choerodon.iam.infra.mapper.OrganizationMapper
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
+import io.choerodon.iam.infra.mapper.ProjectMapper
+import io.choerodon.iam.infra.mapper.UserMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
@@ -29,6 +38,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.mock.web.MockMultipartFile
@@ -38,71 +50,76 @@ import spock.lang.Specification
 
 import java.lang.reflect.Field
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan* */
-@RunWith(PowerMockRunner)
-@PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper])
+ * @author dengyouquan*    */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class UserServiceImplSpec extends Specification {
-//    private UserRepository userRepository = Mock(UserRepository)
-//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-//    private ProjectRepository projectRepository = Mock(ProjectRepository)
-    private PasswordRecord passwordRecord = Mock(PasswordRecord)
-    private FileFeignClient fileFeignClient = Mock(FileFeignClient)
-    private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
-    private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
-//    private RoleRepository roleRepository = Mock(RoleRepository)
-    private SagaClient sagaClient = Mock(SagaClient)
-    private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
-    private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
-    private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
     private UserService userService
-    private Long userId
+
+    @Autowired
+    PasswordRecord passwordRecord
+    FileFeignClient fileFeignClient = Mock(FileFeignClient)
+    SagaClient sagaClient = Mock(SagaClient)
+    @Autowired
+    BasePasswordPolicyMapper basePasswordPolicyMapper
+    @Autowired
+    UserPasswordValidator userPasswordValidator
+    @Autowired
+    PasswordPolicyManager passwordPolicyManager
+    @Autowired
+    MemberRoleMapper memberRoleMapper
+    @Autowired
+    ProjectMapCategoryMapper projectMapCategoryMapper
+    NotifyFeignClient notifyFeignClient = Mock(NotifyFeignClient)
+    @Autowired
+    UserMapper userMapper
+    @Autowired
+    UserAssertHelper userAssertHelper
+    @Autowired
+    OrganizationAssertHelper organizationAssertHelper
+    @Autowired
+    ProjectMapper projectMapper
+    @Autowired
+    OrganizationMapper organizationMapper
+    @Autowired
+    ProjectAssertHelper projectAssertHelper
+    @Autowired
+    RoleAssertHelper roleAssertHelper
+
 
     def setup() {
         given: "构造userService"
-        userService = new UserServiceImpl(userRepository, organizationRepository,
-                projectRepository, passwordRecord, fileFeignClient,
-                sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager, roleRepository,
-                memberRoleMapper, projectMapCategoryMapper)
+        userService = new UserServiceImpl(passwordRecord, fileFeignClient,
+                sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager,
+                memberRoleMapper, projectMapCategoryMapper, notifyFeignClient, userMapper,
+                userAssertHelper, organizationAssertHelper, projectMapper, organizationMapper,
+                projectAssertHelper, roleAssertHelper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(userService, true)
 
         and: "mock静态方法-CustomUserDetails"
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
-        userId = DetailsHelper.getUserDetails().getUserId()
+        DetailsHelper.setCustomUserDetails(1L,"zh_CN")
     }
 
     def "QuerySelf"() {
-        given: "mock静态方法-ConvertHelper"
-        def userDTO = new UserDTO()
-        userDTO.setOrganizationId(1L)
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(userDTO)
-        UserDTO user = new UserDTO();
-        user.setPassword("password")
-
-
         when: "调用方法"
-        userService.querySelf()
+        def result = userService.querySelf()
 
         then: "校验结果"
-        1 * userRepository.selectByPrimaryKey(_) >> { user }
-//        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
+        result.getId() == 1
     }
 
     def "QueryOrganizations"() {
-//        given: "mock静态方法-ConvertHelper"
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convertList(Mockito.any(), Mockito.any())).thenReturn(new ArrayList<OrganizationDTO>())
 
         when: "调用方法"
-        userService.queryOrganizations(userId, false)
+        def result = userService.queryOrganizations(1L, false)
 
         then: "校验结果"
-        1 * organizationRepository.selectAll() >> { new ArrayList<OrganizationDTO>() }
+        result.get(0).getId()==1
     }
 
     def "QueryProjects"() {

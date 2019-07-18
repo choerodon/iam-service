@@ -3,10 +3,10 @@ package io.choerodon.iam.api.controller.v1
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
-import io.choerodon.iam.app.service.SystemSettingService
 import io.choerodon.iam.app.service.impl.SystemSettingServiceImpl
 import io.choerodon.iam.infra.dto.SystemSettingDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
+import io.choerodon.iam.infra.mapper.SystemSettingMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -31,8 +31,8 @@ class SystemSettingControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
 
-//    @Autowired
-//    private SystemSettingRepository systemSettingRepository
+    @Autowired
+    SystemSettingMapper settingMapper
 
     FileFeignClient fileFeignClient = Mock(FileFeignClient)
     SagaClient sagaClient = Mock(SagaClient)
@@ -51,7 +51,7 @@ class SystemSettingControllerSpec extends Specification {
         settingDTO.setSystemTitle("Choerodon Platform")
         settingDTO.setSystemLogo("http://minio.staging.saas.hand-china.com/iam-service/file_2913c259dc524231909f5e6083e4c2bf_test.png")
 
-        service = new SystemSettingServiceImpl(fileFeignClient, systemSettingRepository, sagaClient, false)
+        service = new SystemSettingServiceImpl(fileFeignClient, sagaClient, settingMapper, false)
         controller = new SystemSettingController(service)
 
     }

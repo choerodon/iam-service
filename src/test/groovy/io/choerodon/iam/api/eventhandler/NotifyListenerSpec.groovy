@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.payload.UserEventPayload
 import io.choerodon.iam.app.service.UserService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
@@ -15,7 +16,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class NotifyListenerSpec extends Specification {
-    private UserService userService = Mock(userService)
+    @Autowired
+    private UserService userService
     private NotifyListener notifyListener = new NotifyListener(userService)
     private final ObjectMapper mapper = new ObjectMapper()
 

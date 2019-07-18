@@ -81,7 +81,6 @@ public class ExcelImportUserTask {
     @Async("excel-executor")
     public void importUsers(Long userId, List<UserDTO> users, Long organizationId, UploadHistoryDTO uploadHistory, FinishFallback fallback) {
         logger.info("### begin to import users from excel, total size : {}", users.size());
-        //线程安全arrayList，parallelStream并行处理过程中防止扩容数组越界
         List<UserDTO> validateUsers = new ArrayList<>();
         List<ErrorUserDTO> errorUsers = new ArrayList<>();
         long begin = System.currentTimeMillis();

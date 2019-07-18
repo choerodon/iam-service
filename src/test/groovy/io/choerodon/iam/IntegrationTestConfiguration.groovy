@@ -50,20 +50,20 @@ class IntegrationTestConfiguration {
 
     final ObjectMapper objectMapper = new ObjectMapper()
 
-    @Bean
-    LdapService LdapService() {
-        LdapService ldapService = Mockito.mock(LdapService)
-        LdapConnectionDTO dto = new LdapConnectionDTO()
-        dto.setMatchAttribute(true)
-        dto.setCanLogin(true)
-        dto.setCanConnectServer(true)
-        LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate)
-        Map<String, Object> map = new HashMap<>(2)
-        map.put(LdapServiceImpl.LDAP_CONNECTION_DTO, dto)
-        map.put(LdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
-        Mockito.doReturn(map).when(ldapService).testConnect(Mockito.any(LdapDTO.class))
-        return ldapService
-    }
+//    @Bean
+//    LdapService LdapService() {
+//        LdapService ldapService = Mockito.mock(LdapServiceImpl)
+//        LdapConnectionDTO dto = new LdapConnectionDTO()
+//        dto.setMatchAttribute(true)
+//        dto.setCanLogin(true)
+//        dto.setCanConnectServer(true)
+//        LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate)
+//        Map<String, Object> map = new HashMap<>(2)
+//        map.put(LdapServiceImpl.LDAP_CONNECTION_DTO, dto)
+//        map.put(LdapServiceImpl.LDAP_TEMPLATE, ldapTemplate)
+//        Mockito.doReturn(map).when(ldapService).testConnect(Mockito.any(LdapDTO.class))
+//        return ldapService
+//    }
 
     @Bean("mockDiscoveryClient")
     @Primary
