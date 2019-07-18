@@ -129,7 +129,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.organization.notFound")
+        entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用插入方法[异常-name重复]"
         paramMap.put("organization_id", organizationId)
@@ -137,7 +137,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.clientName.exist")
+        entity.getBody().getCode().equals("error.db.duplicateKey")
     }
 
     def "CreateInfo"() {
@@ -164,7 +164,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.clientName.null")
+        entity.getBody().getCode().equals("error.clientName.empty")
 
         when: "调用更新方法[异常-client_id不存在]"
         updateClientDTO.setName("update-client")
@@ -173,7 +173,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.client.not.exist")
+        entity.getBody().getCode().equals("error.client.not.existed")
 
         when: "调用更新方法[异常-org_id不相同]"
         paramMap.put("organization_id", notExistOrganizationId)
@@ -245,7 +245,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody()
+//        entity.getBody()
     }
 
     def "Query"() {
@@ -261,7 +261,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.client.not.exist")
+        entity.getBody().getCode().equals("error.client.not.existed")
 
         when: "调用方法-[异常-org_id不相同]"
         paramMap.put("organization_id", notExistOrganizationId)
@@ -296,7 +296,7 @@ class ClientControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.client.not.exist")
+        entity.getBody().getCode().equals("error.client.not.existed")
 
         when: "调用方法[异常-组织id不同]"
         paramMap.put("client_name", queryClientDTO.getName())
@@ -339,7 +339,7 @@ class ClientControllerSpec extends Specification {
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
         entity.body.pages == 1
-        entity.body.total == 3
+        entity.body.total == 4
     }
 
     def "Check"() {

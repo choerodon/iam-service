@@ -2,149 +2,169 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.core.oauth.DetailsHelper
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.ProjectTypeService
 import io.choerodon.iam.app.service.OrganizationProjectService
+import io.choerodon.iam.app.service.RoleMemberService
 import io.choerodon.iam.app.service.UserService
-import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dto.OrganizationDTO
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper
+import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.dto.ProjectDTO
-import io.choerodon.iam.infra.dto.RoleDTO
-import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.AsgardFeignClient
+import io.choerodon.iam.infra.mapper.LabelMapper
 import io.choerodon.iam.infra.mapper.ProjectCategoryMapper
 import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
-import org.junit.runner.RunWith
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
+import io.choerodon.iam.infra.mapper.ProjectMapper
+import io.choerodon.iam.infra.mapper.ProjectRelationshipMapper
+import io.choerodon.iam.infra.mapper.ProjectTypeMapper
+import io.choerodon.iam.infra.mapper.RoleMapper
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
 import java.lang.reflect.Field
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan* */
-@RunWith(PowerMockRunner)
-@PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper])
+ * @author dengyouquan*  */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class OrganizationProjectServiceImplSpec extends Specification {
-//    private ProjectRepository projectRepository = Mock(ProjectRepository)
-//    private UserRepository userRepository = Mock(UserRepository)
-//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-//    private RoleRepository roleRepository = Mock(RoleRepository)
-//    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
-//    private LabelRepository labelRepository = Mock(LabelRepository)
     private SagaClient sagaClient = Mock(SagaClient)
-    private UserService userService = Mock(UserService)
     private AsgardFeignClient asgardFeignClient = Mock(AsgardFeignClient)
-    private ProjectTypeService projectTypeService = Mock(ProjectTypeService)
+    @Autowired
+    private UserService userService
+    @Autowired
+    private ProjectTypeService projectTypeService
+    @Autowired
     private OrganizationProjectService organizationProjectService
-//    private ProjectRelationshipRepository projectRelationshipRepository
-    private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
-    private ProjectCategoryMapper projectCategoryMapper = Mock(ProjectCategoryMapper)
+    @Autowired
+    private ProjectMapCategoryMapper projectMapCategoryMapper
+    @Autowired
+    private ProjectCategoryMapper projectCategoryMapper
+    @Autowired
+    private ProjectMapper projectMapper
+    @Autowired
+    ProjectAssertHelper projectAssertHelper
+    @Autowired
+    ProjectTypeMapper projectTypeMapper
+    @Autowired
+    OrganizationAssertHelper organizationAssertHelper
+    @Autowired
+    UserAssertHelper userAssertHelper
+    @Autowired
+    RoleMapper roleMapper
+    @Autowired
+    LabelMapper labelMapper
+
+    @Autowired
+    ProjectRelationshipMapper projectRelationshipMapper
+    @Autowired
+    RoleMemberService roleMemberService
 
     def setup() {
         given: "构造organizationProjectService"
-        organizationProjectService = new OrganizationProjectServiceImpl(projectRepository,
-                userRepository, organizationRepository, roleRepository,
-                memberRoleRepository, labelRepository, sagaClient, userService, asgardFeignClient,
-                projectTypeService, projectRelationshipRepository, projectMapCategoryMapper, projectCategoryMapper)
+        organizationProjectService = new OrganizationProjectServiceImpl(sagaClient, userService, asgardFeignClient, projectMapCategoryMapper,
+                projectCategoryMapper, projectMapper, projectAssertHelper, projectTypeMapper, organizationAssertHelper, userAssertHelper,
+                roleMapper, labelMapper, projectRelationshipMapper, roleMemberService)
         Field field = organizationProjectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationProjectService, true)
 
-        and: "mock静态方法-CustomUserDetails"
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
+        Field field1 = organizationProjectService.getClass().getDeclaredField("categoryEnable")
+        field1.setAccessible(true)
+        field1.set(organizationProjectService, false)
+        DetailsHelper.setCustomUserDetails(1, "zh_CN")
     }
 
+    @Transactional
     def "CreateProject"() {
         given: "构造请求参数"
         ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("name")
+        projectDTO.setCode("code")
+        projectDTO.setEnabled(true)
+        projectDTO.setOrganizationId(1L)
 
-        and: "mock静态方法-ConvertHelper"
-        //ConvertHelper中用到了BeanFactory，必须mock
-        Field field = organizationProjectService.class.getDeclaredField("categoryEnable")
-        field.setAccessible(true)
-        field.setBoolean(organizationProjectService, false)
         when: "调用方法"
-        organizationProjectService.createProject(projectDTO, null)
+        organizationProjectService.createProject(projectDTO)
 
         then: "校验结果"
         noExceptionThrown()
-//        1 * projectRepository.create(_) >> { new ProjectDTO() }
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * roleRepository.selectRolesByLabelNameAndType(_, _) >> {
-            List<RoleDTO> list = new ArrayList<RoleDTO>()
-            list << new RoleDTO()
-            return list
-        }
-        1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
     def "QueryAll"() {
-
         when: "调用方法"
-        organizationProjectService.queryAll(new ProjectDTO())
+        def result = organizationProjectService.queryAll(new ProjectDTO())
 
         then: "校验结果"
-        1 * projectRepository.query(_) >> { new ArrayList<ProjectDTO>() }
+        result.isEmpty()
 
     }
 
+    @Transactional
     def "Update"() {
         given: "mock"
         ProjectDTO projectDTO = new ProjectDTO()
-        projectDTO.setObjectVersionNumber(1)
         projectDTO.setName("name")
-        UserDTO user = new UserDTO()
-        user.setPassword("password")
+        projectDTO.setCode("code")
+        projectDTO.setEnabled(true)
+        projectDTO.setOrganizationId(1L)
+        long id = organizationProjectService.create(projectDTO).getId()
+        ProjectDTO dto = projectMapper.selectByPrimaryKey(id)
+        dto.setName("name1")
+        CustomUserDetails customUserDetails = new CustomUserDetails("admin","admin")
+        customUserDetails.setUserId(1L)
+        customUserDetails.setLanguage("zh_CN")
+        customUserDetails.setTimeZone("zkk")
+        DetailsHelper.setCustomUserDetails(customUserDetails)
 
         when: "调用方法"
-        organizationProjectService.update(1L, projectDTO)
+        def entity = organizationProjectService.update(1L, dto)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * projectRepository.updateSelective(_) >> { new ProjectDTO() }
-        1 * userRepository.selectByLoginName(_) >> { user }
-        1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
+        entity.objectVersionNumber ==2
+
     }
 
+    @Transactional
     def "EnableProject"() {
+        given:""
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("name")
+        projectDTO.setCode("code")
+        projectDTO.setEnabled(true)
+        projectDTO.setOrganizationId(1L)
+        long id =organizationProjectService.create(projectDTO).getId()
 
         when: "调用方法"
-        organizationProjectService.enableProject(1L, 1L, 1L)
+        organizationProjectService.enableProject(1L, id, 1L)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * projectRepository.updateSelective(_) >> { new ProjectDTO() }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
-        1 * projectRepository.listUserIds(_) >> {
-            List<Long> userIds = new ArrayList<>()
-            userIds.add(1L)
-            return userIds
-        }
-        2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * userService.sendNotice(_, _, _, _, _)
     }
 
+
+    @Transactional
     def "DisableProject"() {
+        given:""
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("name")
+        projectDTO.setCode("code")
+        projectDTO.setEnabled(true)
+        projectDTO.setOrganizationId(1L)
+        long id = organizationProjectService.create(projectDTO).getId()
 
         when: "调用方法"
-        organizationProjectService.enableProject(1L, 1L, 1L)
+        organizationProjectService.enableProject(1L, id, 1L)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * projectRepository.updateSelective(_) >> { new ProjectDTO() }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
-        1 * projectRepository.listUserIds(_) >> {
-            List<Long> userIds = new ArrayList<>()
-            userIds.add(1L)
-            return userIds
-        }
-        2 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * userService.sendNotice(_, _, _, _, _)
     }
 }

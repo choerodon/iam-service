@@ -5,10 +5,16 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.app.service.ProjectService
+import io.choerodon.iam.infra.asserts.ProjectAssertHelper
+import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.common.utils.SpockUtils
 import io.choerodon.iam.infra.dto.OrganizationDTO
 import io.choerodon.iam.infra.dto.ProjectDTO
 import io.choerodon.iam.infra.dto.UserDTO
+import io.choerodon.iam.infra.mapper.OrganizationMapper
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
+import io.choerodon.iam.infra.mapper.ProjectMapper
+import io.choerodon.iam.infra.mapper.UserMapper
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.powermock.api.mockito.PowerMockito
@@ -16,12 +22,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
 
 import java.lang.reflect.Field
 
 /**
- * @author dengyouquan* */
+ * @author dengyouquan*    */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
@@ -33,10 +40,23 @@ class ProjectServiceImplSpec extends Specification {
     private SagaClient mockSagaClient = Mock(SagaClient)
     private OrganizationProjectService organizationProjectService = Mock(OrganizationProjectService)
     private ProjectService projectService
+    @Autowired
+    UserMapper userMapper
+    @Autowired
+    ProjectMapper projectMapper
+    @Autowired
+    ProjectAssertHelper projectAssertHelper
+    @Autowired
+    ProjectMapCategoryMapper projectMapCategoryMapper
+    @Autowired
+    UserAssertHelper userAssertHelper
+    @Autowired
+    OrganizationMapper organizationMapper
+
 
     def setup() {
-        projectService = new ProjectServiceImpl(projectRepository,
-                userRepository, organizationRepository, organizationProjectService, mockSagaClient)
+        projectService = new ProjectServiceImpl(organizationProjectService, mockSagaClient,
+                userMapper, projectMapper, projectAssertHelper, projectMapCategoryMapper, userAssertHelper, organizationMapper)
         //反射注入属性
         Field field = projectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)

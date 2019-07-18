@@ -1,26 +1,36 @@
 package io.choerodon.iam.api.validator
 
 import io.choerodon.core.exception.CommonException
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.dto.PasswordPolicyDTO
 import io.choerodon.iam.infra.dto.SystemSettingDTO
+import io.choerodon.iam.infra.mapper.PasswordPolicyMapper
+import io.choerodon.iam.infra.mapper.SystemSettingMapper
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import spock.lang.Specification
+
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
  *
- * @author zmf
- *
+ * @author zmf*
  */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class UserPasswordValidatorSpec extends Specification {
+    @Autowired
+    PasswordPolicyMapper passwordPolicyMapper
+    @Autowired
+    SystemSettingMapper settingMapper
+
+
     def "Validate"() {
         given: '配置validator'
-//        PasswordPolicyRepository mockPasswordPolicyRepository = Mockito.mock(PasswordPolicyRepository)
-//        SystemSettingRepository mockSystemSettingRepository = Mockito.mock(SystemSettingRepository)
-        UserPasswordValidator userPasswordValidator = new UserPasswordValidator(mockPasswordPolicyRepository, mockSystemSettingRepository)
+        UserPasswordValidator userPasswordValidator = new UserPasswordValidator(passwordPolicyMapper, settingMapper)
 
-        and: '组织启用密码策略时'
-        PasswordPolicyDTO passwordPolicyDTO = new PasswordPolicyDTO()
-        passwordPolicyDTO.setEnablePassword(true)
-        Mockito.when(mockPasswordPolicyRepository.queryByOrgId(Mockito.any(Long))).thenReturn(passwordPolicyDTO)
 
         when:
         boolean result = userPasswordValidator.validate("12", 1L, false)
@@ -28,38 +38,5 @@ class UserPasswordValidatorSpec extends Specification {
         then: '校验结果'
         result
 
-        and: '组织未启用密码策略，系统设置为空时'
-        passwordPolicyDTO.setEnablePassword(false)
-        Mockito.when(mockSystemSettingRepository.getSetting()).thenReturn(null)
-
-        when:
-        result = userPasswordValidator.validate("12", 1L, false)
-
-        then: '校验结果'
-        result
-
-        and: '组织未启用密码策略，系统设置不为空时'
-        SystemSettingDTO setting = new SystemSettingDTO()
-        setting.setMinPasswordLength(6)
-        setting.setMaxPasswordLength(16)
-        Mockito.when(mockSystemSettingRepository.getSetting()).thenReturn(setting)
-
-        when: '测试无效的密码'
-        result = userPasswordValidator.validate(" 1  234 ", 1L, false)
-
-        then: '校验结果'
-        !result
-
-        when: '调用抛出异常'
-        userPasswordValidator.validate("12", 1L, true)
-
-        then: '校验结果'
-        thrown(CommonException)
-
-        when: '测试有效的密码'
-        result = userPasswordValidator.validate("123456", 1L, true)
-
-        then: '校验结果'
-        result
     }
 }

@@ -3,63 +3,75 @@ package io.choerodon.iam.app.service.impl
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.validator.UserPasswordValidator
 import io.choerodon.iam.app.service.OrganizationUserService
 import io.choerodon.iam.app.service.SystemSettingService
 import io.choerodon.iam.app.service.UserService
-import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dto.OrganizationDTO
+import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
+import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient
+import io.choerodon.iam.infra.mapper.OrganizationMapper
+import io.choerodon.iam.infra.mapper.UserMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
 import io.choerodon.oauth.core.password.record.PasswordRecord
-import org.junit.runner.RunWith
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
 import org.springframework.beans.BeanUtils
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
 import java.lang.reflect.Field
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan
- * */
-@RunWith(PowerMockRunner)
-@PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper])
+ * @author dengyouquan*    */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class OrganizationUserServiceImplSpec extends Specification {
-    private PasswordRecord passwordRecord = Mock(PasswordRecord)
-//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-//    private UserRepository userRepository = Mock(UserRepository)
-    private UserService userService = Mock(UserService)
     private SagaClient sagaClient = Mock(SagaClient)
-    private PasswordPolicyManager passwordPolicyManager = Mock(PasswordPolicyManager)
-    private BasePasswordPolicyMapper basePasswordPolicyMapper = Mock(BasePasswordPolicyMapper)
     private OauthTokenFeignClient oauthTokenFeignClient = Mock(OauthTokenFeignClient)
-    private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
-    private SystemSettingService systemSettingService = Mock(SystemSettingService)
-    private OrganizationUserService organizationUserService
     private Long userId
+    @Autowired
+    private PasswordRecord passwordRecord
+    @Autowired
+    private UserService userService
+    @Autowired
+    private PasswordPolicyManager passwordPolicyManager
+    @Autowired
+    private BasePasswordPolicyMapper basePasswordPolicyMapper
+    @Autowired
+    private UserPasswordValidator userPasswordValidator
+    @Autowired
+    private SystemSettingService systemSettingService
+    @Autowired
+    private OrganizationUserService organizationUserService
+
+    @Autowired
+    OrganizationAssertHelper organizationAssertHelper
+    @Autowired
+    OrganizationMapper organizationMapper
+    @Autowired
+    UserAssertHelper userAssertHelper
+    @Autowired
+    UserMapper userMapper
 
     def setup() {
         given: "构造organizationUserService"
-        organizationUserService = new OrganizationUserServiceImpl(
-                organizationRepository, userRepository, passwordRecord, passwordPolicyManager,
-                basePasswordPolicyMapper, oauthTokenFeignClient, userPasswordValidator, userService, systemSettingService, sagaClient)
+        organizationUserService = new OrganizationUserServiceImpl(passwordRecord, passwordPolicyManager,
+                basePasswordPolicyMapper, oauthTokenFeignClient, userPasswordValidator, systemSettingService, sagaClient,
+                organizationAssertHelper, organizationMapper, userAssertHelper, userMapper, userService)
         Field field = organizationUserService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(organizationUserService, true)
-
-        and: "mock静态方法-CustomUserDetails"
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
-        userId = DetailsHelper.getUserDetails().getUserId()
+        DetailsHelper.setCustomUserDetails(1L, "zh_CN");
     }
 
+    @Transactional
     def "Create"() {
         given: "mock静态方法-ConvertHelper"
         def checkPassword = false
@@ -67,134 +79,85 @@ class OrganizationUserServiceImplSpec extends Specification {
         userDTO.setId(userId)
         userDTO.setOrganizationId(1L)
         userDTO.setPassword("123456")
-        UserDTO user = new UserDTO()
-        user.setPassword("password")
-        user.setId(1)
-        user.setLoginName("kangkang")
-        user.setEmail("kangkang@qq.com")
-        UserDTO userDO = new UserDTO()
-        BeanUtils.copyProperties(user, userDO)
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(user).thenReturn(userDO).thenReturn(user).thenReturn(userDTO)
+        userDTO.setPassword("password")
+        userDTO.setLoginName("askhfuweasdsha")
+        userDTO.setEmail("kangkang@qq.com")
 
         when: "调用方法"
         organizationUserService.create(userDTO, checkPassword)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
-        1 * userRepository.selectByLoginName(_) >> null
-        1 * userRepository.insertSelective(_) >> userDO
-        1* userRepository.selectByPrimaryKey(_)>>userDO
-        1 * passwordRecord.updatePassword(_, _)
     }
 
+    @Transactional
     def "BatchCreateUsers"() {
         given: "构造请求参数"
         UserDTO user = new UserDTO()
         user.setEnabled(true)
-        user.setId(userId)
+        user.setLoginName("1")
+        user.setEmail("email")
+        user.setOrganizationId(1L)
+        user.setLanguage("zh_CN")
+        user.setTimeZone("zcc")
+        user.setLastPasswordUpdatedAt(new Date())
+        user.setLocked(false)
+
+        UserDTO user1 = new UserDTO()
+        BeanUtils.copyProperties(user, user1)
+        user1.setLoginName("2")
+        user1.setEmail("email2")
         List<UserDTO> insertUsers = new ArrayList<>()
-        insertUsers.add(user)
+        insertUsers << user
+        insertUsers << user1
 
         when: "调用方法"
         organizationUserService.batchCreateUsers(insertUsers)
 
         then: "校验结果"
-        1 * userRepository.insertSelective(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
+    @Transactional
     def "Update"() {
         given: "构造请求参数"
-        UserDTO user = new UserDTO()
-        user.setId(1)
-        user.setLoginName("kangkang")
-        user.setPassword("password")
 
-//        and: "mock ConvertHelper"
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(user).thenReturn(user).thenReturn(new UserDTO())
+        UserDTO dto = userMapper.selectByPrimaryKey(1)
+        dto.setLoginName("abcsa")
 
         when: "调用方法"
-        organizationUserService.update(new UserDTO())
+        organizationUserService.update(dto)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * userRepository.updateSelective(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
+    @Transactional
     def "Delete"() {
-        given: "构造请求参数"
-        def organizationId = 1L
-        UserDTO user = new UserDTO()
-        user.setPassword("password")
-        Field field = user.getClass().getDeclaredField("id")
-        field.setAccessible(true)
-        field.set(user, 1L)
-
-        and: "mock ConvertHelper"
-        OrganizationDTO organization = new OrganizationDTO()
-        organization.setId(1)
-        organization.setName("name")
-        organization.setCode("code")
-        organization.setEnabled(true)
-        organization.setUserId(userId)
-        organization.setAddress("address")
-
         when: "调用方法"
-        organizationUserService.delete(organizationId, userId)
+        organizationUserService.delete(1L, 1L)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * userRepository.selectByPrimaryKey(_) >> { user }
-        1 * userRepository.deleteById(_)
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
+    @Transactional
     def "EnableUser"() {
-        given: "构造请求参数"
-        def organizationId = 1L
-        UserDTO user = new UserDTO()
-        user.setPassword("password")
-        Field field = user.getClass().getDeclaredField("id")
-        field.setAccessible(true)
-        field.set(user, 1L)
-
-//        and: "mock ConvertHelper"
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserDTO())
 
         when: "调用方法"
-        organizationUserService.enableUser(organizationId, userId)
+        organizationUserService.enableUser(1, 1)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * userRepository.selectByPrimaryKey(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
+    @Transactional
     def "DisableUser"() {
-        given: "构造请求参数"
-        def organizationId = 1L
-        UserDTO user = new UserDTO()
-        user.setPassword("password")
-        Field field = user.getClass().getDeclaredField("id")
-        field.setAccessible(true)
-        field.set(user, 1L)
-
-//        and: "mock ConvertHelper"
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserDTO())
 
         when: "调用方法"
-        organizationUserService.disableUser(organizationId, userId)
+        organizationUserService.disableUser(1, 1)
 
         then: "校验结果"
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * userRepository.selectByPrimaryKey(_) >> { user }
-        1 * userService.updateUserDisabled(_) >> { user }
         1 * sagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 }

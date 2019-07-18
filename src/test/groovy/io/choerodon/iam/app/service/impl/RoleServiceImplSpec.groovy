@@ -1,6 +1,7 @@
 package io.choerodon.iam.app.service.impl
 
 import com.github.pagehelper.PageInfo
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.domain.Page
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.RoleSearchDTO
@@ -35,7 +36,9 @@ class RoleServiceImplSpec extends Specification {
         roleQuery.setSourceId(sourceId)
         roleQuery.setWithUser(needUsers)
         roleQuery.setSourceType(sourceType)
-        PageInfo<RoleDTO> page = roleService.pagingSearch(1,20, roleQuery)
+        PageRequest pageRequest = new PageRequest(1,20)
+
+        PageInfo<RoleDTO> page = roleService.pagingSearch(pageRequest, roleQuery)
 
         then: "校验参数"
         page.pages != 0

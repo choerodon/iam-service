@@ -20,8 +20,7 @@ class DevopsListenerSpec extends Specification {
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
     private LabelMapper labelMapper = Mock(LabelMapper)
     private SagaClient sagaClient = Mock(SagaClient)
-    private DevopsListener devopsListener = new DevopsListener(memberRoleMapper,
-            labelMapper, sagaClient)
+    private DevopsListener devopsListener = new DevopsListener(memberRoleMapper,sagaClient,labelMapper)
     int count = 3
 
     def "AssignRolesOnProject"() {

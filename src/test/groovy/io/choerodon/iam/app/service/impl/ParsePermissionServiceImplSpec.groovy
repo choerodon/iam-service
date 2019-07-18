@@ -1,11 +1,15 @@
-package io.choerodon.iam.domain.service.impl
+package io.choerodon.iam.app.service.impl
 
 import io.choerodon.eureka.event.EurekaEventPayload
-import io.choerodon.iam.app.service.impl.ParsePermissionServiceImpl
 import io.choerodon.iam.infra.dto.PermissionDTO
 import io.choerodon.iam.infra.dto.RoleDTO
+import io.choerodon.iam.infra.mapper.PermissionMapper
+import io.choerodon.iam.infra.mapper.RoleMapper
+import io.choerodon.iam.infra.mapper.RolePermissionMapper
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
@@ -13,12 +17,20 @@ import spock.lang.Specification
  * @author dengyouquan
  * */
 class ParsePermissionServiceImplSpec extends Specification {
-//    private PermissionRepository permissionRepository = Mock(PermissionRepository)
-//    private RolePermissionRepository rolePermissionRepository = Mock(RolePermissionRepository)
-//    private RoleRepository roleRepository = Mock(RoleRepository)
-    private ParsePermissionServiceImpl parsePermissionService =
-            new ParsePermissionServiceImpl(permissionRepository, rolePermissionRepository, roleRepository)
 
+    @Autowired
+    PermissionMapper permissionMapper
+
+    @Autowired
+    RolePermissionMapper rolePermissionMapper
+
+    @Autowired
+    RoleMapper roleMapper
+    
+    private ParsePermissionServiceImpl parsePermissionService =
+            new ParsePermissionServiceImpl(permissionMapper, rolePermissionMapper, roleMapper)
+
+    @Transactional
     def "Parser"() {
         given: "构造请求参数"
         PermissionDTO permissionE = new PermissionDTO()
@@ -59,9 +71,6 @@ class ParsePermissionServiceImplSpec extends Specification {
         parsePermissionService.parser(instanceE)
 
         then: "校验结果"
-        roleRepository.selectByCode(_) >> { roleDO }
-        permissionRepository.selectByCode(_) >> permissionE
-        permissionRepository.insertSelective(_) >> permissionE
-        roleRepository.selectInitRolesByPermissionId(_) >> roleList
+        true
     }
 }

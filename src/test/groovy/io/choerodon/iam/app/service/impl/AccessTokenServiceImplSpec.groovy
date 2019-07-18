@@ -1,10 +1,8 @@
 package io.choerodon.iam.app.service.impl
 
-import com.github.pagehelper.PageHelper
-import io.choerodon.core.exception.CommonException
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.dto.AccessTokenDTO
 import io.choerodon.iam.infra.dto.ClientDTO
@@ -126,9 +124,10 @@ class AccessTokenServiceImplSpec extends Specification {
 
         and:
         accessTokenMapper.selectTokens(_, _) >> list
+        PageRequest pageRequest = new PageRequest(1,20)
 
         when:
-        def entity = accessTokenService.pagedSearch(1, 20, "client", "9574c75-e00f-463e-b376-4d1f961acade")
+        def entity = accessTokenService.pagedSearch(pageRequest, "client", "9574c75-e00f-463e-b376-4d1f961acade")
 
         then:
         !entity.list.isEmpty()

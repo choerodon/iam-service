@@ -50,6 +50,6 @@ public class PermissionAssertHelper extends AssertHelper {
     public boolean codeExisted(String code) {
         PermissionDTO dto = new PermissionDTO();
         dto.setCode(code);
-        return permissionMapper.selectOne(dto) == null;
+        return permissionMapper.selectOne(dto) != null;
     }
 }

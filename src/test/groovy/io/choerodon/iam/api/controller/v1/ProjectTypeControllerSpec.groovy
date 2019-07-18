@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.exception.CommonException
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.ProjectTypeService
@@ -48,9 +49,10 @@ class ProjectTypeControllerSpec extends Specification {
     def "pagingQuery"() {
         given:
         ProjectTypeController controller = new ProjectTypeController(service)
+        PageRequest pageRequest = new PageRequest(1, 20)
 
         when:
-        def result = controller.pagingQuery(1,10, null, null, null)
+        def result = controller.pagingQuery(pageRequest, null, null, null)
 
         then:
         result.statusCode.is2xxSuccessful()

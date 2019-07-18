@@ -28,7 +28,6 @@ public class NotifyListener {
     private static final String ADD_USER = "addUser";
     private final ObjectMapper mapper = new ObjectMapper();
 
-
     private UserService userService;
 
     public NotifyListener(UserService userService) {
