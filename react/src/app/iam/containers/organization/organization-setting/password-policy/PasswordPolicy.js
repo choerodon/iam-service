@@ -310,7 +310,7 @@ export default class PasswordPolicy extends Component {
             colSpan={6}
           />
         </Form>
-        <div className="strategy-swtich-container">
+        <div className="strategy-switch-container">
           <h3 className="strategy-switch-title">
             <FormattedMessage id={`${inputPrefix}.login`} />
           </h3>
@@ -406,7 +406,7 @@ export default class PasswordPolicy extends Component {
             : ''}
         </Form>
         <div className="divider" />
-        <div className="btnGroup">
+        <div className="button-group">
           <Permission service={['iam-service.password-policy.update']}>
             <Button
               funcType="raised"
@@ -431,7 +431,7 @@ export default class PasswordPolicy extends Component {
     );
     return (
       <Page
-        className="PasswordPolicy"
+        className="password-policy"
         service={[
           'iam-service.password-policy.update',
           'iam-service.password-policy.queryByOrganizationId',
