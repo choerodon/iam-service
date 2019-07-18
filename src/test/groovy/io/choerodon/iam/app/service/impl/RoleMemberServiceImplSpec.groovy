@@ -1,75 +1,84 @@
 package io.choerodon.iam.app.service.impl
 
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.excel.ExcelReadHelper
+import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
-import io.choerodon.iam.api.dto.ExcelMemberRoleDTO
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.RoleMemberService
-import io.choerodon.iam.infra.common.utils.SpockUtils
+import io.choerodon.iam.infra.asserts.UserAssertHelper
 import io.choerodon.iam.infra.common.utils.excel.ExcelImportUserTask
 import io.choerodon.iam.infra.dto.OrganizationDTO
-import io.choerodon.iam.infra.dto.UploadHistoryDTO
+import io.choerodon.iam.infra.mapper.ClientMapper
+import io.choerodon.iam.infra.mapper.LabelMapper
+import io.choerodon.iam.infra.mapper.MemberRoleMapper
 import io.choerodon.iam.infra.mapper.OrganizationMapper
 import io.choerodon.iam.infra.mapper.ProjectMapper
-import org.junit.runner.RunWith
-import org.mockito.Mockito
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
+import io.choerodon.iam.infra.mapper.RoleMapper
+import io.choerodon.iam.infra.mapper.UploadHistoryMapper
+import org.apache.http.entity.ContentType
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.mock.web.MockMultipartFile
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Specification
+
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan
- * */
-@RunWith(PowerMockRunner)
-@PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper, ConvertHelper, ExcelReadHelper])
+ * @author dengyouquan*      */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class RoleMemberServiceImplSpec extends Specification {
-//    private IRoleMemberService iRoleMemberService = Mock(IRoleMemberService)
-//    private UploadHistoryRepository uploadHistoryRepository = Mock(UploadHistoryRepository)
-    private ExcelImportUserTask excelImportUserTask = Mock(ExcelImportUserTask)
-    private OrganizationMapper organizationMapper = Mock(OrganizationMapper)
-    private ProjectMapper projectMapper = Mock(ProjectMapper)
-    private ExcelImportUserTask.FinishFallback finishFallback = Mock(ExcelImportUserTask.FinishFallback)
-//    private MemberRoleRepository memberRoleRepository = Mock(MemberRoleRepository)
-    private RoleMemberService roleMemberService
-    private Long userId
+
+    @Autowired
+    ExcelImportUserTask excelImportUserTask
+    @Autowired
+    ExcelImportUserTask.FinishFallback finishFallback
+    @Autowired
+    OrganizationMapper organizationMapper
+    @Autowired
+    ProjectMapper projectMapper
+    @Autowired
+    MemberRoleMapper memberRoleMapper
+    @Autowired
+    RoleMapper roleMapper
+    @Autowired
+    UserAssertHelper userAssertHelper
+    SagaClient sagaClient = Mock(SagaClient)
+    @Autowired
+    LabelMapper labelMapper
+    @Autowired
+    ClientMapper clientMapper
+    @Autowired
+    UploadHistoryMapper UploadHistoryMapper
+
+
+    RoleMemberService roleMemberService
 
     def setup() {
         given: "构造 roleMemberService"
-        roleMemberService = new RoleMemberServiceImpl(iRoleMemberService,
-                uploadHistoryRepository, excelImportUserTask, finishFallback,
-                organizationMapper, projectMapper, memberRoleRepository)
-
-        and: "mock静态方法-CustomUserDetails"
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
-        userId = DetailsHelper.getUserDetails().getUserId()
+        roleMemberService = new RoleMemberServiceImpl(excelImportUserTask, finishFallback,
+                organizationMapper, projectMapper, memberRoleMapper, roleMapper,userAssertHelper, sagaClient,
+                labelMapper, clientMapper, UploadHistoryMapper)
+        
+        DetailsHelper.setCustomUserDetails(1L,"zh_CN")
     }
 
+    @Transactional
     def "Import2MemberRole"() {
         given: "构造请求参数"
-        Long sourceId = 1L
-        String sourceType = "organization"
-        MultipartFile file = null
-
-        and: "mock静态方法-ExcelReadHelper"
-        ExcelMemberRoleDTO memberRoleDTO = new ExcelMemberRoleDTO()
-        List<ExcelMemberRoleDTO> memberRoles = new ArrayList<>()
-        memberRoles.add(memberRoleDTO)
-        PowerMockito.mockStatic(ExcelReadHelper)
-        PowerMockito.when(ExcelReadHelper.read(Mockito.any(), Mockito.any(), Mockito.any()))
-                .thenReturn(memberRoles)
+        File excelFile = new File(this.class.getResource('/templates/roleAssignment.xlsx').toURI())
+        FileInputStream fileInputStream = new FileInputStream(excelFile)
+        MultipartFile multipartFile = new MockMultipartFile(excelFile.getName(),
+                excelFile.getName(), ContentType.APPLICATION_OCTET_STREAM.toString(),
+                fileInputStream)
+        
 
         when: "调用方法"
-        roleMemberService.import2MemberRole(sourceId, sourceType, file)
+        roleMemberService.import2MemberRole(0L, "site", multipartFile)
 
         then: "校验结果"
         noExceptionThrown()
-        1 * organizationMapper.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * uploadHistoryRepository.insertSelective(_) >> { new UploadHistoryDTO() }
-//        1 * excelImportUserTask.importMemberRole(_, _, finishFallback)
     }
 }

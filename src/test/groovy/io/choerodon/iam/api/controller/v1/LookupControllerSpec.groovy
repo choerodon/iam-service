@@ -116,7 +116,7 @@ class LookupControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.repo.lookup.notExist")
+        entity.getBody().getCode().equals("error.repo.lookup.update")
     }
 
     @Transactional

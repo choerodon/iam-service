@@ -253,15 +253,22 @@ public class RoleServiceImpl implements RoleService {
             updateRoleLabel(roleDTO);
             return roleDTO;
         } else {
-            if (roleMapper.updateByPrimaryKeySelective(roleDTO) != 1) {
-                throw new UpdateExcetion("error.role.update");
-            }
+            RoleDTO dto = updateRole(roleDTO);
             //维护role_permission关系
-            updateRolePermission(roleDTO);
+            updateRolePermission(dto);
             //维护role_label表
-            updateRoleLabel(roleDTO);
-            return roleDTO;
+            updateRoleLabel(dto);
+            return dto;
         }
+    }
+
+    private RoleDTO updateRole(RoleDTO roleDTO) {
+        if (roleMapper.updateByPrimaryKeySelective(roleDTO) != 1) {
+            throw new UpdateExcetion("error.role.update");
+        }
+        RoleDTO dto = roleMapper.selectByPrimaryKey(roleDTO);
+        roleDTO.setResourceLevel(dto.getResourceLevel());
+        return roleDTO;
     }
 
     private void updateRolePermission(RoleDTO role) {

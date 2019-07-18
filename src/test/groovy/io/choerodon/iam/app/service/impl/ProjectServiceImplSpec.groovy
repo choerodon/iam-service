@@ -1,8 +1,10 @@
 package io.choerodon.iam.app.service.impl
 
+import com.netflix.discovery.converters.Auto
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.oauth.DetailsHelper
+import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.OrganizationProjectService
 import io.choerodon.iam.app.service.ProjectService
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper
@@ -23,23 +25,26 @@ import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
 import java.lang.reflect.Field
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 /**
- * @author dengyouquan*    */
-@RunWith(PowerMockRunner)
-@PowerMockRunnerDelegate(Sputnik)
-@PrepareForTest([DetailsHelper])
+ * @author dengyouquan*     */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
 class ProjectServiceImplSpec extends Specification {
-    //不要用@Shared，mock时有问题
-//    private ProjectRepository projectRepository = Mock(ProjectRepository)
-//    private UserRepository userRepository = Mock(UserRepository)
-//    private OrganizationRepository organizationRepository = Mock(OrganizationRepository)
-    private SagaClient mockSagaClient = Mock(SagaClient)
-    private OrganizationProjectService organizationProjectService = Mock(OrganizationProjectService)
-    private ProjectService projectService
+
+    ProjectService projectService
+
+    @Autowired
+    OrganizationProjectService organizationProjectService
+    SagaClient sagaClient = Mock(SagaClient)
     @Autowired
     UserMapper userMapper
     @Autowired
@@ -55,7 +60,7 @@ class ProjectServiceImplSpec extends Specification {
 
 
     def setup() {
-        projectService = new ProjectServiceImpl(organizationProjectService, mockSagaClient,
+        projectService = new ProjectServiceImpl(organizationProjectService, sagaClient,
                 userMapper, projectMapper, projectAssertHelper, projectMapCategoryMapper, userAssertHelper, organizationMapper)
         //反射注入属性
         Field field = projectService.getClass().getDeclaredField("devopsMessage")
@@ -63,39 +68,17 @@ class ProjectServiceImplSpec extends Specification {
         field.set(projectService, true)
     }
 
+    @Transactional
     def "Update"() {
         given: "构造请求参数"
-        ProjectDTO project = new ProjectDTO()
-        project.setName("测试")
-        project.setCode("test")
-        ProjectDTO projectDTO = new ProjectDTO()
-        projectDTO.setName("测试")
-        projectDTO.setCode("test")
-        projectDTO.setOrganizationId(1L)
+        
 
-        and: "mock静态方法-CustomUserDetails"
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
 
-        and: "mock静态方法-ConvertHelper"
-        UserDTO userDTO = new UserDTO()
-        userDTO.setPassword("password")
-        //ConvertHelper中用到了BeanFactory，必须mock
-//        PowerMockito.mockStatic(ConvertHelper)
-//        PowerMockito.when(ConvertHelper.convert(project, projectDTO)).thenReturn(projectDTO)
 
         when: "调用方法"
         projectService.update(project)
 
         then: "校验结果"
-        1 * userRepository.selectByLoginName(_ as String) >> { userDTO }
-        //1 * projectRepository.selectByPrimaryKey(_ as Long) >> { projectDO }
-        //上一句中projectDO是null，先执行then中的mock，再执行given
-        //不能用Long _是null
-        1 * projectRepository.selectByPrimaryKey(_) >> { new ProjectDTO() }
-        1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }
-        1 * projectRepository.updateSelective(_ as ProjectDTO) >> { new ProjectDTO() }
-        1 * mockSagaClient.startSaga(_ as String, _ as StartInstanceDTO)
     }
 
     def "DisableProject"() {
