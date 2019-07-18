@@ -45,18 +45,14 @@ class RoleServiceImplSpec extends Specification {
         page.total != 0
 
         when: "调用方法[organization层]"
-        sourceId = 1L
-        sourceType = "organization"
-        page = roleService.pagingSearch(1,20, roleQuery)
+        page = roleService.pagingSearch(pageRequest, roleQuery)
 
         then: "校验参数"
         page.pages != 0
         page.total != 0
 
         when: "调用方法[project层]"
-        sourceId = 0L
-        sourceType = "project"
-        page = roleService.pagingSearch(1,20, roleQuery)
+        page = roleService.pagingSearch(pageRequest, roleQuery)
 
         then: "校验参数"
         page.pages != 0

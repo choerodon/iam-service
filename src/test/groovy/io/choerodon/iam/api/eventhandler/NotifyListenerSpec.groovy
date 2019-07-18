@@ -16,8 +16,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class NotifyListenerSpec extends Specification {
-    @Autowired
-    private UserService userService
+
+    private UserService userService=Mock(UserService)
     private NotifyListener notifyListener = new NotifyListener(userService)
     private final ObjectMapper mapper = new ObjectMapper()
 
@@ -25,6 +25,7 @@ class NotifyListenerSpec extends Specification {
         given: "构造请求参数"
         UserEventPayload eventPayload = new UserEventPayload()
         eventPayload.setFromUserId(1L)
+        eventPayload.setOrganizationId(1L)
         List<UserEventPayload> userEventPayloads = new ArrayList<>()
         userEventPayloads.add(eventPayload)
         String message = mapper.writeValueAsString(userEventPayloads)
@@ -34,6 +35,5 @@ class NotifyListenerSpec extends Specification {
 
         then: "校验结果"
         1 * userService.sendNotice(_, _, _, _, _)
-        0 * _
     }
 }

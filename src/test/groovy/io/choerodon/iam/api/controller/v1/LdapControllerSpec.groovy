@@ -1,5 +1,6 @@
 package io.choerodon.iam.api.controller.v1
 
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.api.dto.LdapAccountDTO
@@ -281,13 +282,13 @@ class LdapControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getCode().equals("error.organization.not.exist")
 
-        when: "调用方法"
-        paramsMap.put("organization_id", 1)
-        paramsMap.put("id", 2)
-        entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, Boolean, paramsMap)
-
-        then: "校验结果"
-        entity.statusCode.is2xxSuccessful()
+//        when: "调用方法"
+//        paramsMap.put("organization_id", 1)
+//        paramsMap.put("id", 2)
+//        entity = restTemplate.exchange(BASE_PATH + "/{id}", HttpMethod.DELETE, httpEntity, Boolean, paramsMap)
+//
+//        then: "校验结果"
+//        entity.statusCode.is2xxSuccessful()
     }
 
     def "TestConnect"() {
@@ -341,7 +342,7 @@ class LdapControllerSpec extends Specification {
 
         then: "校验结果"
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getCode().equals("error.organization.notFound")
+        entity.getBody().getCode().equals("error.organization.not.exist")
 
         when: "调用方法"
         paramsMap.put("organization_id", 1)
@@ -387,15 +388,15 @@ class LdapControllerSpec extends Specification {
     @Transactional
     def "pagingQueryHistories"() {
         given:
-        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, ldapHistoryMapper, null)
+        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null,null, ldapHistoryMapper)
         LdapController ldapController = new LdapController(ldapService)
-//        PageRequest pageRequest = new PageRequest(0, 10)
+        PageRequest pageRequest = new PageRequest(1, 20)
         LdapHistoryDTO ldapHistory = new LdapHistoryDTO()
         ldapHistory.setLdapId(1L)
         ldapHistoryMapper.insertSelective(ldapHistory)
 
         when:
-        def entity = ldapController.pagingQueryHistories(0, 10, 1L, 1L)
+        def entity = ldapController.pagingQueryHistories(pageRequest, 1L, 1L)
 
         then:
         entity.statusCode.is2xxSuccessful()
@@ -405,9 +406,9 @@ class LdapControllerSpec extends Specification {
 
     def "pagingQueryErrorUsers"() {
         given:
-        LdapService ldapService = new LdapServiceImpl(null, null, null, null, null, null, ldapErrorUserMapper)
+        LdapService ldapService = new LdapServiceImpl(null, null, null,null,null, ldapErrorUserMapper,null)
         LdapController ldapController = new LdapController(ldapService)
-//        PageRequest pageRequest = new PageRequest(0, 10)
+        PageRequest pageRequest = new PageRequest(1, 10)
 
         LdapErrorUserDTO ldapErrorUser = new LdapErrorUserDTO()
         ldapErrorUser.setLdapHistoryId(1L)
@@ -416,7 +417,7 @@ class LdapControllerSpec extends Specification {
         ldapErrorUserMapper.insertSelective(ldapErrorUser)
 
         when:
-        def entity = ldapController.pagingQueryErrorUsers(0, 10, 1L, null)
+        def entity = ldapController.pagingQueryErrorUsers(pageRequest, 1L,1L, null)
 
         then:
         entity.statusCode.is2xxSuccessful()
