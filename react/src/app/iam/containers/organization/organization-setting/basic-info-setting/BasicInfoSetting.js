@@ -69,10 +69,11 @@ export default class BasicInfoSetting extends Component {
   }
 
   cancelValue = () => {
-    const { resetFields } = this.props.form;
-    const { imageUrl } = OrganizationSettingStore.organizationInfo;
-    OrganizationSettingStore.setImageUrl(imageUrl);
-    resetFields();
+    // const { resetFields } = this.props.form;
+    // const { imageUrl } = OrganizationSettingStore.organizationInfo;
+    // OrganizationSettingStore.setImageUrl(imageUrl);
+    // resetFields();
+    this.loadOrganization();
   };
 
   getAvatar() {
