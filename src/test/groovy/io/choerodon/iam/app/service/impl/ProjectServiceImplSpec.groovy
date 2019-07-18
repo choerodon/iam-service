@@ -3,6 +3,7 @@ package io.choerodon.iam.app.service.impl
 import com.netflix.discovery.converters.Auto
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.IntegrationTestConfiguration
 import io.choerodon.iam.app.service.OrganizationProjectService
@@ -35,7 +36,7 @@ import java.lang.reflect.Field
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
- * @author dengyouquan*     */
+ * @author dengyouquan*      */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class ProjectServiceImplSpec extends Specification {
@@ -66,30 +67,41 @@ class ProjectServiceImplSpec extends Specification {
         Field field = projectService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(projectService, true)
+        CustomUserDetails customUserDetails = new CustomUserDetails("admin","admin")
+        customUserDetails.setUserId(1L);
+        customUserDetails.setLanguage("zh_CN")
+        DetailsHelper.setCustomUserDetails(customUserDetails)
     }
 
     @Transactional
     def "Update"() {
         given: "构造请求参数"
-        
-
+        ProjectDTO dto = new ProjectDTO()
+        dto.setCode("code123")
+        dto.setName("name")
+        dto.setEnabled(true)
+        projectMapper.insert(dto)
+        ProjectDTO example = projectMapper.selectByPrimaryKey(dto)
 
 
         when: "调用方法"
-        projectService.update(project)
+        def result = projectService.update(example)
 
         then: "校验结果"
+        result.getObjectVersionNumber() == 2
     }
 
     def "DisableProject"() {
         given: "构造请求参数"
-        Long projectId = 1L
-        and:
-        PowerMockito.mockStatic(DetailsHelper)
-        PowerMockito.when(DetailsHelper.getUserDetails()).thenReturn(SpockUtils.getCustomUserDetails())
+        ProjectDTO dto = new ProjectDTO()
+        dto.setCode("code123")
+        dto.setName("name")
+        dto.setEnabled(true)
+        projectMapper.insert(dto)
+
 
         when: "调用方法"
-        projectService.disableProject(projectId)
+        projectService.disableProject(dto.getId())
 
         then: "校验结果"
         noExceptionThrown()
@@ -104,7 +116,6 @@ class ProjectServiceImplSpec extends Specification {
 
         then: "校验结果"
         noExceptionThrown()
-        1 * projectRepository.listUserIds(_ as Long)
     }
 }
 

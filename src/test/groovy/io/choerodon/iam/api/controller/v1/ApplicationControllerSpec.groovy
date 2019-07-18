@@ -42,8 +42,6 @@ class ApplicationControllerSpec extends Specification {
     @Autowired
     ApplicationAssertHelper applicationAssertHelper
 
-    ModelMapper modelMapper = new ModelMapper()
-
     ApplicationController controller
     TransactionalProducer producer
 
@@ -81,7 +79,7 @@ class ApplicationControllerSpec extends Specification {
         ApplicationDTO app = applicationAssertHelper.applicationNotExisted(id)
 
         when:
-        def result = controller.update(1, 1, modelMapper.map(app, ApplicationDTO.class))
+        def result = controller.update(1, id, app)
 
         then:
         result.statusCode.is2xxSuccessful()
