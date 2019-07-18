@@ -50,4 +50,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_lookup.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-lookup-add-remark') {
+        setTableRemarks(tableName:"FD_LOOKUP",remarks: "快码表")
+        setTableRemarks(tableName:"FD_LOOKUP_TL",remarks: "快码表的多语言表")
+    }
 }

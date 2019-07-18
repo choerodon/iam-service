@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_role_permission.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-role-permission-add-remark') {
+        setTableRemarks(tableName:"IAM_ROLE_PERMISSION",remarks: "角色权限关系表")
+    }
 }

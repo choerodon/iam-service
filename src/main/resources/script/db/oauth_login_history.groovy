@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_login_history.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-login-history-add-remark') {
+        setTableRemarks(tableName:"OAUTH_LOGIN_HISTORY",remarks: "用户登录历史记录表")
+    }
 }

@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'oauth_access_token.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-access-token-add-remark') {
+        setTableRemarks(tableName:"OAUTH_ACCESS_TOKEN",remarks: "oauth认证access token表")
+    }
 }

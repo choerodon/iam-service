@@ -15,4 +15,8 @@ databaseChangeLog(logicalFilePath: 'script/db/event_producer_record.groovy') {
             column(name: 'CREATE_TIME', type: 'DATETIME', remarks: '创建时间')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-event-producer-record-add-remark') {
+        setTableRemarks(tableName:"EVENT_PRODUCER_RECORD",remarks: "事件生产记录")
+    }
 }

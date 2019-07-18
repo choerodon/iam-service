@@ -44,4 +44,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_application_exploration.groovy
     changeSet(author: 'superlee', id: '2018-03-14-iam-application-exploration-remove-unique-constraint') {
         dropUniqueConstraint(tableName:'IAM_APPLICATION_EXPLORATION', constraintName:'PK_IAM_APPLICATION_EXPLO_U1')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-application-exploration-add-remark') {
+        setTableRemarks(tableName:"IAM_APPLICATION_EXPLORATION",remarks: "应用探测表，用于记录应用的路径信息，父子关系等")
+    }
 }

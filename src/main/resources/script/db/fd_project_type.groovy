@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_project_type.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-project-type-add-remark') {
+        setTableRemarks(tableName:"FD_PROJECT_TYPE",remarks: "项目类型表")
+    }
 }

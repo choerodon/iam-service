@@ -83,4 +83,8 @@ databaseChangeLog(logicalFilePath: 'iam_application.groovy') {
         addUniqueConstraint(tableName: 'IAM_APPLICATION', columnNames: 'APPLICATION_TOKEN',
                 constraintName: 'UK_IAM_APPLICATION_U4')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-application-add-remark') {
+        setTableRemarks(tableName:"IAM_APPLICATION",remarks: "应用表")
+    }
 }

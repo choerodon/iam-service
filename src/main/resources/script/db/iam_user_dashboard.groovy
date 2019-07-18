@@ -49,4 +49,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user_dashboard.groovy') {
             column(name: 'POSITION', type: "VARCHAR(128)", remarks: '仪表盘位置')
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-user-dashboard-add-remark') {
+        setTableRemarks(tableName:"IAM_USER_DASHBOARD",remarks: "用户个人仪表盘表")
+    }
 }

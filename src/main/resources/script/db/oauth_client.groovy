@@ -33,4 +33,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_client.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-client-add-remark') {
+        setTableRemarks(tableName:"OAUTH_CLIENT",remarks: "oauth客户端表")
+    }
 }

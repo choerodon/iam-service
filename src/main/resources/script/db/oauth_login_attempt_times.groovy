@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_login_attempt_times.groovy')
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-login-attempt-times-add-remark') {
+        setTableRemarks(tableName:"OAUTH_LOGIN_ATTEMPT_TIMES",remarks: "用户登录次数表")
+    }
 }

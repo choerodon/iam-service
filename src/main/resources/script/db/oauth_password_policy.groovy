@@ -64,4 +64,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_policy.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-password-policy-add-remark') {
+        setTableRemarks(tableName:"OAUTH_PASSWORD_POLICY",remarks: "密码策略表")
+    }
 }

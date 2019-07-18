@@ -34,4 +34,8 @@ databaseChangeLog(logicalFilePath: 'script/db/oauth_password_history.groovy') {
     changeSet(author: 'superlee', id: '2019-03-20-rename-password-oauth-password-history') {
         renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "HASH_PASSWORD", oldColumnName: "PASSWORD", remarks: 'Hash后的用户密码', tableName: 'OAUTH_PASSWORD_HISTORY')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-oauth-password-history-add-remark') {
+        setTableRemarks(tableName:"OAUTH_PASSWORD_HISTORY",remarks: "用户密码历史记录表")
+    }
 }

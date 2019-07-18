@@ -54,4 +54,9 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_language.groovy') {
             column(name: "LAST_UPDATE_DATE", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-language-add-remark') {
+        setTableRemarks(tableName:"FD_LANGUAGE",remarks: "语言表")
+        setTableRemarks(tableName:"FD_LANGUAGE_TL",remarks: "语言表的多语言表")
+    }
 }

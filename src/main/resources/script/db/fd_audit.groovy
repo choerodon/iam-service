@@ -29,4 +29,8 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_audit.groovy') {
             column(name: "LAST_UPDATED_BY", type: "BIGINT UNSIGNED", defaultValue: "0")
         }
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-fd-audit-add-remark') {
+        setTableRemarks(tableName:"FD_AUDIT",remarks: "审计记录表")
+    }
 }

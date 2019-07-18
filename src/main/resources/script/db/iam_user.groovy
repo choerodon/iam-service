@@ -84,4 +84,8 @@ databaseChangeLog(logicalFilePath: 'script/db/iam_user.groovy') {
     changeSet(author: 'superlee', id: '2019-03-20-rename-password-column') {
         renameColumn(columnDataType: 'VARCHAR(128)', newColumnName: "HASH_PASSWORD", oldColumnName: "PASSWORD", remarks: 'Hash后的用户密码', tableName: 'IAM_USER')
     }
+
+    changeSet(author: 'superlee', id: '2019-07-18-iam-user-add-remark') {
+        setTableRemarks(tableName:"IAM_USER",remarks: "用户表")
+    }
 }
