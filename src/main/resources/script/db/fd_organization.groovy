@@ -89,4 +89,11 @@ databaseChangeLog(logicalFilePath: 'script/db/fd_organization.groovy') {
         }
     }
 
+    changeSet(author: 'qiang.zeng@hand-china.com', id: '2019-07-22-fd-organization-change') {
+        dropColumn(tableName: 'FD_ORGANIZATION', columnName: 'SCALE')
+        addColumn(tableName: 'FD_ORGANIZATION') {
+            column(name: 'SCALE', type: 'INT UNSIGNED', remarks: '组织规模', afterColumn: 'IMAGE_URL')
+        }
+    }
+
 }
