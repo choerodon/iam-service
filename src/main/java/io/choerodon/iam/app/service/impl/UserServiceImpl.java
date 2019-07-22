@@ -1,46 +1,14 @@
 package io.choerodon.iam.app.service.impl;
 
+import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.iam.api.dto.CreateUserWithRolesDTO;
-import io.choerodon.iam.api.dto.OrganizationProjectDTO;
-import io.choerodon.iam.api.dto.ProjectCategoryDTO;
-import io.choerodon.iam.api.dto.ProjectMapCategorySimpleDTO;
-import io.choerodon.iam.api.dto.RegistrantInfoDTO;
-import io.choerodon.iam.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.iam.api.dto.SimplifiedUserDTO;
-import io.choerodon.iam.api.dto.UserPasswordDTO;
-import io.choerodon.iam.api.dto.UserRoleDTO;
-import io.choerodon.iam.api.dto.payload.UserEventPayload;
-import io.choerodon.iam.api.validator.ResourceLevelValidator;
-import io.choerodon.iam.api.validator.UserPasswordValidator;
-import io.choerodon.iam.app.service.UserService;
-import io.choerodon.iam.domain.repository.OrganizationRepository;
-import io.choerodon.iam.domain.repository.ProjectRepository;
-import io.choerodon.iam.domain.repository.RoleRepository;
-import io.choerodon.iam.domain.repository.UserRepository;
-import io.choerodon.iam.domain.service.IUserService;
-import io.choerodon.iam.infra.common.utils.ImageUtils;
-import io.choerodon.iam.infra.dto.MemberRoleDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.ProjectDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.iam.infra.feign.FileFeignClient;
-import io.choerodon.iam.infra.mapper.MemberRoleMapper;
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
-import io.choerodon.oauth.core.password.PasswordPolicyManager;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
-import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
-import io.choerodon.oauth.core.password.record.PasswordRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -53,17 +21,32 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static io.choerodon.iam.infra.common.utils.SagaTopic.User.USER_UPDATE;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.iam.api.dto.*;
+import io.choerodon.iam.api.dto.payload.UserEventPayload;
+import io.choerodon.iam.api.validator.ResourceLevelValidator;
+import io.choerodon.iam.api.validator.UserPasswordValidator;
+import io.choerodon.iam.app.service.UserService;
+import io.choerodon.iam.domain.repository.OrganizationRepository;
+import io.choerodon.iam.domain.repository.ProjectRepository;
+import io.choerodon.iam.domain.repository.RoleRepository;
+import io.choerodon.iam.domain.repository.UserRepository;
+import io.choerodon.iam.domain.service.IUserService;
+import io.choerodon.iam.infra.common.utils.ImageUtils;
+import io.choerodon.iam.infra.dto.*;
+import io.choerodon.iam.infra.feign.FileFeignClient;
+import io.choerodon.iam.infra.mapper.MemberRoleMapper;
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper;
+import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
+import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
+import io.choerodon.oauth.core.password.record.PasswordRecord;
 
 /**
  * @author superlee
@@ -562,6 +545,23 @@ public class UserServiceImpl implements UserService {
             return new ArrayList<>();
         } else {
             return userRepository.listUsersByLoginNames(loginNames, onlyEnabled);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
+        // 更新用户密码
+        UserPasswordDTO passwordDTO = new UserPasswordDTO();
+        passwordDTO.setOriginalPassword(userInfoDTO.getOriginalPassword());
+        passwordDTO.setPassword(userInfoDTO.getPassword());
+        selfUpdatePassword(id, passwordDTO, true);
+        // 更新用户名
+        String userName = userInfoDTO.getUserName();
+        if (!StringUtils.isEmpty(userName)) {
+            UserDTO user = userRepository.selectByPrimaryKey(id);
+            user.setRealName(userName);
+            updateInfo(user);
         }
     }
 

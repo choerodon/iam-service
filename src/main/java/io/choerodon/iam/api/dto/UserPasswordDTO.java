@@ -1,12 +1,12 @@
 package io.choerodon.iam.api.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotEmpty;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author superlee
- * @data 2018/4/12
+ * @since 2018/4/12
  */
 public class UserPasswordDTO {
 
