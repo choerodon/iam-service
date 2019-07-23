@@ -206,7 +206,7 @@ public class UserController extends BaseController {
     @PutMapping(value = "/{id}/password")
     public ResponseEntity selfUpdatePassword(@PathVariable Long id,
                                              @RequestBody @Valid UserPasswordDTO userPasswordDTO) {
-        userService.selfUpdatePassword(id, userPasswordDTO, true);
+        userService.selfUpdatePassword(id, userPasswordDTO, true, true);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -358,13 +358,11 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userService.pagingQueryRole(page, size, params, id), HttpStatus.OK);
     }
 
-
     @Permission(type = ResourceType.SITE, permissionPublic = true, permissionWithin = true)
     @ApiOperation(value = "完善用户信息，修改用户名、密码(供组织服务feign调用)")
     @PutMapping(value = "/{id}/userInfo")
-    public ResponseEntity updateUserInfo(@PathVariable Long id,
-                                         @RequestBody @Valid UserInfoDTO userInfoDTO) {
-        userService.updateUserInfo(id, userInfoDTO);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<UserInfoDTO> updateUserInfo(@PathVariable Long id,
+                                                      @RequestBody @Valid UserInfoDTO userInfoDTO) {
+        return new ResponseEntity<>(userService.updateUserInfo(id, userInfoDTO), HttpStatus.OK);
     }
 }

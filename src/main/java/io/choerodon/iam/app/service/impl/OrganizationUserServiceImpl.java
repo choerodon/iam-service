@@ -7,12 +7,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
-import io.choerodon.iam.infra.dto.OrganizationDTO;
-import io.choerodon.iam.infra.dto.SystemSettingDTO;
-import io.choerodon.iam.infra.dto.UserDTO;
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
-import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -36,9 +30,15 @@ import io.choerodon.iam.domain.repository.OrganizationRepository;
 import io.choerodon.iam.domain.repository.UserRepository;
 import io.choerodon.iam.domain.service.IUserService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
+import io.choerodon.iam.infra.dto.OrganizationDTO;
+import io.choerodon.iam.infra.dto.SystemSettingDTO;
+import io.choerodon.iam.infra.dto.UserDTO;
 import io.choerodon.iam.infra.enums.LdapErrorUserCause;
 import io.choerodon.iam.infra.feign.OauthTokenFeignClient;
 import io.choerodon.oauth.core.password.PasswordPolicyManager;
+import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO;
+import io.choerodon.oauth.core.password.domain.BaseUserDTO;
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper;
 import io.choerodon.oauth.core.password.record.PasswordRecord;
 
@@ -94,7 +94,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_CREATE, description = "iam创建用户", inputSchemaClass = UserEventPayload.class)
-    public UserDTO create(UserDTO userDTO, boolean checkPassword) {
+    public UserDTO create(UserDTO userDTO, boolean checkPassword, boolean defaultEnabled) {
         String password =
                 Optional.ofNullable(userDTO.getPassword())
                         .orElseThrow(() -> new CommonException("error.user.password.empty"));
@@ -107,7 +107,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             // 校验用户密码
             userPasswordValidator.validate(password, organizationId, true);
         }
-        UserDTO user = createUser(userDTO);
+        UserDTO user = createUser(userDTO, defaultEnabled);
         if (devopsMessage) {
             try {
                 UserEventPayload userEventPayload = new UserEventPayload();
@@ -129,12 +129,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return user;
     }
 
-    private UserDTO createUser(UserDTO userDTO) {
+    private UserDTO createUser(UserDTO userDTO, boolean defaultEnabled) {
         if (userRepository.selectByLoginName(userDTO.getLoginName()) != null) {
             throw new CommonException("error.user.loginName.exist");
         }
         userDTO.setLocked(false);
-        userDTO.setEnabled(true);
+        userDTO.setEnabled(defaultEnabled);
         userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
         userRepository.insertSelective(userDTO);
         passwordRecord.updatePassword(userDTO.getId(), userDTO.getPassword());

@@ -294,8 +294,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword) {
-        checkLoginUser(userId);
+    public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin) {
+        if (checkLogin) {
+            checkLoginUser(userId);
+        }
         UserDTO user = userRepository.selectByPrimaryKey(userId);
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
@@ -550,12 +552,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
+    public UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
         // 更新用户密码
         UserPasswordDTO passwordDTO = new UserPasswordDTO();
         passwordDTO.setOriginalPassword(userInfoDTO.getOriginalPassword());
         passwordDTO.setPassword(userInfoDTO.getPassword());
-        selfUpdatePassword(id, passwordDTO, true);
+        selfUpdatePassword(id, passwordDTO, true, false);
         // 更新用户名
         String userName = userInfoDTO.getUserName();
         if (!StringUtils.isEmpty(userName)) {
@@ -563,6 +565,7 @@ public class UserServiceImpl implements UserService {
             user.setRealName(userName);
             updateInfo(user);
         }
+        return userInfoDTO;
     }
 
     @Override

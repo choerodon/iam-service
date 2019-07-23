@@ -1,6 +1,16 @@
 package io.choerodon.iam.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.base.enums.ResourceType;
@@ -13,15 +23,6 @@ import io.choerodon.iam.app.service.UploadHistoryService;
 import io.choerodon.iam.app.service.UserService;
 import io.choerodon.iam.infra.dto.UploadHistoryDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author superlee
@@ -58,7 +59,19 @@ public class OrganizationUserController extends BaseController {
         userDTO.setOrganizationId(organizationId);
         //新增用户不能创建ldap用户
         userDTO.setLdap(false);
-        return new ResponseEntity<>(organizationUserService.create(userDTO, true), HttpStatus.OK);
+        return new ResponseEntity<>(organizationUserService.create(userDTO, true, true), HttpStatus.OK);
+    }
+
+    @Permission(type = ResourceType.ORGANIZATION)
+    @ApiOperation(value = "注册用户(供组织服务feign调用)")
+    @PostMapping("/register/users")
+    public ResponseEntity<UserDTO> register(@PathVariable(name = "organization_id") Long organizationId,
+                                            @RequestBody @Validated UserDTO userDTO,
+                                            @RequestParam(value = "default_enabled") boolean defaultEnabled) {
+        userDTO.setOrganizationId(organizationId);
+        //新增用户不能创建ldap用户
+        userDTO.setLdap(false);
+        return new ResponseEntity<>(organizationUserService.create(userDTO, true, defaultEnabled), HttpStatus.OK);
     }
 
     /**
@@ -100,7 +113,7 @@ public class OrganizationUserController extends BaseController {
                                                   @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                   @RequestBody UserSearchDTO user) {
         user.setOrganizationId(organizationId);
-        return new ResponseEntity<>(organizationUserService.pagingQuery(page,size, user), HttpStatus.OK);
+        return new ResponseEntity<>(organizationUserService.pagingQuery(page, size, user), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.ORGANIZATION)

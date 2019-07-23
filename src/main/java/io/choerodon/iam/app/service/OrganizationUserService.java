@@ -1,19 +1,20 @@
 package io.choerodon.iam.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.iam.api.dto.UserSearchDTO;
 import io.choerodon.iam.infra.dto.LdapErrorUserDTO;
 import io.choerodon.iam.infra.dto.UserDTO;
 
-import java.util.List;
-
 /**
  * @author superlee
- * @data 2018/3/26
+ * @since 2018/3/26
  */
 public interface OrganizationUserService {
 
-    UserDTO create(UserDTO userDTO, boolean checkPassword);
+    UserDTO create(UserDTO userDTO, boolean checkPassword, boolean defaultEnabled);
 
     PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user);
 
@@ -34,7 +35,7 @@ public interface OrganizationUserService {
     /**
      * ldap 批量同步用户，发送事件
      *
-     * @param insertUsers
+     * @param insertUsers 用户信息列表
      */
     List<LdapErrorUserDTO> batchCreateUsers(List<UserDTO> insertUsers);
 

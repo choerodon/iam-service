@@ -28,7 +28,7 @@ public interface UserService {
 
     UserDTO queryByLoginName(String loginName);
 
-    void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword);
+    void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);
 
     UserDTO lockUser(Long userId, Integer lockExpireTime);
 
@@ -128,5 +128,5 @@ public interface UserService {
      */
     List<UserDTO> listUsersByLoginNames(String[] loginNames, Boolean onlyEnabled);
 
-    void updateUserInfo(Long id, UserInfoDTO userInfoDTO);
+    UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
 }

@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
-//import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.api.dto.CreateUserWithRolesDTO
@@ -15,13 +14,10 @@ import io.choerodon.iam.domain.repository.RoleRepository
 import io.choerodon.iam.domain.repository.UserRepository
 import io.choerodon.iam.domain.service.IUserService
 import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dto.MemberRoleDTO
-import io.choerodon.iam.infra.dto.OrganizationDTO
-import io.choerodon.iam.infra.dto.ProjectDTO
-import io.choerodon.iam.infra.dto.RoleDTO
-import io.choerodon.iam.infra.dto.UserDTO
+import io.choerodon.iam.infra.dto.*
 import io.choerodon.iam.infra.feign.FileFeignClient
 import io.choerodon.iam.infra.mapper.MemberRoleMapper
+import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
 import io.choerodon.oauth.core.password.PasswordPolicyManager
 import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
@@ -45,7 +41,7 @@ import java.lang.reflect.Field
 
 /**
  * @author dengyouquan
- * */
+ */
 @RunWith(PowerMockRunner)
 @PowerMockRunnerDelegate(Sputnik)
 @PrepareForTest([DetailsHelper])
@@ -61,16 +57,18 @@ class UserServiceImplSpec extends Specification {
     private RoleRepository roleRepository = Mock(RoleRepository)
     private SagaClient sagaClient = Mock(SagaClient)
     private MemberRoleMapper memberRoleMapper = Mock(MemberRoleMapper)
+    private ProjectMapCategoryMapper projectMapCategoryMapper = Mock(ProjectMapCategoryMapper)
     private UserPasswordValidator userPasswordValidator = Mock(UserPasswordValidator)
     private UserService userService
     private Long userId
+    def checkLogin = false
 
     def setup() {
         given: "构造userService"
         userService = new UserServiceImpl(userRepository, organizationRepository,
                 projectRepository, iUserService, passwordRecord, fileFeignClient,
                 sagaClient, basePasswordPolicyMapper, userPasswordValidator, passwordPolicyManager, roleRepository,
-                memberRoleMapper)
+                memberRoleMapper, projectMapCategoryMapper)
         Field field = userService.getClass().getDeclaredField("devopsMessage")
         field.setAccessible(true)
         field.set(userService, true)
@@ -180,7 +178,7 @@ class UserServiceImplSpec extends Specification {
         def checkPassword = true
 
         when: "调用方法"
-        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword)
+        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword, checkLogin)
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
@@ -209,7 +207,7 @@ class UserServiceImplSpec extends Specification {
         def checkPassword = false
 
         when: "调用方法"
-        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword)
+        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword, checkLogin)
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
@@ -224,7 +222,7 @@ class UserServiceImplSpec extends Specification {
         exception.message.equals("error.ldap.user.can.not.update.password")
 
         when: "调用方法"
-        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword)
+        userService.selfUpdatePassword(userId, userPasswordDTO, checkPassword, checkLogin)
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
@@ -290,7 +288,7 @@ class UserServiceImplSpec extends Specification {
 
         then: "校验结果"
         1 * userRepository.selectByPrimaryKey(_) >> {
-            
+
             Field field = userE.getClass().getDeclaredField("admin")
             field.setAccessible(true)
             field.set(userE, false)
