@@ -79,7 +79,7 @@ class OrganizationUserServiceImplSpec extends Specification {
 //        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(user).thenReturn(userDO).thenReturn(user).thenReturn(userDTO)
 
         when: "调用方法"
-        organizationUserService.create(userDTO, checkPassword,true)
+        organizationUserService.create(userDTO, checkPassword)
 
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> { new OrganizationDTO() }

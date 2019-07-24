@@ -94,7 +94,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     @Transactional(rollbackFor = CommonException.class)
     @Override
     @Saga(code = USER_CREATE, description = "iam创建用户", inputSchemaClass = UserEventPayload.class)
-    public UserDTO create(UserDTO userDTO, boolean checkPassword, boolean defaultEnabled) {
+    public UserDTO create(UserDTO userDTO, boolean checkPassword) {
         String password =
                 Optional.ofNullable(userDTO.getPassword())
                         .orElseThrow(() -> new CommonException("error.user.password.empty"));
@@ -107,7 +107,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             // 校验用户密码
             userPasswordValidator.validate(password, organizationId, true);
         }
-        UserDTO user = createUser(userDTO, defaultEnabled);
+        UserDTO user = createUser(userDTO);
         if (devopsMessage) {
             try {
                 UserEventPayload userEventPayload = new UserEventPayload();
@@ -129,12 +129,12 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return user;
     }
 
-    private UserDTO createUser(UserDTO userDTO, boolean defaultEnabled) {
+    private UserDTO createUser(UserDTO userDTO) {
         if (userRepository.selectByLoginName(userDTO.getLoginName()) != null) {
             throw new CommonException("error.user.loginName.exist");
         }
         userDTO.setLocked(false);
-        userDTO.setEnabled(defaultEnabled);
+        userDTO.setEnabled(true);
         userDTO.setPassword(ENCODER.encode(userDTO.getPassword()));
         userRepository.insertSelective(userDTO);
         passwordRecord.updatePassword(userDTO.getId(), userDTO.getPassword());

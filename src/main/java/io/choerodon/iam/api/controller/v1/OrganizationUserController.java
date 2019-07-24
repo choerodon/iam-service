@@ -59,19 +59,7 @@ public class OrganizationUserController extends BaseController {
         userDTO.setOrganizationId(organizationId);
         //新增用户不能创建ldap用户
         userDTO.setLdap(false);
-        return new ResponseEntity<>(organizationUserService.create(userDTO, true, true), HttpStatus.OK);
-    }
-
-    @Permission(type = ResourceType.ORGANIZATION)
-    @ApiOperation(value = "注册用户(供组织服务feign调用)")
-    @PostMapping("/register/users")
-    public ResponseEntity<UserDTO> register(@PathVariable(name = "organization_id") Long organizationId,
-                                            @RequestBody @Validated UserDTO userDTO,
-                                            @RequestParam(value = "default_enabled") boolean defaultEnabled) {
-        userDTO.setOrganizationId(organizationId);
-        //新增用户不能创建ldap用户
-        userDTO.setLdap(false);
-        return new ResponseEntity<>(organizationUserService.create(userDTO, true, defaultEnabled), HttpStatus.OK);
+        return new ResponseEntity<>(organizationUserService.create(userDTO, true), HttpStatus.OK);
     }
 
     /**

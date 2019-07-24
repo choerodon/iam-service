@@ -14,7 +14,7 @@ import io.choerodon.iam.infra.dto.UserDTO;
  */
 public interface OrganizationUserService {
 
-    UserDTO create(UserDTO userDTO, boolean checkPassword, boolean defaultEnabled);
+    UserDTO create(UserDTO userDTO, boolean checkPassword);
 
     PageInfo<UserDTO> pagingQuery(int page, int size, UserSearchDTO user);
 
