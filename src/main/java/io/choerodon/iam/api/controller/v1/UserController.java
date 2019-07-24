@@ -89,7 +89,7 @@ public class UserController extends BaseController {
         userDTO.setLdap(null);
         userDTO.setOrganizationId(null);
         userDTO.setLoginName(null);
-        return new ResponseEntity<>(userService.updateInfo(userDTO), HttpStatus.OK);
+        return new ResponseEntity<>(userService.updateInfo(userDTO, true), HttpStatus.OK);
     }
 
     /**

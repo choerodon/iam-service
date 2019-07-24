@@ -36,7 +36,7 @@ public interface UserService {
 
     RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
 
-    UserDTO updateInfo(UserDTO user);
+    UserDTO updateInfo(UserDTO user, Boolean checkLogin);
 
     void check(UserDTO user);
 

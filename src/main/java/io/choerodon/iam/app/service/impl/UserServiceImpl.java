@@ -359,8 +359,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO updateInfo(UserDTO userDTO) {
-        checkLoginUser(userDTO.getId());
+    public UserDTO updateInfo(UserDTO userDTO, Boolean checkLogin) {
+        if (checkLogin) {
+            checkLoginUser(userDTO.getId());
+        }
         UserDTO dto;
         if (devopsMessage) {
             UserEventPayload userEventPayload = new UserEventPayload();
@@ -563,7 +565,7 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.isEmpty(userName)) {
             UserDTO user = userRepository.selectByPrimaryKey(id);
             user.setRealName(userName);
-            updateInfo(user);
+            updateInfo(user, false);
         }
         return userInfoDTO;
     }

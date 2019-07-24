@@ -247,7 +247,7 @@ class UserServiceImplSpec extends Specification {
 //        PowerMockito.when(ConvertHelper.convert(Mockito.any(), Mockito.any())).thenReturn(new UserE("123456")).thenReturn(new UserDTO())
 
         when: "调用方法"
-        userService.updateInfo(userDTO)
+        userService.updateInfo(userDTO,true)
 
         then: "校验结果"
         1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDTO()
