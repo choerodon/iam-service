@@ -17,11 +17,12 @@ spring:
   resources:
     static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
 management:
+  endpoint:
+    health:
+      show-details: ALWAYS
   server:
     port: 8031
   endpoints:
     web:
       exposure:
         include: '*'
-    health:
-      show-details: "ALWAYS"
