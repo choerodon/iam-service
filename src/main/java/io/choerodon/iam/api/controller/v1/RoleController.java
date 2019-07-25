@@ -3,22 +3,22 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.api.query.RoleQuery;
-import io.choerodon.iam.infra.dto.PermissionDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
+import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
 
 
 /**
@@ -48,7 +48,7 @@ public class RoleController extends BaseController {
     public ResponseEntity<PageInfo<RoleDTO>> pagedSearch(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
                                                          @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
                                                          @RequestBody RoleQuery roleQuery) {
-        return new ResponseEntity<>(roleService.pagingSearch(page,size,roleQuery), HttpStatus.OK);
+        return new ResponseEntity<>(roleService.pagingSearch(page, size, roleQuery), HttpStatus.OK);
     }
 
     @Permission(permissionWithin = true)
@@ -92,7 +92,9 @@ public class RoleController extends BaseController {
     @ApiOperation(value = "通过code查询角色Id")
     @GetMapping("/idByCode")
     public ResponseEntity<Long> queryIdByCode(@RequestParam String code) {
-        return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
+        RoleDTO dto = roleService.queryByCode(code);
+        Long roleId = dto == null ? null : dto.getId();
+        return new ResponseEntity<>(roleId, HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
@@ -144,9 +146,9 @@ public class RoleController extends BaseController {
     @ApiOperation("根据角色id查看角色对应的权限")
     @GetMapping("/{id}/permissions")
     public ResponseEntity<PageInfo<PermissionDTO>> listPermissionById(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                  @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
-                                                                  @PathVariable("id") Long id,
-                                                                  @RequestParam(value = "params", required = false) String[] params) {
+                                                                      @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size,
+                                                                      @PathVariable("id") Long id,
+                                                                      @RequestParam(value = "params", required = false) String[] params) {
         return new ResponseEntity<>(permissionService.listPermissionsByRoleId(page, size, id, ParamUtils.arrToStr(params)), HttpStatus.OK);
     }
 }
