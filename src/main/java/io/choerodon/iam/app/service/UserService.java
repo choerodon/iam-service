@@ -30,7 +30,7 @@ public interface UserService {
 
     UserDTO queryByLoginName(String loginName);
 
-    void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword);
+    void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin);
 
     UserDTO lockUser(Long userId, Integer lockExpireTime);
 
@@ -38,7 +38,7 @@ public interface UserService {
 
     RegistrantInfoDTO queryRegistrantInfoAndAdmin(String orgCode);
 
-    UserDTO updateInfo(UserDTO user);
+    UserDTO updateInfo(UserDTO user, Boolean checkLogin);
 
     void check(UserDTO user);
 
@@ -139,4 +139,6 @@ public interface UserService {
 
     UserDTO updateUserDisabled(Long userId);
 
+
+    UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO);
 }

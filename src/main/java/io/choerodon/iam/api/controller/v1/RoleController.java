@@ -98,7 +98,9 @@ public class RoleController extends BaseController {
     @ApiOperation(value = "通过code查询角色Id")
     @GetMapping("/idByCode")
     public ResponseEntity<Long> queryIdByCode(@RequestParam String code) {
-        return new ResponseEntity<>(roleService.queryByCode(code).getId(), HttpStatus.OK);
+        RoleDTO dto = roleService.queryByCode(code);
+        Long roleId = dto == null ? null : dto.getId();
+        return new ResponseEntity<>(roleId, HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.SITE)
