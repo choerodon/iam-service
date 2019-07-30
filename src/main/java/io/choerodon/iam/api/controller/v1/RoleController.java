@@ -3,27 +3,26 @@ package io.choerodon.iam.api.controller.v1;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.constant.PageConstant;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.iam.api.query.RoleQuery;
-import io.choerodon.iam.infra.dto.PermissionDTO;
-import io.choerodon.iam.infra.dto.RoleDTO;
-import io.choerodon.mybatis.annotation.SortDefault;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.base.BaseController;
+import io.choerodon.iam.api.query.RoleQuery;
 import io.choerodon.iam.app.service.PermissionService;
 import io.choerodon.iam.app.service.RoleService;
 import io.choerodon.iam.infra.common.utils.ParamUtils;
-import springfox.documentation.annotations.ApiIgnore;
+import io.choerodon.iam.infra.dto.PermissionDTO;
+import io.choerodon.iam.infra.dto.RoleDTO;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 
 /**
