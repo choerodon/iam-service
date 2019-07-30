@@ -2,7 +2,6 @@ package io.choerodon.iam.app.service.impl
 
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
-
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.DetailsHelper
 import io.choerodon.iam.IntegrationTestConfiguration
@@ -14,30 +13,14 @@ import io.choerodon.iam.infra.asserts.OrganizationAssertHelper
 import io.choerodon.iam.infra.asserts.ProjectAssertHelper
 import io.choerodon.iam.infra.asserts.RoleAssertHelper
 import io.choerodon.iam.infra.asserts.UserAssertHelper
-import io.choerodon.iam.infra.common.utils.SpockUtils
-import io.choerodon.iam.infra.dto.MemberRoleDTO
-import io.choerodon.iam.infra.dto.OrganizationDTO
-import io.choerodon.iam.infra.dto.ProjectDTO
-import io.choerodon.iam.infra.dto.RoleDTO
 import io.choerodon.iam.infra.dto.UserDTO
 import io.choerodon.iam.infra.feign.FileFeignClient
 import io.choerodon.iam.infra.feign.NotifyFeignClient
-import io.choerodon.iam.infra.mapper.MemberRoleMapper
-import io.choerodon.iam.infra.mapper.OrganizationMapper
-import io.choerodon.iam.infra.mapper.ProjectMapCategoryMapper
-import io.choerodon.iam.infra.mapper.ProjectMapper
-import io.choerodon.iam.infra.mapper.UserMapper
+import io.choerodon.iam.infra.mapper.*
 import io.choerodon.oauth.core.password.PasswordPolicyManager
-import io.choerodon.oauth.core.password.domain.BasePasswordPolicyDTO
 import io.choerodon.oauth.core.password.mapper.BasePasswordPolicyMapper
 import io.choerodon.oauth.core.password.record.PasswordRecord
 import org.apache.http.entity.ContentType
-import org.junit.runner.RunWith
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -52,8 +35,10 @@ import java.lang.reflect.Field
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
+
 /**
- * @author dengyouquan*      */
+ * @author dengyouquan
+ */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 class UserServiceImplSpec extends Specification {
@@ -88,6 +73,7 @@ class UserServiceImplSpec extends Specification {
     ProjectAssertHelper projectAssertHelper
     @Autowired
     RoleAssertHelper roleAssertHelper
+    def checkLogin = false
 
 
     def setup() {
@@ -186,7 +172,7 @@ class UserServiceImplSpec extends Specification {
         def checkPassword = true
 
         when: "调用方法"
-        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword)
+        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword, checkLogin)
 
         then: "校验结果"
 //        1 * userRepository.selectByPrimaryKey(_) >> {
@@ -215,7 +201,7 @@ class UserServiceImplSpec extends Specification {
 //        def checkPassword = false
 //
 //        when: "调用方法"
-//        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword)
+//        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword, checkLogin)
 //
 //        then: "校验结果"
 ////        1 * userRepository.selectByPrimaryKey(_) >> {
@@ -230,7 +216,7 @@ class UserServiceImplSpec extends Specification {
 //        exception.message.equals("error.ldap.user.can.not.update.password")
 //
 //        when: "调用方法"
-//        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword)
+//        userService.selfUpdatePassword(1L, userPasswordDTO, checkPassword, checkLogin)
 //
 //        then: "校验结果"
 ////        1 * userRepository.selectByPrimaryKey(_) >> {
@@ -251,7 +237,7 @@ class UserServiceImplSpec extends Specification {
 
 
         when: "调用方法"
-        userService.updateInfo(userDTO)
+        userService.updateInfo(userDTO, true)
 
         then: "校验结果"
 //        1 * organizationRepository.selectByPrimaryKey(_) >> new OrganizationDTO()

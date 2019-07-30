@@ -331,8 +331,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword) {
-        checkLoginUser(userId);
+    public void selfUpdatePassword(Long userId, UserPasswordDTO userPasswordDTO, Boolean checkPassword, Boolean checkLogin) {
+        if (checkLogin) {
+            checkLoginUser(userId);
+        }
         UserDTO user = userAssertHelper.userNotExisted(userId);
         if (user.getLdap()) {
             throw new CommonException("error.ldap.user.can.not.update.password");
@@ -401,8 +403,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO updateInfo(UserDTO userDTO) {
-        checkLoginUser(userDTO.getId());
+    public UserDTO updateInfo(UserDTO userDTO, Boolean checkLogin) {
+        if (checkLogin) {
+            checkLoginUser(userDTO.getId());
+        }
         UserDTO dto;
         if (devopsMessage) {
             UserEventPayload userEventPayload = new UserEventPayload();
@@ -592,6 +596,24 @@ public class UserServiceImpl implements UserService {
         } else {
             return userMapper.listUsersByLoginNames(loginNames, onlyEnabled);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserInfoDTO updateUserInfo(Long id, UserInfoDTO userInfoDTO) {
+        // 更新用户密码
+        UserPasswordDTO passwordDTO = new UserPasswordDTO();
+        passwordDTO.setOriginalPassword(userInfoDTO.getOriginalPassword());
+        passwordDTO.setPassword(userInfoDTO.getPassword());
+        selfUpdatePassword(id, passwordDTO, true, false);
+        // 更新用户名
+        String userName = userInfoDTO.getUserName();
+        if (!StringUtils.isEmpty(userName)) {
+            UserDTO user = userMapper.selectByPrimaryKey(id);
+            user.setRealName(userName);
+            updateInfo(user, false);
+        }
+        return userInfoDTO;
     }
 
     @Override
